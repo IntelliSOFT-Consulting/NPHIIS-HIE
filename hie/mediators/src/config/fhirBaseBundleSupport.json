@@ -1,0 +1,40 @@
+{
+    "urn": "urn:mediator:fhir_base_bundle_support",
+    "version": "1.0.0",
+    "name": "FHIR Base Mediator Config - Bundle Support",
+    "description": "This mediator is responsible for handling SHR bound requests.",
+    "defaultChannelConfig": [
+        {
+            "name": "CBDHS FHIR Base Channel - Bundle Support",
+            "urlPattern": "/fhir",
+            "routes": [
+                {
+                    "name": "Bundle Support Route",
+                    "host": "mediators",
+                    "path": "/fhir",
+                    "port": "3000",
+                    "primary": true,
+                    "type": "http"
+                }
+            ],
+            "allow": [
+                "*"
+            ],
+            "methods": [
+                "GET",
+                "POST"
+            ],
+            "type": "http"
+        }
+    ],
+    "endpoints": [
+        {
+            "name": "Bundle Support Endpoint",
+            "host": "mediators",
+            "path": "/fhir",
+            "port": "3000",
+            "primary": true,
+            "type": "http"
+        }
+    ]
+}
