@@ -1,0 +1,59 @@
+#
+# Copyright 2021-2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This is for easy creation and setup of a FHIR Proxy and HAPI FHIR Server
+#
+# The relevant environment variables are (see `.env` file for default values):
+#
+# TOKEN_ISSUER: URL of the Identity Provider server;
+#  default: "http://localhost:9080/auth/realms/test"
+#
+# PROXY_TO: URL of the FHIR backend the proxy connects to;
+#   default: "http://localhost:8099/fhir"
+#
+# BACKEND_TYPE: the FHIR backend type. Either GCP or HAPI; default: "HAPI"
+#
+# ACCESS_CHECKER: access checker to use when running the proxy; default: "list"
+#
+# RUN_MODE: Enforces proxy's token issuer check when set to "PROD". To bypass
+#   the check, set to "DEV"; default: "PROD"
+
+version: "3.0"
+
+services:
+  fhir-proxy:
+    image: us-docker.pkg.dev/fhir-proxy-build/stable/fhir-gateway:${BUILD_ID:-latest}
+    environment:
+    - TOKEN_ISSUER
+    - PROXY_TO
+    - BACKEND_TYPE
+    - ACCESS_CHECKER
+    - RUN_MODE
+    - ALLOWED_QUERIES_FILE
+    network_mode: "host"
+    healthcheck:
+      # As hapi-server does not support curl, we check here that the
+      # hapi-server is ready to accept requests
+      test: curl --fail http://localhost:8099/fhir/metadata > /dev/null
+      start_period: 35s
+      interval: 10s
+      retries: 5
+      timeout: 10s
+
+  hapi-server:
+    image: us-docker.pkg.dev/fhir-proxy-build/stable/hapi-synthea:latest
+    ports:
+    - "8099:8080"
