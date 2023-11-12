@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2021-2023 Google LLC
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>9</version>
+  </parent>
+
+  <groupId>com.google.fhir.gateway</groupId>
+  <artifactId>fhir-gateway</artifactId>
+  <version>0.3.2</version>
+  <packaging>pom</packaging>
+
+  <name>FHIR Information Gateway</name>
+  <description>A pluggable access-control gateway for any generic FHIR server.</description>
+  <url>https://github.com/google/fhir-gateway</url>
+  <inceptionYear>2021</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <modules>
+    <module>exec</module>
+    <module>plugins</module>
+    <module>server</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:git://github.com/google/fhir-gateway.git</connection>
+    <developerConnection>scm:git:ssh://github.com:google/fhir-gateway.git</developerConnection>
+    <url>https://github.com/google/fhir-gateway/tree/main</url>
+  </scm>
+
+  <!-- For release documentation see:
+    https://central.sonatype.org/publish/publish-maven/
+    Note, although it suggests new projects should use s01.oss.sonatype.org but
+    with our sonatype.org credentials, it fails with a "Forbidden" message. -->
+  <distributionManagement>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <properties>
+    <hapifhir_version>6.2.5</hapifhir_version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <spotless.version>2.32.0</spotless.version>
+    <root.basedir>${project.basedir}</root.basedir>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <!-- Check this for why we are not using a higher version for now:
+      https://www.slf4j.org/codes.html#StaticLoggerBinder
+      The root cause is that we are using an older version of Spring. -->
+    <slf4j.version>1.7.36</slf4j.version>
+    <logback.version>1.2.11</logback.version>
+    <license-maven-plugin.version>4.1</license-maven-plugin.version>
+  </properties>
+
+  <dependencies>
+
+    <!-- TODO consolidate between logback and log4j in Spring dependencies -->
+    <!--
+    HAPI-FHIR uses Logback for logging support. The logback library is included
+    automatically by Maven as part of the hapi-fhir-base dependencies, but we
+    also need to include a logging library. Logback is used here, but log4j
+    would also be fine.
+    -->
+    <!-- Add slf4j API frontend binding with JUL backend -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+
+    <!-- For Dependency Injection annotations -->
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+    </dependency>
+
+    <!-- Test deps -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.7.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.11.0</version>
+          <configuration>
+            <release>11</release>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>${license-maven-plugin.version}</version>
+        <configuration>
+          <header>${root.basedir}/license-header.txt</header>
+          <excludes>
+            <exclude>.venv/**</exclude>
+            <exclude>**/*.txt</exclude>
+          </excludes>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>com.mycila</groupId>
+            <artifactId>license-maven-plugin-git</artifactId>
+            <version>${license-maven-plugin.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>first</id>
+            <goals>
+              <goal>format</goal>
+            </goals>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless.version}</version>
+        <configuration>
+          <pom>
+            <sortPom>
+              <expandEmptyElements>false</expandEmptyElements>
+            </sortPom>
+            <trimTrailingWhitespace/>
+            <endWithNewline/>
+            <indent>
+              <spaces>true</spaces>
+            </indent>
+          </pom>
+          <formats>
+            <!-- you can define as many formats as you want, each is independent -->
+            <format>
+              <!-- define the files to apply to -->
+              <includes>
+                <include>**/*.sh</include>
+                <include>**/*.xml</include>
+                <include>.gitignore</include>
+              </includes>
+              <!-- ignore build files -->
+              <excludes>
+                <exclude>.idea/**</exclude>
+                <exclude>.settings/**</exclude>
+                <exclude>**/target/**</exclude>
+                <exclude>bin/**</exclude>
+                <exclude>tmp/**</exclude>
+              </excludes>
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
+              <indent>
+                <spaces>true</spaces>
+              </indent>
+            </format>
+            <format>
+              <includes>
+                <include>**/*.md</include>
+              </includes>
+              <excludes>
+                <exclude>**/target/**</exclude>
+                <exclude>.github/PULL_REQUEST_TEMPLATE.md</exclude>
+              </excludes>
+              <prettier>
+                <!-- Formatter that Spotless supports and can format Markdown:
+                     https://github.com/diffplug/spotless/tree/main/plugin-maven#prettier
+                   Only Spotless-supported formatter that can be configured to
+                   force line wrap -->
+                <config>
+                  <proseWrap>always</proseWrap>
+                </config>
+              </prettier>
+            </format>
+          </formats>
+          <!-- define a language-specific format -->
+          <java>
+            <importOrder/>
+            <!-- standard import order -->
+            <importOrder>
+              <!-- or a custom ordering -->
+              <order>java,javax,org,com,com.diffplug,</order>
+              <!-- You probably want an empty string at the end - all of the
+                    imports you didn't specify explicitly will go there. -->
+            </importOrder>
+
+            <removeUnusedImports/>
+
+            <!-- apply a specific flavor of google-java-format and reflow long strings -->
+            <googleJavaFormat>
+              <version>1.15.0</version>
+              <style>GOOGLE</style>
+              <reflowLongStrings>true</reflowLongStrings>
+            </googleJavaFormat>
+          </java>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>apply</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- TODO(omarismail) Add plugin that can run pylint for Python code. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>11</source>
+          <target>11</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
