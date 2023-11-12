@@ -3,6 +3,8 @@ networks:
     openhim:
     hapi-fhir:
     mediators:
+    cloudbuild: 
+        external: true
 
 
 services:
@@ -21,6 +23,7 @@ services:
         restart: always
         networks:
             - hapi-fhir
+            - cloudbuild
         environment:
             POSTGRES_USER: postgres
             POSTGRES_DB: hapi
@@ -34,6 +37,7 @@ services:
         restart: unless-stopped
         networks:
             - hapi-fhir
+            - cloudbuild
         depends_on:
             - hapi-fhir-postgres
         ports:
@@ -106,6 +110,7 @@ services:
         networks:
             - openhim
             - hapi-fhir
+            - cloudbuild
         ports:
             - "80:80"
             - "443:443"
