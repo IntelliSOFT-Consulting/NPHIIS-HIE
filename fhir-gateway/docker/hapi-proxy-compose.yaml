@@ -33,6 +33,10 @@
 
 version: "3.0"
 
+networks:
+  cloudbuild:
+    external: true
+
 services:
   fhir-proxy:
     image: us-docker.pkg.dev/fhir-proxy-build/stable/fhir-gateway:${BUILD_ID:-latest}
@@ -43,11 +47,13 @@ services:
     - ACCESS_CHECKER
     - RUN_MODE
     - ALLOWED_QUERIES_FILE
-    network_mode: "host"
+    # network_mode: "host"
+    networks:
+      - cloudbuild
     healthcheck:
       # As hapi-server does not support curl, we check here that the
       # hapi-server is ready to accept requests
-      test: curl --fail http://localhost:8099/fhir/metadata > /dev/null
+      test: curl --fail http://hapi-fhir-jpa:8080/fhir/metadata > /dev/null
       start_period: 35s
       interval: 10s
       retries: 5
