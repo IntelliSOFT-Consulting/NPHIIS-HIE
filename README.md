@@ -1,6 +1,6 @@
-## Pharmaccess
+## ChanjoKE
 
-This repository contains the code and artefacts for the Pharmaccess HIE
+This repository contains the code and artefacts for the ChanjoKE HIE
 
 
 
@@ -17,15 +17,25 @@ Pre-requisites
 
 #### Setup Instructions
 
+
+** Ensure you create the cloudbuild Docker network that links all components.
+
+```docker network create cloudbuild```
+
 1. Clone the repository
 
-```git clone https://github.com/IntelliSOFT-Consulting/pharmaccess```
+```git clone https://github.com/IntelliSOFT-Consulting/chanjoke-hie```
 
 2. cd into the repository folder
 
-```cd pharmaccess```
-
+```cd chanjoke-hie```
 
 3. Use docker compose to start containers
 
 ```docker compose up -d```
+
+
+
+#### FHIR Gateway Configuration
+
+1. In the `fhir-gateway/docker/.env`

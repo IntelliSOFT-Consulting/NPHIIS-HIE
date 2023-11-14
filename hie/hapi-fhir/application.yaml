@@ -28,7 +28,7 @@ hapi:
     openapi_enabled: true
     ### This is the FHIR version. Choose between, DSTU2, DSTU3, R4 or R5
     fhir_version: R4
-    server_address: https://mamatoto.intellisoftkenya.com/fhir
+    server_address: https://chanjoke.intellisoftkenya.com/fhir
     bulk_export_enabled: true
     default_pretty_print: true
     cql_enabled: true
@@ -74,7 +74,7 @@ hapi:
     #    narrative_enabled: true
     # mdm_enabled: true
     local_base_urls:
-      - https://mamatoto.intellisoftkenya.com/fhir
+      - https://chanjoke.intellisoftkenya.com/fhir
 
     # mdm_enabled: true
     #    partitioning:
