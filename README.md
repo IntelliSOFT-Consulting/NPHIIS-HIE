@@ -3,11 +3,11 @@
 This repository contains the code and artefacts for the ChanjoKE HIE
 
 
-
 #### Components
-1. OpenHIM
-2. HAPI FHIR JPA Server
-
+1. HIE Components - OpenHIM, HAPI FHIR JPA
+2. FHIR Gateway
+3. FHIR Datapipes
+4. Apache Superset
 
 
 Pre-requisites
