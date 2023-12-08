@@ -1,0 +1,21 @@
+version: "3"
+
+networks:
+    cloudbuild: 
+        external: true
+
+services:
+  nginx:
+      image: nginx:alpine
+      container_name: nginx
+      restart: unless-stopped
+      networks:
+        - cloudbuild
+      ports:
+        - "80:80"
+        - "443:443"
+      volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        - ./certs/star.intellisoftkenya.com.crt:/opt/star.intellisoftkenya.com.crt:ro
+        - ./certs/star.intellisoftkenya.com.key:/opt/star.intellisoftkenya.com.key:ro
+        

@@ -3,6 +3,8 @@ networks:
     openhim:
     hapi-fhir:
     mediators:
+    cloudbuild: 
+        external: true
 
 
 services:
@@ -13,7 +15,7 @@ services:
             - openhim
         volumes:
             - mongodb-data:/data/db
-        restart: always
+        restart: unless-stopped
 
     hapi-fhir-postgres:
         container_name: hapi-fhir-postgres
@@ -21,6 +23,7 @@ services:
         restart: always
         networks:
             - hapi-fhir
+            - cloudbuild
         environment:
             POSTGRES_USER: postgres
             POSTGRES_DB: hapi
@@ -29,15 +32,16 @@ services:
             - 'hapi-fhir-postgres:/var/lib/postgresql/data'
 
     hapi-fhir-jpa:
-        image: intellisoftkenya/hapi-fhir:latest
+        image: hapiproject/hapi:latest
         container_name: hapi-fhir-jpa
         restart: unless-stopped
         networks:
             - hapi-fhir
-        ports:
-            - "8081:8080"
+            - cloudbuild
         depends_on:
             - hapi-fhir-postgres
+        ports:
+            - "8888:8080"
         volumes:
             - "./hapi-fhir:/hapi"
         environment:
@@ -46,13 +50,13 @@ services:
     openhim-core:
         container_name: openhim-core
         restart: unless-stopped
-        image: jembi/openhim-core:latest
+        image: openhim-core-kc:latest
         environment:
             - mongo_url=mongodb://mongo/openhim
             - mongo_atnaUrl=mongodb://mongo/openhim
             - authentication_enableJWTAuthentication=true
         ports:
-            - "8080:8080"
+            - "8777:8080"
             # - "5000:5000"
             - "5001:5001"
             # - "5050:5050"
@@ -74,67 +78,33 @@ services:
     openhim-console:
         container_name: openhim-console
         image: jembi/openhim-console:latest
-        restart: on-failure
+        restart: unless-stopped
         networks:
             - openhim
-        # ports:
-            # - "9000:80"
         healthcheck:
             test: "curl -sS http://openhim-console || exit 1"
             interval: 30s
             timeout: 30s
             retries: 3
         volumes:
-            - ./default.json:/usr/share/nginx/html/config/default.json
+            - ./default.json:/usr/share/nginx/html/config/default.json:ro
             - /etc/ssl/crt:/etc/nginx/certs
 
     mediators:
         depends_on:
             - openhim-core
-            - hapi-fhir-jpa
         container_name: mediators
-        restart: on-failure
-        build:
-            context: mediators
-            dockerfile: Dockerfile.dev
-        volumes:
-            - ./mediators:/usr/mediators
+        build: mediators
+        restart: unless-stopped
         networks:
             - openhim
             - hapi-fhir
-        ports:
-            - "8082:3000"
+        # ports:
+        #     - "8082:3000"
         env_file:
             - mediators/.env
-    nginx:
-        image: nginx:alpine
-        container_name: nginx
-        networks:
-            - openhim
-        ports:
-            - "8888:80"
-            - "8443:443"
-        volumes:
-            - ./nginx.conf:/etc/nginx/nginx.conf:ro
-        depends_on:
-            - openhim-core
-    # hie-admin:
-    #     container_name: hie-admin
-    #     build:
-    #         context: admin
-    #         dockerfile: Dockerfile.dev
-    #     volumes:
-    #         - ./admin:/app/admin
-    #     networks:
-    #         - openhim
-    #         - mediators
-    #     ports:
-    #         - "8088:3000"
-    #     env_file:
-    #         - admin/.env
 
 volumes:
     mongodb-data:
     hapi-fhir-postgres:
     hapi:
-    mediators:
