@@ -41,7 +41,7 @@ services:
         depends_on:
             - hapi-fhir-postgres
         ports:
-            - "8888:8080"
+             - "8081:8080"
         volumes:
             - "./hapi-fhir:/hapi"
         environment:
@@ -50,11 +50,12 @@ services:
     openhim-core:
         container_name: openhim-core
         restart: unless-stopped
-        image: jembi/openhim-core:latest
+        image: openhim-core-kc:latest
         environment:
             - mongo_url=mongodb://mongo/openhim
             - mongo_atnaUrl=mongodb://mongo/openhim
             - authentication_enableJWTAuthentication=true
+            - KC_OPENHIM_ROOT_URL=http://chanjoke.intellisoftkenya.com/openhim/
         ports:
             - "8080:8080"
             # - "5000:5000"
@@ -68,6 +69,7 @@ services:
         networks:
             - openhim
             - hapi-fhir
+            - cloudbuild
             - mediators
         healthcheck:
             test: "curl -sSk https://openhim-core:8080/heartbeat || exit 1"
@@ -81,6 +83,7 @@ services:
         restart: unless-stopped
         networks:
             - openhim
+            - cloudbuild
         healthcheck:
             test: "curl -sS http://openhim-console || exit 1"
             interval: 30s
@@ -103,21 +106,6 @@ services:
         #     - "8082:3000"
         env_file:
             - mediators/.env
-    nginx:
-        image: nginx:alpine
-        container_name: nginx
-        restart: unless-stopped
-        networks:
-            - openhim
-            - hapi-fhir
-            - cloudbuild
-        ports:
-            - "80:80"
-            - "443:443"
-        volumes:
-            - ./../nginx.conf:/etc/nginx/nginx.conf:ro
-        depends_on:
-            - openhim-core
 
 volumes:
     mongodb-data:
