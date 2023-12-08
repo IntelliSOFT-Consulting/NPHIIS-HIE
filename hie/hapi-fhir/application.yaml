@@ -28,7 +28,7 @@ hapi:
     openapi_enabled: true
     ### This is the FHIR version. Choose between, DSTU2, DSTU3, R4 or R5
     fhir_version: R4
-    server_address: https://chanjoke.intellisoftkenya.com/fhir
+    server_address: http://chanjoke.intellisoftkenya.com/hapi/fhir
     bulk_export_enabled: true
     default_pretty_print: true
     cql_enabled: true
@@ -49,12 +49,12 @@ hapi:
     #    supported_resource_types:
     #      - Patient
     #      - Observation
-    #    allow_cascading_deletes: true
-    #    allow_contains_searches: true
-    #    allow_external_references: true
-    #    allow_multiple_delete: true
+    allow_cascading_deletes: true
+    allow_contains_searches: true
+    allow_external_references: true
+    allow_multiple_delete: true
     #    allow_override_default_search_params: true
-    #    auto_create_placeholder_reference_targets: false
+    auto_create_placeholder_reference_targets: false
     #default_encoding: JSON
     #    default_page_size: 20
     #    delete_expunge_enabled: true
@@ -67,14 +67,14 @@ hapi:
     #    etag_support_enabled: true
     #    expunge_enabled: true
     #    daoconfig_client_id_strategy: null
-    #    client_id_strategy: ALPHANUMERIC
+    client_id_strategy: ANY
     #    fhirpath_interceptor_enabled: false
     filter_search_enabled: true
     graphql_enabled: true
     #    narrative_enabled: true
     # mdm_enabled: true
     local_base_urls:
-      - https://chanjoke.intellisoftkenya.com/fhir
+      - http://chanjoke.intellisoftkenya.com/hapi/fhir
 
     # mdm_enabled: true
     #    partitioning:
