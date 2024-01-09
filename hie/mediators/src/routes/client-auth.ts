@@ -1,0 +1,93 @@
+import express, { Request, Response } from "express";
+import { FhirApi  } from "../lib/utils";
+import { getKeycloakUserToken, registerKeycloakUser } from './../lib/keycloak'
+
+const router = express.Router();
+router.use(express.json());
+
+router.post("/register", async (req: Request, res: Response) => {
+    try {
+        // get id number and the unique secret code
+        let {secretCode, idNumber, password, email} = req.body;
+        if(!password || !idNumber || !secretCode) {
+            res.statusCode = 400;
+            res.json({ status: "error", error: "secretCode, idNumber and password are required" });
+            return
+        }
+        let response: any = await FhirApi({url:`/Patient?identifier=${secretCode},${idNumber}`});
+        if(response.data?.entry || response.data?.count){ // Patient is found
+            let patient = response.data.entry[0].resource;
+            console.log(patient);
+            // register patient/client user on Keycloak
+            let keycloakUser = await registerKeycloakUser(idNumber, patient.name[0].family, patient.name[0].given[0], password, patient.id, null, null);
+            if(!keycloakUser){
+                res.statusCode = 400;
+                res.json({ status: "error", error: "Failed to register client user" });
+                return;
+            }
+            if (Object.keys(keycloakUser).indexOf('error') > -1){
+                res.statusCode = 400;
+                res.json( {...keycloakUser, status:"error"} );
+                return;
+            }
+            res.statusCode = 201;
+            res.json({ response:keycloakUser.success, status:"success" });
+            return;
+        }else{
+            let error = "Could not register user. Invalid Secret Code or ID number provided." 
+            console.log(error);
+            res.statusCode = 401;
+            res.json({ error: error, status:"error" });
+            return;
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.statusCode = 401;
+        res.json({ error: "incorrect email or password", status:"error" });
+        return;
+    }
+});
+
+router.post("/login", async (req: Request, res: Response) => {
+    try {
+        let {idNumber, password} = req.body;
+        let token = await getKeycloakUserToken(idNumber, password);
+        if(!token){
+            res.statusCode = 401;
+            res.json({ status: "error", error:"Incorrect ID Number or Password provided" });
+            return;
+        }
+        res.statusCode = 200;
+        res.json({ status: "success", token });
+        return;
+    }
+    catch (error) {
+        console.log(error);
+        res.statusCode = 401;
+        res.json({ error: "incorrect email or password", status:"error" });
+        return;
+    }
+});
+
+router.get("/me", async (req: Request, res: Response) => {
+    try {
+        const accessToken = req.headers.authorization?.split(' ')[1] || null;
+        if(!accessToken || req.headers.authorization?.split(' ')[0] != "Bearer"){
+            res.statusCode = 401;
+            res.json({ status: "error", error:"Bearer token is required but not provided" });
+            return;
+        }
+        res.statusCode = 200;
+        res.json({ status: "success",   });
+        return;
+    }
+    catch (error) {
+        console.error(error);
+        res.statusCode = 401;
+        res.json({ error: "Invalid Bearer token provided", status: "error" });
+        return;
+    }
+});
+
+export default router
