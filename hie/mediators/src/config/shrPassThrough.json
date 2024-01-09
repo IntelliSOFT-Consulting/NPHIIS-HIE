@@ -1,33 +1,33 @@
 {
-    "urn": "urn:mediator:shr_fhir_base",
+    "urn": "urn:mediator:shr-passthrough",
     "version": "1.0.0",
-    "name": "FHIR Base Mediator Config",
+    "name": "SHR Mediator",
     "description": "This mediator is responsible for handling SHR bound requests.",
     "defaultChannelConfig": [
       {
-        "name": "CBDHS SHR FHIR Base Channel",
-        "urlPattern": "/shr",
+        "name": "SHR Channel",
+        "urlPattern": "^/fhir/.*$",
         "routes": [
           {
             "name": "SHR Route",
-            "host": "mediators",
-            "path": "/shr",
-            "port": "3000",
+            "host": "hapi-fhir-jpa",
+            "pathTransform": "s/\/\/.*$/",
+            "port": "8080",
             "primary": true,
             "type": "http"
           }
         ],
         "allow": ["*"],
-        "methods": ["GET", "POST"],
+        "methods": ["GET", "POST", "PUT", "PATCH"],
         "type": "http"
       }
     ],
     "endpoints": [
       {
-        "name": "SHR FHIR Base Mediator Endpoint",
-        "host": "mediators",
-        "path": "/shr",
-        "port": "3000",
+        "name": "SHR Mediator Endpoint",
+        "host": "hapi-fhir-jpa",
+        "path": "/fhir",
+        "port": "8080",
         "primary": true,
         "type": "http"
       }
