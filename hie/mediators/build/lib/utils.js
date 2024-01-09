@@ -31,12 +31,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createClient = exports.sendRequest = exports.installChannels = exports.getOpenHIMToken = exports.importMediators = void 0;
+exports.getPatientByHieId = exports.generateCrossBorderId = exports.getPatientSummary = exports.createClient = exports.parseIdentifiers = exports.FhirApi = exports.apiHost = exports.installChannels = exports.getOpenHIMToken = exports.importMediators = void 0;
 const openhim_mediator_utils_1 = __importDefault(require("openhim-mediator-utils"));
-const shrMediatorConfig_json_1 = __importDefault(require("../config/shrMediatorConfig.json"));
-const mpiMediatorConfig_json_1 = __importDefault(require("../config/mpiMediatorConfig.json"));
+const shrPassThrough_json_1 = __importDefault(require("../config/shrPassThrough.json"));
 const https_1 = require("https");
 const crypto = __importStar(require("crypto"));
+// mediators to be registered
+const mediators = [
+    shrPassThrough_json_1.default
+];
 const fetch = (url, init) => Promise.resolve().then(() => __importStar(require('node-fetch'))).then(({ default: fetch }) => fetch(url, init));
 const openhimApiUrl = process.env.OPENHIM_API_URL;
 const openhimUsername = process.env.OPENHIM_USERNAME;
@@ -47,16 +50,12 @@ const openhimConfig = {
     apiURL: openhimApiUrl,
     trustSelfSigned: true
 };
-openhim_mediator_utils_1.default.authenticate(openhimConfig, (e) => {
-    console.log(e ? e : "✅ OpenHIM authenticated successfully");
-});
 const importMediators = () => {
     try {
-        openhim_mediator_utils_1.default.registerMediator(openhimConfig, shrMediatorConfig_json_1.default, (e) => {
-            console.log(e ? e : "");
-        });
-        openhim_mediator_utils_1.default.registerMediator(openhimConfig, mpiMediatorConfig_json_1.default, (e) => {
-            console.log(e ? e : "");
+        mediators.map((mediator) => {
+            openhim_mediator_utils_1.default.registerMediator(openhimConfig, mediator, (e) => {
+                console.log(e ? e : "");
+            });
         });
     }
     catch (error) {
@@ -79,9 +78,10 @@ const getOpenHIMToken = () => __awaiter(void 0, void 0, void 0, function* () {
 exports.getOpenHIMToken = getOpenHIMToken;
 const installChannels = () => __awaiter(void 0, void 0, void 0, function* () {
     let headers = yield exports.getOpenHIMToken();
-    [shrMediatorConfig_json_1.default.urn, mpiMediatorConfig_json_1.default.urn].map((urn) => __awaiter(void 0, void 0, void 0, function* () {
-        let response = yield (yield fetch(`${openhimApiUrl}/mediators/${urn}/channels`, {
-            headers: headers, method: 'POST', body: JSON.stringify({ a: "y" }), agent: new https_1.Agent({
+    mediators.map((mediator) => __awaiter(void 0, void 0, void 0, function* () {
+        let response = yield (yield fetch(`${openhimApiUrl}/channels`, {
+            headers: Object.assign(Object.assign({}, headers), { "Content-Type": "application/json" }),
+            method: 'POST', body: JSON.stringify(mediator.defaultChannelConfig[0]), agent: new https_1.Agent({
                 rejectUnauthorized: false
             })
         })).text();
@@ -89,18 +89,54 @@ const installChannels = () => __awaiter(void 0, void 0, void 0, function* () {
     }));
 });
 exports.installChannels = installChannels;
-const sendRequest = () => __awaiter(void 0, void 0, void 0, function* () {
-    let headers = yield exports.getOpenHIMToken();
-    [shrMediatorConfig_json_1.default.urn, mpiMediatorConfig_json_1.default.urn].map((urn) => __awaiter(void 0, void 0, void 0, function* () {
-        let response = yield (yield fetch(`${openhimApiUrl}/patients`, {
-            headers: headers, method: 'POST', body: JSON.stringify({ a: "y" }), agent: new https_1.Agent({
-                rejectUnauthorized: false
-            })
-        })).text();
-        console.log(response);
-    }));
+openhim_mediator_utils_1.default.authenticate(openhimConfig, (e) => {
+    console.log(e ? e : "✅ OpenHIM authenticated successfully");
+    exports.importMediators();
+    exports.installChannels();
 });
-exports.sendRequest = sendRequest;
+exports.apiHost = process.env.FHIR_BASE_URL;
+console.log("HAPI FHIR: ", exports.apiHost);
+// a fetch wrapper for HAPI FHIR server.
+const FhirApi = (params) => __awaiter(void 0, void 0, void 0, function* () {
+    let _defaultHeaders = { "Content-Type": 'application/json' };
+    if (!params.method) {
+        params.method = 'GET';
+    }
+    try {
+        let response = yield fetch(String(`${exports.apiHost}${params.url}`), Object.assign({ headers: _defaultHeaders, method: params.method ? String(params.method) : 'GET' }, (params.method !== 'GET' && params.method !== 'DELETE') && { body: String(params.data) }));
+        let responseJSON = yield response.json();
+        let res = {
+            status: "success",
+            statusText: response.statusText,
+            data: responseJSON
+        };
+        return res;
+    }
+    catch (error) {
+        console.error(error);
+        let res = {
+            statusText: "FHIRFetch: server error",
+            status: "error",
+            data: error
+        };
+        console.error(error);
+        return res;
+    }
+});
+exports.FhirApi = FhirApi;
+const parseIdentifiers = (patientId) => __awaiter(void 0, void 0, void 0, function* () {
+    let patient = (yield exports.FhirApi({ url: `/Patient?identifier=${patientId}`, })).data;
+    if (!((patient === null || patient === void 0 ? void 0 : patient.total) > 0 || (patient === null || patient === void 0 ? void 0 : patient.entry.length) > 0)) {
+        return null;
+    }
+    let identifiers = patient.entry[0].resource.identifier;
+    return identifiers.map((id) => {
+        return {
+            [id.id]: id
+        };
+    });
+});
+exports.parseIdentifiers = parseIdentifiers;
 const createClient = (name, password) => __awaiter(void 0, void 0, void 0, function* () {
     let headers = yield exports.getOpenHIMToken();
     const clientPassword = password;
@@ -138,3 +174,71 @@ const genClientPassword = (password) => __awaiter(void 0, void 0, void 0, functi
         });
     });
 });
+const getPatientSummary = (crossBorderId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let patient = yield exports.getPatientByHieId(crossBorderId);
+        console.log(patient);
+        let ips = (yield exports.FhirApi({ url: `/Patient/${patient.id}/$summary` })).data;
+        return ips;
+    }
+    catch (error) {
+        console.log(error);
+        return null;
+    }
+});
+exports.getPatientSummary = getPatientSummary;
+const letterToNumber = (str = '') => {
+    let result = '';
+    for (let i = 0; i < str.length; i++) {
+        const char = str[i].toUpperCase();
+        if (char >= 'A' && char <= 'Z') {
+            const number = (char.charCodeAt(0) - 64).toString().padStart(2, '0');
+            result += number;
+        }
+    }
+    return String(result) || "X";
+};
+const mapStringToNumber = (str) => {
+    let number = '';
+    for (let x of str.slice(0, 3)) {
+        number += letterToNumber(x);
+    }
+    return number;
+};
+const generateCrossBorderId = (patient) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    let month = new Date().getMonth() + 1;
+    let dob = new Date(patient.birthDate);
+    let gender = (patient === null || patient === void 0 ? void 0 : patient.gender) || null;
+    let middleNameCode = mapStringToNumber(((_a = patient.name[0]) === null || _a === void 0 ? void 0 : _a.given[1]) || "X");
+    let givenNameCode = mapStringToNumber(((_b = patient.name[0]) === null || _b === void 0 ? void 0 : _b.given[0]) || "X");
+    let familyNameCode = mapStringToNumber((_c = patient.name[0]) === null || _c === void 0 ? void 0 : _c.family);
+    let countryCode = "X";
+    let genderCode = gender === 'male' ? "M" : gender === 'female' ? "F" : "X";
+    let monthCode = (dob.getMonth() + 1) || "X";
+    let year = dob.getFullYear() || "X";
+    let id = `${countryCode}-0${monthCode}${year}-${genderCode}-${givenNameCode}-${familyNameCode}-${middleNameCode}`;
+    // check if id exists
+    // let response = (await FhirApi({ url: `/Patient?identifier=${id}` })).data
+    // if(response?.entry){
+    //     return id
+    // }
+    return id;
+});
+exports.generateCrossBorderId = generateCrossBorderId;
+const getPatientByHieId = (crossBorderId) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    try {
+        let patient = (yield exports.FhirApi({ url: `/Patient?identifier=${crossBorderId}` })).data;
+        if ((patient === null || patient === void 0 ? void 0 : patient.total) > 0 || ((_d = patient === null || patient === void 0 ? void 0 : patient.entry) === null || _d === void 0 ? void 0 : _d.length) > 0) {
+            patient = patient.entry[0].resource;
+            return patient;
+        }
+        return null;
+    }
+    catch (error) {
+        console.log(error);
+        return null;
+    }
+});
+exports.getPatientByHieId = getPatientByHieId;
