@@ -1,22 +1,14 @@
 import express from "express";
 import cors from 'cors'
 import * as dotenv from 'dotenv'
-import path from 'path'
 
 dotenv.config() // Load environment variables
 
-//Import routes 
-import Index from './routes/main'
-import Matching from './routes/matching'
-import Auth from './routes/auth'
-import Patients from './routes/patients'
-import SHR from './routes/shr'
-import Data from './routes/data'
-import Facilities from "./routes/facilities";
-import Summary from "./routes/ips";
-import FHIR from './routes/fhir';
+//Import routes
+import OpenHIMAuth from './routes/openhim-auth'
+import ClientAuth from './routes/client-auth'
+import ProviderAuth from './routes/provider-auth'
 
-// import Reports from './routes/reports'
 
 import { importMediators } from "./lib/utils";
 
@@ -37,21 +29,9 @@ app.use((req, res, next) => {
   }
 });
 
-
-
-
-app.use('/', Index)
-app.use('/matching', Matching)
-app.use('/auth', Auth)
-app.use('/Patient', Patients)
-app.use('/patients', Patients)
-app.use('/shr', SHR)
-app.use('/data', Data)
-app.use('/facilities', Facilities)
-app.use('/summary', Summary)
-app.use('/fhir', FHIR)
-
-
+app.use('/auth', OpenHIMAuth)
+app.use('/client', ClientAuth)
+app.use('/provider', ProviderAuth)
 
 
 app.listen(PORT, () => {
