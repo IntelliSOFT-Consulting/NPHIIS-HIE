@@ -7,8 +7,6 @@ import * as crypto from 'crypto';
 
 // ✅ Do this if using TYPESCRIPT
 import { RequestInfo, RequestInit } from 'node-fetch';
-import { uuid } from 'uuidv4';
-import { exists } from 'fs';
 
 // mediators to be registered
 const mediators = [
