@@ -1,6 +1,6 @@
 import express, { Request, response, Response } from "express";
 import { createClient, FhirApi, getOpenHIMToken, installChannels } from "../lib/utils";
-import { getKeycloakUserToken, registerKeycloakUser } from './../lib/keycloak'
+import { findKeycloakUser, getCurrentUserInfo, getKeycloakUserToken, registerKeycloakUser } from './../lib/keycloak'
 import { v4 } from "uuid";
 
 const router = express.Router();
@@ -90,8 +90,21 @@ router.get("/me", async (req: Request, res: Response) => {
             res.json({ status: "error", error:"Bearer token is required but not provided" });
             return;
         }
+        let currentUser = await getCurrentUserInfo(accessToken);
+        console.log(currentUser);
+        let userInfo = await findKeycloakUser(currentUser.preferred_username)
+        console.log(userInfo)
+        if(!currentUser){
+            res.statusCode = 401;
+            res.json({ status: "error", error: "Invalid Bearer token provided"  });
+            return;
+        }
         res.statusCode = 200;
-        res.json({ status: "success",  });
+        res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
+            fhirPractitionerId:userInfo.attributes.fhirPractitionerId[0], 
+            practitionerRole: userInfo.attributes.practitionerRole[0],
+            id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name   
+        }});
         return;
     }
     catch (error) {

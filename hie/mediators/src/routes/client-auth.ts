@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { FhirApi  } from "../lib/utils";
-import { getKeycloakUserToken, registerKeycloakUser } from './../lib/keycloak'
+import { getKeycloakUserToken, registerKeycloakUser, getCurrentUserInfo, findKeycloakUser } from './../lib/keycloak'
 
 const router = express.Router();
 router.use(express.json());
@@ -58,8 +58,13 @@ router.post("/login", async (req: Request, res: Response) => {
             res.json({ status: "error", error:"Incorrect ID Number or Password provided" });
             return;
         }
+        if (Object.keys(token).indexOf('error') > -1){
+            res.statusCode = 401;
+            res.json({status:"error", error: `${token.error} - ${token.error_description}`})
+            return;
+        }
         res.statusCode = 200;
-        res.json({ status: "success", token });
+        res.json({ ...token, status: "success" });
         return;
     }
     catch (error) {
@@ -70,6 +75,7 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 });
 
+
 router.get("/me", async (req: Request, res: Response) => {
     try {
         const accessToken = req.headers.authorization?.split(' ')[1] || null;
@@ -78,14 +84,26 @@ router.get("/me", async (req: Request, res: Response) => {
             res.json({ status: "error", error:"Bearer token is required but not provided" });
             return;
         }
+        let currentUser = await getCurrentUserInfo(accessToken);
+        console.log(currentUser);
+        let userInfo = await findKeycloakUser(currentUser.preferred_username)
+        console.log(userInfo)
+        if(!currentUser){
+            res.statusCode = 401;
+            res.json({ status: "error", error: "Invalid Bearer token provided"  });
+            return;
+        }
         res.statusCode = 200;
-        res.json({ status: "success",   });
+        res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
+            fhirPatientId:userInfo.attributes.fhirPatientId[0], 
+            id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name   
+        }});
         return;
     }
     catch (error) {
         console.error(error);
         res.statusCode = 401;
-        res.json({ error: "Invalid Bearer token provided", status: "error" });
+        res.json({ error: "Invalid Bearer token provided", status:"error" });
         return;
     }
 });
