@@ -94,15 +94,20 @@ services:
         depends_on:
             - openhim-core
         container_name: mediators
-        build: mediators
+        build: 
+            context: mediators
+            dockerfile: Dockerfile.dev
+
         restart: unless-stopped
         networks:
             - openhim
             - hapi-fhir
-        # ports:
-        #     - "8082:3000"
+        ports:
+            - "8082:3000"
         env_file:
-            - mediators/.env
+            - mediators/.env.example
+        volumes:
+            - ./mediators:/usr/mediators
 
 volumes:
     mongodb-data:
