@@ -24,8 +24,6 @@ router.get("/client", async (req: Request, res: Response) => {
 
 
 
-
-
 /*
   ____                   _    _ _____ __  __ _____             _            
  / __ \                 | |  | |_   _|  \/  |  __ \           | |           

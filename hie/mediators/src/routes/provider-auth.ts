@@ -9,11 +9,11 @@ router.use(express.json());
 router.post("/register", async (req: Request, res: Response) => {
     try {
         // get id number and unique code
-        let {firstName, lastName, idNumber, password, role} = req.body;
+        let {firstName, lastName, idNumber, password, role, email, phone } = req.body;
         console.log(req.body);
-        if(!password || !idNumber || !firstName || !lastName || !role ) {
+        if(!password || !idNumber || !firstName || !lastName || !role || !email ) {
             res.statusCode = 400;
-            res.json({ status: "error", error: "password, idNumber, firstName, lastName and role are required" });
+            res.json({ status: "error", error: "password, idNumber, firstName, lastName, email and role are required" });
             return;
         }
         let practitionerId = v4();
@@ -30,7 +30,7 @@ router.post("/register", async (req: Request, res: Response) => {
             "name": [{"use": "official","family": lastName, "given": [firstName]}],
             // "telecom": [{"system": "phone","value": "123-456-7890"}]
         };
-        let keycloakUser = await registerKeycloakUser(idNumber, firstName, 
+        let keycloakUser = await registerKeycloakUser(idNumber, email, phone, firstName, 
                     lastName, password, null, practitionerId, role);
         if(!keycloakUser){
             res.statusCode = 400;
@@ -103,7 +103,8 @@ router.get("/me", async (req: Request, res: Response) => {
         res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
             fhirPractitionerId:userInfo.attributes.fhirPractitionerId[0], 
             practitionerRole: userInfo.attributes.practitionerRole[0],
-            id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name   
+            id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
+            phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null) , email: userInfo.email ?? null
         }});
         return;
     }

@@ -8,18 +8,18 @@ router.use(express.json());
 router.post("/register", async (req: Request, res: Response) => {
     try {
         // get id number and the unique secret code
-        let {secretCode, idNumber, password, email} = req.body;
+        let {secretCode, idNumber, password, email, phone} = req.body;
         if(!password || !idNumber || !secretCode) {
             res.statusCode = 400;
             res.json({ status: "error", error: "secretCode, idNumber and password are required" });
-            return
+            return;
         }
         let response: any = await FhirApi({url:`/Patient?identifier=${secretCode},${idNumber}`});
         if(response.data?.entry || response.data?.count){ // Patient is found
             let patient = response.data.entry[0].resource;
             console.log(patient);
             // register patient/client user on Keycloak
-            let keycloakUser = await registerKeycloakUser(idNumber, patient.name[0].family, patient.name[0].given[0], password, patient.id, null, null);
+            let keycloakUser = await registerKeycloakUser(idNumber, email, phone, patient.name[0].family, patient.name[0].given[0], password, patient.id, null, null);
             if(!keycloakUser){
                 res.statusCode = 400;
                 res.json({ status: "error", error: "Failed to register client user" });
@@ -86,7 +86,40 @@ router.get("/me", async (req: Request, res: Response) => {
         }
         let currentUser = await getCurrentUserInfo(accessToken);
         console.log(currentUser);
-        let userInfo = await findKeycloakUser(currentUser.preferred_username)
+        let userInfo = await findKeycloakUser(currentUser.preferred_username);
+        console.log(userInfo)
+        if(!currentUser){
+            res.statusCode = 401;
+            res.json({ status: "error", error: "Invalid Bearer token provided"  });
+            return;
+        }
+        res.statusCode = 200;
+        res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
+            fhirPatientId:userInfo.attributes.fhirPatientId[0], 
+            id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
+            phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null) , email: userInfo.email ?? null
+        }});
+        return;
+    }
+    catch (error) {
+        console.error(error);
+        res.statusCode = 401;
+        res.json({ error: "Invalid Bearer token provided", status:"error" });
+        return;
+    }
+});
+
+router.post("/me", async (req: Request, res: Response) => {
+    try {
+        const accessToken = req.headers.authorization?.split(' ')[1] || null;
+        if(!accessToken || req.headers.authorization?.split(' ')[0] != "Bearer"){
+            res.statusCode = 401;
+            res.json({ status: "error", error:"Bearer token is required but not provided" });
+            return;
+        }
+        let currentUser = await getCurrentUserInfo(accessToken);
+        console.log(currentUser);
+        let userInfo = await findKeycloakUser(currentUser.preferred_username);
         console.log(userInfo)
         if(!currentUser){
             res.statusCode = 401;
