@@ -77,7 +77,7 @@ export const updateUserPassword = async (username: string, password: string) => 
     if(response.ok){
       return true;
     }
-    console.log(await response.json());
+    // console.log(await response.json());
     return null;
   } catch (error) {
     console.error(error);
@@ -86,7 +86,7 @@ export const updateUserPassword = async (username: string, password: string) => 
 }
 
 
-export const registerKeycloakUser = async (username: string, firstName: string, lastName: string, password: string, fhirPatientId: string | null, fhirPractitionerId: string | null, practitionerRole: string | null) => {
+export const registerKeycloakUser = async (username: string, email: string | null, phone: string | null,firstName: string, lastName: string, password: string, fhirPatientId: string | null, fhirPractitionerId: string | null, practitionerRole: string | null) => {
     try {
         
         // Authenticate
@@ -102,7 +102,7 @@ export const registerKeycloakUser = async (username: string, firstName: string, 
               Authorization: `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, firstName, lastName, enabled: true,
+            body: JSON.stringify({ username, firstName, lastName, enabled: true, email,
               credentials: [
                 {
                   "type": "password",
@@ -117,7 +117,8 @@ export const registerKeycloakUser = async (username: string, firstName: string, 
               attributes: {
                 fhirPatientId,
                 fhirPractitionerId,
-                practitionerRole
+                practitionerRole,
+                phone
               },
             }),
           })
@@ -130,7 +131,7 @@ export const registerKeycloakUser = async (username: string, firstName: string, 
         const userData = await createUserResponse.json();
         console.log('User created successfully:', userData);
         if (Object.keys(userData).indexOf('errorMessage') > -1){
-          return {error: userData.errorMessage}
+          return {error: userData.errorMessage.replace("username", "idNumber or email")}
         }
         return userData;
     } catch (error) {
