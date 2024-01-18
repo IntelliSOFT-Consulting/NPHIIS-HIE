@@ -1,0 +1,4275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<StructureDefinition xmlns="http://hl7.org/fhir">
+  <id value="AD"/>
+  <text>
+    <status value="generated"/><div xmlns="http://www.w3.org/1999/xhtml">
+      <p>Mailing and home or office addresses. A sequence of address parts, such as street or post office Box, city, postal code, country, etc.</p>
+    </div>
+  </text>
+  <extension url="http://hl7.org/fhir/tools/StructureDefinition/logical-target">
+    <valueBoolean>
+      <extension url="http://hl7.org/fhir/StructureDefinition/data-absent-reason">
+        <valueCode value="not-applicable"/>
+      </extension>
+    </valueBoolean>
+  </extension>
+  <extension url="http://hl7.org/fhir/StructureDefinition/elementdefinition-namespace">
+    <valueUri value="urn:hl7-org:v3"/>
+  </extension>
+  <extension url="http://hl7.org/fhir/StructureDefinition/structuredefinition-xml-no-order">
+    <valueBoolean value="true"/>
+  </extension>
+  <url value="http://hl7.org/cda/stds/core/StructureDefinition/AD"/>
+  <version value="2.1.0-draft2-mb"/>
+  <name value="AD"/>
+  <title value="AD: PostalAddress (V3 Data Type)"/>
+  <status value="active"/>
+  <experimental value="false"/>
+  <date value="2023-10-04T23:00:58+02:00"/>
+  <publisher value="Health Level 7"/>
+  <contact>
+    <name value="HL7 International - Structured Documents"/>
+    <telecom>
+      <system value="url"/>
+      <value value="http://www.hl7.org/Special/committees/structdoc"/>
+    </telecom>
+    <telecom>
+      <system value="email"/>
+      <value value="structdog@lists.HL7.org"/>
+    </telecom>
+  </contact>
+  <description value="Mailing and home or office addresses. A sequence of address parts, such as street or post office Box, city, postal code, country, etc."/>
+  <fhirVersion value="5.0.0"/>
+  <mapping>
+    <identity value="rim"/>
+    <uri value="http://hl7.org/v3"/>
+    <name value="RIM Mapping"/>
+  </mapping>
+  <kind value="logical"/>
+  <abstract value="false"/>
+  <type value="http://hl7.org/cda/stds/core/StructureDefinition/AD"/>
+  <baseDefinition value="http://hl7.org/cda/stds/core/StructureDefinition/ANY"/>
+  <derivation value="specialization"/>
+  <snapshot>
+    <element id="AD">
+      <path value="AD"/>
+      <short value="Base for all types and resources"/>
+      <definition value="Mailing and home or office addresses. A sequence of address parts, such as street or post office Box, city, postal code, country, etc."/>
+      <min value="1"/>
+      <max value="*"/>
+      <base>
+        <path value="Base"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+      <isModifier value="false"/>
+      <mapping>
+        <identity value="rim"/>
+        <map value="n/a"/>
+      </mapping>
+    </element>
+    <element id="AD.nullFlavor">
+      <path value="AD.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.isNotOrdered">
+      <path value="AD.isNotOrdered"/>
+      <representation value="xmlAttr"/>
+      <label value="Is Not Ordered"/>
+      <definition value="A boolean value specifying whether the order of the address parts is known or not. While the address parts are always a Sequence, the order in which they are presented may or may not be known. Where this matters, the isNotOrdered property can be used to convey this information."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="AD.isNotOrdered"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="boolean"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/bl-simple"/>
+      </type>
+    </element>
+    <element id="AD.use">
+      <path value="AD.use"/>
+      <representation value="xmlAttr"/>
+      <label value="Use Code"/>
+      <definition value="A set of codes advising a system or user which address in a set of like addresses to select for a given purpose."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.use"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.delimiter">
+      <path value="AD.delimiter"/>
+      <definition value="Delimiters are printed without framing white space. If no value component is provided, the delimiter appears as a line break."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.delimiter"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.delimiter.nullFlavor">
+      <path value="AD.delimiter.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.delimiter.representation">
+      <path value="AD.delimiter.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.delimiter.mediaType">
+      <path value="AD.delimiter.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.delimiter.language">
+      <path value="AD.delimiter.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.delimiter.xmlText">
+      <path value="AD.delimiter.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.delimiter.partType">
+      <path value="AD.delimiter.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DEL"/>
+    </element>
+    <element id="AD.country">
+      <path value="AD.country"/>
+      <definition value="Country"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.country"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.country.nullFlavor">
+      <path value="AD.country.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.country.representation">
+      <path value="AD.country.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.country.mediaType">
+      <path value="AD.country.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.country.language">
+      <path value="AD.country.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.country.xmlText">
+      <path value="AD.country.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.country.partType">
+      <path value="AD.country.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CNT"/>
+    </element>
+    <element id="AD.state">
+      <path value="AD.state"/>
+      <definition value="A sub-unit of a country with limited sovereignty in a federally organized country."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.state"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.state.nullFlavor">
+      <path value="AD.state.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.state.representation">
+      <path value="AD.state.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.state.mediaType">
+      <path value="AD.state.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.state.language">
+      <path value="AD.state.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.state.xmlText">
+      <path value="AD.state.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.state.partType">
+      <path value="AD.state.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="STA"/>
+    </element>
+    <element id="AD.county">
+      <path value="AD.county"/>
+      <definition value="A sub-unit of a state or province. (49 of the United States of America use the term &quot;county;&quot; Louisiana uses the term &quot;parish&quot;.)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.county"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.county.nullFlavor">
+      <path value="AD.county.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.county.representation">
+      <path value="AD.county.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.county.mediaType">
+      <path value="AD.county.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.county.language">
+      <path value="AD.county.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.county.xmlText">
+      <path value="AD.county.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.county.partType">
+      <path value="AD.county.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CPA"/>
+    </element>
+    <element id="AD.city">
+      <path value="AD.city"/>
+      <definition value="The name of the city, town, village, or other community or delivery center"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.city"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.city.nullFlavor">
+      <path value="AD.city.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.city.representation">
+      <path value="AD.city.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.city.mediaType">
+      <path value="AD.city.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.city.language">
+      <path value="AD.city.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.city.xmlText">
+      <path value="AD.city.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.city.partType">
+      <path value="AD.city.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CTY"/>
+    </element>
+    <element id="AD.postalCode">
+      <path value="AD.postalCode"/>
+      <definition value="A postal code designating a region defined by the postal service."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.postalCode"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.postalCode.nullFlavor">
+      <path value="AD.postalCode.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.postalCode.representation">
+      <path value="AD.postalCode.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.postalCode.mediaType">
+      <path value="AD.postalCode.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.postalCode.language">
+      <path value="AD.postalCode.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.postalCode.xmlText">
+      <path value="AD.postalCode.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.postalCode.partType">
+      <path value="AD.postalCode.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="ZIP"/>
+    </element>
+    <element id="AD.streetAddressLine">
+      <path value="AD.streetAddressLine"/>
+      <definition value="Street address line"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.streetAddressLine"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.streetAddressLine.nullFlavor">
+      <path value="AD.streetAddressLine.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.streetAddressLine.representation">
+      <path value="AD.streetAddressLine.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.streetAddressLine.mediaType">
+      <path value="AD.streetAddressLine.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.streetAddressLine.language">
+      <path value="AD.streetAddressLine.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.streetAddressLine.xmlText">
+      <path value="AD.streetAddressLine.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.streetAddressLine.partType">
+      <path value="AD.streetAddressLine.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="SAL"/>
+    </element>
+    <element id="AD.houseNumber">
+      <path value="AD.houseNumber"/>
+      <definition value="The number of a building, house or lot alongside the street. Also known as &quot;primary street number&quot;. This does not number the street but rather the building."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.houseNumber"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.houseNumber.nullFlavor">
+      <path value="AD.houseNumber.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.houseNumber.representation">
+      <path value="AD.houseNumber.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.houseNumber.mediaType">
+      <path value="AD.houseNumber.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.houseNumber.language">
+      <path value="AD.houseNumber.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.houseNumber.xmlText">
+      <path value="AD.houseNumber.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.houseNumber.partType">
+      <path value="AD.houseNumber.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="BNR"/>
+    </element>
+    <element id="AD.houseNumberNumeric">
+      <path value="AD.houseNumberNumeric"/>
+      <definition value="The numeric portion of a building number"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.houseNumberNumeric"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.houseNumberNumeric.nullFlavor">
+      <path value="AD.houseNumberNumeric.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.houseNumberNumeric.representation">
+      <path value="AD.houseNumberNumeric.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.houseNumberNumeric.mediaType">
+      <path value="AD.houseNumberNumeric.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.houseNumberNumeric.language">
+      <path value="AD.houseNumberNumeric.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.houseNumberNumeric.xmlText">
+      <path value="AD.houseNumberNumeric.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.houseNumberNumeric.partType">
+      <path value="AD.houseNumberNumeric.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="BNN"/>
+    </element>
+    <element id="AD.direction">
+      <path value="AD.direction"/>
+      <definition value="Direction (e.g., N, S, W, E)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.direction"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.direction.nullFlavor">
+      <path value="AD.direction.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.direction.representation">
+      <path value="AD.direction.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.direction.mediaType">
+      <path value="AD.direction.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.direction.language">
+      <path value="AD.direction.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.direction.xmlText">
+      <path value="AD.direction.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.direction.partType">
+      <path value="AD.direction.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DIR"/>
+    </element>
+    <element id="AD.streetName">
+      <path value="AD.streetName"/>
+      <definition value="Name of a roadway or artery recognized by a municipality (including street type and direction)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.streetName"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.streetName.nullFlavor">
+      <path value="AD.streetName.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.streetName.representation">
+      <path value="AD.streetName.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.streetName.mediaType">
+      <path value="AD.streetName.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.streetName.language">
+      <path value="AD.streetName.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.streetName.xmlText">
+      <path value="AD.streetName.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.streetName.partType">
+      <path value="AD.streetName.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="STR"/>
+    </element>
+    <element id="AD.streetNameBase">
+      <path value="AD.streetNameBase"/>
+      <definition value="The base name of a roadway or artery recognized by a municipality (excluding street type and direction)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.streetNameBase"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.streetNameBase.nullFlavor">
+      <path value="AD.streetNameBase.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.streetNameBase.representation">
+      <path value="AD.streetNameBase.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.streetNameBase.mediaType">
+      <path value="AD.streetNameBase.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.streetNameBase.language">
+      <path value="AD.streetNameBase.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.streetNameBase.xmlText">
+      <path value="AD.streetNameBase.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.streetNameBase.partType">
+      <path value="AD.streetNameBase.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="STB"/>
+    </element>
+    <element id="AD.streetNameType">
+      <path value="AD.streetNameType"/>
+      <definition value="The designation given to the street. (e.g. Street, Avenue, Crescent, etc.)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.streetNameType"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.streetNameType.nullFlavor">
+      <path value="AD.streetNameType.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.streetNameType.representation">
+      <path value="AD.streetNameType.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.streetNameType.mediaType">
+      <path value="AD.streetNameType.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.streetNameType.language">
+      <path value="AD.streetNameType.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.streetNameType.xmlText">
+      <path value="AD.streetNameType.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.streetNameType.partType">
+      <path value="AD.streetNameType.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="STTYP"/>
+    </element>
+    <element id="AD.additionalLocator">
+      <path value="AD.additionalLocator"/>
+      <definition value="This can be a unit designator, such as apartment number, suite number, or floor. There may be several unit designators in an address (e.g., &quot;3rd floor, Appt. 342&quot;). This can also be a designator pointing away from the location, rather than specifying a smaller location within some larger one (e.g., Dutch &quot;t.o.&quot; means &quot;opposite to&quot; for house boats located across the street facing houses)."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.additionalLocator"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.additionalLocator.nullFlavor">
+      <path value="AD.additionalLocator.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.additionalLocator.representation">
+      <path value="AD.additionalLocator.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.additionalLocator.mediaType">
+      <path value="AD.additionalLocator.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.additionalLocator.language">
+      <path value="AD.additionalLocator.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.additionalLocator.xmlText">
+      <path value="AD.additionalLocator.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.additionalLocator.partType">
+      <path value="AD.additionalLocator.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="ADL"/>
+    </element>
+    <element id="AD.unitID">
+      <path value="AD.unitID"/>
+      <definition value="The number or name of a specific unit contained within a building or complex, as assigned by that building or complex."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.unitID"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.unitID.nullFlavor">
+      <path value="AD.unitID.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.unitID.representation">
+      <path value="AD.unitID.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.unitID.mediaType">
+      <path value="AD.unitID.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.unitID.language">
+      <path value="AD.unitID.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.unitID.xmlText">
+      <path value="AD.unitID.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.unitID.partType">
+      <path value="AD.unitID.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="UNID"/>
+    </element>
+    <element id="AD.unitType">
+      <path value="AD.unitType"/>
+      <definition value="Indicates the type of specific unit contained within a building or complex. E.g. Appartment, Floor"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.unitType"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.unitType.nullFlavor">
+      <path value="AD.unitType.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.unitType.representation">
+      <path value="AD.unitType.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.unitType.mediaType">
+      <path value="AD.unitType.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.unitType.language">
+      <path value="AD.unitType.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.unitType.xmlText">
+      <path value="AD.unitType.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.unitType.partType">
+      <path value="AD.unitType.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="UNIT"/>
+    </element>
+    <element id="AD.careOf">
+      <path value="AD.careOf"/>
+      <definition value="The name of the party who will take receipt at the specified address, and will take on responsibility for ensuring delivery to the target recipient"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.careOf"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.careOf.nullFlavor">
+      <path value="AD.careOf.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.careOf.representation">
+      <path value="AD.careOf.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.careOf.mediaType">
+      <path value="AD.careOf.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.careOf.language">
+      <path value="AD.careOf.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.careOf.xmlText">
+      <path value="AD.careOf.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.careOf.partType">
+      <path value="AD.careOf.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CAR"/>
+    </element>
+    <element id="AD.censusTract">
+      <path value="AD.censusTract"/>
+      <definition value="A geographic sub-unit delineated for demographic purposes."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.censusTract"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.censusTract.nullFlavor">
+      <path value="AD.censusTract.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.censusTract.representation">
+      <path value="AD.censusTract.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.censusTract.mediaType">
+      <path value="AD.censusTract.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.censusTract.language">
+      <path value="AD.censusTract.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.censusTract.xmlText">
+      <path value="AD.censusTract.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.censusTract.partType">
+      <path value="AD.censusTract.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CEN"/>
+    </element>
+    <element id="AD.deliveryAddressLine">
+      <path value="AD.deliveryAddressLine"/>
+      <definition value="A delivery address line is frequently used instead of breaking out delivery mode, delivery installation, etc. An address generally has only a delivery address line or a street address line, but not both."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.deliveryAddressLine"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.deliveryAddressLine.nullFlavor">
+      <path value="AD.deliveryAddressLine.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.deliveryAddressLine.representation">
+      <path value="AD.deliveryAddressLine.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.deliveryAddressLine.mediaType">
+      <path value="AD.deliveryAddressLine.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.deliveryAddressLine.language">
+      <path value="AD.deliveryAddressLine.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryAddressLine.xmlText">
+      <path value="AD.deliveryAddressLine.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryAddressLine.partType">
+      <path value="AD.deliveryAddressLine.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DAL"/>
+    </element>
+    <element id="AD.deliveryInstallationType">
+      <path value="AD.deliveryInstallationType"/>
+      <definition value="Indicates the type of delivery installation (the facility to which the mail will be delivered prior to final shipping via the delivery mode.) Example: post office, letter carrier depot, community mail center, station, etc."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.deliveryInstallationType"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.deliveryInstallationType.nullFlavor">
+      <path value="AD.deliveryInstallationType.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.deliveryInstallationType.representation">
+      <path value="AD.deliveryInstallationType.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.deliveryInstallationType.mediaType">
+      <path value="AD.deliveryInstallationType.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.deliveryInstallationType.language">
+      <path value="AD.deliveryInstallationType.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryInstallationType.xmlText">
+      <path value="AD.deliveryInstallationType.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryInstallationType.partType">
+      <path value="AD.deliveryInstallationType.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DINST"/>
+    </element>
+    <element id="AD.deliveryInstallationArea">
+      <path value="AD.deliveryInstallationArea"/>
+      <definition value="The location of the delivery installation, usually a town or city, and is only required if the area is different from the municipality. Area to which mail delivery service is provided from any postal facility or service such as an individual letter carrier, rural route, or postal route."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.deliveryInstallationArea"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.deliveryInstallationArea.nullFlavor">
+      <path value="AD.deliveryInstallationArea.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.deliveryInstallationArea.representation">
+      <path value="AD.deliveryInstallationArea.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.deliveryInstallationArea.mediaType">
+      <path value="AD.deliveryInstallationArea.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.deliveryInstallationArea.language">
+      <path value="AD.deliveryInstallationArea.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryInstallationArea.xmlText">
+      <path value="AD.deliveryInstallationArea.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryInstallationArea.partType">
+      <path value="AD.deliveryInstallationArea.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DINSTA"/>
+    </element>
+    <element id="AD.deliveryInstallationQualifier">
+      <path value="AD.deliveryInstallationQualifier"/>
+      <definition value="A number, letter or name identifying a delivery installation. E.g., for Station A, the delivery installation qualifier would be 'A'."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.deliveryInstallationQualifier"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.deliveryInstallationQualifier.nullFlavor">
+      <path value="AD.deliveryInstallationQualifier.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.deliveryInstallationQualifier.representation">
+      <path value="AD.deliveryInstallationQualifier.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.deliveryInstallationQualifier.mediaType">
+      <path value="AD.deliveryInstallationQualifier.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.deliveryInstallationQualifier.language">
+      <path value="AD.deliveryInstallationQualifier.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryInstallationQualifier.xmlText">
+      <path value="AD.deliveryInstallationQualifier.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryInstallationQualifier.partType">
+      <path value="AD.deliveryInstallationQualifier.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DINSTQ"/>
+    </element>
+    <element id="AD.deliveryMode">
+      <path value="AD.deliveryMode"/>
+      <definition value="Indicates the type of service offered, method of delivery. For example: post office box, rural route, general delivery, etc."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.deliveryMode"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.deliveryMode.nullFlavor">
+      <path value="AD.deliveryMode.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.deliveryMode.representation">
+      <path value="AD.deliveryMode.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.deliveryMode.mediaType">
+      <path value="AD.deliveryMode.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.deliveryMode.language">
+      <path value="AD.deliveryMode.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryMode.xmlText">
+      <path value="AD.deliveryMode.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryMode.partType">
+      <path value="AD.deliveryMode.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DMOD"/>
+    </element>
+    <element id="AD.deliveryModeIdentifier">
+      <path value="AD.deliveryModeIdentifier"/>
+      <definition value="Represents the routing information such as a letter carrier route number. It is the identifying number of the designator (the box number or rural route number)."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.deliveryModeIdentifier"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.deliveryModeIdentifier.nullFlavor">
+      <path value="AD.deliveryModeIdentifier.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.deliveryModeIdentifier.representation">
+      <path value="AD.deliveryModeIdentifier.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.deliveryModeIdentifier.mediaType">
+      <path value="AD.deliveryModeIdentifier.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.deliveryModeIdentifier.language">
+      <path value="AD.deliveryModeIdentifier.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryModeIdentifier.xmlText">
+      <path value="AD.deliveryModeIdentifier.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.deliveryModeIdentifier.partType">
+      <path value="AD.deliveryModeIdentifier.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DMODID"/>
+    </element>
+    <element id="AD.buildingNumberSuffix">
+      <path value="AD.buildingNumberSuffix"/>
+      <definition value="Any alphabetic character, fraction or other text that may appear after the numeric portion of a building number"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.buildingNumberSuffix"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.buildingNumberSuffix.nullFlavor">
+      <path value="AD.buildingNumberSuffix.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.buildingNumberSuffix.representation">
+      <path value="AD.buildingNumberSuffix.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.buildingNumberSuffix.mediaType">
+      <path value="AD.buildingNumberSuffix.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.buildingNumberSuffix.language">
+      <path value="AD.buildingNumberSuffix.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.buildingNumberSuffix.xmlText">
+      <path value="AD.buildingNumberSuffix.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.buildingNumberSuffix.partType">
+      <path value="AD.buildingNumberSuffix.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="BNS"/>
+    </element>
+    <element id="AD.postBox">
+      <path value="AD.postBox"/>
+      <definition value="A numbered box located in a post station."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.postBox"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.postBox.nullFlavor">
+      <path value="AD.postBox.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.postBox.representation">
+      <path value="AD.postBox.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.postBox.mediaType">
+      <path value="AD.postBox.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.postBox.language">
+      <path value="AD.postBox.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.postBox.xmlText">
+      <path value="AD.postBox.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.postBox.partType">
+      <path value="AD.postBox.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="POB"/>
+    </element>
+    <element id="AD.precinct">
+      <path value="AD.precinct"/>
+      <definition value="A subsection of a municipality"/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.precinct"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+      <constraint>
+        <key value="ele-1"/>
+        <severity value="error"/>
+        <human value="All FHIR elements must have a @value or children"/>
+        <expression value="hasValue() or (children().count() &gt; id.count())"/>
+        <source value="http://hl7.org/fhir/StructureDefinition/Element"/>
+      </constraint>
+    </element>
+    <element id="AD.precinct.nullFlavor">
+      <path value="AD.precinct.nullFlavor"/>
+      <representation value="xmlAttr"/>
+      <label value="Exceptional Value Detail"/>
+      <definition value="If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is missing."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ANY.nullFlavor"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <binding>
+        <strength value="required"/>
+        <valueSet value="http://terminology.hl7.org/ValueSet/v3-NullFlavor"/>
+      </binding>
+    </element>
+    <element id="AD.precinct.representation">
+      <path value="AD.precinct.representation"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the representation of the binary data that is the content of the binary data value"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.representation"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="TXT"/>
+    </element>
+    <element id="AD.precinct.mediaType">
+      <path value="AD.precinct.mediaType"/>
+      <representation value="xmlAttr"/>
+      <label value="Media Type"/>
+      <definition value="Identifies the type of the encapsulated data and identifies a method to interpret or render the data."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.mediaType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="text/plain"/>
+    </element>
+    <element id="AD.precinct.language">
+      <path value="AD.precinct.language"/>
+      <representation value="xmlAttr"/>
+      <label value="Language"/>
+      <definition value="For character based information the language property specifies the human language of the text."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.language"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.precinct.xmlText">
+      <path value="AD.precinct.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ST.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.precinct.partType">
+      <path value="AD.precinct.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="ADXP.partType"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="PRE"/>
+    </element>
+    <element id="AD.xmlText">
+      <path value="AD.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <base>
+        <path value="AD.xmlText"/>
+        <min value="0"/>
+        <max value="1"/>
+      </base>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.useablePeriod">
+      <extension url="http://hl7.org/fhir/StructureDefinition/elementdefinition-defaulttype">
+        <valueCanonical value="http://hl7.org/cda/stds/core/StructureDefinition/SXPR-TS"/>
+      </extension>
+      <path value="AD.useablePeriod"/>
+      <representation value="typeAttr"/>
+      <label value="Useable Period"/>
+      <definition value="A General Timing Specification (GTS) specifying the periods of time during which the address can be used. This is used to specify different addresses for different times of the week or year."/>
+      <min value="0"/>
+      <max value="*"/>
+      <base>
+        <path value="AD.useablePeriod"/>
+        <min value="0"/>
+        <max value="*"/>
+      </base>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/IVL-TS"/>
+      </type>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/EIVL-TS"/>
+      </type>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/PIVL-TS"/>
+      </type>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/SXPR-TS"/>
+      </type>
+    </element>
+  </snapshot>
+  <differential>
+    <element id="AD">
+      <path value="AD"/>
+      <definition value="Mailing and home or office addresses. A sequence of address parts, such as street or post office Box, city, postal code, country, etc."/>
+      <min value="1"/>
+      <max value="*"/>
+      <base>
+        <path value="ANY"/>
+        <min value="1"/>
+        <max value="*"/>
+      </base>
+    </element>
+    <element id="AD.isNotOrdered">
+      <path value="AD.isNotOrdered"/>
+      <representation value="xmlAttr"/>
+      <label value="Is Not Ordered"/>
+      <definition value="A boolean value specifying whether the order of the address parts is known or not. While the address parts are always a Sequence, the order in which they are presented may or may not be known. Where this matters, the isNotOrdered property can be used to convey this information."/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="boolean"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/bl-simple"/>
+      </type>
+    </element>
+    <element id="AD.use">
+      <path value="AD.use"/>
+      <representation value="xmlAttr"/>
+      <label value="Use Code"/>
+      <definition value="A set of codes advising a system or user which address in a set of like addresses to select for a given purpose."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+    </element>
+    <element id="AD.delimiter">
+      <path value="AD.delimiter"/>
+      <definition value="Delimiters are printed without framing white space. If no value component is provided, the delimiter appears as a line break."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.delimiter.partType">
+      <path value="AD.delimiter.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DEL"/>
+    </element>
+    <element id="AD.country">
+      <path value="AD.country"/>
+      <definition value="Country"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.country.partType">
+      <path value="AD.country.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CNT"/>
+    </element>
+    <element id="AD.state">
+      <path value="AD.state"/>
+      <definition value="A sub-unit of a country with limited sovereignty in a federally organized country."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.state.partType">
+      <path value="AD.state.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="STA"/>
+    </element>
+    <element id="AD.county">
+      <path value="AD.county"/>
+      <definition value="A sub-unit of a state or province. (49 of the United States of America use the term &quot;county;&quot; Louisiana uses the term &quot;parish&quot;.)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.county.partType">
+      <path value="AD.county.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CPA"/>
+    </element>
+    <element id="AD.city">
+      <path value="AD.city"/>
+      <definition value="The name of the city, town, village, or other community or delivery center"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.city.partType">
+      <path value="AD.city.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CTY"/>
+    </element>
+    <element id="AD.postalCode">
+      <path value="AD.postalCode"/>
+      <definition value="A postal code designating a region defined by the postal service."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.postalCode.partType">
+      <path value="AD.postalCode.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="ZIP"/>
+    </element>
+    <element id="AD.streetAddressLine">
+      <path value="AD.streetAddressLine"/>
+      <definition value="Street address line"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.streetAddressLine.partType">
+      <path value="AD.streetAddressLine.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="SAL"/>
+    </element>
+    <element id="AD.houseNumber">
+      <path value="AD.houseNumber"/>
+      <definition value="The number of a building, house or lot alongside the street. Also known as &quot;primary street number&quot;. This does not number the street but rather the building."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.houseNumber.partType">
+      <path value="AD.houseNumber.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="BNR"/>
+    </element>
+    <element id="AD.houseNumberNumeric">
+      <path value="AD.houseNumberNumeric"/>
+      <definition value="The numeric portion of a building number"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.houseNumberNumeric.partType">
+      <path value="AD.houseNumberNumeric.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="BNN"/>
+    </element>
+    <element id="AD.direction">
+      <path value="AD.direction"/>
+      <definition value="Direction (e.g., N, S, W, E)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.direction.partType">
+      <path value="AD.direction.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DIR"/>
+    </element>
+    <element id="AD.streetName">
+      <path value="AD.streetName"/>
+      <definition value="Name of a roadway or artery recognized by a municipality (including street type and direction)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.streetName.partType">
+      <path value="AD.streetName.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="STR"/>
+    </element>
+    <element id="AD.streetNameBase">
+      <path value="AD.streetNameBase"/>
+      <definition value="The base name of a roadway or artery recognized by a municipality (excluding street type and direction)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.streetNameBase.partType">
+      <path value="AD.streetNameBase.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="STB"/>
+    </element>
+    <element id="AD.streetNameType">
+      <path value="AD.streetNameType"/>
+      <definition value="The designation given to the street. (e.g. Street, Avenue, Crescent, etc.)"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.streetNameType.partType">
+      <path value="AD.streetNameType.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="STTYP"/>
+    </element>
+    <element id="AD.additionalLocator">
+      <path value="AD.additionalLocator"/>
+      <definition value="This can be a unit designator, such as apartment number, suite number, or floor. There may be several unit designators in an address (e.g., &quot;3rd floor, Appt. 342&quot;). This can also be a designator pointing away from the location, rather than specifying a smaller location within some larger one (e.g., Dutch &quot;t.o.&quot; means &quot;opposite to&quot; for house boats located across the street facing houses)."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.additionalLocator.partType">
+      <path value="AD.additionalLocator.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="ADL"/>
+    </element>
+    <element id="AD.unitID">
+      <path value="AD.unitID"/>
+      <definition value="The number or name of a specific unit contained within a building or complex, as assigned by that building or complex."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.unitID.partType">
+      <path value="AD.unitID.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="UNID"/>
+    </element>
+    <element id="AD.unitType">
+      <path value="AD.unitType"/>
+      <definition value="Indicates the type of specific unit contained within a building or complex. E.g. Appartment, Floor"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.unitType.partType">
+      <path value="AD.unitType.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="UNIT"/>
+    </element>
+    <element id="AD.careOf">
+      <path value="AD.careOf"/>
+      <definition value="The name of the party who will take receipt at the specified address, and will take on responsibility for ensuring delivery to the target recipient"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.careOf.partType">
+      <path value="AD.careOf.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CAR"/>
+    </element>
+    <element id="AD.censusTract">
+      <path value="AD.censusTract"/>
+      <definition value="A geographic sub-unit delineated for demographic purposes."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.censusTract.partType">
+      <path value="AD.censusTract.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="CEN"/>
+    </element>
+    <element id="AD.deliveryAddressLine">
+      <path value="AD.deliveryAddressLine"/>
+      <definition value="A delivery address line is frequently used instead of breaking out delivery mode, delivery installation, etc. An address generally has only a delivery address line or a street address line, but not both."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.deliveryAddressLine.partType">
+      <path value="AD.deliveryAddressLine.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DAL"/>
+    </element>
+    <element id="AD.deliveryInstallationType">
+      <path value="AD.deliveryInstallationType"/>
+      <definition value="Indicates the type of delivery installation (the facility to which the mail will be delivered prior to final shipping via the delivery mode.) Example: post office, letter carrier depot, community mail center, station, etc."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.deliveryInstallationType.partType">
+      <path value="AD.deliveryInstallationType.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DINST"/>
+    </element>
+    <element id="AD.deliveryInstallationArea">
+      <path value="AD.deliveryInstallationArea"/>
+      <definition value="The location of the delivery installation, usually a town or city, and is only required if the area is different from the municipality. Area to which mail delivery service is provided from any postal facility or service such as an individual letter carrier, rural route, or postal route."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.deliveryInstallationArea.partType">
+      <path value="AD.deliveryInstallationArea.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DINSTA"/>
+    </element>
+    <element id="AD.deliveryInstallationQualifier">
+      <path value="AD.deliveryInstallationQualifier"/>
+      <definition value="A number, letter or name identifying a delivery installation. E.g., for Station A, the delivery installation qualifier would be 'A'."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.deliveryInstallationQualifier.partType">
+      <path value="AD.deliveryInstallationQualifier.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DINSTQ"/>
+    </element>
+    <element id="AD.deliveryMode">
+      <path value="AD.deliveryMode"/>
+      <definition value="Indicates the type of service offered, method of delivery. For example: post office box, rural route, general delivery, etc."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.deliveryMode.partType">
+      <path value="AD.deliveryMode.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DMOD"/>
+    </element>
+    <element id="AD.deliveryModeIdentifier">
+      <path value="AD.deliveryModeIdentifier"/>
+      <definition value="Represents the routing information such as a letter carrier route number. It is the identifying number of the designator (the box number or rural route number)."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.deliveryModeIdentifier.partType">
+      <path value="AD.deliveryModeIdentifier.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="DMODID"/>
+    </element>
+    <element id="AD.buildingNumberSuffix">
+      <path value="AD.buildingNumberSuffix"/>
+      <definition value="Any alphabetic character, fraction or other text that may appear after the numeric portion of a building number"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.buildingNumberSuffix.partType">
+      <path value="AD.buildingNumberSuffix.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="BNS"/>
+    </element>
+    <element id="AD.postBox">
+      <path value="AD.postBox"/>
+      <definition value="A numbered box located in a post station."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.postBox.partType">
+      <path value="AD.postBox.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="POB"/>
+    </element>
+    <element id="AD.precinct">
+      <path value="AD.precinct"/>
+      <definition value="A subsection of a municipality"/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/ADXP"/>
+      </type>
+    </element>
+    <element id="AD.precinct.partType">
+      <path value="AD.precinct.partType"/>
+      <representation value="xmlAttr"/>
+      <definition value="Specifies the type of the address part"/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="code"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"/>
+      </type>
+      <fixedCode value="PRE"/>
+    </element>
+    <element id="AD.xmlText">
+      <path value="AD.xmlText"/>
+      <representation value="xmlText"/>
+      <short value="Allows for mixed text content"/>
+      <comment value="This element is represented in XML as textual content. The actual name &quot;xmlText&quot; will not appear in a CDA instance."/>
+      <min value="0"/>
+      <max value="1"/>
+      <type>
+        <code value="string"/>
+        <profile value="http://hl7.org/cda/stds/core/StructureDefinition/st-simple"/>
+      </type>
+    </element>
+    <element id="AD.useablePeriod">
+      <extension url="http://hl7.org/fhir/StructureDefinition/elementdefinition-defaulttype">
+        <valueCanonical value="http://hl7.org/cda/stds/core/StructureDefinition/SXPR-TS"/>
+      </extension>
+      <path value="AD.useablePeriod"/>
+      <representation value="typeAttr"/>
+      <label value="Useable Period"/>
+      <definition value="A General Timing Specification (GTS) specifying the periods of time during which the address can be used. This is used to specify different addresses for different times of the week or year."/>
+      <min value="0"/>
+      <max value="*"/>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/IVL-TS"/>
+      </type>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/EIVL-TS"/>
+      </type>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/PIVL-TS"/>
+      </type>
+      <type>
+        <code value="http://hl7.org/cda/stds/core/StructureDefinition/SXPR-TS"/>
+      </type>
+    </element>
+  </differential>
+</StructureDefinition>

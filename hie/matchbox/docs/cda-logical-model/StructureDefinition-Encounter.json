@@ -1,0 +1,634 @@
+{
+  "resourceType" : "StructureDefinition",
+  "id" : "Encounter",
+  "text" : {
+    "status" : "generated",
+    "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\">\n      <p>A derivative of the RIM PatientEncounter class, used to represent related encounters, such as follow-up visits or referenced past encounters.</p>\n      <p>NOTE: The EncompassingEncounter class in the CDA Header (see Header Relationships (§ 4.2.3 )) represents the setting of the clinical encounter during which the documented act occurred. The Encounter class in the CDA Body is used to represent other related encounters.</p>\n    </div>"
+  },
+  "extension" : [{
+    "url" : "http://hl7.org/fhir/tools/StructureDefinition/logical-target",
+    "_valueBoolean" : {
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+        "valueCode" : "not-applicable"
+      }]
+    }
+  },
+  {
+    "url" : "http://hl7.org/fhir/StructureDefinition/elementdefinition-namespace",
+    "valueUri" : "urn:hl7-org:v3"
+  },
+  {
+    "url" : "http://hl7.org/fhir/StructureDefinition/elementdefinition-xml-name",
+    "valueUri" : "encounter"
+  }],
+  "url" : "http://hl7.org/cda/stds/core/StructureDefinition/Encounter",
+  "version" : "2.1.0-draft2-mb",
+  "name" : "CDAR2.Encounter",
+  "title" : "Encounter (CDA Class)",
+  "status" : "active",
+  "experimental" : false,
+  "date" : "2023-10-04T23:00:58+02:00",
+  "publisher" : "Health Level 7",
+  "contact" : [{
+    "name" : "HL7 International - Structured Documents",
+    "telecom" : [{
+      "system" : "url",
+      "value" : "http://www.hl7.org/Special/committees/structdoc"
+    },
+    {
+      "system" : "email",
+      "value" : "structdog@lists.HL7.org"
+    }]
+  }],
+  "description" : "A derivative of the RIM PatientEncounter class, used to represent related encounters, such as follow-up visits or referenced past encounters.\nNOTE: The EncompassingEncounter class in the CDA Header (see Header Relationships (§ 4.2.3 )) represents the setting of the clinical encounter during which the documented act occurred. The Encounter class in the CDA Body is used to represent other related encounters.",
+  "fhirVersion" : "5.0.0",
+  "mapping" : [{
+    "identity" : "rim",
+    "uri" : "http://hl7.org/v3",
+    "name" : "RIM Mapping"
+  }],
+  "kind" : "logical",
+  "abstract" : false,
+  "type" : "http://hl7.org/cda/stds/core/StructureDefinition/Encounter",
+  "baseDefinition" : "http://hl7.org/fhir/StructureDefinition/Base",
+  "derivation" : "specialization",
+  "snapshot" : {
+    "element" : [{
+      "id" : "Encounter",
+      "path" : "Encounter",
+      "short" : "Base for all types and resources",
+      "definition" : "Base definition for all types defined in FHIR type system.",
+      "min" : 1,
+      "max" : "1",
+      "base" : {
+        "path" : "Base",
+        "min" : 0,
+        "max" : "*"
+      },
+      "constraint" : [{
+        "key" : "ele-1",
+        "severity" : "error",
+        "human" : "All FHIR elements must have a @value or children",
+        "expression" : "hasValue() or (children().count() > id.count())",
+        "source" : "http://hl7.org/fhir/StructureDefinition/Element"
+      }],
+      "isModifier" : false,
+      "mapping" : [{
+        "identity" : "rim",
+        "map" : "n/a"
+      }]
+    },
+    {
+      "id" : "Encounter.classCode",
+      "path" : "Encounter.classCode",
+      "representation" : ["xmlAttr"],
+      "min" : 1,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.classCode",
+        "min" : 1,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "code",
+        "profile" : ["http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"]
+      }],
+      "fixedCode" : "ENC",
+      "binding" : {
+        "strength" : "required",
+        "valueSet" : "http://terminology.hl7.org/ValueSet/v3-ActClass"
+      }
+    },
+    {
+      "id" : "Encounter.moodCode",
+      "path" : "Encounter.moodCode",
+      "representation" : ["xmlAttr"],
+      "min" : 1,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.moodCode",
+        "min" : 1,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "code",
+        "profile" : ["http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"]
+      }]
+    },
+    {
+      "id" : "Encounter.realmCode",
+      "path" : "Encounter.realmCode",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.realmCode",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CS"
+      }]
+    },
+    {
+      "id" : "Encounter.typeId",
+      "path" : "Encounter.typeId",
+      "min" : 0,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.typeId",
+        "min" : 0,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/II"
+      }]
+    },
+    {
+      "id" : "Encounter.templateId",
+      "path" : "Encounter.templateId",
+      "definition" : "When valued in an instance, this attribute signals the imposition of a set of template-defined constraints. The value of this attribute provides a unique identifier for the templates in question",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.templateId",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/II"
+      }]
+    },
+    {
+      "id" : "Encounter.id",
+      "path" : "Encounter.id",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.id",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/II"
+      }]
+    },
+    {
+      "id" : "Encounter.code",
+      "path" : "Encounter.code",
+      "min" : 0,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.code",
+        "min" : 0,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CD"
+      }],
+      "binding" : {
+        "strength" : "extensible",
+        "valueSet" : "http://terminology.hl7.org/ValueSet/v3-ActEncounterCode"
+      }
+    },
+    {
+      "id" : "Encounter.text",
+      "path" : "Encounter.text",
+      "min" : 0,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.text",
+        "min" : 0,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/ED"
+      }]
+    },
+    {
+      "id" : "Encounter.statusCode",
+      "path" : "Encounter.statusCode",
+      "min" : 0,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.statusCode",
+        "min" : 0,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CS"
+      }],
+      "binding" : {
+        "strength" : "required",
+        "valueSet" : "http://terminology.hl7.org/ValueSet/v3-ActStatus"
+      }
+    },
+    {
+      "id" : "Encounter.effectiveTime",
+      "path" : "Encounter.effectiveTime",
+      "min" : 0,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.effectiveTime",
+        "min" : 0,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/IVL-TS"
+      }]
+    },
+    {
+      "id" : "Encounter.sdtcDischargeDispositionCode",
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/StructureDefinition/elementdefinition-namespace",
+        "valueUri" : "urn:hl7-org:sdtc"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/elementdefinition-xml-name",
+        "valueUri" : "dischargeDispositionCode"
+      }],
+      "path" : "Encounter.sdtcDischargeDispositionCode",
+      "min" : 0,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.sdtcDischargeDispositionCode",
+        "min" : 0,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CE"
+      }]
+    },
+    {
+      "id" : "Encounter.priorityCode",
+      "path" : "Encounter.priorityCode",
+      "min" : 0,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.priorityCode",
+        "min" : 0,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CE"
+      }],
+      "binding" : {
+        "strength" : "extensible",
+        "valueSet" : "http://terminology.hl7.org/ValueSet/v3-ActPriority"
+      }
+    },
+    {
+      "id" : "Encounter.subject",
+      "path" : "Encounter.subject",
+      "min" : 0,
+      "max" : "1",
+      "base" : {
+        "path" : "Encounter.subject",
+        "min" : 0,
+        "max" : "1"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Subject"
+      }]
+    },
+    {
+      "id" : "Encounter.specimen",
+      "path" : "Encounter.specimen",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.specimen",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Specimen"
+      }]
+    },
+    {
+      "id" : "Encounter.performer",
+      "path" : "Encounter.performer",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.performer",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Performer2"
+      }]
+    },
+    {
+      "id" : "Encounter.author",
+      "path" : "Encounter.author",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.author",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Author"
+      }]
+    },
+    {
+      "id" : "Encounter.informant",
+      "path" : "Encounter.informant",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.informant",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Informant"
+      }]
+    },
+    {
+      "id" : "Encounter.participant",
+      "path" : "Encounter.participant",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.participant",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Participant2"
+      }]
+    },
+    {
+      "id" : "Encounter.entryRelationship",
+      "path" : "Encounter.entryRelationship",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.entryRelationship",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/EntryRelationship"
+      }]
+    },
+    {
+      "id" : "Encounter.reference",
+      "path" : "Encounter.reference",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.reference",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Reference"
+      }]
+    },
+    {
+      "id" : "Encounter.precondition",
+      "path" : "Encounter.precondition",
+      "min" : 0,
+      "max" : "*",
+      "base" : {
+        "path" : "Encounter.precondition",
+        "min" : 0,
+        "max" : "*"
+      },
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Precondition"
+      }]
+    }]
+  },
+  "differential" : {
+    "element" : [{
+      "id" : "Encounter",
+      "path" : "Encounter",
+      "min" : 1,
+      "max" : "1"
+    },
+    {
+      "id" : "Encounter.classCode",
+      "path" : "Encounter.classCode",
+      "representation" : ["xmlAttr"],
+      "min" : 1,
+      "max" : "1",
+      "type" : [{
+        "code" : "code",
+        "profile" : ["http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"]
+      }],
+      "fixedCode" : "ENC",
+      "binding" : {
+        "strength" : "required",
+        "valueSet" : "http://terminology.hl7.org/ValueSet/v3-ActClass"
+      }
+    },
+    {
+      "id" : "Encounter.moodCode",
+      "path" : "Encounter.moodCode",
+      "representation" : ["xmlAttr"],
+      "min" : 1,
+      "max" : "1",
+      "type" : [{
+        "code" : "code",
+        "profile" : ["http://hl7.org/cda/stds/core/StructureDefinition/cs-simple"]
+      }]
+    },
+    {
+      "id" : "Encounter.realmCode",
+      "path" : "Encounter.realmCode",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CS"
+      }]
+    },
+    {
+      "id" : "Encounter.typeId",
+      "path" : "Encounter.typeId",
+      "min" : 0,
+      "max" : "1",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/II"
+      }]
+    },
+    {
+      "id" : "Encounter.templateId",
+      "path" : "Encounter.templateId",
+      "definition" : "When valued in an instance, this attribute signals the imposition of a set of template-defined constraints. The value of this attribute provides a unique identifier for the templates in question",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/II"
+      }]
+    },
+    {
+      "id" : "Encounter.id",
+      "path" : "Encounter.id",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/II"
+      }]
+    },
+    {
+      "id" : "Encounter.code",
+      "path" : "Encounter.code",
+      "min" : 0,
+      "max" : "1",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CD"
+      }],
+      "binding" : {
+        "strength" : "extensible",
+        "valueSet" : "http://terminology.hl7.org/ValueSet/v3-ActEncounterCode"
+      }
+    },
+    {
+      "id" : "Encounter.text",
+      "path" : "Encounter.text",
+      "min" : 0,
+      "max" : "1",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/ED"
+      }]
+    },
+    {
+      "id" : "Encounter.statusCode",
+      "path" : "Encounter.statusCode",
+      "min" : 0,
+      "max" : "1",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CS"
+      }],
+      "binding" : {
+        "strength" : "required",
+        "valueSet" : "http://terminology.hl7.org/ValueSet/v3-ActStatus"
+      }
+    },
+    {
+      "id" : "Encounter.effectiveTime",
+      "path" : "Encounter.effectiveTime",
+      "min" : 0,
+      "max" : "1",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/IVL-TS"
+      }]
+    },
+    {
+      "id" : "Encounter.sdtcDischargeDispositionCode",
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/StructureDefinition/elementdefinition-namespace",
+        "valueUri" : "urn:hl7-org:sdtc"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/elementdefinition-xml-name",
+        "valueUri" : "dischargeDispositionCode"
+      }],
+      "path" : "Encounter.sdtcDischargeDispositionCode",
+      "min" : 0,
+      "max" : "1",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CE"
+      }]
+    },
+    {
+      "id" : "Encounter.priorityCode",
+      "path" : "Encounter.priorityCode",
+      "min" : 0,
+      "max" : "1",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/CE"
+      }],
+      "binding" : {
+        "strength" : "extensible",
+        "valueSet" : "http://terminology.hl7.org/ValueSet/v3-ActPriority"
+      }
+    },
+    {
+      "id" : "Encounter.subject",
+      "path" : "Encounter.subject",
+      "min" : 0,
+      "max" : "1",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Subject"
+      }]
+    },
+    {
+      "id" : "Encounter.specimen",
+      "path" : "Encounter.specimen",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Specimen"
+      }]
+    },
+    {
+      "id" : "Encounter.performer",
+      "path" : "Encounter.performer",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Performer2"
+      }]
+    },
+    {
+      "id" : "Encounter.author",
+      "path" : "Encounter.author",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Author"
+      }]
+    },
+    {
+      "id" : "Encounter.informant",
+      "path" : "Encounter.informant",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Informant"
+      }]
+    },
+    {
+      "id" : "Encounter.participant",
+      "path" : "Encounter.participant",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Participant2"
+      }]
+    },
+    {
+      "id" : "Encounter.entryRelationship",
+      "path" : "Encounter.entryRelationship",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/EntryRelationship"
+      }]
+    },
+    {
+      "id" : "Encounter.reference",
+      "path" : "Encounter.reference",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Reference"
+      }]
+    },
+    {
+      "id" : "Encounter.precondition",
+      "path" : "Encounter.precondition",
+      "min" : 0,
+      "max" : "*",
+      "type" : [{
+        "code" : "http://hl7.org/cda/stds/core/StructureDefinition/Precondition"
+      }]
+    }]
+  }
+}

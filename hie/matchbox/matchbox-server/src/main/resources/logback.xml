@@ -1,0 +1,32 @@
+<configuration scan="true" scanPeriod="30 seconds">
+    <!-- Import Spring Boot configuration -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- The console logs -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--
+            %clr is org.springframework.boot.logging.logback.ColorConverter
+            %wex is org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter
+            %wEx is org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter
+            %rEx is https://logback.qos.ch/manual/layouts.html#rootException
+            PID: %clr(${PID:- }){magenta}
+
+
+            -->
+            <!-- @formatter:off -->
+            <pattern>%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr([%15.15t]){magenta} %clr(%-30.30logger{39}:%line){cyan}%clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%rEx{8,org.apache.catalina,
+                                                                                                                                                                                                                                          org.apache.camel,
+                                                                                                                                                                                                                                          org.apache.tomcat,
+                                                                                                                                                                                                                                          org.apache.coyote,
+                                                                                                                                                                                                                                          org.springframework,
+                                                                                                                                                                                                                                          sun.reflect}}</pattern>
+            <!-- @formatter:on -->
+            <charset>${CONSOLE_LOG_CHARSET}</charset>
+        </encoder>
+    </appender>
+
+	<root>
+		<appender-ref ref="CONSOLE"/>
+	</root>
+</configuration>

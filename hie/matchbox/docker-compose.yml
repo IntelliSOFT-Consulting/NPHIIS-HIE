@@ -1,0 +1,42 @@
+version: "3"
+networks:
+    matchbox:
+    cloudbuild: 
+        external: true
+
+services:
+
+    hapi-fhir-postgres:
+        container_name: hapi-fhir-postgres
+        image: postgres:14-alpine
+        restart: always
+        networks:
+            - matchbox
+            - cloudbuild
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_DB: hapi
+            POSTGRES_PASSWORD: ***REMOVED***
+        volumes:
+            - 'hapi-fhir-postgres:/var/lib/postgresql/data'
+
+    matchbox-server:
+        image: matchbox:latest
+        container_name: matchbox-server
+        restart: unless-stopped
+        networks:
+            - matchbox
+            - cloudbuild
+        depends_on:
+            - hapi-fhir-postgres
+        ports:
+             - "8888:8080"
+        volumes:
+            - "./matchbox/matchbox-server/src/main/resources:/hapi"
+        environment:
+            SPRING_CONFIG_LOCATION: /hapi/application.yaml
+
+volumes:
+    mongodb-data:
+    hapi-fhir-postgres:
+    hapi:
