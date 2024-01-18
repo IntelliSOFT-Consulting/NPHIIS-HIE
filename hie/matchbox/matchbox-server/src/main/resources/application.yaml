@@ -1,0 +1,84 @@
+spring:
+  main:
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+  flyway:
+    enabled: false
+    check-location: false
+    baselineOnMigrate: true
+  datasource:
+    url: "jdbc:h2:file:./database/h2"
+    username: sa
+    password: null
+    driverClassName: org.h2.Driver
+    max-active: 15
+
+    # database connection pool size
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    properties:
+      hibernate.format_sql: false
+      hibernate.show_sql: false
+      hibernate.dialect: ca.uhn.fhir.jpa.model.dialect.HapiFhirH2Dialect
+  batch:
+    job:
+      enabled: false
+server:
+  servlet:
+    context-path: /matchboxv3
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+hapi:
+  fhir:
+    cors:
+      allow_Credentials: true
+      # These are allowed_origin patterns, see: https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/cors/CorsConfiguration.html#setAllowedOriginPatterns-java.util.List-
+      allowed_origin:
+        - "*"
+    implementationguides:
+      fhir_r4_core:
+        name: hl7.fhir.r4.core
+        version: 4.0.1
+        url: classpath:/hl7.fhir.r4.core.tgz
+      fhir_terminology:
+        name: hl7.terminology
+        version: 5.4.0
+        url: classpath:/hl7.terminology#5.4.0.tgz
+      fhir_extensions:
+        name: hl7.fhir.uv.extensions.r4
+        version: 1.0.0
+        url: classpath:/hl7.fhir.uv.extensions.r4#1.0.0.tgz
+    #      ch-core:
+    #        name: ch.fhir.ig.ch-core
+    #        version: 4.0.0-ballot
+    staticLocation: file:/apps/
+    openapi_enabled: true
+    fhir_version: R4
+    delete_expunge_enabled: true
+    retain_cached_searches_mins: 1
+    reuse_cached_search_results_millis: 1000
+matchbox:
+  fhir:
+    context:
+      fhirVersion: 4.0.1
+      txServer: n/a
+      onlyOneEngine: true
+#      igsPreloaded: ch.fhir.ig.ch-core#4.0.0-ballot
+      suppressWarnInfo:
+        hl7.fhir.r4.core#4.0.1:
+          #- "Constraint failed: dom-6:"
+logging:
+  level:
+    root: INFO
+    #ch.ahdis.matchbox: DEBUG
+    ca.uhn.fhir.jpa.packages.JpaPackageCache: ERROR
+    fhirtest.access: ERROR
+    fhirtest.request: ERROR

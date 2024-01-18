@@ -1,0 +1,66 @@
+"Id","Path","Slice Name","Alias(s)","Label","Min","Max","Must Support?","Is Modifier?","Is Summary?","Type(s)","Short","Definition","Comments","Requirements","Default Value","Meaning When Missing","Fixed Value","Pattern","Example","Minimum Value","Maximum Value","Maximum Length","Binding Strength","Binding Description","Binding Value Set","Code","Slicing Discriminator","Slicing Description","Slicing Ordered","Slicing Rules","Base Path","Base Min","Base Max","Condition(s)","Constraint(s)","Mapping: RIM Mapping"
+"SubstanceAdministration","SubstanceAdministration","","","",1,1,"","","","null {[]} {[]}
+","Base for all types and resources","Base definition for all types defined in FHIR type system.","","","","","","","","","",,,,,"",,,,"Base",0,*,"","ele-1:All FHIR elements must have a @value or children {hasValue() or (children().count() > id.count())}
+","n/a"
+"SubstanceAdministration.classCode","SubstanceAdministration.classCode","","","",1,1,"","","","code {[CanonicalType[http://hl7.org/cda/stds/core/StructureDefinition/cs-simple]]} {[]}
+","","","","","<valueCode xmlns=""http://hl7.org/fhir"" value=""SBADM""/>","","<valueCode xmlns=""http://hl7.org/fhir"" value=""SBADM""/>","","","","",,"required","","http://terminology.hl7.org/ValueSet/v3-ActClass","",,,,"SubstanceAdministration.classCode",1,1,"",""
+"SubstanceAdministration.moodCode","SubstanceAdministration.moodCode","","","",1,1,"","","","code {[CanonicalType[http://hl7.org/cda/stds/core/StructureDefinition/cs-simple]]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.moodCode",1,1,"",""
+"SubstanceAdministration.realmCode","SubstanceAdministration.realmCode","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/CS {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.realmCode",0,*,"",""
+"SubstanceAdministration.typeId","SubstanceAdministration.typeId","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/II {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.typeId",0,1,"",""
+"SubstanceAdministration.templateId","SubstanceAdministration.templateId","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/II {[]} {[]}
+","","When valued in an instance, this attribute signals the imposition of a set of template-defined constraints. The value of this attribute provides a unique identifier for the templates in question","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.templateId",0,*,"",""
+"SubstanceAdministration.id","SubstanceAdministration.id","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/II {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.id",0,*,"",""
+"SubstanceAdministration.code","SubstanceAdministration.code","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/CD {[]} {[]}
+","","","","","","","","","","","",,"extensible","","http://terminology.hl7.org/ValueSet/v3-ActSubstanceAdministrationCode","",,,,"SubstanceAdministration.code",0,1,"",""
+"SubstanceAdministration.negationInd","SubstanceAdministration.negationInd","","","",0,1,"","","","boolean {[CanonicalType[http://hl7.org/cda/stds/core/StructureDefinition/bl-simple]]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.negationInd",0,1,"",""
+"SubstanceAdministration.text","SubstanceAdministration.text","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/ED {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.text",0,1,"",""
+"SubstanceAdministration.statusCode","SubstanceAdministration.statusCode","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/CS {[]} {[]}
+","","","","","","","","","","","",,"required","","http://terminology.hl7.org/ValueSet/v3-ActStatus","",,,,"SubstanceAdministration.statusCode",0,1,"",""
+"SubstanceAdministration.effectiveTime","SubstanceAdministration.effectiveTime","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/SXCM-TS {[]} {[]}
+http://hl7.org/cda/stds/core/StructureDefinition/IVL-TS {[]} {[]}http://hl7.org/cda/stds/core/StructureDefinition/EIVL-TS {[]} {[]}http://hl7.org/cda/stds/core/StructureDefinition/PIVL-TS {[]} {[]}http://hl7.org/cda/stds/core/StructureDefinition/SXPR-TS {[]} {[]}","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.effectiveTime",0,*,"",""
+"SubstanceAdministration.priorityCode","SubstanceAdministration.priorityCode","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/CE {[]} {[]}
+","","","","","","","","","","","",,"extensible","","http://terminology.hl7.org/ValueSet/v3-ActPriority","",,,,"SubstanceAdministration.priorityCode",0,1,"",""
+"SubstanceAdministration.repeatNumber","SubstanceAdministration.repeatNumber","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/IVL-INT {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.repeatNumber",0,1,"",""
+"SubstanceAdministration.routeCode","SubstanceAdministration.routeCode","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/CE {[]} {[]}
+","","","","","","","","","","","",,"extensible","","http://terminology.hl7.org/ValueSet/v3-RouteOfAdministration","",,,,"SubstanceAdministration.routeCode",0,1,"",""
+"SubstanceAdministration.approachSiteCode","SubstanceAdministration.approachSiteCode","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/CD {[]} {[]}
+","","","","","","","","","","","",,"extensible","","http://terminology.hl7.org/ValueSet/v3-ActSite","",,,,"SubstanceAdministration.approachSiteCode",0,*,"",""
+"SubstanceAdministration.doseQuantity","SubstanceAdministration.doseQuantity","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/IVL-PQ {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.doseQuantity",0,1,"",""
+"SubstanceAdministration.rateQuantity","SubstanceAdministration.rateQuantity","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/IVL-PQ {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.rateQuantity",0,1,"",""
+"SubstanceAdministration.maxDoseQuantity","SubstanceAdministration.maxDoseQuantity","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/RTO-PQ-PQ {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.maxDoseQuantity",0,1,"",""
+"SubstanceAdministration.administrationUnitCode","SubstanceAdministration.administrationUnitCode","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/CE {[]} {[]}
+","","","","","","","","","","","",,"extensible","","http://terminology.hl7.org/ValueSet/v3-AdministrableDrugForm","",,,,"SubstanceAdministration.administrationUnitCode",0,1,"",""
+"SubstanceAdministration.consumable","SubstanceAdministration.consumable","","","",1,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/InfrastructureRoot {[]} {[]}
+","","The consumable participation is used to bring in the LabeledDrug or Material entity that describes the administered substance. The LabeledDrug class, which is an Entity class playing the Role of Manufactured Product, identifies the drug that is consumed in the substance administration. The medication is identified by means of the LabeledDrug.code or the LabeledDrug.name. The Material entity is used to identify non-drug administered substances such as vaccines and blood products.","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.consumable",1,1,"",""
+"SubstanceAdministration.consumable.typeCode","SubstanceAdministration.consumable.typeCode","","","",0,1,"","","","code {[CanonicalType[http://hl7.org/cda/stds/core/StructureDefinition/cs-simple]]} {[]}
+","","","","","","","<valueCode xmlns=""http://hl7.org/fhir"" value=""CSM""/>","","","","",,"required","","http://terminology.hl7.org/ValueSet/v3-ParticipationTargetDirect","",,,,"SubstanceAdministration.consumable.typeCode",0,1,"",""
+"SubstanceAdministration.consumable.manufacturedProduct","SubstanceAdministration.consumable.manufacturedProduct","","","",1,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/ManufacturedProduct {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.consumable.manufacturedProduct",1,1,"",""
+"SubstanceAdministration.subject","SubstanceAdministration.subject","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Subject {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.subject",0,1,"",""
+"SubstanceAdministration.specimen","SubstanceAdministration.specimen","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Specimen {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.specimen",0,*,"",""
+"SubstanceAdministration.performer","SubstanceAdministration.performer","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Performer2 {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.performer",0,*,"",""
+"SubstanceAdministration.author","SubstanceAdministration.author","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Author {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.author",0,*,"",""
+"SubstanceAdministration.informant","SubstanceAdministration.informant","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Informant {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.informant",0,*,"",""
+"SubstanceAdministration.participant","SubstanceAdministration.participant","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Participant2 {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.participant",0,*,"",""
+"SubstanceAdministration.entryRelationship","SubstanceAdministration.entryRelationship","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/EntryRelationship {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.entryRelationship",0,*,"",""
+"SubstanceAdministration.reference","SubstanceAdministration.reference","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Reference {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.reference",0,*,"",""
+"SubstanceAdministration.precondition","SubstanceAdministration.precondition","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Precondition {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"SubstanceAdministration.precondition",0,*,"",""

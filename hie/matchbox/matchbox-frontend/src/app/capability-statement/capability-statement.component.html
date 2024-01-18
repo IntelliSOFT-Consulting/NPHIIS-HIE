@@ -1,0 +1,13 @@
+<div class="white-block" id="capability-statement">
+  <h2>CapabilityStatement</h2>
+
+  <p>
+    CapabilityStatement of the server: <code>{{ client.baseUrl }}</code>
+  </p>
+
+  <mat-spinner *ngIf="loading"></mat-spinner>
+
+  <div id="code"></div>
+
+  <app-operation-result *ngIf="operationResult" [operationResult]="operationResult"></app-operation-result>
+</div>
