@@ -1,0 +1,101 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "type": "java",
+      "name": "Launch Current File",
+      "request": "launch",
+      "mainClass": "${file}"
+    },
+    {
+      "type": "java",
+      "name": "Launch MatchboxCli",
+      "request": "launch",
+      "mainClass": "ch.ahdis.matchbox.engine.cli.MatchboxCli",
+      "projectName": "matchbox-engine",
+      "args": "-transform test.map",
+      "vmArgs": "-Dlog.ch.ahdis.matchbox.engine.CdaMappingEngine=error",
+      "cwd": "${workspaceFolder}/matchbox-engine"
+    },
+    {
+      "type": "java",
+      "name": "Launch Matchbox-Server (postres)",
+      "request": "launch",
+      "mainClass": "ca.uhn.fhir.jpa.starter.Application",
+      "projectName": "matchbox-server",
+      "vmArgs": "-Dspring.config.additional-location=file:with-postgres/application.yaml",
+      "cwd": "${workspaceFolder}/matchbox-server"
+    },
+    {
+      "type": "java",
+      "name": "Launch Matchbox-Server (preload)",
+      "request": "launch",
+      "mainClass": "ca.uhn.fhir.jpa.starter.Application",
+      "projectName": "matchbox-server",
+      "vmArgs": "-Dspring.config.additional-location=file:with-preload/application.yaml",
+      "cwd": "${workspaceFolder}/matchbox-server"
+    },
+    {
+      "type": "java",
+      "name": "Launch Matchbox-Server (cda)",
+      "request": "launch",
+      "mainClass": "ca.uhn.fhir.jpa.starter.Application",
+      "projectName": "matchbox-server",
+      "vmArgs": "-Dspring.config.additional-location=file:with-cda/application.yaml",
+      "cwd": "${workspaceFolder}/matchbox-server"
+    },
+    {
+      "type": "java",
+      "name": "Launch Matchbox-Server (ch-elm)",
+      "request": "launch",
+      "mainClass": "ca.uhn.fhir.jpa.starter.Application",
+      "projectName": "matchbox-server",
+      "vmArgs": "-Dspring.config.additional-location=file:with-elm/application.yaml",
+      "cwd": "${workspaceFolder}/matchbox-server"
+    },
+    {
+      "type": "java",
+      "name": "Launch Matchbox-Server (ch)",
+      "request": "launch",
+      "mainClass": "ca.uhn.fhir.jpa.starter.Application",
+      "projectName": "matchbox-server",
+      "vmArgs": "-Dspring.config.additional-location=file:with-ch/application.yaml",
+      "cwd": "${workspaceFolder}/matchbox-server"
+    },
+    {
+      "type": "java",
+      "name": "Launch Matchbox-Server",
+      "request": "launch",
+      "mainClass": "ca.uhn.fhir.jpa.starter.Application",
+      "projectName": "matchbox-server",
+      "cwd": "${workspaceFolder}/matchbox-server"
+    },
+    {
+      "type": "java",
+      "name": "Launch Matchbox-Server (only install packages)",
+      "request": "launch",
+      "mainClass": "ca.uhn.fhir.jpa.starter.Application",
+      "projectName": "matchbox-server",
+      "cwd": "${workspaceFolder}/matchbox-server",
+      "args": "--hapi.fhir.only_install_packages=true"
+    },
+    {
+      "type": "java",
+      "name": "Launch PackageCacheInitializer",
+      "request": "launch",
+      "mainClass": "ch.ahdis.matchbox.util.PackageCacheInitializer",
+      "projectName": "matchbox-server"
+    },
+    {
+      "type": "java",
+      "name": "Launch IgValidateR4TestStandalone",
+      "request": "launch",
+      "mainClass": "ch.ahdis.validation.IgValidateR4TestStandalone",
+      "projectName": "matchbox-server"
+    }
+  ]
+}

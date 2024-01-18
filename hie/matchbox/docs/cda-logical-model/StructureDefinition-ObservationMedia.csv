@@ -1,0 +1,40 @@
+"Id","Path","Slice Name","Alias(s)","Label","Min","Max","Must Support?","Is Modifier?","Is Summary?","Type(s)","Short","Definition","Comments","Requirements","Default Value","Meaning When Missing","Fixed Value","Pattern","Example","Minimum Value","Maximum Value","Maximum Length","Binding Strength","Binding Description","Binding Value Set","Code","Slicing Discriminator","Slicing Description","Slicing Ordered","Slicing Rules","Base Path","Base Min","Base Max","Condition(s)","Constraint(s)","Mapping: RIM Mapping"
+"ObservationMedia","ObservationMedia","","","",1,1,"","","","null {[]} {[]}
+","Base for all types and resources","Base definition for all types defined in FHIR type system.","","","","","","","","","",,,,,"",,,,"Base",0,*,"","ele-1:All FHIR elements must have a @value or children {hasValue() or (children().count() > id.count())}
+","n/a"
+"ObservationMedia.ID","ObservationMedia.ID","","","",0,1,"","","","id {[CanonicalType[http://hl7.org/cda/stds/core/StructureDefinition/xs-ID]]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.ID",0,1,"",""
+"ObservationMedia.classCode","ObservationMedia.classCode","","","",1,1,"","","","code {[CanonicalType[http://hl7.org/cda/stds/core/StructureDefinition/cs-simple]]} {[]}
+","","","","","<valueCode xmlns=""http://hl7.org/fhir"" value=""OBS""/>","","<valueCode xmlns=""http://hl7.org/fhir"" value=""OBS""/>","","","","",,"required","","http://terminology.hl7.org/ValueSet/v3-ActClassObservation","",,,,"ObservationMedia.classCode",1,1,"",""
+"ObservationMedia.moodCode","ObservationMedia.moodCode","","","",1,1,"","","","code {[CanonicalType[http://hl7.org/cda/stds/core/StructureDefinition/cs-simple]]} {[]}
+","","","","","<valueCode xmlns=""http://hl7.org/fhir"" value=""EVN""/>","","<valueCode xmlns=""http://hl7.org/fhir"" value=""EVN""/>","","","","",,"required","","http://terminology.hl7.org/ValueSet/v3-ActMood","",,,,"ObservationMedia.moodCode",1,1,"",""
+"ObservationMedia.realmCode","ObservationMedia.realmCode","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/CS {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.realmCode",0,*,"",""
+"ObservationMedia.typeId","ObservationMedia.typeId","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/II {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.typeId",0,1,"",""
+"ObservationMedia.templateId","ObservationMedia.templateId","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/II {[]} {[]}
+","","When valued in an instance, this attribute signals the imposition of a set of template-defined constraints. The value of this attribute provides a unique identifier for the templates in question","","","","","","","","","",,,,,"",,,,"ObservationMedia.templateId",0,*,"",""
+"ObservationMedia.id","ObservationMedia.id","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/II {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.id",0,*,"",""
+"ObservationMedia.languageCode","ObservationMedia.languageCode","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/CS {[]} {[]}
+","","","","","","","","","","","",,"required","","http://terminology.hl7.org/ValueSet/v3-HumanLanguage","",,,,"ObservationMedia.languageCode",0,1,"",""
+"ObservationMedia.value","ObservationMedia.value","","","",1,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/ED {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.value",1,1,"",""
+"ObservationMedia.subject","ObservationMedia.subject","","","",0,1,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Subject {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.subject",0,1,"",""
+"ObservationMedia.specimen","ObservationMedia.specimen","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Specimen {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.specimen",0,*,"",""
+"ObservationMedia.performer","ObservationMedia.performer","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Performer2 {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.performer",0,*,"",""
+"ObservationMedia.author","ObservationMedia.author","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Author {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.author",0,*,"",""
+"ObservationMedia.informant","ObservationMedia.informant","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Informant {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.informant",0,*,"",""
+"ObservationMedia.participant","ObservationMedia.participant","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Participant2 {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.participant",0,*,"",""
+"ObservationMedia.entryRelationship","ObservationMedia.entryRelationship","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/EntryRelationship {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.entryRelationship",0,*,"",""
+"ObservationMedia.reference","ObservationMedia.reference","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Reference {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.reference",0,*,"",""
+"ObservationMedia.precondition","ObservationMedia.precondition","","","",0,*,"","","","http://hl7.org/cda/stds/core/StructureDefinition/Precondition {[]} {[]}
+","","","","","","","","","","","",,,,,"",,,,"ObservationMedia.precondition",0,*,"",""
