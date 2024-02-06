@@ -21,7 +21,7 @@ services:
             - 'hapi-fhir-postgres:/var/lib/postgresql/data'
 
     matchbox-server:
-        image: matchbox:latest
+        image: intellisoftkenya/matchbox:latest
         container_name: matchbox-server
         restart: unless-stopped
         networks:
