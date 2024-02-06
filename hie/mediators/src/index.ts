@@ -6,9 +6,6 @@ dotenv.config() // Load environment variables
 
 //Import routes
 import OpenHIMAuth from './routes/openhim-auth'
-import ClientAuth from './routes/client-auth'
-import ProviderAuth from './routes/provider-auth'
-
 
 import { importMediators } from "./lib/utils";
 
@@ -30,8 +27,6 @@ app.use((req, res, next) => {
 });
 
 app.use('/auth', OpenHIMAuth)
-app.use('/client', ClientAuth)
-app.use('/provider', ProviderAuth)
 
 
 app.listen(PORT, () => {
