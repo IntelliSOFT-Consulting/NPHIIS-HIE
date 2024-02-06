@@ -55,7 +55,6 @@ services:
             - mongo_url=mongodb://mongo/openhim
             - mongo_atnaUrl=mongodb://mongo/openhim
             - authentication_enableJWTAuthentication=true
-            - KC_OPENHIM_ROOT_URL=http://chanjoke.intellisoftkenya.com/openhim/
         ports:
             - "8080:8080"
             # - "5000:5000"
@@ -107,6 +106,16 @@ services:
         #     - "8082:3000"
         env_file:
             - mediators/.env
+    
+    chanjoke-auth:
+        container_name: chanjoke-auth
+        build: ../chanjoke-auth
+        restart: unless-stopped
+        networks:
+            - cloudbuild
+            - hapi-fhir
+        env_file:
+            - ../chanjoke-auth/.env
 
 volumes:
     mongodb-data:

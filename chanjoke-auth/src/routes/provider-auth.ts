@@ -1,5 +1,5 @@
 import express, { Request, response, Response } from "express";
-import { createClient, FhirApi, getOpenHIMToken, installChannels } from "../lib/utils";
+import { FhirApi } from "../lib/utils";
 import { findKeycloakUser, getCurrentUserInfo, getKeycloakUserToken, registerKeycloakUser } from './../lib/keycloak'
 import { v4 } from "uuid";
 
