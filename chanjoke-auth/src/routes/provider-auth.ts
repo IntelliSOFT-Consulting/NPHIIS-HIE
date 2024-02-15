@@ -107,14 +107,12 @@ router.get("/me", async (req: Request, res: Response) => {
             return;
         }
         let currentUser = await getCurrentUserInfo(accessToken);
-        console.log(currentUser);
-        let userInfo = await findKeycloakUser(currentUser.preferred_username)
-        console.log(userInfo)
         if(!currentUser){
             res.statusCode = 401;
             res.json({ status: "error", error: "Invalid Bearer token provided"  });
             return;
         }
+        let userInfo = await findKeycloakUser(currentUser.preferred_username)
         let practitioner = await (await FhirApi({url:`/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`})).data;
         let facilityId = practitioner.extension[0].valueReference.reference;
         res.statusCode = 200;
