@@ -120,7 +120,7 @@ router.get("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 router.post("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _h, _j;
+    var _h, _j, _k, _l, _m;
     try {
         const accessToken = ((_h = req.headers.authorization) === null || _h === void 0 ? void 0 : _h.split(' ')[1]) || null;
         if (!accessToken || ((_j = req.headers.authorization) === null || _j === void 0 ? void 0 : _j.split(' ')[0]) != "Bearer") {
@@ -128,10 +128,12 @@ router.post("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.json({ status: "error", error: "Bearer token is required but not provided" });
             return;
         }
+        // allow phone number & email
+        let { phone, email } = req.body;
         let currentUser = yield keycloak_1.getCurrentUserInfo(accessToken);
         console.log(currentUser);
+        yield keycloak_1.updateUserProfile(currentUser.preferred_username, phone, email);
         let userInfo = yield keycloak_1.findKeycloakUser(currentUser.preferred_username);
-        console.log(userInfo);
         if (!currentUser) {
             res.statusCode = 401;
             res.json({ status: "error", error: "Invalid Bearer token provided" });
@@ -140,7 +142,7 @@ router.post("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.statusCode = 200;
         res.json({ status: "success", user: { firstName: userInfo.firstName, lastName: userInfo.lastName,
                 fhirPatientId: userInfo.attributes.fhirPatientId[0],
-                id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name
+                id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name, phone: (((_k = userInfo.attributes) === null || _k === void 0 ? void 0 : _k.phone) ? (_l = userInfo.attributes) === null || _l === void 0 ? void 0 : _l.phone[0] : null), email: (_m = userInfo.email) !== null && _m !== void 0 ? _m : null
             } });
         return;
     }
@@ -151,4 +153,5 @@ router.post("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return;
     }
 }));
+// router.delete('/user')
 exports.default = router;

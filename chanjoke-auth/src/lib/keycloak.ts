@@ -89,15 +89,16 @@ export const updateUserPassword = async (username: string, password: string) => 
 export const updateUserProfile = async (username:string, phone: string | null, email: string | null) => {
   try {
     let user = (await findKeycloakUser(username));
-    console.log(user)
     const accessToken = (await getKeycloakAdminToken()).access_token;
     const response = await (await fetch(
       `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`,
       {headers: {Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', }, method: "PUT",
       body: JSON.stringify({
-        ...(phone) && {attributes:{phoneNumber:"password"}}, ...(email) &&  {email}})
+        ...(phone) && {attributes: {...user.attributes, phone:[phone]}}, ...(email) &&  {email}})
       }
     ));
+    // let result = await response.json()
+    console.log(response);
     if(response.ok){
       return true;
     }
@@ -199,14 +200,14 @@ export const getCurrentUserInfo = async (accessToken: string) => {
     });
     // console.log(response);
     let result = await response.json();
-    console.log(result);  
+    // console.log(result);
     // Handle response
     if (response.ok) {
       // const userInfo = await response.json();
-      console.log(result);
+      // console.log(result);
       return result;
     } else {
-      console.log(result);
+      // console.log(result);
       return null;
     }
   }

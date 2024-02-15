@@ -146,16 +146,21 @@ router.post("/me", async (req: Request, res: Response) => {
         // allow phone number & email
         let {phone, email} = req.body;
         let currentUser = await getCurrentUserInfo(accessToken);
-        console.log(currentUser);
-        await updateUserProfile(currentUser.preferred_username, phone, email);
-        let userInfo = await findKeycloakUser(currentUser.preferred_username);
-        let practitioner = await (await FhirApi({url:`/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`})).data;
-        let facilityId = practitioner.extension[0].valueReference.reference;
         if(!currentUser){
             res.statusCode = 401;
             res.json({ status: "error", error: "Invalid Bearer token provided"  });
             return;
         }
+        let response = await updateUserProfile(currentUser.preferred_username, phone, email);
+        console.log(response);
+        let userInfo = await findKeycloakUser(currentUser.preferred_username);
+        let practitioner = await (await FhirApi({url:`/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`})).data;
+        let facilityId = practitioner.extension[0].valueReference.reference ?? null;
+        // if(!facilityId && userInfo.attributes.practitionerRole[0]){
+        //     res.statusCode = 401;
+        //     res.json({ status: "error", error: "Provide must be assigned to a facility first"  });
+        //     return;
+        // }
         res.statusCode = 200;
         res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
             fhirPractitionerId:userInfo.attributes.fhirPractitionerId[0], 
