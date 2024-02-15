@@ -115,12 +115,15 @@ router.get("/me", async (req: Request, res: Response) => {
             res.json({ status: "error", error: "Invalid Bearer token provided"  });
             return;
         }
+        let practitioner = await (await FhirApi({url:`/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`})).data;
+        let facilityId = practitioner.extension[0].valueReference.reference;
         res.statusCode = 200;
         res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
             fhirPractitionerId:userInfo.attributes.fhirPractitionerId[0], 
             practitionerRole: userInfo.attributes.practitionerRole[0],
             id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
-            phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null) , email: userInfo.email ?? null
+            phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null) , email: userInfo.email ?? null,
+            facility: facilityId
         }});
         return;
     }
