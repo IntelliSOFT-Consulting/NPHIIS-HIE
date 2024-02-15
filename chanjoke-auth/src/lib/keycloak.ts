@@ -188,19 +188,24 @@ export const getKeycloakUserToken = async (idNumber: string, password: string) =
 export const getCurrentUserInfo = async (accessToken: string) => {
   try {
     const userInfoEndpoint = `${KC_BASE_URL}/realms/${KC_REALM}/protocol/openid-connect/userinfo`;
+    // const accessToken = (await getKeycloakAdminToken()).access_token;
     // Make a request to Keycloak's userinfo endpoint with the access token
     const response = await fetch(userInfoEndpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type":"application/json"
       },
     });
+    // console.log(response);
+    let result = await response.json();
+    console.log(result);  
     // Handle response
     if (response.ok) {
-      const userInfo = await response.json();
-      console.log(userInfo);
-      return userInfo;
+      // const userInfo = await response.json();
+      console.log(result);
+      return result;
     } else {
-      console.log(await (response.text()))
+      console.log(result);
       return null;
     }
   }
