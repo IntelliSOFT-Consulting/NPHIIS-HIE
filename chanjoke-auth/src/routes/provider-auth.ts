@@ -1,4 +1,4 @@
-import express, { Request, response, Response } from "express";
+import express, { Request, Response } from "express";
 import { FhirApi } from "../lib/utils";
 import { findKeycloakUser, getCurrentUserInfo, getKeycloakUserToken, registerKeycloakUser } from './../lib/keycloak'
 import { v4 } from "uuid";
@@ -9,7 +9,7 @@ router.use(express.json());
 router.post("/register", async (req: Request, res: Response) => {
     try {
         // get id number and unique code
-        let {firstName, lastName, idNumber, password, role, email, phone } = req.body;
+        let {firstName, lastName, idNumber, password, role, email, phone, facility } = req.body;
         console.log(req.body);
         if(!password || !idNumber || !firstName || !lastName || !role || !email ) {
             res.statusCode = 400;
@@ -17,6 +17,13 @@ router.post("/register", async (req: Request, res: Response) => {
             return;
         }
         let practitionerId = v4();
+        let location = await (await FhirApi({url:`/Location/${facility}`})).data;
+        console.log(location)
+        if(location.resourceType != "Location"){
+            res.statusCode = 400;
+            res.json({ status: "error", error: "Failed to register client user. Invalid location provided" });
+            return;
+        }
         console.log(practitionerId);
         let practitionerResource = {
             "resourceType": "Practitioner",
@@ -28,6 +35,15 @@ router.post("/register", async (req: Request, res: Response) => {
               }
             ],
             "name": [{"use": "official","family": lastName, "given": [firstName]}],
+            "extension": [
+                {
+                  "url": "http://example.org/location",
+                  "valueReference": {
+                    "reference": `Location/${location.id}`,
+                    "display": location.display
+                  }
+                }
+              ]
             // "telecom": [{"system": "phone","value": "123-456-7890"}]
         };
         let keycloakUser = await registerKeycloakUser(idNumber, email, phone, firstName, 
