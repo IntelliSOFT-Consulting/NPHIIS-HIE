@@ -113,7 +113,7 @@ export const registerKeycloakUser = async (username: string, email: string | nul
         
         // Authenticate
         const accessToken = (await getKeycloakAdminToken()).access_token;
-        console.log(accessToken)
+        // console.log(accessToken);
         let salt = generateRandomSalt(10);
       
         // Create Keycloak user
