@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { FhirApi  } from "../lib/utils";
-import { getKeycloakUserToken, registerKeycloakUser, getCurrentUserInfo, findKeycloakUser } from './../lib/keycloak'
+import { getKeycloakUserToken, registerKeycloakUser, getCurrentUserInfo, findKeycloakUser, updateUserProfile } from './../lib/keycloak'
 
 const router = express.Router();
 router.use(express.json());
@@ -117,10 +117,12 @@ router.post("/me", async (req: Request, res: Response) => {
             res.json({ status: "error", error:"Bearer token is required but not provided" });
             return;
         }
+        // allow phone number & email
+        let {phone, email} = req.body;
         let currentUser = await getCurrentUserInfo(accessToken);
         console.log(currentUser);
+        await updateUserProfile(currentUser.preferred_username, phone, email);
         let userInfo = await findKeycloakUser(currentUser.preferred_username);
-        console.log(userInfo)
         if(!currentUser){
             res.statusCode = 401;
             res.json({ status: "error", error: "Invalid Bearer token provided"  });
@@ -129,7 +131,8 @@ router.post("/me", async (req: Request, res: Response) => {
         res.statusCode = 200;
         res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
             fhirPatientId:userInfo.attributes.fhirPatientId[0], 
-            id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name   
+            id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
+            phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null) , email: userInfo.email ?? null
         }});
         return;
     }
@@ -140,5 +143,7 @@ router.post("/me", async (req: Request, res: Response) => {
         return;
     }
 });
+
+// router.delete('/user')
 
 export default router
