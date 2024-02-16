@@ -83,3 +83,6 @@ export const getPatientById = async (crossBorderId: string) => {
         return null;
     }
 }
+
+
+// export const getPractitionerLocation = async ( practitioner: String)
