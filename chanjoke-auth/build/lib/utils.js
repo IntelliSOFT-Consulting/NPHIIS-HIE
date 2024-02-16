@@ -97,3 +97,4 @@ const getPatientById = (crossBorderId) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getPatientById = getPatientById;
+// export const getPractitionerLocation = async ( practitioner: String)
