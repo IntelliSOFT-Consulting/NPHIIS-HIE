@@ -91,13 +91,12 @@ const updateUserPassword = (username, password) => __awaiter(void 0, void 0, voi
     }
 });
 exports.updateUserPassword = updateUserPassword;
-const updateUserProfile = (username, password) => __awaiter(void 0, void 0, void 0, function* () {
+const updateUserProfile = (username, phone, email) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let user = (yield exports.findKeycloakUser(username));
         console.log(user);
         const accessToken = (yield exports.getKeycloakAdminToken()).access_token;
-        const response = yield (yield cross_fetch_1.default(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}/reset-password`, { headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', }, method: "PUT",
-            body: JSON.stringify({ type: "password", temporary: false, value: password })
+        const response = yield (yield cross_fetch_1.default(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`, { headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', }, method: "PUT", body: JSON.stringify(Object.assign(Object.assign({}, (phone) && { attributes: { phoneNumber: "password" } }), (email) && { email }))
         }));
         if (response.ok) {
             return true;
@@ -115,7 +114,7 @@ const registerKeycloakUser = (username, email, phone, firstName, lastName, passw
     try {
         // Authenticate
         const accessToken = (yield exports.getKeycloakAdminToken()).access_token;
-        console.log(accessToken);
+        // console.log(accessToken);
         let salt = generateRandomSalt(10);
         // Create Keycloak user
         const createUserResponse = yield cross_fetch_1.default(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users`, {
@@ -191,20 +190,25 @@ exports.getKeycloakUserToken = getKeycloakUserToken;
 const getCurrentUserInfo = (accessToken) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userInfoEndpoint = `${KC_BASE_URL}/realms/${KC_REALM}/protocol/openid-connect/userinfo`;
+        // const accessToken = (await getKeycloakAdminToken()).access_token;
         // Make a request to Keycloak's userinfo endpoint with the access token
         const response = yield cross_fetch_1.default(userInfoEndpoint, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
             },
         });
+        // console.log(response);
+        let result = yield response.json();
+        console.log(result);
         // Handle response
         if (response.ok) {
-            const userInfo = yield response.json();
-            console.log(userInfo);
-            return userInfo;
+            // const userInfo = await response.json();
+            console.log(result);
+            return result;
         }
         else {
-            console.log(yield (response.text()));
+            console.log(result);
             return null;
         }
     }
