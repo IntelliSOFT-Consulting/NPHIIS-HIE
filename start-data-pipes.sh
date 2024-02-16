@@ -1,5 +1,6 @@
 if [ -n "$1" ]; then
-    docker compose -f docker/compose-controller-spark-sql-single.yaml $1 $2 $3 $4 $5
+    cd fhir-data-pipes
+    docker compose -f docker/compose-controller-spark-sql-single.yaml $@
 else
     cd fhir-data-pipes
     docker network create cloudbuild

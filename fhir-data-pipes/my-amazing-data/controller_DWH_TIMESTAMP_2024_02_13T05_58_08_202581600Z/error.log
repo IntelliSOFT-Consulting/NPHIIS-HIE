@@ -1,0 +1,39 @@
+java.sql.SQLException: Connections could not be acquired from the underlying database!
+	at com.mchange.v2.sql.SqlUtils.toSQLException(SqlUtils.java:118)
+	at com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool.checkoutPooledConnection(C3P0PooledConnectionPool.java:692)
+	at com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource.getConnection(AbstractPoolBackedDataSource.java:140)
+	at com.google.fhir.analytics.HiveTableManager.createResourceAndCanonicalTables(HiveTableManager.java:81)
+	at com.google.fhir.analytics.PipelineManager$PipelineThread.createHiveResourceTables(PipelineManager.java:603)
+	at com.google.fhir.analytics.PipelineManager$PipelineThread.run(PipelineManager.java:575)
+Caused by: com.mchange.v2.resourcepool.CannotAcquireResourceException: A ResourcePool could not acquire a resource from its primary factory or source.
+	at com.mchange.v2.resourcepool.BasicResourcePool.awaitAvailable(BasicResourcePool.java:1507)
+	at com.mchange.v2.resourcepool.BasicResourcePool.prelimCheckoutResource(BasicResourcePool.java:644)
+	at com.mchange.v2.resourcepool.BasicResourcePool.checkoutResource(BasicResourcePool.java:554)
+	at com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool.checkoutAndMarkConnectionInUse(C3P0PooledConnectionPool.java:758)
+	at com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool.checkoutPooledConnection(C3P0PooledConnectionPool.java:685)
+	... 4 more
+Caused by: java.sql.SQLException: Could not open client transport with JDBC Uri: jdbc:hive2://spark-thriftserver:10000/default?enabledTLSProtocols=TLSv1.2: java.net.UnknownHostException: spark-thriftserver
+	at org.apache.hive.jdbc.HiveConnection.<init>(HiveConnection.java:256)
+	at org.apache.hive.jdbc.HiveDriver.connect(HiveDriver.java:107)
+	at com.mchange.v2.c3p0.DriverManagerDataSource.getConnection(DriverManagerDataSource.java:175)
+	at com.mchange.v2.c3p0.WrapperConnectionPoolDataSource.getPooledConnection(WrapperConnectionPoolDataSource.java:220)
+	at com.mchange.v2.c3p0.WrapperConnectionPoolDataSource.getPooledConnection(WrapperConnectionPoolDataSource.java:206)
+	at com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool$1PooledConnectionResourcePoolManager.acquireResource(C3P0PooledConnectionPool.java:203)
+	at com.mchange.v2.resourcepool.BasicResourcePool.doAcquire(BasicResourcePool.java:1176)
+	at com.mchange.v2.resourcepool.BasicResourcePool.doAcquireAndDecrementPendingAcquiresWithinLockOnSuccess(BasicResourcePool.java:1163)
+	at com.mchange.v2.resourcepool.BasicResourcePool.access$700(BasicResourcePool.java:44)
+	at com.mchange.v2.resourcepool.BasicResourcePool$ScatteredAcquireTask.run(BasicResourcePool.java:1908)
+	at com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread.run(ThreadPoolAsynchronousRunner.java:696)
+Caused by: org.apache.thrift.transport.TTransportException: java.net.UnknownHostException: spark-thriftserver
+	at org.apache.thrift.transport.TSocket.open(TSocket.java:226)
+	at org.apache.thrift.transport.TSaslTransport.open(TSaslTransport.java:266)
+	at org.apache.thrift.transport.TSaslClientTransport.open(TSaslClientTransport.java:37)
+	at org.apache.hive.jdbc.HiveConnection.openTransport(HiveConnection.java:343)
+	at org.apache.hive.jdbc.HiveConnection.<init>(HiveConnection.java:228)
+	... 10 more
+Caused by: java.net.UnknownHostException: spark-thriftserver
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:572)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:633)
+	at org.apache.thrift.transport.TSocket.open(TSocket.java:221)
+	... 14 more
