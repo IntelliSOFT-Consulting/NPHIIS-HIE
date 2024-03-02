@@ -35,7 +35,7 @@
   "authenticationFlowBindingOverrides": {},
   "fullScopeAllowed": true,
   "nodeReRegistrationTimeout": -1,
-  "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
+  "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email", "openid"],
   "optionalClientScopes": [
     "address",
     "phone",
