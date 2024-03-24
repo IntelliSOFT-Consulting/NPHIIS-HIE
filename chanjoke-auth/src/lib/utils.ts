@@ -1,8 +1,4 @@
-import shrPassthroughConfig from '../config/shrPassThrough.json';
-
-
-import { Agent } from 'https';
-import * as crypto from 'crypto';
+import shrPassthroughConfig from '../config/mediatorConfig.json';
 
 // ✅ Do this if using TYPESCRIPT
 import { RequestInfo, RequestInit } from 'node-fetch';
@@ -64,10 +60,6 @@ export const parseIdentifiers = async (patientId: string) => {
         }
     })
 }
-
-
-
-
 
 
 export const getPatientById = async (crossBorderId: string) => {
