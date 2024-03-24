@@ -1,12 +1,6 @@
-import shrPassthroughConfig from '../config/mediatorConfig.json';
 
 // ✅ Do this if using TYPESCRIPT
 import { RequestInfo, RequestInit } from 'node-fetch';
-
-// mediators to be registered
-const mediators = [
-    shrPassthroughConfig
-];
 
 const fetch = (url: RequestInfo, init?: RequestInit) =>
     import('node-fetch').then(({ default: fetch }) => fetch(url, init));
@@ -75,6 +69,3 @@ export const getPatientById = async (crossBorderId: string) => {
         return null;
     }
 }
-
-
-// export const getPractitionerLocation = async ( practitioner: String)
