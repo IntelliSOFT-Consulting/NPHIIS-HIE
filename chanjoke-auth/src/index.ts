@@ -1,6 +1,14 @@
 import express from "express";
 import cors from 'cors'
 import * as dotenv from 'dotenv'
+import rateLimit from 'express-rate-limit'
+
+// Define rate limit options
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later'
+});
 
 dotenv.config() // Load environment variables
 
@@ -11,6 +19,7 @@ import ProviderAuth from './routes/provider-auth'
 const app = express();
 const PORT = 3000;
 
+// app.use(limiter);
 app.use(cors())
 
 app.use((req, res, next) => {
