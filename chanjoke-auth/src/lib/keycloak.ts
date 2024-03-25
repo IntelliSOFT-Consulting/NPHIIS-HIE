@@ -43,12 +43,7 @@ export const findKeycloakUser = async (username: string) => {
         const accessToken = (await getKeycloakAdminToken()).access_token;
         const searchResponse = await fetch(
             `${KC_BASE_URL}/admin/realms/${KC_REALM}/users?username=${encodeURIComponent(username)}`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-              },
-            }
+            {headers: {Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json',},}
           );
           if (!searchResponse.ok) {
             console.error(`Failed to search user with username ${username}`);
@@ -64,10 +59,26 @@ export const findKeycloakUser = async (username: string) => {
 }
 
 
+export const validateResetCode = async (idNumber: string, resetCode: string) => {
+  try {
+    let userInfo = await findKeycloakUser(idNumber);
+    let _resetCode = userInfo?.attributes?.resetCode;
+    if(!_resetCode){
+      return null;
+    }
+    _resetCode = _resetCode[0]
+    return resetCode === _resetCode;
+  } catch (error) {
+    console.log(error);
+    return null
+  }
+}
+
+
+
 export const updateUserPassword = async (username: string, password: string) => {
   try {
     let user = (await findKeycloakUser(username));
-    console.log(user)
     const accessToken = (await getKeycloakAdminToken()).access_token;
     const response = await (await fetch(
       `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}/reset-password`,
@@ -86,7 +97,30 @@ export const updateUserPassword = async (username: string, password: string) => 
   }
 }
 
-export const updateUserProfile = async (username:string, phone: string | null, email: string | null) => {
+export const deleteResetCode = async (idNumber: string) => {
+  try {
+    let user = (await findKeycloakUser(idNumber));
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    delete user.attributes.resetCode;
+    const response = await (await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`,
+      {headers: {Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', }, method: "PUT",
+      body: JSON.stringify({attributes: {...user.attributes}})}
+    ));
+    // let result = await response.json()
+    // console.log(response);
+    if(response.ok){
+      return true;
+    }
+    // console.log(await response.json());
+    return null;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export const updateUserProfile = async (username:string, phone: string | null, email: string | null, resetCode: string | null) => {
   try {
     let user = (await findKeycloakUser(username));
     const accessToken = (await getKeycloakAdminToken()).access_token;
@@ -94,11 +128,13 @@ export const updateUserProfile = async (username:string, phone: string | null, e
       `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`,
       {headers: {Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', }, method: "PUT",
       body: JSON.stringify({
-        ...(phone) && {attributes: {...user.attributes, phone:[phone]}}, ...(email) &&  {email}})
+        ...(phone) && {attributes: {...user.attributes, phone:[phone]}}, ...(email) &&  {email}, ...(resetCode) &&
+        {attributes: {...user.attributes, resetCode:[resetCode]}}
+      })
       }
     ));
     // let result = await response.json()
-    console.log(response);
+    // console.log(response);
     if(response.ok){
       return true;
     }
@@ -115,9 +151,7 @@ export const registerKeycloakUser = async (username: string, email: string | nul
         
         // Authenticate
         const accessToken = (await getKeycloakAdminToken()).access_token;
-        // console.log(accessToken);
         let salt = generateRandomSalt(10);
-      
         // Create Keycloak user
         const createUserResponse = await fetch(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users`, {
             method: 'POST',
@@ -216,3 +250,26 @@ export const getCurrentUserInfo = async (accessToken: string) => {
     return null 
   }
 }
+
+
+export const sendPasswordResetLink = async (idNumber: string) => {
+  try {
+    let user = (await findKeycloakUser(idNumber));
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    let passwordResetEndpoint = `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}/execute-actions-email`
+    let res = await (await fetch(passwordResetEndpoint, 
+      {headers: {Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', }, method: "PUT",
+      body: JSON.stringify({actions:["UPDATE_PASSWORD"]})
+    })).json();
+    console.log(res);
+    return {status: "status", res}
+  } catch (error) {
+    console.log(error);
+    return {status: "error", error: JSON.stringify(error)}
+  }
+}
+
+
+// validateResetCodeAndResetPassword("123456", "89898")
+// sendPasswordResetLink("1234567")
+// deleteResetCode("123456")

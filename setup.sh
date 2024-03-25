@@ -17,7 +17,7 @@ else
 
 1. HIE - OpenHIM, HAPI FHIR (SHR) and Mediators
 2. Nginx Proxy
-3. FHIR Gateway - Proxies to HAPI FHIR in (1)
+3. FHIR Gateway 
 4. FHIR Datapipes
 5. Apache Superset
 

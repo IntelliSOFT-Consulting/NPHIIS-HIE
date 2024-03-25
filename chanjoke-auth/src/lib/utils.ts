@@ -1,16 +1,6 @@
-import shrPassthroughConfig from '../config/shrPassThrough.json';
-
-
-import { Agent } from 'https';
-import * as crypto from 'crypto';
 
 // ✅ Do this if using TYPESCRIPT
 import { RequestInfo, RequestInit } from 'node-fetch';
-
-// mediators to be registered
-const mediators = [
-    shrPassthroughConfig
-];
 
 const fetch = (url: RequestInfo, init?: RequestInit) =>
     import('node-fetch').then(({ default: fetch }) => fetch(url, init));
@@ -66,10 +56,6 @@ export const parseIdentifiers = async (patientId: string) => {
 }
 
 
-
-
-
-
 export const getPatientById = async (crossBorderId: string) => {
     try {
         let patient: any = (await FhirApi({ url: `/Patient?identifier=${crossBorderId}` })).data;
@@ -83,6 +69,3 @@ export const getPatientById = async (crossBorderId: string) => {
         return null;
     }
 }
-
-
-// export const getPractitionerLocation = async ( practitioner: String)
