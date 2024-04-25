@@ -1,6 +1,9 @@
 import { FhirApi, apiHost, NHDD_GENERIC_PATH } from "./utils";
 import { vaccineCodes } from "./vaccineCodes";
+import { generatePDF } from "./generatePDF";
+import { contentType } from "mime-types";
 
+// generatePDF("Polio");
 
 export const getProfile = (id: string) =>{
     return `${apiHost}/StructureDefinition/${id}`
@@ -88,12 +91,53 @@ export const createDocumentRef = async (patientId: string, documentId: string) =
     }
 }
 
+export const createDocumentRefQR = async (patientId: string, documentId: string, facilityId: string, immunizationResourceId: string, ImmunizationRecommendationId: string | null) => {
+    try {
+        let docRef = await (await FhirApi({url:`/Composition`,
+            method:"POST", body:JSON.stringify({
+                "resourceType" : "Composition",
+                "meta" : {"profile" : ["http://smart.who.int/ddcc/StructureDefinition/DDCCVSComposition"]},
+                "identifier" : {
+                  "use" : "official",
+                  "system" : "urn:EXAMPLE-who-:ddcc:composition:ids",
+                  "value" : "999123456123456123456"
+                },
+                "status" : "final",
+                "type" : {
+                  "coding" : [{ "system" : "http://loinc.org", "code" : "82593-5"
+                  }]
+                },
+                subject : {reference : `Patient/${patientId}`},
+                date : new Date().toISOString(),
+                author : [{reference : `Organization/${facilityId}`}],
+                title : "Digital Documentation of COVID-19 Certificate (DDCC)",
+                "attester" : [{"mode" : "official",
+                  "party" : {"reference" : `Organization/${facilityId}`}}],
+                "section" : [{
+                  "code" : {
+                    "coding" : [{
+                      "system" : "http://loinc.org",
+                      "code" : "11369-6"
+                    }]
+                  },
+                  "focus" : {reference : `Immunization/${immunizationResourceId}`},
+                  "entry" : [{reference : `Immunization/${immunizationResourceId}`},
+                  {reference : `ImmunizationRecommendation/${ImmunizationRecommendationId}`}]
+                }]
+              })})).data;
+        return docRef;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
+
 
 export const createDocument = async (patientId: string, documentRefId: string, composition: any) => {
     try {
         let document = await (await FhirApi({url:`/Bundle`,
             method:"POST", body:JSON.stringify({
-                resourceType:"List",
+                resourceType:"Bundle",
                 meta:{ profile:[getProfile("DigitalCertificateDocument")] },
                 subject:{reference: `Patient/${patientId}`},
                 timestamp: new Date().toISOString(),
@@ -111,7 +155,6 @@ export const createDocument = async (patientId: string, documentRefId: string, c
 export const processImmunization = async (data: any) => {
     try {
         let patientId = data?.subject?.reference;
-        
     } catch (error) {
         
     }
@@ -147,3 +190,36 @@ export let createFHIRSubscription = async () => {
 }
 
 createFHIRSubscription();
+
+
+
+export const processIdentifiers = async (identifiers: any) => {
+    try {
+      let ids:any = {};
+      for(let id of identifiers){
+        let idType = id?.type?.coding[0].code;
+        let idSystem = id?.type?.coding[0].system;
+        // ids[`${id?.type?.}`]
+        ids[idType] = id?.value;
+      }
+      return ids;
+    } catch (error) {
+      return {}
+    }
+  }
+
+
+export const createBinary = async (data: string) => {
+    try {
+        let response = await (await FhirApi({ url:`/Binary`,
+            method: "POST", data: JSON.stringify({
+                resourceType: 'Binary',
+                contentType: "application/pdf",
+                status: "active", data
+            })
+        })).data;
+        return response.id;
+    } catch (error) {
+        return null;
+    }
+}

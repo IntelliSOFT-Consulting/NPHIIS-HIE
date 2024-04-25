@@ -6,6 +6,7 @@ dotenv.config() // Load environment variables
 
 //Import routes
 import SubscriptionHandler from './routes/subscriptions';
+import DigitalCertificate from './routes/digital-certificate';
 
 const app = express();
 const PORT = 3000;
@@ -25,7 +26,8 @@ app.use((req, res, next) => {
 });
 
 
-app.use('/subscriptions', SubscriptionHandler)
+app.use('/subscriptions', SubscriptionHandler);
+app.use('/certificate', DigitalCertificate);
 
 app.listen(PORT, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);

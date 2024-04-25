@@ -2,9 +2,14 @@ import express from 'express';
 import { FhirApi } from '../lib/utils';
 import { v4 as uuid } from 'uuid';
 import fetch from 'node-fetch';
-import { createComposition, createDocument, createDocumentRef, getVaccineFolder } from '../lib/fhir';
+import { createBinary, createComposition, createDocument, createDocumentRef, getVaccineFolder } from '../lib/fhir';
+import { generatePDF, savePDFToFileSystem } from '../lib/generatePDF';
+import { vaccineCodes } from '../lib/vaccineCodes';
 
 export const router = express.Router();
+
+
+let _vaccineCodes: any = vaccineCodes;
 
 router.use(express.json());
 
@@ -16,15 +21,20 @@ router.post('/', async (req, res) => {
         let data = req.body;
         let patientId = data?.subject?.reference;
         let vaccineCode = data?.vaccineCode?.coding[0]?.code;
+        let vaccineName = _vaccineCodes[vaccineCode];
         patientId = String(patientId).split('/')[1];
+        let patient = (await FhirApi({url:`Patient/${patientId}`})).data
         let doseQuantity = data?.doseQuantity?.value;
-
         let locationId = data?.location?.reference.split('/');
 
         // get/create vaccine folder and add a new document reference for this immunization
         let vaccineFolderId = await getVaccineFolder(patientId, vaccineCode);
         let docRef = await createDocumentRef(patientId, vaccineFolderId);
+        let pdfFile = await generatePDF(vaccineName, patient, docRef);
 
+        await savePDFToFileSystem(pdfFile, `${docRef}.pdf`);
+        let binaryId  = await createBinary(pdfFile);
+        console.log(binaryId)
         // create document, add compostion and other resources.
         let composition = await createComposition(data.id);
         let doc = await createDocument(patientId, docRef, composition);
@@ -49,6 +59,8 @@ router.post('/', async (req, res) => {
     }
 });
 
+
+// id maps to a FHIR List / Folder 
 router.get('/:id', async (req, res) => {
     try {
         let data = req.body;

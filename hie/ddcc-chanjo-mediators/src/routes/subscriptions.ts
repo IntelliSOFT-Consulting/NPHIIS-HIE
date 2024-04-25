@@ -10,41 +10,6 @@ router.use(express.json());
 
 // get posted Immunization resource
 // extract patient & immunization
-
-router.post('/digital-certificate', async (req, res) => {
-    try {
-        let data = req.body;
-        let patientId = data?.subject?.reference;
-        let vaccineCode = data?.vaccineCode?.coding[0]?.code;
-        patientId = String(patientId).split('/')[1];
-        let doseQuantity = data?.doseQuantity?.value;
-
-        let locationId = data?.location?.reference.split('/');
-
-        let vaccineFolderId = await getVaccineFolder(patientId, vaccineCode);
-
-
-        res.statusCode = 400;
-        // res.json(patient);
-        return;
-    } catch (error) {
-        res.statusCode = 400;
-        console.log(error);
-        res.json({
-            "resourceType": "OperationOutcome",
-            "id": "exception",
-            "issue": [{
-                "severity": "error",
-                "code": "exception",
-                "details": {
-                    "text": String(error)
-                }
-            }]
-        });
-        return;
-    }
-});
-
 //process FHIR beneficiary
 router.put('/Immunization/:id', async (req, res) => {
     try {
