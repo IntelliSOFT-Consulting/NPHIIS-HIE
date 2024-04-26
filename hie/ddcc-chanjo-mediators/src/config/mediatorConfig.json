@@ -1,0 +1,35 @@
+{
+    "urn": "urn:mediator:digital-certificate",
+    "version": "1.0.0",
+    "name": "Digital Certificate Mediator",
+    "description": "This mediator is responsible for handling Digital Certificate Generation & Verification Workflows.",
+    "defaultChannelConfig": [
+      {
+        "name": "SHR Channel",
+        "urlPattern": "^/digital-certificate/.*$",
+        "routes": [
+          {
+            "name": "Digital Certificate Route",
+            "host": "ddcc-mediators",
+            "pathTransform": "s/\/\/.*$/",
+            "port": "3000",
+            "primary": true,
+            "type": "http"
+          }
+        ],
+        "allow": ["*"],
+        "methods": ["GET", "POST", "PUT", "PATCH"],
+        "type": "http"
+      }
+    ],
+    "endpoints": [
+      {
+        "name": "Digital Certificate Mediator Endpoint",
+        "host": "ddcc-mediators",
+        "path": "/",
+        "port": "3000",
+        "primary": true,
+        "type": "http"
+      }
+    ]
+  }

@@ -90,23 +90,41 @@ services:
             - ./default.json:/usr/share/nginx/html/config/default.json:ro
             - /etc/ssl/crt:/etc/nginx/certs
 
-    mediators:
+    ddcc-mediators:
         depends_on:
             - openhim-core
-        container_name: mediators
+        container_name: ddcc-mediators
         build:
-            context: mediators
+            context: ddcc-chanjo-mediators
             dockerfile: Dockerfile.dev
         restart: unless-stopped
         networks:
             - openhim
             - hapi-fhir
         ports:
-            - "8082:3000"
+            - "8084:3000"
         env_file:
-            - mediators/.env.example
+            - ddcc-chanjo-mediators/.env.example
         volumes:
-            - ./mediators:/usr/mediators
+            - ./ddcc-chanjo-mediators:/usr/app
+    
+    echis-mediators:
+        depends_on:
+            - openhim-core
+        container_name: echis-mediators
+        build:
+            context: echis-chanjo-mediators
+            dockerfile: Dockerfile.dev
+        restart: unless-stopped
+        networks:
+            - openhim
+            - hapi-fhir
+        ports:
+            - "8083:3000"
+        env_file:
+            - echis-chanjo-mediators/.env.example
+        volumes:
+            - ./echis-chanjo-mediators:/usr/app
 
 
     chanjoke-auth:
@@ -126,6 +144,17 @@ services:
             - ../chanjoke-auth:/usr/chanjoke-auth
         ports:
             - "8088:3000"
+
+    hapi-fhir-config:
+        depends_on:
+            - hapi-fhir-jpa
+        container_name: hapi-fhir-config
+        networks:
+            - cloudbuild
+        build: 
+            context: ../hapi-fhir-config
+            dockerfile: Dockerfile
+        
 
 volumes:
     mongodb-data:
