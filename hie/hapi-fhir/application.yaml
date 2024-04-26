@@ -123,14 +123,15 @@ hapi:
     #      requests_enabled: true
     #      responses_enabled: true
     #    binary_storage_enabled: true
-#    subscription:
-#      resthook_enabled: true
-#      websocket_enabled: false
-#      email:
-#        from: some@test.com
-#        host: google.com
-#        port:
-#        username:
+    subscription:
+      resthook_enabled: true
+      websocket_enabled: false
+      email:
+        from: some@test.com
+        host: google.com
+        port: 587
+        username: me
+        password: pass
 #        password:
 #        auth:
 #        startTlsEnable:
