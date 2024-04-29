@@ -15,6 +15,7 @@ dotenv.config() // Load environment variables
 //Import routes
 import ClientAuth from './routes/client-auth'
 import ProviderAuth from './routes/provider-auth'
+import Reports from './routes/reports'
 
 const app = express();
 const PORT = 3000;
@@ -36,6 +37,7 @@ app.use((req, res, next) => {
 
 app.use('/client', ClientAuth)
 app.use('/provider', ProviderAuth)
+app.use('/reports', Reports)
 
 
 app.listen(PORT, () => {
