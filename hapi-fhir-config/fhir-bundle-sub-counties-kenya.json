@@ -1,0 +1,7353 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "JOMVU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:42:34.654+00:00",
+          "source": "#wuT9PhaCLbsuwGW5"
+        },
+        "name": "JOMVU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/1",
+          "display": "MOMBASA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/JOMVU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KISAUNI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:42:39.226+00:00",
+          "source": "#vXqVnrbxq9i7uIoh"
+        },
+        "name": "KISAUNI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/1",
+          "display": "MOMBASA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KISAUNI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NYALI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:43:05.313+00:00",
+          "source": "#eChW9yGjbUZgD3mY"
+        },
+        "name": "NYALI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/1",
+          "display": "MOMBASA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NYALI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MVITA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:43:19.228+00:00",
+          "source": "#xRwCzlpxeEr00QYW"
+        },
+        "name": "MVITA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/1",
+          "display": "MOMBASA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MVITA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MSAMBWENI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:43:26.038+00:00",
+          "source": "#iEjwx396RXjo72vM"
+        },
+        "name": "MSAMBWENI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/2",
+          "display": "KWALE"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MSAMBWENI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LUNGALUNGA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:43:31.776+00:00",
+          "source": "#V219m3QTSlZ1GsZc"
+        },
+        "name": "LUNGALUNGA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/2",
+          "display": "KWALE"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LUNGALUNGA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MATUGA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:43:37.906+00:00",
+          "source": "#b2p1aKQ9XYsthOM5"
+        },
+        "name": "MATUGA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/2",
+          "display": "KWALE"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MATUGA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KILIFI-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:43:54.864+00:00",
+          "source": "#rcKB8RyWFw7AdaeC"
+        },
+        "name": "KILIFI NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/3",
+          "display": "KILIFI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KILIFI-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KILIFI-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:44:04.281+00:00",
+          "source": "#iyE5DC1sGr2RSFTK"
+        },
+        "name": "KILIFI SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/3",
+          "display": "KILIFI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KILIFI-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "RABAI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:44:16.898+00:00",
+          "source": "#dnl72qQiqIHfgxyi"
+        },
+        "name": "RABAI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/3",
+          "display": "KILIFI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/RABAI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MALINDI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:44:29.341+00:00",
+          "source": "#xd6iUee23n8mXlTb"
+        },
+        "name": "MALINDI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/3",
+          "display": "KILIFI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MALINDI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "GARSEN",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:44:45.341+00:00",
+          "source": "#AxQJMGuto3SFKD6S"
+        },
+        "name": "GARSEN",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/4",
+          "display": "TANA RIVER"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/GARSEN"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "GALOLE",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:44:53.317+00:00",
+          "source": "#qoJ0fbK2e8OUV3eD"
+        },
+        "name": "GALOLE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/4",
+          "display": "TANA RIVER"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/GALOLE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LAMU-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:45:06.085+00:00",
+          "source": "#HbMmIU1BHExObEcQ"
+        },
+        "name": "LAMU EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/5",
+          "display": "LAMU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LAMU-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LAMU-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:45:10.746+00:00",
+          "source": "#AvVosZ60tOC3iKBq"
+        },
+        "name": "LAMU WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/5",
+          "display": "LAMU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LAMU-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TAVETA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:45:19.991+00:00",
+          "source": "#BjB598biVHLt4zK8"
+        },
+        "name": "TAVETA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/6",
+          "display": "TAITA TAVETA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TAVETA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "WUNDANYI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:45:26.773+00:00",
+          "source": "#SR8lsGiVKZg9Di8v"
+        },
+        "name": "WUNDANYI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/6",
+          "display": "TAITA TAVETA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/WUNDANYI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "VOI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:45:40.161+00:00",
+          "source": "#yXMdCXvP2iUJN6vw"
+        },
+        "name": "VOI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/6",
+          "display": "TAITA TAVETA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/VOI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "GARISSA-TOWNSHIP",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:45:48.335+00:00",
+          "source": "#QRC2vOpnq74varGQ"
+        },
+        "name": "GARISSA TOWNSHIP",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/7",
+          "display": "GARISSA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/GARISSA-TOWNSHIP"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LAGDERA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:46:01.132+00:00",
+          "source": "#ym3HJjDNwuhFyPOc"
+        },
+        "name": "LAGDERA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/7",
+          "display": "GARISSA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LAGDERA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "WAJIR-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:46:30.640+00:00",
+          "source": "#bmxN98Fw5xGL734p"
+        },
+        "name": "WAJIR NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/8",
+          "display": "WAJIR"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/WAJIR-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "WAJIR-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:46:41.027+00:00",
+          "source": "#4BpZ2Ts4hdmPegiN"
+        },
+        "name": "WAJIR EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/8",
+          "display": "WAJIR"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/WAJIR-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "WAJIR-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:46:52.522+00:00",
+          "source": "#r6hGMsIywHULEbAb"
+        },
+        "name": "WAJIR WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/8",
+          "display": "WAJIR"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/WAJIR-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "WAJIR-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:47:03.796+00:00",
+          "source": "#69rt7bvRc2VpT5mj"
+        },
+        "name": "WAJIR SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/8",
+          "display": "WAJIR"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/WAJIR-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MANDERA-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:47:12.952+00:00",
+          "source": "#KMs2sCEKbuWcADjE"
+        },
+        "name": "MANDERA WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/9",
+          "display": "MANDERA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MANDERA-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MANDERA-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:47:26.815+00:00",
+          "source": "#GqWmA1jd01yLW0cq"
+        },
+        "name": "MANDERA NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/9",
+          "display": "MANDERA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MANDERA-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MANDERA-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:47:33.613+00:00",
+          "source": "#sRerppExzDrcxLEQ"
+        },
+        "name": "MANDERA SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/9",
+          "display": "MANDERA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MANDERA-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MANDERA-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:47:40.435+00:00",
+          "source": "#9reRzxINXiKwJIkp"
+        },
+        "name": "MANDERA EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/9",
+          "display": "MANDERA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MANDERA-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MOYALE",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:47:54.118+00:00",
+          "source": "#WV024IzXHvvjpJ1T"
+        },
+        "name": "MOYALE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/10",
+          "display": "MARSABIT"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MOYALE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SAKU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:48:10.936+00:00",
+          "source": "#m17fbOy6bW4CkNTA"
+        },
+        "name": "SAKU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/10",
+          "display": "MARSABIT"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SAKU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "ISIOLO-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:48:22.260+00:00",
+          "source": "#hxoMnSpMmrrKqHFi"
+        },
+        "name": "ISIOLO NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/11",
+          "display": "ISIOLO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/ISIOLO-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "ISIOLO-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:48:32.253+00:00",
+          "source": "#ZINVevHptXW9SSOZ"
+        },
+        "name": "ISIOLO SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/11",
+          "display": "ISIOLO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/ISIOLO-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "IGEMBE-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:48:37.021+00:00",
+          "source": "#eYIRan2F1DQRJKYf"
+        },
+        "name": "IGEMBE SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/12",
+          "display": "MERU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/IGEMBE-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "IGEMBE-CENTRAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:48:44.007+00:00",
+          "source": "#3WwJK4WMGtSCHbJK"
+        },
+        "name": "IGEMBE CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/12",
+          "display": "MERU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/IGEMBE-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "IGEMBE-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:48:51.171+00:00",
+          "source": "#ZZIZxMHpekbDTObj"
+        },
+        "name": "IGEMBE NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/12",
+          "display": "MERU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/IGEMBE-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TIGANIA-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:48:58.011+00:00",
+          "source": "#5dPIUNUfvVpwOOG2"
+        },
+        "name": "TIGANIA WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/12",
+          "display": "MERU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TIGANIA-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TIGANIA-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:49:04.847+00:00",
+          "source": "#isepiPffkRSE9uv5"
+        },
+        "name": "TIGANIA EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/12",
+          "display": "MERU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TIGANIA-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NORTH-IMENTI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:49:11.655+00:00",
+          "source": "#vfAYVTKaGc62l5DS"
+        },
+        "name": "NORTH IMENTI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/12",
+          "display": "MERU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NORTH-IMENTI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BUURI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:49:18.570+00:00",
+          "source": "#mGLa6E3H0bga3QGZ"
+        },
+        "name": "BUURI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/12",
+          "display": "MERU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BUURI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "CENTRAL-IMENTI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:49:25.585+00:00",
+          "source": "#2LyCpfsfmdEuaDxn"
+        },
+        "name": "CENTRAL IMENTI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/12",
+          "display": "MERU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/CENTRAL-IMENTI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SOUTH-IMENTI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:49:31.409+00:00",
+          "source": "#p0Ve44ojLwi22v1r"
+        },
+        "name": "SOUTH IMENTI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/12",
+          "display": "MERU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SOUTH-IMENTI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MAARA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:49:39.817+00:00",
+          "source": "#IWXpxgVZ29ZeT2DL"
+        },
+        "name": "MAARA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/13",
+          "display": "THARAKA-NITHI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MAARA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "CHUKA-IGAMBANGOM",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:49:46.655+00:00",
+          "source": "#RApgs7QbZEr0gDcf"
+        },
+        "name": "CHUKA IGAMBANG'OM",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/13",
+          "display": "THARAKA-NITHI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/CHUKA-IGAMBANGOM"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MANYATTA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:00.238+00:00",
+          "source": "#6xTtDc8Xc30OUtX2"
+        },
+        "name": "MANYATTA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/14",
+          "display": "EMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MANYATTA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "RUNYENJES",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:08.300+00:00",
+          "source": "#tgFRSuZouHndvaFC"
+        },
+        "name": "RUNYENJES",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/14",
+          "display": "EMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/RUNYENJES"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MBEERE-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:16.235+00:00",
+          "source": "#6MTlhw90J2T14CXw"
+        },
+        "name": "MBEERE SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/14",
+          "display": "EMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MBEERE-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MWEA",
+        "meta": {
+          "versionId": "14",
+          "lastUpdated": "2024-03-12T06:54:29.604+00:00",
+          "source": "#NSOV3a0gv4ALzT1V"
+        },
+        "name": "MWEA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/20",
+          "display": "KIRINYAGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MWEA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MBEERE-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:23.052+00:00",
+          "source": "#lu7soJVl1GSEzqSW"
+        },
+        "name": "MBEERE NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/14",
+          "display": "EMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MBEERE-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MWINGI-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:27.553+00:00",
+          "source": "#aNOnAexOxu56c2iU"
+        },
+        "name": "MWINGI NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/15",
+          "display": "KITUI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MWINGI-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MWINGI-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:34.338+00:00",
+          "source": "#6t4kyf0oqOzy1Zir"
+        },
+        "name": "MWINGI WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/15",
+          "display": "KITUI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MWINGI-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MWINGI-CENTRAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:39.966+00:00",
+          "source": "#DlyB8vDTdcu833FR"
+        },
+        "name": "MWINGI CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/15",
+          "display": "KITUI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MWINGI-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KITUI-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:47.947+00:00",
+          "source": "#8107GlSSQ9saZqqf"
+        },
+        "name": "KITUI WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/15",
+          "display": "KITUI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KITUI-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KITUI-RURAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:53.856+00:00",
+          "source": "#Q0bd3j2OoqpwpCiG"
+        },
+        "name": "KITUI RURAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/15",
+          "display": "KITUI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KITUI-RURAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KITUI-CENTRAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:50:59.595+00:00",
+          "source": "#bzxBhxa6YiR02QWO"
+        },
+        "name": "KITUI CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/15",
+          "display": "KITUI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KITUI-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KITUI-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:51:06.796+00:00",
+          "source": "#WT8tvTv9n1jsJT2a"
+        },
+        "name": "KITUI EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/15",
+          "display": "KITUI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KITUI-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KITUI-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:51:14.951+00:00",
+          "source": "#ZQFLxMgE5oA3DmZm"
+        },
+        "name": "KITUI SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/15",
+          "display": "KITUI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KITUI-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MASINGA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:51:23.045+00:00",
+          "source": "#NYkkdjQymiZQysDF"
+        },
+        "name": "MASINGA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/16",
+          "display": "MACHAKOS"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MASINGA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "YATTA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:51:29.973+00:00",
+          "source": "#OijndJJLftN9xYJS"
+        },
+        "name": "YATTA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/16",
+          "display": "MACHAKOS"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/YATTA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KANGUNDO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:51:36.847+00:00",
+          "source": "#TT3pp2n5QXuDxInI"
+        },
+        "name": "KANGUNDO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/16",
+          "display": "MACHAKOS"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KANGUNDO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MATUNGULU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:51:42.641+00:00",
+          "source": "#l3xrZhnB4e8ZVpuL"
+        },
+        "name": "MATUNGULU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/16",
+          "display": "MACHAKOS"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MATUNGULU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KATHIANI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:51:49.642+00:00",
+          "source": "#nHWTbDvpOudbWy3L"
+        },
+        "name": "KATHIANI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/16",
+          "display": "MACHAKOS"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KATHIANI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MAVOKO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:51:55.426+00:00",
+          "source": "#MtGXnmy8BKyh2u73"
+        },
+        "name": "MAVOKO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/16",
+          "display": "MACHAKOS"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MAVOKO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MACHAKOS-TOWN",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:52:01.218+00:00",
+          "source": "#VZ2cveD9J4Dj8hbA"
+        },
+        "name": "MACHAKOS TOWN",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/16",
+          "display": "MACHAKOS"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MACHAKOS-TOWN"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MWALA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:52:10.502+00:00",
+          "source": "#MQEYXdOslCCG9Rdl"
+        },
+        "name": "MWALA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/16",
+          "display": "MACHAKOS"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MWALA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KILOME",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:52:26.260+00:00",
+          "source": "#vcKr5BAq5dFhERFi"
+        },
+        "name": "KILOME",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/17",
+          "display": "MAKUENI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KILOME"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KAITI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:52:30.762+00:00",
+          "source": "#fOcqadPG2Ojxd7rX"
+        },
+        "name": "KAITI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/17",
+          "display": "MAKUENI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KAITI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MAKUENI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:52:36.426+00:00",
+          "source": "#8CW5dlHnLabcJ2bj"
+        },
+        "name": "MAKUENI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/17",
+          "display": "MAKUENI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MAKUENI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIBWEZI-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:52:46.236+00:00",
+          "source": "#6SFnvN7N2ZX1OBpH"
+        },
+        "name": "KIBWEZI WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/17",
+          "display": "MAKUENI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIBWEZI-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIBWEZI-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:52:54.292+00:00",
+          "source": "#ochlDbBILR6Tzpgh"
+        },
+        "name": "KIBWEZI EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/17",
+          "display": "MAKUENI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIBWEZI-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KINANGOP",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:53:00.160+00:00",
+          "source": "#7hnyJZalDStZUJT8"
+        },
+        "name": "KINANGOP",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/18",
+          "display": "NYANDARUA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KINANGOP"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "OL-KALOU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:53:22.701+00:00",
+          "source": "#6bhrV2SxvvjlejdZ"
+        },
+        "name": "OL KALOU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/18",
+          "display": "NYANDARUA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/OL-KALOU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "OL-JOROK",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:53:29.477+00:00",
+          "source": "#Nd6Z3mZ69xTMh24j"
+        },
+        "name": "OL JOROK",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/18",
+          "display": "NYANDARUA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/OL-JOROK"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NDARAGWA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:53:37.162+00:00",
+          "source": "#4k0Pd2oSCtMImXkf"
+        },
+        "name": "NDARAGWA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/18",
+          "display": "NYANDARUA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NDARAGWA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TETU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:53:42.863+00:00",
+          "source": "#EKsYNK7qOi1WSJGh"
+        },
+        "name": "TETU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/19",
+          "display": "NYERI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TETU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIENI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:53:47.414+00:00",
+          "source": "#0uwu2Kh8wj6FEa2y"
+        },
+        "name": "KIENI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/19",
+          "display": "NYERI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIENI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MATHIRA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:54:00.073+00:00",
+          "source": "#Rx3gYnoIYdraqcKP"
+        },
+        "name": "MATHIRA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/19",
+          "display": "NYERI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MATHIRA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "OTHAYA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:54:09.534+00:00",
+          "source": "#xHLkuCf1NGOMafV8"
+        },
+        "name": "OTHAYA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/19",
+          "display": "NYERI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/OTHAYA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MUKURWEINI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:54:16.773+00:00",
+          "source": "#HhcnTnkr21xEtViy"
+        },
+        "name": "MUKURWEINI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/19",
+          "display": "NYERI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MUKURWEINI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NYERI-TOWN",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:54:22.598+00:00",
+          "source": "#AamWYZA5K4ctiLbh"
+        },
+        "name": "NYERI TOWN",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/19",
+          "display": "NYERI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NYERI-TOWN"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "GICHUGU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:54:48.781+00:00",
+          "source": "#fDowzqBZxkIwIFFF"
+        },
+        "name": "GICHUGU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/20",
+          "display": "KIRINYAGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/GICHUGU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NDIA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:54:57.731+00:00",
+          "source": "#FfS7SwqrVbzbT65t"
+        },
+        "name": "NDIA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/20",
+          "display": "KIRINYAGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NDIA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIRINYAGA-CENTRAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:55:02.246+00:00",
+          "source": "#9VEh56iyT5SUzuFe"
+        },
+        "name": "KIRINYAGA CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/20",
+          "display": "KIRINYAGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIRINYAGA-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KANGEMA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:55:08.279+00:00",
+          "source": "#vsf4epoZdZCeaP4u"
+        },
+        "name": "KANGEMA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/21",
+          "display": "MURANG'A"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KANGEMA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MATHIOYA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:55:12.798+00:00",
+          "source": "#LG5Or9q6gSQAV4sa"
+        },
+        "name": "MATHIOYA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/21",
+          "display": "MURANG'A"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MATHIOYA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIHARU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:55:23.249+00:00",
+          "source": "#V9CUcW1ofnTYznMO"
+        },
+        "name": "KIHARU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/21",
+          "display": "MURANG'A"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIHARU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MARAGWA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:55:45.698+00:00",
+          "source": "#oTXnO8xRFvDXsw3T"
+        },
+        "name": "MARAGWA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/21",
+          "display": "MURANG'A"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MARAGWA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KANDARA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:55:53.726+00:00",
+          "source": "#jSoUEISRpXp1rKi3"
+        },
+        "name": "KANDARA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/21",
+          "display": "MURANG'A"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KANDARA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "GATUNDU-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:56:10.559+00:00",
+          "source": "#54YJx4rHynrCuF0z"
+        },
+        "name": "GATUNDU SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/22",
+          "display": "KIAMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/GATUNDU-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "GATUNDU-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:56:16.300+00:00",
+          "source": "#0fROnkEasovUOMB3"
+        },
+        "name": "GATUNDU NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/22",
+          "display": "KIAMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/GATUNDU-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "THIKA-TOWN",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:56:31.406+00:00",
+          "source": "#Vh7k24Vz02h1Qmpe"
+        },
+        "name": "THIKA TOWN",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/22",
+          "display": "KIAMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/THIKA-TOWN"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "RUIRU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:56:38.241+00:00",
+          "source": "#KErBNFMvLELA8Urp"
+        },
+        "name": "RUIRU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/22",
+          "display": "KIAMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/RUIRU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIAMBU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:56:55.295+00:00",
+          "source": "#8JIqsPUb4NGy9zHH"
+        },
+        "name": "KIAMBU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/22",
+          "display": "KIAMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIAMBU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIAMBAA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:57:00.943+00:00",
+          "source": "#9cnD5z2mUDBe5pwF"
+        },
+        "name": "KIAMBAA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/22",
+          "display": "KIAMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIAMBAA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LIMURU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:57:21.966+00:00",
+          "source": "#V9pl7pkFAQM8Bzc4"
+        },
+        "name": "LIMURU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/22",
+          "display": "KIAMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LIMURU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LARI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:57:30.080+00:00",
+          "source": "#3I2SeF6JY7wCyRuf"
+        },
+        "name": "LARI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/22",
+          "display": "KIAMBU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LARI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TURKANA-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:57:39.048+00:00",
+          "source": "#a01QZ7FHutI6HwHE"
+        },
+        "name": "TURKANA NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/23",
+          "display": "TURKANA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TURKANA-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TURKANA-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:57:47.666+00:00",
+          "source": "#hsKOTzFINo7zvXVd"
+        },
+        "name": "TURKANA WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/23",
+          "display": "TURKANA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TURKANA-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TURKANA-CENTRAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:57:57.006+00:00",
+          "source": "#6nnXKy6scVCCaab7"
+        },
+        "name": "TURKANA CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/23",
+          "display": "TURKANA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TURKANA-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TURKANA-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:58:09.682+00:00",
+          "source": "#k5UBIWKOBGRUv5wE"
+        },
+        "name": "TURKANA SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/23",
+          "display": "TURKANA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TURKANA-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TURKANA-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:58:16.682+00:00",
+          "source": "#wd7FvuHTCrn2ypw8"
+        },
+        "name": "TURKANA EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/23",
+          "display": "TURKANA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TURKANA-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KACHELIBA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:58:34.835+00:00",
+          "source": "#zYCPxNWjUtdiTKxA"
+        },
+        "name": "KACHELIBA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/24",
+          "display": "WEST POKOT"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KACHELIBA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "POKOT-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:58:42.844+00:00",
+          "source": "#cheIISDxf686Kdm1"
+        },
+        "name": "POKOT SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/24",
+          "display": "WEST POKOT"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/POKOT-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SAMBURU-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:58:48.510+00:00",
+          "source": "#frd5qY4mHnz8Zwgz"
+        },
+        "name": "SAMBURU WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/25",
+          "display": "SAMBURU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SAMBURU-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SAMBURU-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:58:55.333+00:00",
+          "source": "#6ExGMl4AXQzdvyjI"
+        },
+        "name": "SAMBURU NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/25",
+          "display": "SAMBURU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SAMBURU-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SAMBURU-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:59:04.042+00:00",
+          "source": "#joRUqMZ90Y7sehSp"
+        },
+        "name": "SAMBURU EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/25",
+          "display": "SAMBURU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SAMBURU-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "CHERANGANY",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:59:35.917+00:00",
+          "source": "#nbMdXyyLNebDGkGH"
+        },
+        "name": "CHERANGANY",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/26",
+          "display": "TRANS NZOIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/CHERANGANY"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TURBO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T06:59:54.296+00:00",
+          "source": "#iJ8gG3ckbLHpghf1"
+        },
+        "name": "TURBO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/27",
+          "display": "UASIN GISHU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TURBO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "AINABKOI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:00:09.348+00:00",
+          "source": "#LGtkbXbfPWmO6ldI"
+        },
+        "name": "AINABKOI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/27",
+          "display": "UASIN GISHU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/AINABKOI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KAPSERET",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:00:13.980+00:00",
+          "source": "#l5KD9K3hf2I2NqDv"
+        },
+        "name": "KAPSERET",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/27",
+          "display": "UASIN GISHU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KAPSERET"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KESSES",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:00:20.746+00:00",
+          "source": "#FEBDYzQBD0R7r21l"
+        },
+        "name": "KESSES",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/27",
+          "display": "UASIN GISHU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KESSES"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MARAKWET-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:00:26.571+00:00",
+          "source": "#wfQDE3RQeFgtaGyb"
+        },
+        "name": "MARAKWET EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/28",
+          "display": "ELGEYO MARAKWET"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MARAKWET-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MARAKWET-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:00:32.271+00:00",
+          "source": "#2v1HQlzeu2tnKvqx"
+        },
+        "name": "MARAKWET WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/28",
+          "display": "ELGEYO MARAKWET"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MARAKWET-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KEIYO-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:00:40.244+00:00",
+          "source": "#1srnMsPbG6p4BwKI"
+        },
+        "name": "KEIYO NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/28",
+          "display": "ELGEYO MARAKWET"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KEIYO-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KEIYO-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:00:45.870+00:00",
+          "source": "#bBFpvDMmVKKZ8vwV"
+        },
+        "name": "KEIYO SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/28",
+          "display": "ELGEYO MARAKWET"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KEIYO-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TINDERET",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:00:53.818+00:00",
+          "source": "#44cXf2Y3THbDBXfY"
+        },
+        "name": "TINDERET",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/29",
+          "display": "NANDI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TINDERET"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "ALDAI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:00:59.477+00:00",
+          "source": "#QsAb4YqjyDwhFOSf"
+        },
+        "name": "ALDAI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/29",
+          "display": "NANDI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/ALDAI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "CHESUMEI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:01:13.274+00:00",
+          "source": "#4JYOYaqodh9SJz33"
+        },
+        "name": "CHESUMEI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/29",
+          "display": "NANDI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/CHESUMEI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "EMGWEN",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:01:20.112+00:00",
+          "source": "#jdw6kTZtio8ji6Yk"
+        },
+        "name": "EMGWEN",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/29",
+          "display": "NANDI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/EMGWEN"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TIATY",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:01:34.902+00:00",
+          "source": "#IdqGfn2XKvAZPkUt"
+        },
+        "name": "TIATY",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/30",
+          "display": "BARINGO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TIATY"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BARINGO--NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:01:44.029+00:00",
+          "source": "#o44XdDZ89GN6AZkp"
+        },
+        "name": "BARINGO  NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/30",
+          "display": "BARINGO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BARINGO--NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BARINGO-CENTRAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:01:50.989+00:00",
+          "source": "#CymuNql0MqDxLxqm"
+        },
+        "name": "BARINGO CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/30",
+          "display": "BARINGO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BARINGO-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BARINGO-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:01:57.938+00:00",
+          "source": "#oyyPjtbCCsRGsekV"
+        },
+        "name": "BARINGO SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/30",
+          "display": "BARINGO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BARINGO-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "ELDAMA-RAVINE",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:02:09.446+00:00",
+          "source": "#dW6qTOjjfIhFirG2"
+        },
+        "name": "ELDAMA RAVINE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/30",
+          "display": "BARINGO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/ELDAMA-RAVINE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LAIKIPIA-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:02:17.643+00:00",
+          "source": "#haRlvodwhoa3dgtJ"
+        },
+        "name": "LAIKIPIA WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/31",
+          "display": "LAIKIPIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LAIKIPIA-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LAIKIPIA-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:02:25.704+00:00",
+          "source": "#JiOTowiMMoU5TA8L"
+        },
+        "name": "LAIKIPIA EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/31",
+          "display": "LAIKIPIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LAIKIPIA-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LAIKIPIA-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:02:32.580+00:00",
+          "source": "#NRB4lv5h5P0GqGY9"
+        },
+        "name": "LAIKIPIA NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/31",
+          "display": "LAIKIPIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LAIKIPIA-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NAIVASHA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:02:52.278+00:00",
+          "source": "#vIjmLBPghbY3DtLE"
+        },
+        "name": "NAIVASHA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/32",
+          "display": "NAKURU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NAIVASHA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KURESOI-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:03:10.051+00:00",
+          "source": "#SfCmiwPHhwXOo23K"
+        },
+        "name": "KURESOI SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/32",
+          "display": "NAKURU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KURESOI-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KURESOI-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:03:15.841+00:00",
+          "source": "#sfgIjRqHNkzYo7Y3"
+        },
+        "name": "KURESOI NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/32",
+          "display": "NAKURU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KURESOI-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "RONGAI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:03:29.715+00:00",
+          "source": "#Z7rEHlPJ0ggxuWpf"
+        },
+        "name": "RONGAI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/32",
+          "display": "NAKURU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/RONGAI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NAKURU-TOWN-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:03:45.158+00:00",
+          "source": "#TjDipuaEPfX5RwtW"
+        },
+        "name": "NAKURU TOWN WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/32",
+          "display": "NAKURU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NAKURU-TOWN-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NAKURU-TOWN-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:03:53.201+00:00",
+          "source": "#DSWT2mZHQhEL7JsA"
+        },
+        "name": "NAKURU TOWN EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/32",
+          "display": "NAKURU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NAKURU-TOWN-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KILGORIS",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:04:00.132+00:00",
+          "source": "#mbA7MVXhKqCSOpNg"
+        },
+        "name": "KILGORIS",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/33",
+          "display": "NAROK"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KILGORIS"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "EMURUA-DIKIRR",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:04:08.431+00:00",
+          "source": "#iq2aG5tdUIi8xWOX"
+        },
+        "name": "EMURUA DIKIRR",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/33",
+          "display": "NAROK"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/EMURUA-DIKIRR"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NAROK-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:04:14.183+00:00",
+          "source": "#sqjwsAXdqBKsd8QM"
+        },
+        "name": "NAROK NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/33",
+          "display": "NAROK"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NAROK-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NAROK-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:04:29.193+00:00",
+          "source": "#ao4qA006WgGjkALX"
+        },
+        "name": "NAROK EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/33",
+          "display": "NAROK"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NAROK-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NAROK-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:04:34.902+00:00",
+          "source": "#kOSPPLU14UcZKZVQ"
+        },
+        "name": "NAROK SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/33",
+          "display": "NAROK"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NAROK-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NAROK-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:04:43.182+00:00",
+          "source": "#mcKqaDMEIKXPzdJs"
+        },
+        "name": "NAROK WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/33",
+          "display": "NAROK"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NAROK-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KAJIADO-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:04:49.035+00:00",
+          "source": "#weLPxSqvQkIIGLfW"
+        },
+        "name": "KAJIADO NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/34",
+          "display": "KAJIADO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KAJIADO-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KAJIADO-CENTRAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:04:57.467+00:00",
+          "source": "#QYPrpP8v1F44mWtA"
+        },
+        "name": "KAJIADO CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/34",
+          "display": "KAJIADO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KAJIADO-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KAJIADO-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:05:18.493+00:00",
+          "source": "#3Gh12ThpMvFOGasc"
+        },
+        "name": "KAJIADO EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/34",
+          "display": "KAJIADO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KAJIADO-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KAJIADO-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:05:26.612+00:00",
+          "source": "#U9qr4HHoQsKjoCoQ"
+        },
+        "name": "KAJIADO WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/34",
+          "display": "KAJIADO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KAJIADO-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KAJIADO-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:05:33.392+00:00",
+          "source": "#1AcCWM1fmYSsKecp"
+        },
+        "name": "KAJIADO SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/34",
+          "display": "KAJIADO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KAJIADO-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIPKELION-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:05:40.143+00:00",
+          "source": "#3NsKgbp5G6oYnWil"
+        },
+        "name": "KIPKELION EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/35",
+          "display": "KERICHO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIPKELION-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIPKELION-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:05:45.832+00:00",
+          "source": "#wkz2jPSY42CvBqvg"
+        },
+        "name": "KIPKELION WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/35",
+          "display": "KERICHO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIPKELION-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BURETI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:05:59.733+00:00",
+          "source": "#1H4Pxl04TGLWYsR6"
+        },
+        "name": "BURETI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/35",
+          "display": "KERICHO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BURETI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BELGUT",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:06:08.820+00:00",
+          "source": "#OqLquXmOWFAQtAxF"
+        },
+        "name": "BELGUT",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/35",
+          "display": "KERICHO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BELGUT"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SIGOWET-SOIN",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:06:50.010+00:00",
+          "source": "#iWBZt91XmmmgbrW7"
+        },
+        "name": "SIGOWET SOIN",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/35",
+          "display": "KERICHO"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SIGOWET-SOIN"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SOTIK",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:07:10.409+00:00",
+          "source": "#ZCWqiACwV2N2f5FS"
+        },
+        "name": "SOTIK",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/36",
+          "display": "BOMET"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SOTIK"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "CHEPALUNGU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:07:17.253+00:00",
+          "source": "#dQhKRBmzomzGOzNp"
+        },
+        "name": "CHEPALUNGU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/36",
+          "display": "BOMET"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/CHEPALUNGU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BOMET-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:07:27.944+00:00",
+          "source": "#RGb6nmTHA8Sx6oa3"
+        },
+        "name": "BOMET EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/36",
+          "display": "BOMET"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BOMET-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BOMET-CENTRAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:07:34.815+00:00",
+          "source": "#8iYoKwoiRnlsrkZd"
+        },
+        "name": "BOMET CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/36",
+          "display": "BOMET"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BOMET-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KONOIN",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:07:41.669+00:00",
+          "source": "#oYk31W010Qus4wSs"
+        },
+        "name": "KONOIN",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/36",
+          "display": "BOMET"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KONOIN"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MALAVA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:08:07.982+00:00",
+          "source": "#dqGzmLCwCD8OwfXg"
+        },
+        "name": "MALAVA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MALAVA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LURAMBI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:08:17.174+00:00",
+          "source": "#zLRfybti9tDDaITd"
+        },
+        "name": "LURAMBI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LURAMBI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NAVAKHOLO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:08:25.152+00:00",
+          "source": "#NGSqiJjeUVuGEbEs"
+        },
+        "name": "NAVAKHOLO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NAVAKHOLO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MUMIAS-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:08:32.082+00:00",
+          "source": "#qFabl6GlGuSMZo69"
+        },
+        "name": "MUMIAS WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MUMIAS-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MUMIAS-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:08:37.736+00:00",
+          "source": "#4BQUn2beYwuniViv"
+        },
+        "name": "MUMIAS EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MUMIAS-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MATUNGU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:08:42.395+00:00",
+          "source": "#czOhokGqCfww99la"
+        },
+        "name": "MATUNGU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MATUNGU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BUTERE",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:08:49.265+00:00",
+          "source": "#87v5jzWGYHCyvxyP"
+        },
+        "name": "BUTERE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BUTERE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KHWISERO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:08:56.625+00:00",
+          "source": "#qgbWUpLBm9A8lkOL"
+        },
+        "name": "KHWISERO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KHWISERO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SHINYALU",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:09:02.507+00:00",
+          "source": "#Lxi8OUAxLNm94RVd"
+        },
+        "name": "SHINYALU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SHINYALU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "IKOLOMANI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:09:11.645+00:00",
+          "source": "#N8NeM0Ukjv9MpQy3"
+        },
+        "name": "IKOLOMANI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/37",
+          "display": "KAKAMEGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/IKOLOMANI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "VIHIGA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:09:17.371+00:00",
+          "source": "#dt9rP1sLDAS0IqmT"
+        },
+        "name": "VIHIGA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/38",
+          "display": "VIHIGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/VIHIGA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SABATIA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:09:23.044+00:00",
+          "source": "#ysgBGIs6kYVTAQQc"
+        },
+        "name": "SABATIA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/38",
+          "display": "VIHIGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SABATIA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "HAMISI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:09:32.003+00:00",
+          "source": "#Cx5P6DbruartS4js"
+        },
+        "name": "HAMISI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/38",
+          "display": "VIHIGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/HAMISI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LUANDA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:09:41.227+00:00",
+          "source": "#rmRNx6yGffx7gKU3"
+        },
+        "name": "LUANDA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/38",
+          "display": "VIHIGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LUANDA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "EMUHAYA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:09:48.145+00:00",
+          "source": "#SYbrXLYdm2JeqTgC"
+        },
+        "name": "EMUHAYA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/38",
+          "display": "VIHIGA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/EMUHAYA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MT.ELGON",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:09:54.142+00:00",
+          "source": "#u4YksJunjdbKoY22"
+        },
+        "name": "MT.ELGON",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/39",
+          "display": "BUNGOMA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MT.ELGON"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SIRISIA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:10:02.451+00:00",
+          "source": "#6QgBLKxHkNTbjKdB"
+        },
+        "name": "SIRISIA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/39",
+          "display": "BUNGOMA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SIRISIA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KABUCHAI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:10:06.981+00:00",
+          "source": "#Y1C8TDfnYU8TSWO1"
+        },
+        "name": "KABUCHAI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/39",
+          "display": "BUNGOMA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KABUCHAI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KANDUYI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:10:21.754+00:00",
+          "source": "#HArJcI9sJQOEItrv"
+        },
+        "name": "KANDUYI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/39",
+          "display": "BUNGOMA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KANDUYI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "WEBUYE-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:10:32.008+00:00",
+          "source": "#j3A3q0obZWyRe9XA"
+        },
+        "name": "WEBUYE EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/39",
+          "display": "BUNGOMA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/WEBUYE-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "WEBUYE-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:10:36.585+00:00",
+          "source": "#kafs3z7UXq2Rjxht"
+        },
+        "name": "WEBUYE WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/39",
+          "display": "BUNGOMA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/WEBUYE-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TESO-NORTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:10:56.059+00:00",
+          "source": "#kZkcI5SP0183ogn5"
+        },
+        "name": "TESO NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/40",
+          "display": "BUSIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TESO-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "TESO-SOUTH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:11:04.195+00:00",
+          "source": "#KRxPbkBEdHyP6BLx"
+        },
+        "name": "TESO SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/40",
+          "display": "BUSIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/TESO-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NAMBALE",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:11:12.312+00:00",
+          "source": "#2VpobS2IQMxbKanT"
+        },
+        "name": "NAMBALE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/40",
+          "display": "BUSIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NAMBALE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MATAYOS",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:11:18.024+00:00",
+          "source": "#uizdQMjZLiREuCMu"
+        },
+        "name": "MATAYOS",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/40",
+          "display": "BUSIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MATAYOS"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BUTULA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:11:24.818+00:00",
+          "source": "#ds3eTmS9Kwi9PXg5"
+        },
+        "name": "BUTULA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/40",
+          "display": "BUSIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BUTULA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "FUNYULA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:11:32.852+00:00",
+          "source": "#oH1Kqdd2XOc2d41U"
+        },
+        "name": "FUNYULA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/40",
+          "display": "BUSIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/FUNYULA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BUDALANGI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:11:38.624+00:00",
+          "source": "#ssvJbX4VD0muTv8b"
+        },
+        "name": "BUDALANGI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/40",
+          "display": "BUSIA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BUDALANGI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "UGENYA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:11:44.531+00:00",
+          "source": "#Vv7zvdTw4SKYxGFW"
+        },
+        "name": "UGENYA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/41",
+          "display": "SIAYA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/UGENYA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "ALEGO-USONGA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:11:54.830+00:00",
+          "source": "#JeaBXMzERVlpkRlC"
+        },
+        "name": "ALEGO USONGA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/41",
+          "display": "SIAYA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/ALEGO-USONGA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "GEM",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:12:02.773+00:00",
+          "source": "#rzSbcWZ8UNAkTi5u"
+        },
+        "name": "GEM",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/41",
+          "display": "SIAYA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/GEM"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BONDO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:12:10.898+00:00",
+          "source": "#7GPpeXoKp7c7JixY"
+        },
+        "name": "BONDO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/41",
+          "display": "SIAYA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BONDO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "RARIEDA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:12:19.053+00:00",
+          "source": "#NwGaqr7woqxtZUhj"
+        },
+        "name": "RARIEDA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/41",
+          "display": "SIAYA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/RARIEDA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KISUMU-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:12:25.791+00:00",
+          "source": "#VlhJEi8Pok5QH7dq"
+        },
+        "name": "KISUMU EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/42",
+          "display": "KISUMU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KISUMU-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KISUMU-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:12:32.549+00:00",
+          "source": "#FbEFcoYJMbzs9buZ"
+        },
+        "name": "KISUMU WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/42",
+          "display": "KISUMU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KISUMU-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KISUMU-CENTRAL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:12:39.239+00:00",
+          "source": "#BeQ1eduswMtO7j1N"
+        },
+        "name": "KISUMU CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/42",
+          "display": "KISUMU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KISUMU-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SEME",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:12:47.253+00:00",
+          "source": "#KrMtleBaiIraJQ9J"
+        },
+        "name": "SEME",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/42",
+          "display": "KISUMU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SEME"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NYANDO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:12:52.902+00:00",
+          "source": "#UesGG6gEGPkNPc8b"
+        },
+        "name": "NYANDO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/42",
+          "display": "KISUMU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NYANDO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MUHORONI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:12:59.826+00:00",
+          "source": "#9zBahVgWO4RSaa6l"
+        },
+        "name": "MUHORONI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/42",
+          "display": "KISUMU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MUHORONI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NYAKACH",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:13:06.683+00:00",
+          "source": "#Z1nANVTYzA5zuYmE"
+        },
+        "name": "NYAKACH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/42",
+          "display": "KISUMU"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NYAKACH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KASIPUL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:13:13.503+00:00",
+          "source": "#GozsCAls3OPbmm92"
+        },
+        "name": "KASIPUL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/43",
+          "display": "HOMA BAY"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KASIPUL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KABONDO-KASIPUL",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:13:20.332+00:00",
+          "source": "#OojpurF3MwgBiVKm"
+        },
+        "name": "KABONDO KASIPUL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/43",
+          "display": "HOMA BAY"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KABONDO-KASIPUL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KARACHUONYO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:13:25.989+00:00",
+          "source": "#SJBz5qUf12x1QYid"
+        },
+        "name": "KARACHUONYO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/43",
+          "display": "HOMA BAY"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KARACHUONYO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "RANGWE",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:13:35.183+00:00",
+          "source": "#A2MDC7Wmn9OVZdGf"
+        },
+        "name": "RANGWE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/43",
+          "display": "HOMA BAY"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/RANGWE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "HOMA-BAY-TOWN",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:13:40.778+00:00",
+          "source": "#mkQmdBWpBqFz0vkd"
+        },
+        "name": "HOMA BAY TOWN",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/43",
+          "display": "HOMA BAY"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/HOMA-BAY-TOWN"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NDHIWA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:13:46.446+00:00",
+          "source": "#JOmOmrjmTA8D80vt"
+        },
+        "name": "NDHIWA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/43",
+          "display": "HOMA BAY"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NDHIWA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MBITA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:13:55.590+00:00",
+          "source": "#0URHnJXFaNt65Skz"
+        },
+        "name": "MBITA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/43",
+          "display": "HOMA BAY"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MBITA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SUBA",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:14:02.421+00:00",
+          "source": "#gOikYoMGAUZqzyIS"
+        },
+        "name": "SUBA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/43",
+          "display": "HOMA BAY"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SUBA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "RONGO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:14:08.053+00:00",
+          "source": "#Ve1QV74l9QHUFSb7"
+        },
+        "name": "RONGO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/44",
+          "display": "MIGORI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/RONGO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "AWENDO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:14:13.732+00:00",
+          "source": "#yOGyDAJadXAVDOSo"
+        },
+        "name": "AWENDO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/44",
+          "display": "MIGORI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/AWENDO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SUNA-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:14:19.388+00:00",
+          "source": "#0KhrEJCMbESMUjH3"
+        },
+        "name": "SUNA EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/44",
+          "display": "MIGORI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SUNA-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SUNA-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:14:25.117+00:00",
+          "source": "#zOvijDy93pHg5hsa"
+        },
+        "name": "SUNA WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/44",
+          "display": "MIGORI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SUNA-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "URIRI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:14:30.751+00:00",
+          "source": "#ujCKISdvpeBVV5LA"
+        },
+        "name": "URIRI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/44",
+          "display": "MIGORI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/URIRI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NYATIKE",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:14:37.718+00:00",
+          "source": "#FtRuve7i31NJQxB5"
+        },
+        "name": "NYATIKE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/44",
+          "display": "MIGORI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NYATIKE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KURIA-WEST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:14:47.055+00:00",
+          "source": "#lAY4E0IOmsvS2XTr"
+        },
+        "name": "KURIA WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/44",
+          "display": "MIGORI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KURIA-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KURIA-EAST",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:14:56.108+00:00",
+          "source": "#ZKWNsuHumpGtpVXP"
+        },
+        "name": "KURIA EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/44",
+          "display": "MIGORI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KURIA-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BONCHARI",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:15:02.893+00:00",
+          "source": "#JmqPYpji2viD3b1u"
+        },
+        "name": "BONCHARI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/45",
+          "display": "KISII"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BONCHARI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "SOUTH-MUGIRANGO",
+        "meta": {
+          "versionId": "3",
+          "lastUpdated": "2024-03-12T07:15:08.544+00:00",
+          "source": "#vGYIog4Wk4Y3RApP"
+        },
+        "name": "SOUTH MUGIRANGO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/45",
+          "display": "KISII"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/SOUTH-MUGIRANGO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BOMACHOGE-BORABU",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:15:16.430+00:00",
+          "source": "#7XFaYqsR5toy9UFZ"
+        },
+        "name": "BOMACHOGE BORABU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/45",
+          "display": "KISII"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BOMACHOGE-BORABU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BOBASI",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:15:22.158+00:00",
+          "source": "#swNCQ0wsY4KyM7Ce"
+        },
+        "name": "BOBASI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/45",
+          "display": "KISII"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BOBASI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BOMACHOGE-CHACHE",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:15:32.426+00:00",
+          "source": "#M6urkS0vIDUZ2kZS"
+        },
+        "name": "BOMACHOGE CHACHE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/45",
+          "display": "KISII"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BOMACHOGE-CHACHE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NYARIBARI-MASABA",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:15:36.983+00:00",
+          "source": "#PAdjErVFRMvjCU9e"
+        },
+        "name": "NYARIBARI MASABA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/45",
+          "display": "KISII"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NYARIBARI-MASABA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NYARIBARI-CHACHE",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:15:43.812+00:00",
+          "source": "#hWI30BMkHG4VNmIk"
+        },
+        "name": "NYARIBARI CHACHE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/45",
+          "display": "KISII"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NYARIBARI-CHACHE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KITUTU-CHACHE-NORTH",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:15:51.892+00:00",
+          "source": "#AsUK49bODRavzdnQ"
+        },
+        "name": "KITUTU CHACHE NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/45",
+          "display": "KISII"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KITUTU-CHACHE-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KITUTU-CHACHE-SOUTH",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:15:57.534+00:00",
+          "source": "#AoXYCws7MYggUNnY"
+        },
+        "name": "KITUTU CHACHE SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/45",
+          "display": "KISII"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KITUTU-CHACHE-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KITUTU-MASABA",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:16:04.240+00:00",
+          "source": "#ZW27D6ZzpBjf39kk"
+        },
+        "name": "KITUTU MASABA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/46",
+          "display": "NYAMIRA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KITUTU-MASABA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "WEST-MUGIRANGO",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:16:12.078+00:00",
+          "source": "#ySBrdk1zbSGccHoR"
+        },
+        "name": "WEST MUGIRANGO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/46",
+          "display": "NYAMIRA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/WEST-MUGIRANGO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "NORTH-MUGIRANGO",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:16:18.805+00:00",
+          "source": "#Sqf25DG3sqP7DlQl"
+        },
+        "name": "NORTH MUGIRANGO",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/46",
+          "display": "NYAMIRA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/NORTH-MUGIRANGO"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "BORABU",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:16:25.568+00:00",
+          "source": "#zGVS1pNvJSwrdjoQ"
+        },
+        "name": "BORABU",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/46",
+          "display": "NYAMIRA"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/BORABU"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "WESTLANDS",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:16:31.240+00:00",
+          "source": "#l5UkshlA56wvjy0E"
+        },
+        "name": "WESTLANDS",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/WESTLANDS"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "DAGORETTI-NORTH",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:16:37.953+00:00",
+          "source": "#Bfxl6WziFQDYgD63"
+        },
+        "name": "DAGORETTI NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/DAGORETTI-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "DAGORETTI-SOUTH",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:16:46.240+00:00",
+          "source": "#7kE8HOaYqYE5OaBk"
+        },
+        "name": "DAGORETTI SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/DAGORETTI-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "LANGATA",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:16:53.105+00:00",
+          "source": "#Hq19bIR1R78HuUxL"
+        },
+        "name": "LANGATA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/LANGATA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KIBRA",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:17:00.247+00:00",
+          "source": "#weOWN7PdYVzl2X3T"
+        },
+        "name": "KIBRA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KIBRA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "RUARAKA",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:17:21.764+00:00",
+          "source": "#jqkrZT5jkFDj9uSs"
+        },
+        "name": "RUARAKA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/RUARAKA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "EMBAKASI-SOUTH",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:17:28.677+00:00",
+          "source": "#vbH1iMKEY5UHEOvq"
+        },
+        "name": "EMBAKASI SOUTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/EMBAKASI-SOUTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "EMBAKASI-NORTH",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:17:38.057+00:00",
+          "source": "#KU8oq31DawAvuAxh"
+        },
+        "name": "EMBAKASI NORTH",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/EMBAKASI-NORTH"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "EMBAKASI-CENTRAL",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:17:46.358+00:00",
+          "source": "#S4IjheEzKuu0SEex"
+        },
+        "name": "EMBAKASI CENTRAL",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/EMBAKASI-CENTRAL"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "EMBAKASI-EAST",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:17:53.371+00:00",
+          "source": "#vf6WFfsvvMaJZgeH"
+        },
+        "name": "EMBAKASI EAST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/EMBAKASI-EAST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "EMBAKASI-WEST",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:18:00.498+00:00",
+          "source": "#4n5gx7GI5l03jCyK"
+        },
+        "name": "EMBAKASI WEST",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/EMBAKASI-WEST"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MAKADARA",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:18:06.254+00:00",
+          "source": "#6ZZXa2LoYIDKN4YT"
+        },
+        "name": "MAKADARA",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MAKADARA"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "KAMUKUNJI",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:18:13.840+00:00",
+          "source": "#u57mrwIQ0ra48MX4"
+        },
+        "name": "KAMUKUNJI",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/KAMUKUNJI"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "STAREHE",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:18:20.886+00:00",
+          "source": "#gpU886FX6GkqvhUD"
+        },
+        "name": "STAREHE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/STAREHE"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Location",
+        "id": "MATHARE",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2024-03-12T07:18:29.055+00:00",
+          "source": "#2ViDvhkH23QTDmS5"
+        },
+        "name": "MATHARE",
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SUB-COUNTY",
+                "display": "Sub-County"
+              }
+            ]
+          }
+        ],
+        "partOf": {
+          "reference": "Location/47",
+          "display": "NAIROBI"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Location/MATHARE"
+      }
+    }
+  ]
+}

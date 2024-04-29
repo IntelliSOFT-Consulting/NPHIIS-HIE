@@ -6,12 +6,14 @@ volumes:
 
 networks:
   cloudbuild:
+    # driver: overlay
     external: true
+    
 
 services:
   keycloak-postgres:
       image: postgres:14-alpine
-      restart: always
+      restart: on-failure
       networks:
             - cloudbuild
       environment:
@@ -22,42 +24,12 @@ services:
         - 'keycloak-postgres:/var/lib/postgresql/data'
 
   keycloak:
-      image: quay.io/keycloak/keycloak:latest
-      restart: always
+      image: quay.io/keycloak/keycloak:23.0.7
+      restart: on-failure
       networks:
         - cloudbuild
       env_file:
         - ../keycloak/.env
       depends_on:
         - keycloak-postgres
-      command: start-dev
-      
-  # smart-config:
-  #   image: alvearie/keycloak-config
-  #   networks: 
-  #   - cloudbuild
-  #   depends_on:
-  #     keycloak:
-  #       condition: service_healthy
-  #   environment:
-  #   - KEYCLOAK_BASE_URL=http://keycloak:8080/auth
-  #   - KEYCLOAK_USER
-  #   - KEYCLOAK_PASSWORD
-  #   - KEYCLOAK_REALM=${SMART_REALM:-dummy-smart}
-
-  # proxy-config:
-  #   image: us-docker.pkg.dev/fhir-proxy-build/stable/keycloak-config:latest
-  #   networks: 
-  #   - cloudbuild
-  #   depends_on:
-  #     smart-config:
-  #       condition: service_completed_successfully
-  #   environment:
-  #   - KEYCLOAK_BASE_URL=http://keycloak:8080/auth
-  #   - KEYCLOAK_USER
-  #   - KEYCLOAK_PASSWORD
-  #   - TEST_REALM
-  #   - TEST_USER
-  #   - TEST_PASS
-  #   - SMART_REALM
-
+      command: start-dev --db=postgres --db-url=jdbc:postgresql://keycloak-postgres:5432/keycloak

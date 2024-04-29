@@ -132,6 +132,16 @@ services:
             - hapi-fhir
         env_file:
             - ../chanjoke-auth/.env
+            
+    hapi-fhir-config:
+        depends_on:
+            - hapi-fhir-jpa
+        container_name: hapi-fhir-config
+        networks:
+            - cloudbuild
+        build: 
+            context: ../hapi-fhir-config
+            dockerfile: Dockerfile
 
 volumes:
     mongodb-data:
