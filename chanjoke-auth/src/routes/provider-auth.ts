@@ -3,6 +3,8 @@ import { FhirApi } from "../lib/utils";
 import { deleteResetCode, findKeycloakUser, getCurrentUserInfo, getKeycloakUserToken, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode } from './../lib/keycloak'
 import { v4 } from "uuid";
 import { sendPasswordResetEmail } from "../lib/email";
+import { count } from "console";
+import { extension } from "mime-types";
 
 const router = express.Router();
 router.use(express.json());
@@ -41,7 +43,7 @@ router.post("/register", async (req: Request, res: Response) => {
                   "url": "http://example.org/location",
                   "valueReference": {
                     "reference": `Location/${location.id}`,
-                    "display": location.display
+                    "display": location.name
                   }
                 }
               ]
@@ -116,13 +118,18 @@ router.get("/me", async (req: Request, res: Response) => {
         let userInfo = await findKeycloakUser(currentUser.preferred_username)
         let practitioner = await (await FhirApi({url:`/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`})).data;
         let facilityId = practitioner.extension[0].valueReference.reference;
+        let facility = await (await FhirApi({url:`/${facilityId}`})).data;
+        let ward = await (await FhirApi({url:`/${facility.partOf.reference}`})).data;
+        let subCounty = await (await FhirApi({url:`/${ward.partOf.reference}`})).data;
+        let county = await (await FhirApi({url:`/${subCounty.partOf.reference}`})).data;
         res.statusCode = 200;
         res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
             fhirPractitionerId:userInfo.attributes.fhirPractitionerId[0], 
             practitionerRole: userInfo.attributes.practitionerRole[0],
             id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
             phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null) , email: userInfo.email ?? null,
-            facility: facilityId
+            facility: facilityId, facilityName: facility.name, ward: "Location/" + ward.id, wardName: ward.name,
+            subCounty: "Location/" + subCounty.id, subCountyName: subCounty.name, county: "Location/" + county.id, countyName: county.name
         }});
         return;
     }
@@ -143,7 +150,7 @@ router.post("/me", async (req: Request, res: Response) => {
             return;
         }
         // allow phone number & email
-        let {phone, email} = req.body;
+        let {phone, email, facilityCode} = req.body;
         let currentUser = await getCurrentUserInfo(accessToken);
         if(!currentUser){
             res.statusCode = 401;
@@ -151,22 +158,46 @@ router.post("/me", async (req: Request, res: Response) => {
             return;
         }
         let response = await updateUserProfile(currentUser.preferred_username, phone, email, null);
-        console.log(response);
+        // console.log(response);
         let userInfo = await findKeycloakUser(currentUser.preferred_username);
         let practitioner = await (await FhirApi({url:`/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`})).data;
+
+        
+        if(facilityCode){
+            let facility = await (await FhirApi({url:`/Location/${facilityCode}`})).data;
+            console.log(facility);
+            let newLocation =  [
+                {
+                  "url": "http://example.org/location",
+                  "valueReference": {
+                    "reference": `Location/${facility.id}`,
+                    "display": facility.name
+                  }
+                }
+            ]
+            practitioner = await (await FhirApi({url:`/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`, 
+            method:"PUT", data: JSON.stringify({...practitioner, extension: newLocation})})).data;
+            // console.log(practitioner);
+        }
+        // console.log(practitioner.extension);
         let facilityId = practitioner.extension[0].valueReference.reference ?? null;
         // if(!facilityId && userInfo.attributes.practitionerRole[0]){
         //     res.statusCode = 401;
         //     res.json({ status: "error", error: "Provide must be assigned to a facility first"  });
         //     return;
         // }
+        let facility = await (await FhirApi({url:`/${facilityId}`})).data;
+        let ward = await (await FhirApi({url:`/${facility.partOf.reference}`})).data;
+        let subCounty = await (await FhirApi({url:`/${ward.partOf.reference}`})).data;
+        let county = await (await FhirApi({url:`/${subCounty.partOf.reference}`})).data;
         res.statusCode = 200;
         res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
             fhirPractitionerId:userInfo.attributes.fhirPractitionerId[0], 
             practitionerRole: userInfo.attributes.practitionerRole[0],
             id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
             phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null) , email: userInfo.email ?? null,
-            facility: facilityId
+            facility: facilityId, facilityName: facility.name, ward: "Location/" + ward.id, wardName: ward.name,
+            subCounty: "Location/" + subCounty.id, subCountyName: subCounty.name, county: "Location/" + county.id, countyName: county.name 
         }});
         return;
     }
