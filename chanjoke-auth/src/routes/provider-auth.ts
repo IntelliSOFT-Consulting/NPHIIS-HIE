@@ -122,6 +122,12 @@ router.get("/me", async (req: Request, res: Response) => {
         let ward = await (await FhirApi({url:`/${facility.partOf.reference}`})).data;
         let subCounty = await (await FhirApi({url:`/${ward.partOf.reference}`})).data;
         let county = await (await FhirApi({url:`/${subCounty.partOf.reference}`})).data;
+        console.log(practitioner.extension[0].valueReference.reference, facilityId);
+        if(practitioner.extension[0].valueReference.reference !== facilityId){
+        let newLocation =  [{"url": "http://example.org/location","valueReference": {"reference": `Location/${facility.id}`,"display": facility.name}}]
+        practitioner = await (await FhirApi({url:`/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`, 
+            method:"PUT", data: JSON.stringify({...practitioner, extension: newLocation})})).data;
+        }
         res.statusCode = 200;
         res.json({ status: "success", user:{ firstName: userInfo.firstName,lastName: userInfo.lastName,
             fhirPractitionerId:userInfo.attributes.fhirPractitionerId[0], 
@@ -166,15 +172,7 @@ router.post("/me", async (req: Request, res: Response) => {
         if(facilityCode){
             let facility = await (await FhirApi({url:`/Location/${facilityCode}`})).data;
             console.log(facility);
-            let newLocation =  [
-                {
-                  "url": "http://example.org/location",
-                  "valueReference": {
-                    "reference": `Location/${facility.id}`,
-                    "display": facility.name
-                  }
-                }
-            ]
+            let newLocation =  [{"url": "http://example.org/location","valueReference": {"reference": `Location/${facility.id}`,"display": facility.name}}]
             practitioner = await (await FhirApi({url:`/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`, 
             method:"PUT", data: JSON.stringify({...practitioner, extension: newLocation})})).data;
             // console.log(practitioner);
