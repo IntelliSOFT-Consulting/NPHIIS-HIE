@@ -54,6 +54,21 @@ router.post("/login", async (req: Request, res: Response) => {
     try {
         let {idNumber, password} = req.body;
         let token = await getKeycloakUserToken(idNumber, password);
+        let user = await getCurrentUserInfo(token.access_token);
+        let userInfo = await findKeycloakUser(user.preferred_username);
+
+        console.log(userInfo)
+
+
+        let isPractitioner = userInfo?.attributes?.practitionerRole;
+        if(isPractitioner){
+            res.statusCode = 401;
+            res.json({ status: "error", error:"Unauthorized client login." });
+            return;
+        }
+
+
+        
         if(!token){
             res.statusCode = 401;
             res.json({ status: "error", error:"Incorrect ID Number or Password provided" });
