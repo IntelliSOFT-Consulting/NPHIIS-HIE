@@ -59,32 +59,34 @@ export async function generatePDF(vaccine: string, patient: any, documentRefId: 
     ['Vaccine B', '1', '2024-04-16']
     // Add more rows as needed
   ];
-  const tableTop = doc.y;
-  const columnWidths = [150, 100, 150];
-  const cellPadding = 10;
-  const startY = tableTop;
-  const startX = doc.page.width / 2 - (columnWidths.reduce((a, b) => a + b, 0) / 2);
 
-  // Calculate the height of a row
-  const rowHeight = 20;
+  const startX = doc.page.margins.left;
+  const startY = doc.page.height - doc.page.margins.bottom - qrCodeHeight - 50; // Adjusted position to leave space for the QR code
+  
+  const columnWidths = [150, 100, 150]; // Adjust column widths as needed
 
-  // Draw table headers
-  let currentY = startY;
-  for (let i = 0; i < tableData[0].length; i++) {
-    doc.rect(startX, currentY, columnWidths[i], rowHeight).fillAndStroke('#d3d3d3', '#000000');
-    doc.text(tableData[0][i], startX + cellPadding, currentY + cellPadding, { width: columnWidths[i] - (cellPadding * 2), align: 'left' });
-  }
+  const drawTable = (doc:any, tableData:any, startX:any, startY:any, columnWidths:any) => {
+      doc.font('Helvetica-Bold').fontSize(10);
+      
+      // Draw headers
+      tableData[0].forEach((header: any, i: any) => {
+          doc.text(header, startX + (columnWidths[i] * i), startY, { width: columnWidths[i], align: 'left' });
+      });
 
-  doc.moveDown(1.5);
+      startY += 20;
 
-  // Draw table rows
-  for (let i = 1; i < tableData.length; i++) {
-    currentY += rowHeight;
-    for (let j = 0; j < tableData[i].length; j++) {
-      doc.rect(startX, currentY, columnWidths[j], rowHeight).stroke();
-      doc.text(tableData[i][j], startX + cellPadding, currentY + cellPadding, { width: columnWidths[j] - (cellPadding * 2), align: 'left' });
-    }
-  }
+      // Draw rows
+      tableData.slice(1).forEach((row: any) => {
+          row.forEach((cell: any, i: any) => {
+              doc.text(cell, startX + (columnWidths[i] * i), startY, { width: columnWidths[i], align: 'left' });
+          });
+          startY += 20;
+      });
+  };
+
+  drawTable(doc, tableData, startX, startY, columnWidths);
+
+  
 
   // Add QR Code
   doc.image(qrCodeBuffer, doc.page.width / 2 - qrCodeWidth / 2, doc.page.height - doc.page.margins.bottom - qrCodeHeight, { width: qrCodeWidth, height: qrCodeHeight });
@@ -124,7 +126,7 @@ export async function savePDFToFileSystem(base64String: string, filePath: string
 // const outputFile = 'output.pdf';
 // const patient = pa
 // // Change this to your desired output file path
-// generatePDF("Malaria")
+generatePDF("Malaria", "1", "33")
 //   .then((pdfBuffer) => savePDFToFileSystem(pdfBuffer, outputFile))
 //   .then(() => {
 //     console.log('PDF saved to file:', outputFile);
