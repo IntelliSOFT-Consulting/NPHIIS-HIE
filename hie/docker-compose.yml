@@ -2,7 +2,6 @@ version: "3"
 networks:
     openhim:
     hapi-fhir:
-    mediators:
     cloudbuild: 
         external: true
 
@@ -85,7 +84,6 @@ services:
             - openhim
             - hapi-fhir
             - cloudbuild
-            - mediators
         healthcheck:
             test: "curl -sSk https://openhim-core:8080/heartbeat || exit 1"
             interval: 30s
@@ -107,21 +105,6 @@ services:
         volumes:
             - ./default.json:/usr/share/nginx/html/config/default.json:ro
             - /etc/ssl/crt:/etc/nginx/certs
-
-    mediators:
-        depends_on:
-            - openhim-core
-        container_name: mediators
-        build: mediators
-        restart: unless-stopped
-        networks:
-            - openhim
-            - hapi-fhir
-            - cloudbuild
-        # ports:
-        #     - "8082:3000"
-        env_file:
-            - mediators/.env
     
     chanjoke-auth:
         container_name: chanjoke-auth
