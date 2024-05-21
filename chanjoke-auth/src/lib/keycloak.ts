@@ -1,5 +1,6 @@
 import fetch from "cross-fetch";
 import { createHash, randomBytes } from 'crypto';
+import { FhirApi } from "./utils";
 
 
 let KC_BASE_URL = String(process.env.KC_BASE_URL);
@@ -251,6 +252,65 @@ export const getCurrentUserInfo = async (accessToken: string) => {
   }
 }
 
+export const getKeycloakUsers = async () => {
+  try {
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    const response = await (await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    )).json();
+    // console.log(response);
+    // return response.data;
+
+    let responseData: any = [];
+    response.map((i: any) =>{
+      responseData.push({
+        username: i.username, 
+        firstName: i.firstName, 
+        lastName: i.lastName, 
+        email: i.email, 
+        phone: i?.attributes?.phone?.[0],
+        role: i?.attributes?.practitionerRole?.[0],
+        // attr: i?.attributes
+      })
+    });
+    return responseData;
+  } catch (error) {
+    console.log(error);
+   return null;   
+  }
+}
+
+
+
+const updateStuff = async () => {
+  let users =  await getKeycloakUsers();
+  users.map( async (i: any) => {
+    if(i?.attr?.practitionerRole?.[0]){
+      // console.log(i);
+      let practitionerId = i?.attr?.fhirPractitionerId?.[0]
+      let fhirPractitioner = await (await FhirApi({url: `/Practitioner/${practitionerId}`})).data;
+      // let extension = fhirPractitioner.extension;
+      let facilityId = fhirPractitioner.extension[0].valueReference.reference;
+      let facility = await (await FhirApi({ url: `/${facilityId}` })).data;
+      fhirPractitioner = await (await FhirApi({url: `/Practitioner/${practitionerId}`, method:"PUT", data: JSON.stringify({
+        ...fhirPractitioner, extension: [
+          { "url": "http://example.org/location", "valueReference": { "reference": `Location/${facility.id}`, "display": facility.name } },
+          { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": i?.attr?.practitionerRole[0]}
+        ]}
+      )})).data;
+      console.log(fhirPractitioner);
+
+    }
+  })
+}
+
+// updateStuff()
 
 export const sendPasswordResetLink = async (idNumber: string) => {
   try {
