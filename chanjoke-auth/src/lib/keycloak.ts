@@ -301,7 +301,7 @@ const updateStuff = async () => {
       fhirPractitioner = await (await FhirApi({url: `/Practitioner/${practitionerId}`, method:"PUT", data: JSON.stringify({
         ...fhirPractitioner, extension: [
           { "url": "http://example.org/location", "valueReference": { "reference": `Location/${facility.id}`, "display": facility.name } },
-          { "url": "http://example.org/role", "valueString": i?.attr?.practitionerRole[0]}
+          { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": i?.attr?.practitionerRole[0]}
         ]}
       )})).data;
       console.log(fhirPractitioner);

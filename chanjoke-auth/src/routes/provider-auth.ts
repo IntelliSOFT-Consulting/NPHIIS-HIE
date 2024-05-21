@@ -45,7 +45,7 @@ router.post("/register", async (req: Request, res: Response) => {
                     }
                 },
                 {
-                    "url": "http://example.org/role",
+                    "url": "http://example.org/fhir/StructureDefinition/role-group",
                     "valueString": role
                 }
             ]
@@ -127,7 +127,7 @@ router.get("/me", async (req: Request, res: Response) => {
         console.log(practitioner.extension[0].valueReference.reference, facilityId);
         if (practitioner.extension[0].valueReference.reference !== facilityId) {
             let newLocation = [{ "url": "http://example.org/location", "valueReference": { "reference": `Location/${facility.id}`, "display": facility.name } },
-            { "url": "http://example.org/role", "valueString": userInfo?.attributes?.practitionerRole[0]}
+            { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": userInfo?.attributes?.practitionerRole[0]}
 
             ]
             practitioner = await (await FhirApi({
@@ -184,7 +184,7 @@ router.post("/me", async (req: Request, res: Response) => {
             console.log(facility);
             let newLocation = [
                 { "url": "http://example.org/location", "valueReference": { "reference": `Location/${facility.id}`, "display": facility.name } },
-                { "url": "http://example.org/role", "valueString": userInfo?.attributes?.practitionerRole[0]}
+                { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": userInfo?.attributes?.practitionerRole[0]}
             ]
             practitioner = await (await FhirApi({
                 url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`,
