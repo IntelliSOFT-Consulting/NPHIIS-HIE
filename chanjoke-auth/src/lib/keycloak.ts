@@ -276,7 +276,7 @@ export const getKeycloakUsers = async () => {
         email: i.email, 
         phone: i?.attributes?.phone?.[0],
         role: i?.attributes?.practitionerRole?.[0],
-        attr: i?.attributes
+        // attr: i?.attributes
       })
     });
     return responseData;
@@ -310,7 +310,7 @@ const updateStuff = async () => {
   })
 }
 
-updateStuff()
+// updateStuff()
 
 export const sendPasswordResetLink = async (idNumber: string) => {
   try {
