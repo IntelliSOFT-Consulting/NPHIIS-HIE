@@ -1,5 +1,0 @@
-this
-has
-mac
-line
-endings

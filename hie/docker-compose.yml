@@ -49,11 +49,9 @@ services:
     openhim-core:
         container_name: openhim-core
         restart: unless-stopped
-        image: openhim-core-kc:latest
-        environment:
-            - mongo_url=mongodb://mongo/openhim
-            - mongo_atnaUrl=mongodb://mongo/openhim
-            - authentication_enableJWTAuthentication=true
+        image: jembi/openhim-core:latest
+        env_file:
+            - .env
         ports:
             - "8080:8080"
             # - "5000:5000"
