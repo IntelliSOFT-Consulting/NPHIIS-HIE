@@ -14,7 +14,7 @@ services:
         networks:
             - openhim
         volumes:
-            - mongodb-data:/data/db
+            - chanjo-mongodb-data:/data/db
         restart: unless-stopped
 
     hapi-fhir-postgres:
@@ -50,13 +50,11 @@ services:
     openhim-core:
         container_name: openhim-core
         restart: unless-stopped
-        image: openhim-core-kc:latest
-        environment:
-            - mongo_url=mongodb://mongo/openhim
-            - mongo_atnaUrl=mongodb://mongo/openhim
-            - authentication_enableJWTAuthentication=true
+        image: jembi/openhim-core:latest
+        env_file:
+            - .env
         ports:
-            - "8777:8080"
+            - "8080:8080"
             # - "5000:5000"
             - "5001:5001"
             # - "5050:5050"
@@ -78,7 +76,11 @@ services:
     openhim-console:
         container_name: openhim-console
         image: jembi/openhim-console:latest
+        depends_on:
+            - openhim-core
         restart: unless-stopped
+        ports:
+            - "9000:80"
         networks:
             - openhim
         healthcheck:
@@ -93,6 +95,7 @@ services:
     ddcc-mediators:
         depends_on:
             - openhim-core
+            - hapi-fhir-jpa
         container_name: ddcc-mediators
         build:
             context: ddcc-chanjo-mediators
@@ -157,6 +160,6 @@ services:
         
 
 volumes:
-    mongodb-data:
+    chanjo-mongodb-data:
     hapi-fhir-postgres:
     hapi:
