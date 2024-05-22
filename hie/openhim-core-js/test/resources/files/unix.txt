@@ -1,5 +1,0 @@
-this
-has
-unix
-line
-endings

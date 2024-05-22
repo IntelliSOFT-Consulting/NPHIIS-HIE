@@ -13,7 +13,7 @@
   "mediatorLastHeartbeatDangerSeconds": 120,
   "showLoginForm": false,
   "ssoEnabled": true,
-  "keyCloakUrl": "https://chanjokeiam.intellisoftkenya.com/auth",
-  "keyCloakRealm": "test",
+  "keyCloakUrl": "https://chanjokeiam.intellisoftkenya.com",
+  "keyCloakRealm": "master",
   "keyCloakClientId": "openhim-oauth"
 }
