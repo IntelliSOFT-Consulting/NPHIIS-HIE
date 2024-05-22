@@ -21,24 +21,32 @@ router.post('/', async (req, res) => {
         // get all composition resources for this patient & vaccine code  - avoid regeneration of resources
         let compositions = await (await FhirApi({ url: `/Composition?subject=${patientId}&type:code=${vaccineCode}` })).data;
         if (compositions?.entry) {
-                compositions = compositions.entry.map((i: any) => {
+            compositions = compositions.entry.map((i: any) => {
                 return i.resource?.section?.[0]?.entry?.[0]?.reference.split('/')[1];
             })
             if (compositions.indexOf(immunizationId) > -1) {
-                    res.statusCode = 200;
-                    res.json({
-                        "resourceType": "OperationOutcome",
-                        "id": "certificate-already-exists",
-                        "issue": [{
-                            "severity": "information",
-                            "code": "certificate-already-exists",
-                            "details": {
-                                "text": String("Certificate was already generated")
-                            }
-                        }]
-                    });
+                let vaccineFolder = await getVaccineFolder(patientId, vaccineCode);
+                let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=StructureDefinition/DigitalCertificateDocumentReference&subject=${patientId}` })).data;
+                let previousImmunizations = docRefs?.entry?.map((i: any) => {
+                    return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}`}}
+                }) ?? [];
+                // console.log("docRefs:", previousImmunizations);
+                let updatedFolder = await (await FhirApi({ url: `/List/${vaccineFolder.id}`, method: "PUT", data: JSON.stringify({ ...vaccineFolder, entry: previousImmunizations }) })).data;
+                console.log(updatedFolder);
+                res.statusCode = 200;
+                res.json({
+                    "resourceType": "OperationOutcome",
+                    "id": "certificate-already-exists",
+                    "issue": [{
+                        "severity": "information",
+                        "code": "certificate-already-exists",
+                        "details": {
+                            "text": String("Certificate was already generated")
+                        }
+                    }]
+                });
                 return;
-                }
+            }
         }
 
         if (!vaccineName) {
@@ -78,7 +86,7 @@ router.post('/', async (req, res) => {
 
         // create certificate PDF
         let pdfFile = await generatePDF(vaccineName, patient, docRefId);
-        savePDFToFileSystem(pdfFile, `${patientId}-${vaccineName}.pdf`.replace("/", '-'));
+        // savePDFToFileSystem(pdfFile, `${patientId}-${vaccineName}.pdf`.replace("/", '-'));
 
         // save pdf image to FHIR Server
         let docRefQR = await createDocumentRefQR(patientId, locationId, pdfFile);
@@ -94,16 +102,15 @@ router.post('/', async (req, res) => {
         // console.log(binaryId)
 
         // update folder - fetch all documentReferences and attach here
-        let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=${docRef?.meta?.profile?.[0]}&subject=${docRef.subject.reference}` })).data;
-        let previousImmunizations = docRefs.entry.map((i: any) => {
-            return { fullUrl: `${i?.resource?.resourceType}/${i?.resource?.id}`, resource: i?.resource }
-        });
-
-        console.log("docRefs:", previousImmunizations);
+        let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=${"StructureDefinition/DigitalCertificateDocumentFolder"}&subject=${patientId}` })).data;
+        let previousImmunizations = [];
+        previousImmunizations = docRefs?.entry?.map((i: any) => {
+            return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}`}}
+        }) ?? [];
         let updatedFolder = await (await FhirApi({ url: `/List/${vaccineFolder.id}`, method: "PUT", data: JSON.stringify({ ...vaccineFolder, entry: previousImmunizations }) })).data;
         console.log(updatedFolder);
         res.statusCode = 200;
-        res.json(docRef);
+        res.json(updatedFolder);
         return;
     } catch (error) {
         res.statusCode = 400;
