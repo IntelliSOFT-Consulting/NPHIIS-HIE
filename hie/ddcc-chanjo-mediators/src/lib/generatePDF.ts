@@ -3,26 +3,22 @@ import QRCode from 'qrcode';
 import path from 'path';
 import fs from 'fs';
 import { processIdentifiers } from './fhir';
+import { FhirApi } from './utils';
 
 let MOH_LOGO= path.join(__dirname, 'MOH-Logo.png');
 // console.log()
 
 let QR_BASE_URL = "https://chanjoke.intellisoftkenya.com/digital-certificates"
 
-
-//vaccine, 
-
-
 export async function generatePDF(vaccine: string, patient: any, documentRefId: string): Promise<string> {
   const doc = new PDFDocument({ margin: 50 });
-
   const IDs = await processIdentifiers(patient.identifier);
   const idType = Object.keys(IDs)[0];
   const idNumber = IDs[idType];
   const names = `${patient.name[0].family} ${patient.name[0].given[0]} (${patient.name[0].given[1]} ?? '')`;
 
   // Generate QR Code
-  const qrCodeBuffer = await QRCode.toBuffer(`${QR_BASE_URL}/${documentRefId}`);
+  const qrCodeBuffer = await QRCode.toBuffer(`${QR_BASE_URL}/${documentRefId}/$validate`);
   const qrCodeWidth = 100;
   const qrCodeHeight = 100;
 
@@ -37,7 +33,7 @@ export async function generatePDF(vaccine: string, patient: any, documentRefId: 
   doc.moveDown(12.5);
 
    // Add some text
-   const text = `${vaccine.toUpperCase()} VACCINATION CERTIFICATE`;
+   const text = `${vaccine.split(" ")[0].toUpperCase()} VACCINATION CERTIFICATE`;
    const textHeight = doc.heightOfString(text);
    const textStartY = doc.page.margins.top + logoHeight + 20; // Adjusted start position for the text
    doc.font('Helvetica-Bold').fontSize(16).text(text, { align: 'center' })
@@ -45,13 +41,13 @@ export async function generatePDF(vaccine: string, patient: any, documentRefId: 
    
     // Add additional some text
    const additionalText = `This is to certify that ${names}, born on ${patient.dob}, from Kenya with 
-    ${idType}: ${idNumber}, has been vaccinated against ${vaccine.toUpperCase()}
+    ${idType}: ${idNumber}, has been vaccinated against ${vaccine.split(" ")[0].toUpperCase()}
     on the date indicated in accordance with the National Health Regulations.`;
    const additionalTextHeight = doc.heightOfString(text);
    const additionalTextStartY = doc.page.margins.top + textStartY + 20; // Adjusted start position for the text
-   doc.font('Helvetica-Bold').fontSize(16).text(additionalText, { align: 'center' })
+   doc.font('Helvetica').fontSize(12).text(additionalText, { align: 'center' })
 
-   doc.moveDown(3.5);
+   doc.moveDown(2.5);
   // Add table
   const tableData = [
     ['Vaccine Name', 'No of doses', 'Data Administered'],
@@ -63,7 +59,7 @@ export async function generatePDF(vaccine: string, patient: any, documentRefId: 
   const startX = doc.page.margins.left;
   const startY = doc.page.height - doc.page.margins.bottom - qrCodeHeight - 50; // Adjusted position to leave space for the QR code
   
-  const columnWidths = [150, 100, 150]; // Adjust column widths as needed
+  const columnWidths = [150, 150, 150]; // Adjust column widths as needed
 
   const drawTable = (doc:any, tableData:any, startX:any, startY:any, columnWidths:any) => {
       doc.font('Helvetica-Bold').fontSize(10);
@@ -126,7 +122,7 @@ export async function savePDFToFileSystem(base64String: string, filePath: string
 // const outputFile = 'output.pdf';
 // const patient = pa
 // // Change this to your desired output file path
-generatePDF("Malaria", "1", "33")
+// generatePDF("Malaria", "1", "33")
 //   .then((pdfBuffer) => savePDFToFileSystem(pdfBuffer, outputFile))
 //   .then(() => {
 //     console.log('PDF saved to file:', outputFile);
