@@ -1,14 +1,3 @@
-import shrPassthroughConfig from '../config/mediatorConfig.json';
-// ✅ Do this if using TYPESCRIPT
-import { RequestInfo, RequestInit } from 'node-fetch';
-
-// mediators to be registered
-const mediators = [
-    shrPassthroughConfig
-];
-
-const fetch = (url: RequestInfo, init?: RequestInit) =>
-    import('node-fetch').then(({ default: fetch }) => fetch(url, init));
 
 
 export let apiHost = process.env.FHIR_BASE_URL;
@@ -58,10 +47,8 @@ export const parseIdentifiers = async (patientId: string) => {
     }
     let identifiers = patient.entry[0].resource.identifier;
     return identifiers.map((id: any) => {
-        return {
-            [id.id]: id
-        }
-    })
+        return { [id.id]: id }
+    });
 }
 
 
@@ -78,6 +65,5 @@ export const getPatientById = async (crossBorderId: string) => {
         return null;
     }
 }
-
 
 

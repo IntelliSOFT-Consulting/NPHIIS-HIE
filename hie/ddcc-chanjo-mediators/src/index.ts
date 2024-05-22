@@ -1,9 +1,11 @@
 import express from "express";
 import cors from 'cors'
 import * as dotenv from 'dotenv'
+import {registerMediators} from './lib/openhim'
 
 dotenv.config() // Load environment variables
 
+registerMediators();
 //Import routes
 import SubscriptionHandler from './routes/subscriptions';
 import DigitalCertificate from './routes/digital-certificate';

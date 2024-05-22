@@ -2,13 +2,11 @@ import { FhirApi, apiHost, NHDD_GENERIC_PATH } from "./utils";
 import { vaccineCodes } from "./vaccineCodes";
 import { generatePDF } from "./generatePDF";
 
-// generatePDF("Polio");
 
 export const getProfile = (id: string) => {
     return `StructureDefinition/${id}`
 }
 
-let FHIR_ID_SYSTEM = "https://chanjoke.intellisoftkenya.com/hapi/fhir"
 
 export const getNHDDCode = (code: string, display: string) => {
     return { system: NHDD_GENERIC_PATH, code, display }
@@ -18,14 +16,14 @@ let vaccineCodesList: any = vaccineCodes();
 
 export const getVaccineFolder = async (patientId: string, vaccineCode: string) => {
     try {
-        let folder = await (await FhirApi({ url: `/List?code=${vaccineCode}&subject=Patient/${patientId}` })).data;
+        let folder = await (await FhirApi({ url: `/List?code=${vaccineCode}&subject=${patientId}` })).data;
         if (!folder?.entry) {
             folder = await (await FhirApi({
                 url: `/List`,
                 method: "POST", data: JSON.stringify({
                     resourceType: "List",
                     meta: { profile: [getProfile("DigitalCertificateDocumentFolder")] },
-                    subject: { reference: `Patient/${patientId}` },
+                    subject: { reference: `${patientId}` },
                     code: { coding: [getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode])] },
                     entry: []
                 })
