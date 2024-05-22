@@ -6,12 +6,12 @@
     "defaultChannelConfig": [
       {
         "name": "SHR Channel",
-        "urlPattern": "^/digital-certificate/.*$",
+        "urlPattern": "/digital-certificate",
         "routes": [
           {
             "name": "Digital Certificate Route",
             "host": "ddcc-mediators",
-            "pathTransform": "s/\/\/.*$/",
+            "pathTransform": "/",
             "port": "3000",
             "primary": true,
             "type": "http"

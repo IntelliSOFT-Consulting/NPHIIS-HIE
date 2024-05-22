@@ -11,7 +11,7 @@ router.use(express.json());
 router.put('/notifications/ServiceRequest/:id', async (req, res) => {
   try {
       let {id} = req.params;
-      let data = await (await FhirApi({url: `/ServiceRequest/${id}`})).data
+      let data = await (await FhirApi({url: `/ServiceRequest/${id}`})).data;
 
       
       let POST_REFERRAL_MEDIATOR_ENDPOINT = process.env['POST_REFERRAL_MEDIATOR_ENDPOINT'] ?? "";
