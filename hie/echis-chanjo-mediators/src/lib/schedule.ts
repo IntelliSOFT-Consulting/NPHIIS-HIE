@@ -2,7 +2,7 @@ import cron from 'cron';
 import { FhirApi } from './utils';
 
 // Define cron job function
-const fetchReferralsJob = () => {
+const fetchReferralsJob = async () => {
     // fetch referrals
     console.log('Cron job is running!');
 
@@ -22,12 +22,12 @@ const fetchReferralsJob = () => {
     }
 
     // get all immunizations.
-    for 
+    // for 
 };
 
 
 // Define cron schedule (runs every minute in this example)
-const cronSchedule = '* * * * *'; // format: second minute hour dayOfMonth month dayOfWeek
+const cronSchedule = '0 * * * *'; // format: second minute hour dayOfMonth month dayOfWeek
 
 // Create a cron job instance
 const cronJob = new cron.CronJob(cronSchedule, fetchReferralsJob);
