@@ -1,9 +1,11 @@
 import express from "express";
 import cors from 'cors'
 import * as dotenv from 'dotenv'
+import {registerMediators} from './lib/openhim'
 
 dotenv.config() // Load environment variables
 
+registerMediators();
 //Import routes
 import SubscriptionHandler from './routes/subscriptions';
 import DigitalCertificate from './routes/digital-certificate';
@@ -27,7 +29,7 @@ app.use((req, res, next) => {
 
 
 app.use('/subscriptions', SubscriptionHandler);
-app.use('/certificate', DigitalCertificate);
+app.use('/digital-certificate', DigitalCertificate);
 
 app.listen(PORT, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
