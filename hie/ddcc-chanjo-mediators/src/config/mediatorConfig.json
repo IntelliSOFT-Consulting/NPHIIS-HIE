@@ -11,7 +11,7 @@
           {
             "name": "Digital Certificate Route",
             "host": "ddcc-mediators",
-            "pathTransform": "/digital-certificate",
+            "path": "/digital-certificate",
             "port": "3000",
             "primary": true,
             "type": "http"
