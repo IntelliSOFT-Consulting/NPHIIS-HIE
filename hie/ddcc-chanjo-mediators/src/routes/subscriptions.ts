@@ -52,7 +52,7 @@ router.put('/Immunization/:id', async (req, res) => {
                 "severity": "error",
                 "code": "exception",
                 "details": {
-                    "text": `Failed to post beneficiary- ${JSON.stringify(error)}`
+                    "text": `Failed to initiate certificate generation - ${JSON.stringify(error)}`
                 }
             }]
         });
