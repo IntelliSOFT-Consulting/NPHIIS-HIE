@@ -137,7 +137,7 @@ services:
             - openhim
             - hapi-fhir
         env_file:
-            - ddcc-chanjo-mediators/.env.example
+            - ddcc-chanjo-mediators/.env
 
 volumes:
     mongodb-data:
