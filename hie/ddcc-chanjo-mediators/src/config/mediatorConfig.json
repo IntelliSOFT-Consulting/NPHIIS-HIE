@@ -5,7 +5,7 @@
     "description": "This mediator is responsible for handling Digital Certificate Generation & Verification Workflows.",
     "defaultChannelConfig": [
       {
-        "name": "SHR Channel",
+        "name": "Digital Certificate Channel",
         "urlPattern": "/digital-certificate",
         "routes": [
           {
