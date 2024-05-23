@@ -108,6 +108,21 @@ services:
             context: ../hapi-fhir-config
             dockerfile: Dockerfile
 
+    ddcc-mediators:
+        depends_on:
+            - openhim-core
+            - hapi-fhir-jpa
+        container_name: ddcc-mediators
+        build:
+            context: ddcc-chanjo-mediators
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        networks:
+            - openhim
+            - hapi-fhir
+        env_file:
+            - ddcc-chanjo-mediators/.env.example
+
 volumes:
     mongodb-data:
     hapi-fhir-postgres:
