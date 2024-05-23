@@ -25,17 +25,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv = __importStar(require("dotenv"));
+const openhim_1 = require("./lib/openhim");
 dotenv.config(); // Load environment variables
+openhim_1.registerMediators();
 //Import routes
-const client_auth_1 = __importDefault(require("./routes/client-auth"));
-const provider_auth_1 = __importDefault(require("./routes/provider-auth"));
+const subscriptions_1 = __importDefault(require("./routes/subscriptions"));
+const digital_certificate_1 = __importDefault(require("./routes/digital-certificate"));
 const app = express_1.default();
 const PORT = 3000;
 app.use(cors_1.default());
 app.use((req, res, next) => {
     try {
         // Starts when a new request is received by the server
-        console.log(`${new Date().toUTCString()} : The Auth Service has received ${req.method} request from ${req.hostname} on ${req.path}`);
+        console.log(`${new Date().toUTCString()} : The Chanjo DDCC Mediator Service has received ${req.method} request from ${req.hostname} on ${req.path}`);
         next();
     }
     catch (error) {
@@ -44,8 +46,8 @@ app.use((req, res, next) => {
         return;
     }
 });
-app.use('/client', client_auth_1.default);
-app.use('/provider', provider_auth_1.default);
+app.use('/subscriptions', subscriptions_1.default);
+app.use('/digital-certificate', digital_certificate_1.default);
 app.listen(PORT, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
 });
