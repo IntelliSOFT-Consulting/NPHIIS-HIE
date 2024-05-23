@@ -11,7 +11,7 @@
           {
             "name": "Digital Certificate Route",
             "host": "ddcc-mediators",
-            "pathTransform": "/",
+            "pathTransform": "/digital-certificate",
             "port": "3000",
             "primary": true,
             "type": "http"
@@ -26,7 +26,7 @@
       {
         "name": "Digital Certificate Mediator Endpoint",
         "host": "ddcc-mediators",
-        "path": "/",
+        "path": "/digital-certificate",
         "port": "3000",
         "primary": true,
         "type": "http"
