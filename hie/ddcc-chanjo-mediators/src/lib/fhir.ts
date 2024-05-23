@@ -216,9 +216,6 @@ export let createFHIRSubscription = async () => {
     }
 }
 
-createFHIRSubscription();
-
-
 
 export const processIdentifiers = async (identifiers: any) => {
     try {
