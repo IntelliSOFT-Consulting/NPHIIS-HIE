@@ -14,6 +14,7 @@ router.post('/', async (req, res) => {
     try {
         let data = req.body;
         let patientId = data?.subject?.reference ?? data?.patient?.reference;
+        console.log(patientId);
         let immunizationId = data.id;
         let vaccineCode = data?.vaccineCode?.coding[0]?.code;
         let vaccineName = _vaccineCodes[vaccineCode];
@@ -81,11 +82,13 @@ router.post('/', async (req, res) => {
 
         // get/create vaccine folder and add a new document reference for this immunization
         let vaccineFolder = await getVaccineFolder(patientId, vaccineCode);
+        console.log(vaccineFolder);
 
         let docRefId = uuid();
 
         // create certificate PDF
         let pdfFile = await generatePDF(vaccineName, patient, docRefId);
+        // console.log("pdf:", pdfFile);
         // savePDFToFileSystem(pdfFile, `${patientId}-${vaccineName}.pdf`.replace("/", '-'));
 
         // save pdf image to FHIR Server

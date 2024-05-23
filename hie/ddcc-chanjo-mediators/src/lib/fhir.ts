@@ -136,11 +136,9 @@ export const createDocumentRefQR = async (patientId: string, facilityId: string,
                 authenticator: [{ reference: `Organization/${facilityId}` }],
                 coding: [{ "system": "http://loinc.org", "code": "11369-6" }],
                 content: [{
-                    qrPDF: {
                         attachment: {
                             contentType: "application/pdf",
                             data: pdfContent
-                        }
                     }
                 }]
             })

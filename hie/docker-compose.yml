@@ -46,6 +46,22 @@ services:
         environment:
             SPRING_CONFIG_LOCATION: /hapi/application.yaml
 
+    # hapi-fhir-jpa-r5:
+    #     image: hapiproject/hapi:latest
+    #     container_name: hapi-fhir-jpa-r5
+    #     restart: unless-stopped
+    #     networks:
+    #         - hapi-fhir
+    #         - cloudbuild
+    #     depends_on:
+    #         - hapi-fhir-postgres
+    #     ports:
+    #          - "8087:8080"
+    #     volumes:
+    #         - "./hapi-fhir-r5:/hapi"
+    #     environment:
+    #         SPRING_CONFIG_LOCATION: /hapi/application.yaml
+
     openhim-core:
         container_name: openhim-core
         restart: unless-stopped
@@ -117,6 +133,8 @@ services:
             context: ddcc-chanjo-mediators
             dockerfile: Dockerfile
         restart: unless-stopped
+        volumes:
+            - ./ddcc-chanjo-mediators/src/lib/MOH-Logo.png:/usr/mediators/build/lib/MOH-Logo.png
         networks:
             - openhim
             - hapi-fhir
