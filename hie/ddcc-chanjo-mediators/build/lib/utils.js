@@ -1,23 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -27,19 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPatientById = exports.parseIdentifiers = exports.FhirApi = exports.apiHost = void 0;
-const shrPassThrough_json_1 = __importDefault(require("../config/shrPassThrough.json"));
-// mediators to be registered
-const mediators = [
-    shrPassThrough_json_1.default
-];
-const fetch = (url, init) => Promise.resolve().then(() => __importStar(require('node-fetch'))).then(({ default: fetch }) => fetch(url, init));
+exports.getPatientById = exports.parseIdentifiers = exports.FhirApi = exports.NHDD_GENERIC_PATH = exports.apiHost = void 0;
 exports.apiHost = process.env.FHIR_BASE_URL;
 console.log("HAPI FHIR: ", exports.apiHost);
+let NHDD_URL = process.env.NHDD_URL;
+NHDD_URL = `${NHDD_URL}/orgs/MOH-KENYA/sources`;
+exports.NHDD_GENERIC_PATH = `${NHDD_URL}/nhdd/concepts/`;
 // a fetch wrapper for HAPI FHIR server.
 const FhirApi = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let _defaultHeaders = { "Content-Type": 'application/json' };
@@ -75,9 +50,7 @@ const parseIdentifiers = (patientId) => __awaiter(void 0, void 0, void 0, functi
     }
     let identifiers = patient.entry[0].resource.identifier;
     return identifiers.map((id) => {
-        return {
-            [id.id]: id
-        };
+        return { [id.id]: id };
     });
 });
 exports.parseIdentifiers = parseIdentifiers;
@@ -97,4 +70,3 @@ const getPatientById = (crossBorderId) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getPatientById = getPatientById;
-// export const getPractitionerLocation = async ( practitioner: String)
