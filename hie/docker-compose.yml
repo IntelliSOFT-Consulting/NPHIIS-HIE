@@ -133,6 +133,8 @@ services:
             context: ddcc-chanjo-mediators
             dockerfile: Dockerfile
         restart: unless-stopped
+        volumes:
+            - ./ddcc-chanjo-mediators/src/lib/MOH-Logo.png:/usr/mediators/build/lib/MOH-Logo.png
         networks:
             - openhim
             - hapi-fhir
