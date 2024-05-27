@@ -115,11 +115,13 @@ router.post('/', async (req, res) => {
         // console.log(binaryId)
 
         // update folder - fetch all documentReferences and attach here
-        let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=${"StructureDefinition/DigitalCertificateDocumentFolder"}&subject=${patientId}` })).data;
-        let previousImmunizations = [];
-        previousImmunizations = docRefs?.entry?.map((i: any) => {
+        let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=StructureDefinition/DigitalCertificateDocumentReference&subject=${patientId}`,
+                            headers:{"Cache-Control": 'no-cache'}})).data;
+        // let previousImmunizations = [];
+        let previousImmunizations = docRefs?.entry?.map((i: any) => {
             return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}` } }
         }) ?? [];
+        console.log(previousImmunizations);
         let updatedFolder = await (await FhirApi({ url: `/List/${vaccineFolder.id}`, method: "PUT", data: JSON.stringify({ ...vaccineFolder, entry: previousImmunizations }) })).data;
         console.log(updatedFolder);
         res.statusCode = 200;

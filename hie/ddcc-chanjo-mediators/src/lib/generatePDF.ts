@@ -62,7 +62,9 @@ export async function generatePDF(vaccineCode: string, patient: any, documentRef
     ];
 
 
-    let vaccineData = (await FhirApi({ url: `/Immunization?patient=Patient/${patient.id}&vaccine-code=${vaccineCode}&_sort=date` })).data;
+    let vaccineData = (await FhirApi({ 
+        url: `/Immunization?patient=Patient/${patient.id}&vaccine-code=${vaccineCode}&_sort=date`, 
+        headers:{"Cache-Control": 'no-cache'} })).data;
     if (!vaccineData?.entry){
         return null;
     }
