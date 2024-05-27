@@ -1,6 +1,5 @@
-import { FhirApi, apiHost, NHDD_GENERIC_PATH } from "./utils";
+import { FhirApi, NHDD_GENERIC_PATH } from "./utils";
 import { vaccineCodes } from "./vaccineCodes";
-import { generatePDF } from "./generatePDF";
 
 
 export const getProfile = (id: string) => {
@@ -16,6 +15,7 @@ let vaccineCodesList: any = vaccineCodes();
 
 export const getVaccineFolder = async (patientId: string, vaccineCode: string) => {
     try {
+        console.log(patientId);
         let folder = await (await FhirApi({ url: `/List?code=${vaccineCode}&subject=${patientId}` })).data;
         if (!folder?.entry) {
             folder = await (await FhirApi({
@@ -136,9 +136,11 @@ export const createDocumentRefQR = async (patientId: string, facilityId: string,
                 authenticator: [{ reference: `Organization/${facilityId}` }],
                 coding: [{ "system": "http://loinc.org", "code": "11369-6" }],
                 content: [{
+                    qrPDF: {
                         attachment: {
                             contentType: "application/pdf",
                             data: pdfContent
+                        }
                     }
                 }]
             })
