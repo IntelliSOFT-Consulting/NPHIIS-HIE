@@ -16,7 +16,7 @@ export const FhirApi = async (params: any) => {
     }
     try {
         let response = await fetch(String(`${apiHost}${params.url}`), {
-            headers: _defaultHeaders,
+            headers: {..._defaultHeaders, ...params.headers},
             method: params.method ? String(params.method) : 'GET',
             ...(params.method !== 'GET' && params.method !== 'DELETE') && { body: String(params.data) }
         });
