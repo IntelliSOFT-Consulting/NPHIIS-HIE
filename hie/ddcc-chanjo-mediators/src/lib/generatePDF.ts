@@ -4,101 +4,121 @@ import path from 'path';
 import fs from 'fs';
 import { processIdentifiers } from './fhir';
 import { FhirApi } from './utils';
+import { vaccineCodes } from './vaccineCodes';
 
-let MOH_LOGO= path.join(__dirname, 'MOH-Logo.png');
+let MOH_LOGO = path.join(__dirname, 'MOH-Logo.png');
+
+let _vaccineCodes: any = vaccineCodes();
 // console.log()
 
 let QR_BASE_URL = "https://chanjoke.intellisoftkenya.com/digital-certificates"
 
-export async function generatePDF(vaccine: string, patient: any, documentRefId: string): Promise<string> {
-  const doc = new PDFDocument({ margin: 50 });
-  const IDs = await processIdentifiers(patient.identifier);
-  const idType = Object.keys(IDs)[0];
-  const idNumber = IDs[idType];
-  const names = `${patient.name[0].family} ${patient.name[0].given[0]} (${patient.name[0].given[1]} ?? '')`;
+export async function generatePDF(vaccineCode: string, patient: any, documentRefId: string): Promise<string | null > {
 
-  // Generate QR Code
-  const qrCodeBuffer = await QRCode.toBuffer(`${QR_BASE_URL}/${documentRefId}/$validate`);
-  const qrCodeWidth = 100;
-  const qrCodeHeight = 100;
+    const vaccine = _vaccineCodes[vaccineCode];
+    const doc = new PDFDocument({ margin: 50 });
+    const IDs = await processIdentifiers(patient.identifier);
+    const idType = Object.keys(IDs)[0];
+    const idNumber = IDs[idType];
+    const names = `${patient.name[0].family} ${patient.name[0].given[0]} (${patient.name[0].given[1]} ?? '')`;
 
-  // Logo
-  const logoWidth = 200;
-  const logoHeight = 150;
-  const logoPath = MOH_LOGO;
+    // Generate QR Code
+    const qrCodeBuffer = await QRCode.toBuffer(`${QR_BASE_URL}/${documentRefId}/$validate`);
+    const qrCodeWidth = 100;
+    const qrCodeHeight = 100;
 
-  // Add logo
-  doc.image(logoPath, doc.page.width / 2 - logoWidth / 2, doc.page.margins.top, { width: logoWidth, height: logoHeight });
+    // Logo
+    const logoWidth = 200;
+    const logoHeight = 150;
+    const logoPath = MOH_LOGO;
 
-  doc.moveDown(12.5);
+    // Add logo
+    doc.image(logoPath, doc.page.width / 2 - logoWidth / 2, doc.page.margins.top, { width: logoWidth, height: logoHeight });
 
-   // Add some text
-   const text = `${vaccine.split(" ")[0].toUpperCase()} VACCINATION CERTIFICATE`;
-   const textHeight = doc.heightOfString(text);
-   const textStartY = doc.page.margins.top + logoHeight + 20; // Adjusted start position for the text
-   doc.font('Helvetica-Bold').fontSize(16).text(text, { align: 'center' })
-   
-   
+    doc.moveDown(12.5);
+
+    let vaccineName = `${vaccine.split(" ")[0].toUpperCase()}`;
+
+    // Add some text
+    const text = `${vaccine} VACCINATION CERTIFICATE`;
+    const textHeight = doc.heightOfString(text);
+    const textStartY = doc.page.margins.top + logoHeight + 20; // Adjusted start position for the text
+    doc.font('Helvetica-Bold').fontSize(16).text(text, { align: 'center' })
+
+
     // Add additional some text
-   const additionalText = `This is to certify that ${names}, born on ${patient.dob}, from Kenya with 
+    const additionalText = `This is to certify that ${names}, born on ${patient.dob}, from Kenya with 
     ${idType}: ${idNumber}, has been vaccinated against ${vaccine.split(" ")[0].toUpperCase()}
     on the date indicated in accordance with the National Health Regulations.`;
-   const additionalTextHeight = doc.heightOfString(text);
-   const additionalTextStartY = doc.page.margins.top + textStartY + 20; // Adjusted start position for the text
-   doc.font('Helvetica').fontSize(12).text(additionalText, { align: 'center' })
+    const additionalTextHeight = doc.heightOfString(text);
+    const additionalTextStartY = doc.page.margins.top + textStartY + 20; // Adjusted start position for the text
+    doc.font('Helvetica').fontSize(12).text(additionalText, { align: 'center' })
 
-   doc.moveDown(2.5);
-  // Add table
-  const tableData = [
-    ['Vaccine Name', 'No of doses', 'Data Administered'],
-    ['Vaccine A', '2', '2024-04-15'],
-    ['Vaccine B', '1', '2024-04-16']
-    // Add more rows as needed
-  ];
+    // doc.moveDown(1.5);
+    // Add table
+    const tableData = [
+        ['Vaccine Name', 'No of doses', 'Date Administered'],
+        // Add more rows as needed
+    ];
 
-  const startX = doc.page.margins.left;
-  const startY = doc.page.height - doc.page.margins.bottom - qrCodeHeight - 50; // Adjusted position to leave space for the QR code
-  
-  const columnWidths = [150, 150, 150]; // Adjust column widths as needed
 
-  const drawTable = (doc:any, tableData:any, startX:any, startY:any, columnWidths:any) => {
-      doc.font('Helvetica-Bold').fontSize(10);
-      
-      // Draw headers
-      tableData[0].forEach((header: any, i: any) => {
-          doc.text(header, startX + (columnWidths[i] * i), startY, { width: columnWidths[i], align: 'left' });
-      });
+    let vaccineData = (await FhirApi({ url: `/Immunization?patient=Patient/${patient.id}&vaccine-code=${vaccineCode}&_sort=date` })).data;
+    if (!vaccineData?.entry){
+        return null;
+    }
+    for (let vaccine of vaccineData?.entry) {
+        tableData.push([vaccineName, vaccine.resource.doseQuantity.value, new Date(vaccine.resource.occurrenceDateTime).toLocaleDateString('en-GB') ])
+    }
 
-      startY += 20;
+    let startX = doc.page.margins.left;
+    let startY = doc.page.height - doc.page.margins.bottom - qrCodeHeight - 50; // Adjusted position to leave space for the QR code
 
-      // Draw rows
-      tableData.slice(1).forEach((row: any) => {
-          row.forEach((cell: any, i: any) => {
-              doc.text(cell, startX + (columnWidths[i] * i), startY, { width: columnWidths[i], align: 'left' });
-          });
-          startY += 20;
-      });
-  };
+    const columnWidths = [150, 150, 150]; // Adjust column widths as needed
+    const tableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+    startX = doc.page.width / 2 - tableWidth / 2;
+    startY = doc.page.height - doc.page.margins.bottom - qrCodeHeight - (150 + 100);
 
-  drawTable(doc, tableData, startX, startY, columnWidths);
 
-  
 
-  // Add QR Code
-  doc.image(qrCodeBuffer, doc.page.width / 2 - qrCodeWidth / 2, doc.page.height - doc.page.margins.bottom - qrCodeHeight, { width: qrCodeWidth, height: qrCodeHeight });
 
-  doc.end();
+    const drawTable = (doc: any, tableData: any, startX: any, startY: any, columnWidths: any) => {
+        doc.font('Helvetica-Bold').fontSize(10);
 
-  return new Promise<string>((resolve, reject) => {
-    const buffers: Buffer[] = [];
-    doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', () => {
-    const concatenatedBuffer = Buffer.concat(buffers);
-    const base64String = concatenatedBuffer.toString('base64');
-        resolve(base64String);
+        // Draw headers
+        tableData[0].forEach((header: any, i: any) => {
+            doc.text(header, startX + (columnWidths[i] * i), startY, { width: columnWidths[i], align: 'left' });
+        });
+
+        startY += 20;
+
+        // Draw rows
+        tableData.slice(1).forEach((row: any) => {
+            row.forEach((cell: any, i: any) => {
+                doc.text(cell, startX + (columnWidths[i] * i), startY, { width: columnWidths[i], align: 'left' });
+            });
+            startY += 20;
+        });
+    };
+
+    drawTable(doc, tableData, startX, startY, columnWidths);
+
+
+
+    // Add QR Code
+    doc.image(qrCodeBuffer, doc.page.width / 2 - qrCodeWidth / 2, doc.page.height - doc.page.margins.bottom - qrCodeHeight, { width: qrCodeWidth, height: qrCodeHeight });
+
+    doc.end();
+
+    return new Promise<string>((resolve, reject) => {
+        const buffers: Buffer[] = [];
+        doc.on('data', buffers.push.bind(buffers));
+        doc.on('end', () => {
+            const concatenatedBuffer = Buffer.concat(buffers);
+            const base64String = concatenatedBuffer.toString('base64');
+            resolve(base64String);
+        });
+        doc.on('error', reject);
     });
-    doc.on('error', reject);
-  });
 }
 
 
