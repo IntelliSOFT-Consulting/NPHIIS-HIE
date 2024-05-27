@@ -107,7 +107,7 @@ services:
         ports:
             - "8084:3000"
         env_file:
-            - ddcc-chanjo-mediators/.env.example
+            - ddcc-chanjo-mediators/.env
         volumes:
             - ./ddcc-chanjo-mediators:/usr/app
     

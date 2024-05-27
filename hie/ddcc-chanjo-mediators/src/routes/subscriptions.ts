@@ -24,7 +24,7 @@ router.put('/Immunization/:id', async (req, res) => {
             headers:{"Content-Type":"application/json",
             "Authorization": 'Basic ' + Buffer.from(OPENHIM_CLIENT_ID + ':' + OPENHIM_CLIENT_PASSWORD).toString('base64')}
         })).json()
-        console.log(response)
+        console.log(response);
           if(response.code >= 400){
             res.statusCode = response.code;
             res.json({

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { json } from 'express';
 import { FhirApi } from '../lib/utils';
 import { v4 as uuid } from 'uuid';
 import { createBinary, createComposition, createDocument, createDocumentRef, createDocumentRefQR, createOrganization, getVaccineFolder } from '../lib/fhir';
@@ -14,7 +14,6 @@ router.post('/', async (req, res) => {
     try {
         let data = req.body;
         let patientId = data?.subject?.reference ?? data?.patient?.reference;
-        console.log(patientId);
         let immunizationId = data.id;
         let vaccineCode = data?.vaccineCode?.coding[0]?.code;
         let vaccineName = _vaccineCodes[vaccineCode];
@@ -24,12 +23,12 @@ router.post('/', async (req, res) => {
         if (compositions?.entry) {
             compositions = compositions.entry.map((i: any) => {
                 return i.resource?.section?.[0]?.entry?.[0]?.reference.split('/')[1];
-            })
+            });
             if (compositions.indexOf(immunizationId) > -1) {
                 let vaccineFolder = await getVaccineFolder(patientId, vaccineCode);
                 let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=StructureDefinition/DigitalCertificateDocumentReference&subject=${patientId}` })).data;
                 let previousImmunizations = docRefs?.entry?.map((i: any) => {
-                    return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}`}}
+                    return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}` } }
                 }) ?? [];
                 // console.log("docRefs:", previousImmunizations);
                 let updatedFolder = await (await FhirApi({ url: `/List/${vaccineFolder.id}`, method: "PUT", data: JSON.stringify({ ...vaccineFolder, entry: previousImmunizations }) })).data;
@@ -52,23 +51,20 @@ router.post('/', async (req, res) => {
 
         if (!vaccineName) {
             res.statusCode = 400;
-            // console.log(error);
             res.json({
                 "resourceType": "OperationOutcome",
                 "id": "exception",
                 "issue": [{
                     "severity": "error",
                     "code": "exception",
-                    "details": {
-                        "text": String("Invalid vaccine code provided")
-                    }
+                    "details": { "text": String("Invalid vaccine code provided") }
                 }]
             });
             return;
         }
         console.log(vaccineCode, vaccineName);
         patientId = String(patientId).split('/')[1];
-        let patient = await (await FhirApi({ url: `/Patient/${patientId}` })).data
+        let patient = await (await FhirApi({ url: `/Patient/${patientId}` })).data;
         if (patient.resourceType === 'OperationOutcome') {
             res.statusCode = 400;
             res.json(patient);
@@ -76,9 +72,10 @@ router.post('/', async (req, res) => {
         }
 
         // begin processing cert workflow
-        let doseQuantity = data?.doseQuantity?.value;
         let locationId = data?.location?.reference.split('/')[1];
         let location = (await FhirApi({ url: `/Location/${locationId}` })).data;
+
+
 
         // get/create vaccine folder and add a new document reference for this immunization
         let vaccineFolder = await getVaccineFolder(patientId, vaccineCode);
@@ -87,9 +84,22 @@ router.post('/', async (req, res) => {
         let docRefId = uuid();
 
         // create certificate PDF
-        let pdfFile = await generatePDF(vaccineName, patient, docRefId);
-        // console.log("pdf:", pdfFile);
-        // savePDFToFileSystem(pdfFile, `${patientId}-${vaccineName}.pdf`.replace("/", '-'));
+        let pdfFile = await generatePDF(vaccineCode, patient, docRefId);
+        if(!pdfFile){
+            res.json({
+                "resourceType": "OperationOutcome",
+                "id": "exception",
+                "issue": [{
+                    "severity": "error",
+                    "code": "exception",
+                    "details": {
+                        "text": String("PDF generation failed")
+                    }
+                }]
+            });
+            return;
+        }
+        savePDFToFileSystem(pdfFile, `${patientId}-${vaccineName}.pdf`.replace("/", '-'));
 
         // save pdf image to FHIR Server
         let docRefQR = await createDocumentRefQR(patientId, locationId, pdfFile);
@@ -108,7 +118,7 @@ router.post('/', async (req, res) => {
         let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=${"StructureDefinition/DigitalCertificateDocumentFolder"}&subject=${patientId}` })).data;
         let previousImmunizations = [];
         previousImmunizations = docRefs?.entry?.map((i: any) => {
-            return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}`}}
+            return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}` } }
         }) ?? [];
         let updatedFolder = await (await FhirApi({ url: `/List/${vaccineFolder.id}`, method: "PUT", data: JSON.stringify({ ...vaccineFolder, entry: previousImmunizations }) })).data;
         console.log(updatedFolder);
@@ -125,7 +135,7 @@ router.post('/', async (req, res) => {
                 "severity": "error",
                 "code": "exception",
                 "details": {
-                    "text": String(error)
+                    "text": JSON.stringify(error)
                 }
             }]
         });
@@ -154,7 +164,7 @@ router.get('/:id/$validate', async (req, res) => {
                 "severity": "error",
                 "code": "exception",
                 "details": {
-                    "text": String(error)
+                    "text": JSON.stringify(error)
                 }
             }]
         });
