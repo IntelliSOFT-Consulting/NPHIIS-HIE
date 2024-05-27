@@ -26,7 +26,9 @@ router.post('/', async (req, res) => {
             });
             if (compositions.indexOf(immunizationId) > -1) {
                 let vaccineFolder = await getVaccineFolder(patientId, vaccineCode);
-                let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=StructureDefinition/DigitalCertificateDocumentReference&subject=${patientId}` })).data;
+                let docRefs = await (await FhirApi({ 
+                    url: `/DocumentReference?_profile=StructureDefinition/DigitalCertificateDocumentReference&subject=${patientId}`,
+                    headers:{"Cache-Control":"no-cache"}})).data;
                 let previousImmunizations = docRefs?.entry?.map((i: any) => {
                     return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}` } }
                 }) ?? [];
@@ -74,8 +76,6 @@ router.post('/', async (req, res) => {
         // begin processing cert workflow
         let locationId = data?.location?.reference.split('/')[1];
         let location = (await FhirApi({ url: `/Location/${locationId}` })).data;
-
-
 
         // get/create vaccine folder and add a new document reference for this immunization
         let vaccineFolder = await getVaccineFolder(patientId, vaccineCode);
