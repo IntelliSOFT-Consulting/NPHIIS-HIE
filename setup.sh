@@ -10,6 +10,8 @@ elif [ "$1" == "fhir-data-pipes" ]; then
     ./start-data-pipes.sh
 elif [ "$1" == "fhir-superset" ]; then
     ./start-superset.sh
+elif [ "$1" == "reports" ]; then
+    ./start-reports.sh
 else
     echo "Invalid option $1
   
@@ -20,6 +22,7 @@ else
 3. FHIR Gateway 
 4. FHIR Datapipes
 5. Apache Superset
+4. Reports
 
 #   Help:
 

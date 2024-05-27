@@ -1,0 +1,24 @@
+services:
+  reports_db:
+    image: postgres:16
+    container_name: reports_db
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+    volumes:
+      - reports_db:/var/lib/postgresql/data
+      
+  reports_app:
+    build: .
+    container_name: reports_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - reports_db
+    env_file:
+      - .env
+    
+volumes:
+  reports_db:
+
