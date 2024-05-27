@@ -2,6 +2,8 @@ services:
   reports_db:
     image: postgres:16
     container_name: reports_db
+    networks:
+      - cloudbuild
     ports:
       - "5433:5432"
     env_file:
@@ -12,6 +14,8 @@ services:
   reports_app:
     build: .
     container_name: reports_app
+    networks:
+      - cloudbuild
     ports:
       - "8000:8000"
     depends_on:
@@ -21,4 +25,8 @@ services:
     
 volumes:
   reports_db:
-
+  
+  
+networks:
+  cloudbuild:
+    external: true
