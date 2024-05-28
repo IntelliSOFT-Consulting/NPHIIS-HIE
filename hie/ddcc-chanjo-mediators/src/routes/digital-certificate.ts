@@ -108,14 +108,14 @@ router.post('/', async (req, res) => {
         let composition = await createComposition(data.id);
         let organization = await createOrganization(location);
         let document = await createDocument(composition, patient, organization, docRefQR);
-        let docRef = await createDocumentRef(patientId, document.id);
+        let docRef = await createDocumentRef(patientId, document.id, vaccineCode);
 
 
         // let binaryId  = await createBinary(pdfFile);
         // console.log(binaryId)
 
         // update folder - fetch all documentReferences and attach here
-        let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=StructureDefinition/DigitalCertificateDocumentReference&subject=${patientId}`,
+        let docRefs = await (await FhirApi({ url: `/DocumentReference?_profile=StructureDefinition/DigitalCertificateDocumentReference&subject=${patientId}&type:code=${vaccineCode}`,
                             headers:{"Cache-Control": 'no-cache'}})).data;
         // let previousImmunizations = [];
         let previousImmunizations = docRefs?.entry?.map((i: any) => {
