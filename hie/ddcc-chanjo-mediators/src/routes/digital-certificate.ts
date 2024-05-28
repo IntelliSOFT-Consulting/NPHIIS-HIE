@@ -18,38 +18,38 @@ router.post('/', async (req, res) => {
         let vaccineCode = data?.vaccineCode?.coding[0]?.code;
         let vaccineName = _vaccineCodes[vaccineCode];
 
-        // get all composition resources for this patient & vaccine code  - avoid regeneration of resources
-        let compositions = await (await FhirApi({ url: `/Composition?subject=${patientId}&type:code=${vaccineCode}` })).data;
-        if (compositions?.entry) {
-            compositions = compositions.entry.map((i: any) => {
-                return i.resource?.section?.[0]?.entry?.[0]?.reference.split('/')[1];
-            });
-            if (compositions.indexOf(immunizationId) > -1) {
-                let vaccineFolder = await getVaccineFolder(patientId, vaccineCode);
-                let docRefs = await (await FhirApi({ 
-                    url: `/DocumentReference?_profile=StructureDefinition/DigitalCertificateDocumentReference&subject=${patientId}`,
-                    headers:{"Cache-Control":"no-cache"}})).data;
-                let previousImmunizations = docRefs?.entry?.map((i: any) => {
-                    return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}` } }
-                }) ?? [];
-                // console.log("docRefs:", previousImmunizations);
-                let updatedFolder = await (await FhirApi({ url: `/List/${vaccineFolder.id}`, method: "PUT", data: JSON.stringify({ ...vaccineFolder, entry: previousImmunizations }) })).data;
-                console.log(updatedFolder);
-                res.statusCode = 200;
-                res.json({
-                    "resourceType": "OperationOutcome",
-                    "id": "certificate-already-exists",
-                    "issue": [{
-                        "severity": "information",
-                        "code": "certificate-already-exists",
-                        "details": {
-                            "text": String("Certificate was already generated")
-                        }
-                    }]
-                });
-                return;
-            }
-        }
+        // // get all composition resources for this patient & vaccine code  - avoid regeneration of resources
+        // let compositions = await (await FhirApi({ url: `/Composition?subject=${patientId}&type:code=${vaccineCode}` })).data;
+        // if (compositions?.entry) {
+        //     compositions = compositions.entry.map((i: any) => {
+        //         return i.resource?.section?.[0]?.entry?.[0]?.reference.split('/')[1];
+        //     });
+        //     if (compositions.indexOf(immunizationId) > -1) {
+        //         let vaccineFolder = await getVaccineFolder(patientId, vaccineCode);
+        //         let docRefs = await (await FhirApi({ 
+        //             url: `/DocumentReference?_profile=StructureDefinition/DigitalCertificateDocumentReference&subject=${patientId}`,
+        //             headers:{"Cache-Control":"no-cache"}})).data;
+        //         let previousImmunizations = docRefs?.entry?.map((i: any) => {
+        //             return { item: { reference: `${i?.resource?.resourceType}/${i?.resource?.id}` } }
+        //         }) ?? [];
+        //         // console.log("docRefs:", previousImmunizations);
+        //         let updatedFolder = await (await FhirApi({ url: `/List/${vaccineFolder.id}`, method: "PUT", data: JSON.stringify({ ...vaccineFolder, entry: previousImmunizations }) })).data;
+        //         console.log(updatedFolder);
+        //         res.statusCode = 200;
+        //         res.json({
+        //             "resourceType": "OperationOutcome",
+        //             "id": "certificate-already-exists",
+        //             "issue": [{
+        //                 "severity": "information",
+        //                 "code": "certificate-already-exists",
+        //                 "details": {
+        //                     "text": String("Certificate was already generated")
+        //                 }
+        //             }]
+        //         });
+        //         return;
+        //     }
+        // }
 
         if (!vaccineName) {
             res.statusCode = 400;
@@ -102,7 +102,7 @@ router.post('/', async (req, res) => {
         savePDFToFileSystem(pdfFile, `${patientId}-${vaccineName}.pdf`.replace("/", '-'));
 
         // save pdf image to FHIR Server
-        let docRefQR = await createDocumentRefQR(patientId, locationId, pdfFile);
+        let docRefQR = await createDocumentRefQR(patientId, locationId, pdfFile, vaccineCode);
 
         // create Document/Bundle to attach to DocumentRef above
         let composition = await createComposition(data.id);
