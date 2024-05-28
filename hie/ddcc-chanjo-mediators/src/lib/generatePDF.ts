@@ -20,7 +20,7 @@ export async function generatePDF(vaccineCode: string, patient: any, documentRef
     const IDs = await processIdentifiers(patient.identifier);
     const idType = Object.keys(IDs)[0];
     const idNumber = IDs[idType];
-    const names = `${patient.name[0].family} ${patient.name[0].given[0]} (${patient.name[0].given[1]} ?? '')`;
+    const names = `${patient?.name[0]?.family} ${patient?.name[0]?.given[0]} ${(patient?.name[0]?.given[1] ?? '')} `;
 
     // Generate QR Code
     const qrCodeBuffer = await QRCode.toBuffer(`${QR_BASE_URL}/${documentRefId}/$validate`);
