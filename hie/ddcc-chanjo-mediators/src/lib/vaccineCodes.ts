@@ -3,20 +3,24 @@
 export const vaccineCodes = () => {
 
     return {
-        "10517": "BCG Vaccines",
-        "29659": "HPV Vaccines",
-        "24014": "Measles - Rubella Vaccines",
-        "3573": "Pneumococcal Vaccines",
-        "2763": "Rotavirus Vaccines",
-        "2748": "Rubella Vaccines",
-        "1002": "Yellow Fever Vaccines",
-        "3549": "Inactivated Polio Vaccines",
-        "54379": "Oral/Bivalent Polio Vaccines",
-        "15846": "Malaria Vaccine",
-        "1107": "Vitamin A Vaccine",
-        "50732": "Tdap vaccine",
-        "18035": "Tdap vaccine",
+        "10517": "BCG",
+        "29659": "HPV",
+        "24014": "Measles - Rubella",
+        "3573": "Pneumococcal",
+        "2763": "Rotavirus",
+        "2748": "Rubella",
+        "1002": "Yellow Fever",
+        "3549": "Inactivated Polio",
+        "54379": "Oral/Bivalent Polio",
+        "15846": "Malaria",
+        "1107": "Vitamin A",
+        "50732": "Tdap",
+        "18035": "Tdap",
         "13809": "Rabies",
-        "6306": "Influenza"
+        "6306": "Influenza",
+        "16927": "Covid 19",
+        "16929": "Covid 19",
+        "16931": "Covid 19",
+        "16489": "Covid 19"
       };
 }

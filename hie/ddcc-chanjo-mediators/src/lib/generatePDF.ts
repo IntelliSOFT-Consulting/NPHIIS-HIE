@@ -37,17 +37,16 @@ export async function generatePDF(vaccineCode: string, patient: any, documentRef
 
     doc.moveDown(12.5);
 
-    let vaccineName = `${vaccine.split(" ")[0].toUpperCase()}`;
 
     // Add some text
-    const text = `${vaccine} VACCINATION CERTIFICATE`;
+    const text = `${vaccine} VACCINATION CERTIFICATE`.toUpperCase();
     const textHeight = doc.heightOfString(text);
     const textStartY = doc.page.margins.top + logoHeight + 20; // Adjusted start position for the text
     doc.font('Helvetica-Bold').fontSize(16).text(text, { align: 'center' })
 
 
     // Add additional some text
-    const additionalText = `This is to certify that ${names}, born on ${patient.dob}, from Kenya with 
+    const additionalText = `This is to certify that ${names}, born on ${new Date(patient.birthDate).toLocaleDateString('en-GB').replace(/\/+/g, '-')}, from Kenya with 
     ${idType}: ${idNumber}, has been vaccinated against ${vaccine.split(" ")[0].toUpperCase()}
     on the date indicated in accordance with the National Health Regulations.`;
     const additionalTextHeight = doc.heightOfString(text);
@@ -69,7 +68,7 @@ export async function generatePDF(vaccineCode: string, patient: any, documentRef
         return null;
     }
     for (let vaccine of vaccineData?.entry) {
-        tableData.push([vaccineName, vaccine.resource.doseQuantity.value, new Date(vaccine.resource.occurrenceDateTime).toLocaleDateString('en-GB') ])
+        tableData.push([vaccine?.resource?.vaccineCode?.text, vaccine?.resource?.doseQuantity?.value, new Date(vaccine?.resource?.occurrenceDateTime).toLocaleDateString('en-GB').replace(/\/+/g, '-') ])
     }
 
     let startX = doc.page.margins.left;
