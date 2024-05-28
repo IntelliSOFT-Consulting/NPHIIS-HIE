@@ -16,14 +16,14 @@ let vaccineCodesList: any = vaccineCodes();
 export const getVaccineFolder = async (patientId: string, vaccineCode: string) => {
     try {
         console.log(patientId);
-        let folder = await (await FhirApi({ url: `/List?code=${vaccineCode}&subject=${patientId}` })).data;
+        let folder = await (await FhirApi({ url: `/List?code=${vaccineCode}&subject=Patient/${patientId}` })).data;
         if (!folder?.entry) {
             folder = await (await FhirApi({
                 url: `/List`,
                 method: "POST", data: JSON.stringify({
                     resourceType: "List",
                     meta: { profile: [getProfile("DigitalCertificateDocumentFolder")] },
-                    subject: { reference: `${patientId}` },
+                    subject: { reference: `Patient/${patientId}` },
                     code: { coding: [getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode])] },
                     entry: []
                 })
