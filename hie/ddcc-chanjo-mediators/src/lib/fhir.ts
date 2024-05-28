@@ -122,19 +122,19 @@ export const createDocumentRef = async (patientId: string, compositionId: string
     }
 }
 
-export const createDocumentRefQR = async (patientId: string, facilityId: string, pdfContent: string) => {
+export const createDocumentRefQR = async (patientId: string, facilityId: string, pdfContent: string, vaccineCode: string) => {
     try {
         let docRef = await (await FhirApi({
             url: `/DocumentReference`,
             method: "POST", data: JSON.stringify({
                 resourceType: "DocumentReference",
                 meta: { "profile": [getProfile("DigitalCertificateDocumentReferenceQR")] },
-                identifier: { "use": "official", "system": "urn:EXAMPLE-who-:ddcc:composition:ids", "value": "999123456123456123456" },
+                // identifier: { "use": "official", "system": "urn:EXAMPLE-who-:ddcc:composition:ids", "value": "999123456123456123456" },
                 type: { "coding": [{ "system": "http://loinc.org", "code": "82593-5" }] },
                 subject: { reference: `Patient/${patientId}` },
                 date: new Date().toISOString(),
                 authenticator: [{ reference: `Organization/${facilityId}` }],
-                coding: [{ "system": "http://loinc.org", "code": "11369-6" }],
+                coding: [{ "system": "http://loinc.org", "code": "11369-6" }, getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode] )],
                 content: [{
                     qrPDF: {
                         attachment: {
