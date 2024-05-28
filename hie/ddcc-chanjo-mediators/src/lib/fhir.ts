@@ -97,13 +97,14 @@ export const createOrganization = async (location: any) => {
 }
 
 
-export const createDocumentRef = async (patientId: string, compositionId: string) => {
+export const createDocumentRef = async (patientId: string, compositionId: string, vaccineCode: string) => {
     try {
         let docRef = await (await FhirApi({
             url: `/DocumentReference`,
             method: "POST", data: JSON.stringify({
                 resourceType: "DocumentReference",
                 status: "current",
+                type: {coding: getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode])},
                 meta: { profile: [getProfile("DigitalCertificateDocumentReference")] },
                 subject: { reference: `Patient/${patientId}` },
                 date: new Date().toISOString(),
