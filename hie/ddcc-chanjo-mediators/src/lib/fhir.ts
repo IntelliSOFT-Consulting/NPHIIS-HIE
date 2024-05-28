@@ -45,8 +45,10 @@ export const createComposition = async (immunizationResourceId: string) => {
             method: "POST", data: JSON.stringify({
                 resourceType: "Composition",
                 status: "final",
-                type: { coding: [{ "system": "http://terminology.hl7.org/CodeSystem/document-type", "code": "34488-3", "display": "Digital COVID-19 Vaccination Certificate" }, getNHDDCode(immunization.vaccineCode?.coding?.[0]?.code, vaccineCodesList[immunization.vaccineCode?.coding?.[0]?.code])
-                ] },
+                type: {
+                    coding: [{ "system": "http://terminology.hl7.org/CodeSystem/document-type", "code": "34488-3", "display": "Digital COVID-19 Vaccination Certificate" }, getNHDDCode(immunization.vaccineCode?.coding?.[0]?.code, vaccineCodesList[immunization.vaccineCode?.coding?.[0]?.code])
+                    ]
+                },
                 meta: { profile: [getProfile("DigitalCertificateCompositionVaccinationStatus")] },
                 subject: immunization.subject ?? immunization.patient,
                 author: immunization?.performer?.[0]?.actor?.reference,
@@ -130,17 +132,14 @@ export const createDocumentRefQR = async (patientId: string, facilityId: string,
                 resourceType: "DocumentReference",
                 meta: { "profile": [getProfile("DigitalCertificateDocumentReferenceQR")] },
                 // identifier: { "use": "official", "system": "urn:EXAMPLE-who-:ddcc:composition:ids", "value": "999123456123456123456" },
-                type: { "coding": [{ "system": "http://loinc.org", "code": "82593-5" }] },
+                type: { "coding": [{ "system": "http://loinc.org", "code": "82593-5" }, getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode])] },
                 subject: { reference: `Patient/${patientId}` },
                 date: new Date().toISOString(),
                 authenticator: [{ reference: `Organization/${facilityId}` }],
-                coding: [{ "system": "http://loinc.org", "code": "11369-6" }, getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode] )],
                 content: [{
-                    qrPDF: {
-                        attachment: {
-                            contentType: "application/pdf",
-                            data: pdfContent
-                        }
+                    attachment: {
+                        contentType: "application/pdf",
+                        data: pdfContent
                     }
                 }]
             })
