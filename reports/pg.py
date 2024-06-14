@@ -69,6 +69,7 @@ def create_table():
             the_vaccine_seq INT,
             vaccineCode VARCHAR,
             vaccineName VARCHAR,
+            the_dose INT,
             description VARCHAR,
             series VARCHAR,
             occ_date VARCHAR,
