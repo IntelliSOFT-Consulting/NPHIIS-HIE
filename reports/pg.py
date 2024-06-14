@@ -99,7 +99,7 @@ def insert_data(data):
         birthDate, the_age, age_y, age_m, age_group, active, deceased, maritalStatus,
         multipleBirth, pat_relation, pat_relation_name, pat_relation_tel, Due_Date,
         county, subcounty, ward, facility, facility_code, the_vaccine_seq, vaccineCode,
-        vaccineName, description, series, occ_date, Days_From_Due, faci_outr, imm_status,
+        vaccineName, the_dose, description, series, occ_date, Days_From_Due, faci_outr, imm_status,
         imm_status_defaulter
     ) VALUES (
         %(patient_id)s, %(family_name)s, %(given_name)s, %(national_id)s, %(gender)s,
@@ -107,7 +107,7 @@ def insert_data(data):
         %(active)s, %(deceased)s, %(maritalStatus)s, %(multipleBirth)s, %(pat_relation)s,
         %(pat_relation_name)s, %(pat_relation_tel)s, %(Due_Date)s, %(county)s, %(subcounty)s,
         %(ward)s, %(facility)s, %(facility_code)s, %(the_vaccine_seq)s, %(vaccineCode)s,
-        %(vaccineName)s, %(description)s, %(series)s, %(occ_date)s, %(Days_From_Due)s,
+        %(vaccineName)s, %(the_dose)s, %(description)s, %(series)s, %(occ_date)s, %(Days_From_Due)s,
         %(faci_outr)s, %(imm_status)s, %(imm_status_defaulter)s
     );
     '''
