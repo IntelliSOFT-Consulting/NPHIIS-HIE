@@ -50,44 +50,43 @@ def create_table():
         """
         create_table_query = """
         CREATE TABLE IF NOT EXISTS primary_immunization_dataset (
-            id SERIAL PRIMARY KEY,
-            patient_id VARCHAR,
-            family_name VARCHAR,
-            given_name VARCHAR,
-            national_id VARCHAR,
+            patient_id VARCHAR(50),
+            family_name VARCHAR(255),
+            given_name VARCHAR(255),
+            national_id VARCHAR(20),
             patient_update_date VARCHAR,
-            vaccineCategory VARCHAR,
-            phone VARCHAR,
-            gender VARCHAR,
+            phone VARCHAR(50),
+            gender VARCHAR(10),
             birthDate VARCHAR,
-            the_age VARCHAR,
-            age_y FLOAT,
-            age_m FLOAT,
-            age_group VARCHAR,
+            the_age VARCHAR(50),
+            age_y INTEGER,
+            age_m INTEGER,
+            age_group VARCHAR(50),
             active BOOLEAN,
-            deceased VARCHAR,
-            maritalStatus VARCHAR,
-            multipleBirth VARCHAR,
-            pat_relation VARCHAR,
-            pat_relation_name VARCHAR,
-            pat_relation_tel VARCHAR,
+            deceased BOOLEAN,
+            maritalStatus VARCHAR(50),
+            multipleBirth BOOLEAN,
+            pat_relation VARCHAR(50),
+            pat_relation_name VARCHAR(255),
+            pat_relation_tel VARCHAR(50),
             Due_Date VARCHAR,
-            county VARCHAR,
-            subcounty VARCHAR,
-            ward VARCHAR,
-            facility VARCHAR,
-            facility_code VARCHAR,
-            the_vaccine_seq INT,
-            vaccineCode VARCHAR,
-            vaccineName VARCHAR,
-            the_dose INT,
-            description VARCHAR,
-            series VARCHAR,
+            county VARCHAR(255),
+            subcounty VARCHAR(255),
+            ward VARCHAR(255),
+            facility VARCHAR(255),
+            facility_code VARCHAR(50),
+            the_vaccine_seq INTEGER,
+            vaccineCode VARCHAR(50),
+            vaccineName VARCHAR(255),
+            vaccineCategory VARCHAR(50),
+            the_dose INTEGER,
+            description VARCHAR(255),
+            series VARCHAR(50),
             occ_date VARCHAR,
-            Days_From_Due INT,
-            faci_outr VARCHAR,
-            imm_status VARCHAR,
-            imm_status_defaulter VARCHAR
+            Days_From_Due INTEGER,
+            faci_outr VARCHAR(255),
+            imm_status VARCHAR(50),
+            imm_status_defaulter VARCHAR(50)
         );
         """
         cursor.execute(create_query_table)
@@ -107,21 +106,10 @@ def execute_query(query):
 def insert_data(data):
     delete_query = "DELETE FROM primary_immunization_dataset;"
     insert_query = """
-    INSERT INTO primary_immunization_dataset (
-        patient_id, family_name, given_name, national_id,patient_update_date, gender, phone,
-        birthDate, the_age, age_y, age_m, age_group, active, deceased, maritalStatus,
-        multipleBirth, pat_relation, pat_relation_name, pat_relation_tel, Due_Date,
-        county, subcounty, ward, facility, facility_code, the_vaccine_seq, vaccineCode,
-        vaccineName, the_dose, description, series, occ_date, Days_From_Due, faci_outr, imm_status,
-        imm_status_defaulter
-    ) VALUES (
-        %(patient_id)s, %(family_name)s, %(given_name)s, %(national_id)s, %(patient_update_date)s, %(vaccineCategory)s, %(gender)s,
-        %(phone)s, %(birthDate)s, %(the_age)s, %(age_y)s, %(age_m)s, %(age_group)s,
-        %(active)s, %(deceased)s, %(maritalStatus)s, %(multipleBirth)s, %(pat_relation)s,
-        %(pat_relation_name)s, %(pat_relation_tel)s, %(Due_Date)s, %(county)s, %(subcounty)s,
-        %(ward)s, %(facility)s, %(facility_code)s, %(the_vaccine_seq)s, %(vaccineCode)s,
-        %(vaccineName)s, %(the_dose)s, %(description)s, %(series)s, %(occ_date)s, %(Days_From_Due)s,
-        %(faci_outr)s, %(imm_status)s, %(imm_status_defaulter)s
+    INSERT INTO primary_immunization_dataset 
+    (patient_id, family_name, given_name, national_id, patient_update_date, phone, gender, birthDate, the_age, age_y, age_m, age_group, active, deceased, maritalStatus, multipleBirth, pat_relation, pat_relation_name, pat_relation_tel, Due_Date, county, subcounty, ward, facility, facility_code, the_vaccine_seq, vaccineCode, vaccineName, vaccineCategory, the_dose, description, series, occ_date, Days_From_Due, faci_outr, imm_status, imm_status_defaulter)
+    VALUES (
+        %(patient_id)s, %(family_name)s, %(given_name)s, %(national_id)s, %(patient_update_date)s, %(phone)s, %(gender)s, %(birthDate)s, %(the_age)s, %(age_y)s, %(age_m)s, %(age_group)s, %(active)s, %(deceased)s, %(maritalStatus)s, %(multipleBirth)s, %(pat_relation)s, %(pat_relation_name)s, %(pat_relation_tel)s, %(Due_Date)s, %(county)s, %(subcounty)s, %(ward)s, %(facility)s, %(facility_code)s, %(the_vaccine_seq)s, %(vaccineCode)s, %(vaccineName)s, %(vaccineCategory)s, %(the_dose)s, %(description)s, %(series)s, %(occ_date)s, %(Days_From_Due)s, %(faci_outr)s, %(imm_status)s, %(imm_status_defaulter)s
     );
     """
     with conn.cursor() as cursor:
