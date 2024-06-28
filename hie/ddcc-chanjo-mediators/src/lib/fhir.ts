@@ -104,7 +104,7 @@ export const createDocumentRef = async (patientId: string, compositionId: string
             method: "POST", data: JSON.stringify({
                 resourceType: "DocumentReference",
                 status: "current",
-                type: {coding: getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode])},
+                type: {coding: [getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode])]},
                 meta: { profile: [getProfile("DigitalCertificateDocumentReference")] },
                 subject: { reference: `Patient/${patientId}` },
                 date: new Date().toISOString(),
