@@ -14,6 +14,12 @@ COPY wait-for-it.sh /wait-for-it.sh
 # Copy the rest of the application code into the container
 COPY . .
 
+RUN flask db init
+
+RUN flask db revision --autogenerate -m "Create tables"
+
+RUN flask db upgrade head
+
 # Expose the port that the app runs on
 EXPOSE 8000
 
