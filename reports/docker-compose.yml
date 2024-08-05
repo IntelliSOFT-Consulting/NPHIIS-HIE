@@ -12,7 +12,9 @@ services:
       - reports_db:/var/lib/postgresql/data
       
   reports_app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: reports_app
     networks:
       - cloudbuild
@@ -29,4 +31,4 @@ volumes:
   
 networks:
   cloudbuild:
-    external: true
+    # external: true
