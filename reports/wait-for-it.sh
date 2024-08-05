@@ -12,7 +12,8 @@ sleep 10
 
 flask db init 
 
-flask db revision --autogenerate -m "Create tables"
+flask db migrate -m "Initial migration"
+# flask db revision --autogenerate -m "Create tables"
 
 flask db upgrade head
 
