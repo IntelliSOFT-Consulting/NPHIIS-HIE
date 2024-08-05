@@ -7,19 +7,15 @@ from configs import db
 
 
 def moh_710_report(filters):
-    facility = filters.get("facility", "")
-    facility_code = filters.get("facility_code", "")
+    facility = filters.get("facility")
+    facility_code = filters.get("facility_code")
 
-    ward = filters.get("ward", "")
-    county = filters.get("county", "")
-    subcounty = filters.get("subcounty", "")
-
-    # The dates are YYYY-MM-DD strings, hence the strftime
-    start_date = filters.get(
-        "start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
-    )
-
-    end_date = filters.get("end_date", (datetime.now()).strftime("%Y-%m-%d"))
+    ward = filters.get("ward")
+    county = filters.get("county")
+    subcounty = filters.get("subcounty")
+    
+    start_date = filters.get("start_date")
+    end_date = filters.get("end_date")
 
     moh_710_report_query = (
         db.session.query(
