@@ -1,5 +1,6 @@
 from configs import db
 from models.dataset import PrimaryImmunizationDataset
+from sqlalchemy import or_
 
 
 def to_dict(data):
@@ -25,19 +26,25 @@ def insert_data(data):
 def query_defaulters(name="", facility="", vaccine_name="", start_date="", end_date=""):
     if start_date and end_date:
         data = PrimaryImmunizationDataset.query.filter(
-            PrimaryImmunizationDataset.family_name.ilike(f"%{name}%"),
-            PrimaryImmunizationDataset.vaccine_name.ilike(f"%{vaccine_name}%"),
+            or_(
+                PrimaryImmunizationDataset.family_name.ilike(f"%{name}%"),
+                PrimaryImmunizationDataset.vaccine_name.ilike(f"%{vaccine_name}%"),
+                PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
+            ),
+            PrimaryImmunizationDataset.imm_status == "Missed Immunization",
             PrimaryImmunizationDataset.occ_date >= start_date,
             PrimaryImmunizationDataset.occ_date <= end_date,
-            PrimaryImmunizationDataset.imm_status == "Defaulter",
-            PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
         ).all()
+        
         return to_json(data)
     else:
         data = PrimaryImmunizationDataset.query.filter(
-            PrimaryImmunizationDataset.family_name.ilike(f"%{name}%"),
-            PrimaryImmunizationDataset.vaccine_name.ilike(f"%{vaccine_name}%"),
-            PrimaryImmunizationDataset.imm_status == "Defaulter",
-            PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
+            or_(
+                PrimaryImmunizationDataset.family_name.ilike(f"%{name}%"),
+                PrimaryImmunizationDataset.vaccine_name.ilike(f"%{vaccine_name}%"),
+                PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
+            ),
+            PrimaryImmunizationDataset.imm_status == "Missed Immunization",
         ).all()
+
         return to_json(data)
