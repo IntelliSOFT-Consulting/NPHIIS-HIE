@@ -7,6 +7,7 @@ from flask_cors import CORS
 from configs import app, db
 import pg
 
+from reports.moh_710_report import moh_710_report
 
 CORS(app)
 
@@ -42,6 +43,24 @@ def defaulters():
         end_date = request.args.get("end_date", "")
         result = pg.query_defaulters(name, vaccine_name, start_date, end_date)
         return jsonify(result)
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
+
+@app.route("/api/moh_710_report", methods=["GET"])
+def moh_710_report_endpoint():
+    filters = {
+        "facility": request.args.get("facility", ""),
+        "facility_code": request.args.get("facility_code", ""),
+        "ward": request.args.get("ward", ""),
+        "county": request.args.get("county", ""),
+        "subcounty": request.args.get("subcounty", ""),
+        "start_date": request.args.get("start_date", ""),
+        "end_date": request.args.get("end_date", ""),
+    }
+    try:
+        result = moh_710_report(filters)
+        return result
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
