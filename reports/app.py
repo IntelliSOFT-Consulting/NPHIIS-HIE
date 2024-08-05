@@ -1,12 +1,16 @@
+import atexit
+from datetime import datetime, timedelta
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-import atexit
-import hive
-import pg as db
-from flask import Flask, jsonify, request
+from flask import jsonify, request
 from flask_cors import CORS
 
-app = Flask(__name__)
+import hive
+import pg
+from configs import app, db
+from reports.moh_710_report import moh_710_report
+
 CORS(app)
 
 
@@ -32,40 +36,6 @@ def analytics():
         return jsonify({"message": str(e)}), 500
 
 
-@app.route("/api/save-query", methods=["POST"])
-def save_query():
-    try:
-        data = request.get_json()
-        name = data.get("name")
-        sql = data.get("sql")
-        db.insert_query(name, sql)
-        return jsonify({"message": "Query saved successfully"})
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
-
-
-@app.route("/api/run-query", methods=["POST"])
-def run_query():
-    try:
-        data = request.get_json()
-        query_name = data.get("name")
-        result = db.run_query(query_name)
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
-
-
-@app.route("/api/exec", methods=["POST"])
-def exec_query():
-    try:
-        data = request.get_json()
-        query = data.get("query")
-        result = db.execute_query(query)
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
-
-
 @app.route("/api/defaulters", methods=["GET"])
 def defaulters():
     try:
@@ -73,11 +43,34 @@ def defaulters():
         vaccine_name = request.args.get("vaccine_name", "")
         start_date = request.args.get("start_date", "")
         end_date = request.args.get("end_date", "")
-        result = db.query_defaulters(name, vaccine_name, start_date, end_date)
+        result = pg.query_defaulters(name, vaccine_name, start_date, end_date)
         return jsonify(result)
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
 
+@app.route("/api/moh_710_report", methods=["GET"])
+def moh_710_report_endpoint():
+
+    
+    filters = {
+        "facility": request.args.get("facility", ""),
+        "facility_code": request.args.get("facility_code", ""),
+        "ward": request.args.get("ward", ""),
+        "county": request.args.get("county", ""),
+        "subcounty": request.args.get("subcounty", ""),
+        # The dates are YYYY-MM-DD strings, hence the strftime
+        "start_date": request.args.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")),
+        "end_date": request.args.get("end_date", (datetime.now()).strftime("%Y-%m-%d")),
+    }
+    try:
+        result = moh_710_report(filters)
+        return result
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
+
 if __name__ == "__main__":
+    app.run(debug=True)
+    db.create_all()
     app.run(debug=True)
