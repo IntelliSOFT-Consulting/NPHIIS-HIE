@@ -4,9 +4,9 @@ from sqlalchemy.orm import Mapped
 
 class PrimaryImmunizationDataset(db.Model):
     __tablename__ = "primary_immunization_dataset"
-    id:  Mapped[int] = db.Column(db.Integer, primary_key=True)
-    patient_id: Mapped[str] =  db.Column(db.String, nullable=True)
-    family_name:  Mapped[str] = db.Column(db.String, nullable=True)
+    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
+    patient_id: Mapped[str] = db.Column(db.String, nullable=True)
+    family_name: Mapped[str] = db.Column(db.String, nullable=True)
     given_name: Mapped[str] = db.Column(db.String, nullable=True)
     national_id: Mapped[str] = db.Column(db.String, nullable=True)
     patient_update_date: Mapped[str] = db.Column(db.String, nullable=True)
