@@ -1,12 +1,14 @@
+import atexit
+from datetime import datetime, timedelta
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-import atexit
-import hive
 from flask import jsonify, request
 from flask_cors import CORS
-from configs import app, db
-import pg
 
+import hive
+import pg
+from configs import app, db
 from reports.moh_710_report import moh_710_report
 
 CORS(app)
@@ -49,14 +51,17 @@ def defaulters():
 
 @app.route("/api/moh_710_report", methods=["GET"])
 def moh_710_report_endpoint():
+
+    
     filters = {
         "facility": request.args.get("facility", ""),
         "facility_code": request.args.get("facility_code", ""),
         "ward": request.args.get("ward", ""),
         "county": request.args.get("county", ""),
         "subcounty": request.args.get("subcounty", ""),
-        "start_date": request.args.get("start_date", ""),
-        "end_date": request.args.get("end_date", ""),
+        # The dates are YYYY-MM-DD strings, hence the strftime
+        "start_date": request.args.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")),
+        "end_date": request.args.get("end_date", (datetime.now()).strftime("%Y-%m-%d")),
     }
     try:
         result = moh_710_report(filters)
