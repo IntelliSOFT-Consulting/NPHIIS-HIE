@@ -43,7 +43,9 @@ def defaulters():
         vaccine_name = request.args.get("vaccine_name", "")
         start_date = request.args.get("start_date", "")
         end_date = request.args.get("end_date", "")
-        result = pg.query_defaulters(name, vaccine_name, start_date, end_date)
+        page = request.args.get("page", 1)
+        per_page = request.args.get("per_page", 20)
+        result = pg.query_defaulters(name, vaccine_name, start_date, end_date, page, per_page)
         return jsonify(result)
     except Exception as e:
         return jsonify({"message": str(e)}), 500
