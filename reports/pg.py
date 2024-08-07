@@ -23,7 +23,9 @@ def insert_data(data):
     db.session.commit()
 
 
-def query_defaulters(name="", facility="", vaccine_name="", start_date="", end_date=""):
+def query_defaulters(name="", facility="", vaccine_name="", start_date="", end_date="",page=1, per_page=20):
+
+
     if start_date and end_date:
         data = PrimaryImmunizationDataset.query.filter(
             or_(
@@ -34,7 +36,7 @@ def query_defaulters(name="", facility="", vaccine_name="", start_date="", end_d
             PrimaryImmunizationDataset.imm_status == "Missed Immunization",
             PrimaryImmunizationDataset.occ_date >= start_date,
             PrimaryImmunizationDataset.occ_date <= end_date,
-        ).all()
+        ).limit(per_page).offset((page - 1) * per_page).all()
         
         return to_json(data)
     else:
@@ -45,6 +47,6 @@ def query_defaulters(name="", facility="", vaccine_name="", start_date="", end_d
                 PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
             ),
             PrimaryImmunizationDataset.imm_status == "Missed Immunization",
-        ).all()
+        ).limit(per_page).offset((page - 1) * per_page).all()
 
         return to_json(data)
