@@ -13,7 +13,7 @@ COPY wait-for-it.sh /wait-for-it.sh
 
 COPY . .
 
-RUN rm -rf migrations
+# RUN rm -rf migrations
 
 EXPOSE 8000
 
