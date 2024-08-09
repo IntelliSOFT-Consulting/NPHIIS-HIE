@@ -13,11 +13,12 @@ let _vaccineCodes: any = vaccineCodes();
 
 let QR_BASE_URL = "https://chanjoke.intellisoftkenya.com/digital-certificates"
 
-export async function generatePDF(vaccineCode: string, patient: any, documentRefId: string): Promise<string | null > {
+export async function generatePDF(vaccineCode: string, patient: any, documentRefId: string,isRoutine:boolean): Promise<string | null > {
 
     const vaccine = _vaccineCodes[vaccineCode];
     const doc = new PDFDocument({ margin: 50 });
     const IDs = await processIdentifiers(patient.identifier);
+    
     const idType = Object.keys(IDs)[0];
     const idNumber = IDs[idType];
     const names = `${patient?.name[0]?.family} ${patient?.name[0]?.given[0]}${(patient?.name[0]?.given[1] ? " " + patient?.name[0]?.given[1] : '')}`;
@@ -38,16 +39,21 @@ export async function generatePDF(vaccineCode: string, patient: any, documentRef
     doc.moveDown(12.5);
 
 
-    // Add some text
-    const text = `${vaccine} VACCINATION CERTIFICATE`.toUpperCase();
+    // Add some text 
+    const text = `${isRoutine ? "" : vaccine + " "}VACCINATION CERTIFICATE`.toUpperCase();
+
     const textHeight = doc.heightOfString(text);
     const textStartY = doc.page.margins.top + logoHeight + 20; // Adjusted start position for the text
     doc.font('Helvetica-Bold').fontSize(16).text(text, { align: 'center' })
 
 
     // Add additional some text
+    const vaccineText = isRoutine 
+  ? "the following vaccines: " 
+  : vaccine.split(" ")[0].toUpperCase();
+
     const additionalText = `This is to certify that ${names}, born on ${new Date(patient.birthDate).toLocaleDateString('en-GB').replace(/\/+/g, '-')}, from Kenya with 
-    ${idType}: ${idNumber}, has been vaccinated against ${vaccine.split(" ")[0].toUpperCase()}
+    ${idType}: ${idNumber}, has been vaccinated against ${vaccineText} 
     on the date indicated in accordance with the National Health Regulations.`;
     const additionalTextHeight = doc.heightOfString(text);
     const additionalTextStartY = doc.page.margins.top + textStartY + 20; // Adjusted start position for the text
@@ -60,10 +66,14 @@ export async function generatePDF(vaccineCode: string, patient: any, documentRef
         // Add more rows as needed
     ];
 
-
+    const baseUrl = `/Immunization?patient=Patient/${patient.id}`;
+    const fullUrl = `${baseUrl}${isRoutine ? "&_sort=date" : `&vaccine-code=${vaccineCode}&_sort=date`}`;
+     
     let vaccineData = (await FhirApi({ 
+        // url: fullUrl,
         url: `/Immunization?patient=Patient/${patient.id}&vaccine-code=${vaccineCode}&_sort=date`, 
         headers:{"Cache-Control": 'no-cache'} })).data;
+        console.log(vaccineData);
     if (!vaccineData?.entry){
         return null;
     }
