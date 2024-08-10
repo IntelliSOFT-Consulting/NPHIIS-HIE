@@ -20,8 +20,9 @@ export const vaccineCodes = () => {
     "16929": "Covid 19", // Pfizer-BioNtech
     "16931": "Covid 19", // Moderna
     "16489": "Covid 19", //Sinopharm
-    "0" :"Covid 19",// Johnson
-    "11742":"Albendazole"
+    "16537" :"Covid 19",// Johnson
+    "11742":"Albendazole",
+    "14676": "Tetanus" // 
   };
 
   
@@ -33,10 +34,10 @@ export const nonRoutineVaccince = () => {
     "16931": "Covid 19 Moderna",
     "16489": "Covid 19 Sinopharm",
     "16929": "Covid 19 Pfizer-BioNTech",
-    "1": "Tetanus",
+    "16537": "Covid 19 Johnson",
+    "14676": "Tetanus",
     "1002": "Yellow Fever",
     "13809": "Rabies Post Exposure",
-    "6306": "Influenza",
-    "0": "HPV",
+    "6306": "Influenza", 
   };
 };

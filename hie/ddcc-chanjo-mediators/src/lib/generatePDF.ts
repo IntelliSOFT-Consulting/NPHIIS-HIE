@@ -1,163 +1,435 @@
-import PDFDocument from 'pdfkit';
-import QRCode from 'qrcode';
-import path from 'path';
-import fs from 'fs';
-import { processIdentifiers } from './fhir';
-import { FhirApi } from './utils';
-import { vaccineCodes } from './vaccineCodes';
+import PDFDocument from "pdfkit";
+import QRCode from "qrcode";
+import path from "path";
+import fs from "fs";
+import { processIdentifiers } from "./fhir";
+import { FhirApi } from "./utils";
+import { nonRoutineVaccince, vaccineCodes } from "./vaccineCodes";
 
-let MOH_LOGO = path.join(__dirname, 'MOH-Logo.png');
+let MOH_LOGO = path.join(__dirname, "MOH-Logo.png");
 
 let _vaccineCodes: any = vaccineCodes();
 // console.log()
 
-let QR_BASE_URL = "https://chanjoke.intellisoftkenya.com/digital-certificates"
+const _nonRoutineVaccinces: any = nonRoutineVaccince();
 
-export async function generatePDF(vaccineCode: string, patient: any, documentRefId: string,isRoutine:boolean): Promise<string | null > {
+let QR_BASE_URL = "https://chanjoke.intellisoftkenya.com/digital-certificates";
+
+export async function generatePDF(
+  vaccineCode: string,
+  patient: any,
+  documentRefId: string
+): Promise<string | null> {
+  try {
+    console.log("Starting PDF generation...");
 
     const vaccine = _vaccineCodes[vaccineCode];
+    console.log("Vaccine code resolved:", vaccine);
+
     const doc = new PDFDocument({ margin: 50 });
     const IDs = await processIdentifiers(patient.identifier);
-    
+    console.log("Processed patient identifiers:", IDs);
+
     const idType = Object.keys(IDs)[0];
     const idNumber = IDs[idType];
-    const names = `${patient?.name[0]?.family} ${patient?.name[0]?.given[0]}${(patient?.name[0]?.given[1] ? " " + patient?.name[0]?.given[1] : '')}`;
+    const names = `${patient?.name[0]?.family} ${patient?.name[0]?.given[0]}${
+      patient?.name[0]?.given[1] ? " " + patient?.name[0]?.given[1] : ""
+    }`;
+    console.log("Patient name and ID details:", { names, idType, idNumber });
 
-    // Generate QR Code
-    const qrCodeBuffer = await QRCode.toBuffer(`${QR_BASE_URL}/${documentRefId}/$validate`);
+    // Prepare QR Code
+    const qrCodeBuffer = await QRCode.toBuffer(
+      `${QR_BASE_URL}/${documentRefId}/$validate`
+    );
+    console.log("Generated QR Code.");
+
     const qrCodeWidth = 100;
     const qrCodeHeight = 100;
 
-    // Logo
+    // Prepare Logo
     const logoWidth = 200;
     const logoHeight = 150;
     const logoPath = MOH_LOGO;
+    console.log("Logo settings prepared.");
+
+    // Pipe document to buffer array
+    const buffers: Buffer[] = [];
+    doc.on("data", buffers.push.bind(buffers));
 
     // Add logo
-    doc.image(logoPath, doc.page.width / 2 - logoWidth / 2, doc.page.margins.top, { width: logoWidth, height: logoHeight });
-
+    doc.image(
+      logoPath,
+      doc.page.width / 2 - logoWidth / 2,
+      doc.page.margins.top,
+      { width: logoWidth, height: logoHeight }
+    );
     doc.moveDown(12.5);
+    console.log("Added logo to PDF.");
 
+    // Add title text
+    const text = `${vaccine} VACCINATION CERTIFICATE`.toUpperCase();
+    doc.font("Helvetica-Bold").fontSize(16).text(text, { align: "center" });
+    console.log("Added title text to PDF.");
 
-    // Add some text 
-    const text = `${isRoutine ? "" : vaccine + " "}VACCINATION CERTIFICATE`.toUpperCase();
+    // Add additional text
+    const additionalText = `This is to certify that ${names}, born on ${new Date(
+      patient.birthDate
+    )
+      .toLocaleDateString("en-GB")
+      .replace(
+        /\/+/g,
+        "-"
+      )}, from Kenya with ${idType}: ${idNumber}, has been vaccinated against ${vaccine
+      .split(" ")[0]
+      .toUpperCase()} on the date indicated in accordance with the National Health Regulations.`;
+    doc
+      .font("Helvetica")
+      .fontSize(12)
+      .text(additionalText, { align: "center", continued: false });
+    console.log("Added additional text to PDF.");
 
-    const textHeight = doc.heightOfString(text);
-    const textStartY = doc.page.margins.top + logoHeight + 20; // Adjusted start position for the text
-    doc.font('Helvetica-Bold').fontSize(16).text(text, { align: 'center' })
-
-
-    // Add additional some text
-    const vaccineText = isRoutine 
-  ? "the following vaccines: " 
-  : vaccine.split(" ")[0].toUpperCase();
-
-    const additionalText = `This is to certify that ${names}, born on ${new Date(patient.birthDate).toLocaleDateString('en-GB').replace(/\/+/g, '-')}, from Kenya with 
-    ${idType}: ${idNumber}, has been vaccinated against ${vaccineText} 
-    on the date indicated in accordance with the National Health Regulations.`;
-    const additionalTextHeight = doc.heightOfString(text);
-    const additionalTextStartY = doc.page.margins.top + textStartY + 20; // Adjusted start position for the text
-    doc.font('Helvetica').fontSize(12).text(additionalText, { align: 'center' })
-
-    // doc.moveDown(1.5);
     // Add table
     const tableData = [
-        ['Vaccine Name', 'No of doses', 'Date Administered'],
-        // Add more rows as needed
+      ["Vaccine Name", "No of doses", "Date Administered"],
+      // Add more rows as needed
     ];
+    console.log("Initialized table data.");
+    // let baseUrl=`/Immunization?patient=${patient.id}&vaccine-code=${vaccineCode}&_sort=date`
+    let baseUrl = `/Immunization?patient=${patient.id}&_sort=date`;
 
-    const baseUrl = `/Immunization?patient=Patient/${patient.id}`;
-    const fullUrl = `${baseUrl}${isRoutine ? "&_sort=date" : `&vaccine-code=${vaccineCode}&_sort=date`}`;
-     
-    let vaccineData = (await FhirApi({ 
-        // url: fullUrl,
-        url: `/Immunization?patient=Patient/${patient.id}&vaccine-code=${vaccineCode}&_sort=date`, 
-        headers:{"Cache-Control": 'no-cache'} })).data;
-        console.log(vaccineData);
-    if (!vaccineData?.entry){
-        return null;
+    const vaccineData = (
+      await FhirApi({
+        url: baseUrl,
+        headers: { "Cache-Control": "no-cache" },
+      })
+    ).data;
+    console.log("Fetched vaccine data from FHIR API:", vaccineData);
+
+    if (!vaccineData?.entry) {
+      console.log("No vaccine data found.");
+      return null;
     }
+
     for (let vaccine of vaccineData?.entry) {
-        tableData.push([vaccine?.resource?.vaccineCode?.text, vaccine?.resource?.doseQuantity?.value, new Date(vaccine?.resource?.occurrenceDateTime).toLocaleDateString('en-GB').replace(/\/+/g, '-') ])
+      tableData.push([
+        vaccine?.resource?.vaccineCode?.text,
+        vaccine?.resource?.doseQuantity?.value,
+        new Date(vaccine?.resource?.occurrenceDateTime)
+          .toLocaleDateString("en-GB")
+          .replace(/\/+/g, "-"),
+      ]);
     }
+    console.log("Populated table data:", tableData);
 
-    let startX = doc.page.margins.left;
-    let startY = doc.page.height - doc.page.margins.bottom - qrCodeHeight - 50; // Adjusted position to leave space for the QR code
-
-    const columnWidths = [150, 150, 150]; // Adjust column widths as needed
+    const columnWidths = [150, 150, 150];
     const tableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
-    startX = doc.page.width / 2 - tableWidth / 2;
-    startY = doc.page.height - doc.page.margins.bottom - qrCodeHeight - (150 + 100);
+    let startX = doc.page.width / 2 - tableWidth / 2;
+    let startY =
+      doc.page.height - doc.page.margins.bottom - qrCodeHeight - (150 + 100);
+    console.log("Calculated table positioning:", { startX, startY });
 
+    const drawTable = (
+      doc: PDFKit.PDFDocument,
+      tableData: any[],
+      startX: number,
+      startY: number,
+      columnWidths: number[]
+    ) => {
+      console.log("Drawing table...");
+      doc.font("Helvetica-Bold").fontSize(10);
 
-
-
-    const drawTable = (doc: any, tableData: any, startX: any, startY: any, columnWidths: any) => {
-        doc.font('Helvetica-Bold').fontSize(10);
-
-        // Draw headers
-        tableData[0].forEach((header: any, i: any) => {
-            doc.text(header, startX + (columnWidths[i] * i), startY, { width: columnWidths[i], align: 'left' });
+      // Draw headers
+      tableData[0].forEach((header: any, i: any) => {
+        doc.text(header, startX + columnWidths[i] * i, startY, {
+          width: columnWidths[i],
+          align: "left",
         });
+      });
 
+      startY += 20;
+
+      // Draw rows
+      tableData.slice(1).forEach((row) => {
+        row.forEach((cell: any, i: any) => {
+          doc.text(cell, startX + columnWidths[i] * i, startY, {
+            width: columnWidths[i],
+            align: "left",
+          });
+        });
         startY += 20;
-
-        // Draw rows
-        tableData.slice(1).forEach((row: any) => {
-            row.forEach((cell: any, i: any) => {
-                doc.text(cell, startX + (columnWidths[i] * i), startY, { width: columnWidths[i], align: 'left' });
-            });
-            startY += 20;
-        });
+      });
+      console.log("Table drawn successfully.");
     };
 
     drawTable(doc, tableData, startX, startY, columnWidths);
 
-
-
     // Add QR Code
-    doc.image(qrCodeBuffer, doc.page.width / 2 - qrCodeWidth / 2, doc.page.height - doc.page.margins.bottom - qrCodeHeight, { width: qrCodeWidth, height: qrCodeHeight });
+    doc.image(
+      qrCodeBuffer,
+      doc.page.width / 2 - qrCodeWidth / 2,
+      doc.page.height - doc.page.margins.bottom - qrCodeHeight,
+      { width: qrCodeWidth, height: qrCodeHeight }
+    );
+    console.log("Added QR code to PDF.");
 
+    // Finalize PDF file
     doc.end();
 
+    // Return PDF as base64 string
+    console.log("Finalizing PDF...");
     return new Promise<string>((resolve, reject) => {
-        const buffers: Buffer[] = [];
-        doc.on('data', buffers.push.bind(buffers));
-        doc.on('end', () => {
-            const concatenatedBuffer = Buffer.concat(buffers);
-            const base64String = concatenatedBuffer.toString('base64');
-            resolve(base64String);
-        });
-        doc.on('error', reject);
+      doc.on("end", () => {
+        const concatenatedBuffer = Buffer.concat(buffers);
+        const base64String = concatenatedBuffer.toString("base64");
+        console.log("PDF generation complete.");
+        resolve(base64String);
+      });
+      doc.on("error", (error) => {
+        console.error("Error during PDF generation:", error);
+        reject(error);
+      });
     });
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    return null;
+  }
 }
 
+export async function generateCombinedPDF(
+  vaccineCode: string,
+  patient: any,
+  documentRefId: string,
+  isRoutine: boolean
+): Promise<string | null> {
+  try {
+    console.log("Starting PDF generation...");
 
-export async function savePDFToFileSystem(base64String: string, filePath: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-        const buffer = Buffer.from(base64String, 'base64');
-        fs.writeFile(filePath, buffer, (err) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
+    const vaccine = _vaccineCodes[vaccineCode];
+    console.log("Vaccine code resolved:", vaccine);
+
+    const doc = new PDFDocument({ margin: 50 });
+    const IDs = await processIdentifiers(patient.identifier);
+    const identificationType = "identification_type";
+
+    let idType = null;
+    let idNumber = null;
+    if (IDs.length > 0) {
+      for (let id of IDs) {
+        // If the type matches the identificationType, break the loop
+        if (id.type === identificationType) {
+          console.log(`Match found: ${id.system} with value ${id.value}`);
+          idType = id.system;
+          idNumber = id.value;
+          break;
+        }
+      }
+    } else {
+      console.log("No identifiers found.");
+    }
+
+    const names = `${patient?.name[0]?.family} ${patient?.name[0]?.given[0]}${
+      patient?.name[0]?.given[1] ? " " + patient?.name[0]?.given[1] : ""
+    }`;
+    console.log("Patient name and ID details:", { names, idType, idNumber });
+
+    // Prepare QR Code
+    const qrCodeBuffer = await QRCode.toBuffer(
+      `${QR_BASE_URL}/${documentRefId}/$validate`
+    );
+    console.log("Generated QR Code.");
+
+    const qrCodeWidth = 100;
+    const qrCodeHeight = 100;
+
+    // Prepare Logo
+    const logoWidth = 200;
+    const logoHeight = 150;
+    const logoPath = MOH_LOGO;
+    console.log("Logo settings prepared.");
+
+    // Pipe document to buffer array
+    const buffers: Buffer[] = [];
+    doc.on("data", buffers.push.bind(buffers));
+
+    // Add logo
+    doc.image(
+      logoPath,
+      doc.page.width / 2 - logoWidth / 2,
+      doc.page.margins.top,
+      { width: logoWidth, height: logoHeight }
+    );
+    doc.moveDown(12.5);
+    console.log("Added logo to PDF.");
+
+    // Add title text
+    // Base certificate text
+    const baseText = "VACCINATION CERTIFICATE";
+    // Conditional text generation
+    const text = isRoutine
+      ? baseText.toUpperCase()
+      : `${vaccine.toUpperCase()} ${baseText}`;
+    doc.font("Helvetica-Bold").fontSize(16).text(text, { align: "center" });
+    console.log("Added title text to PDF.");
+
+    const vaccineText = isRoutine
+      ? `the following:`
+      : `${vaccine.split(" ")[0].toUpperCase()}`;
+
+    // Add additional text
+    const additionalText = `This is to certify that ${names}, born on ${new Date(
+      patient.birthDate
+    )
+      .toLocaleDateString("en-GB")
+      .replace(
+        /\/+/g,
+        "-"
+      )}, from Kenya with ${idType}: ${idNumber}, has been vaccinated against ${vaccineText} on the date indicated in accordance with the National Health Regulations.`;
+    doc
+      .font("Helvetica")
+      .fontSize(12)
+      .text(additionalText, { align: "center", continued: false });
+    console.log("Added additional text to PDF.");
+
+    // Add table
+    const tableData = [
+      ["Vaccine Name", "No of doses", "Date Administered"],
+      // Add more rows as needed
+    ];
+    console.log("Initialized table data.");
+    let baseUrl = `/Immunization?patient=${patient.id}`;
+    const fullUrl = `${baseUrl}${
+      isRoutine ? "&_sort=date" : `&vaccine-code=${vaccineCode}`
+    }`;
+
+    const vaccineData = (
+      await FhirApi({
+        url: fullUrl,
+        headers: { "Cache-Control": "no-cache" },
+      })
+    ).data;
+    console.log("Fetched vaccine data from FHIR API:", vaccineData);
+
+    if (!vaccineData?.entry) {
+      console.log("No vaccine data found.");
+      return null;
+    }
+
+    for (let vaccine of vaccineData?.entry) {
+      // For Routine: Remember to exclude non-routine vaccines in the table list
+      if (isRoutine) {
+        const code=vaccine?.resource?.vaccineCode?.coding[0].code;
+       
+        //check if this code if part of the non routine: if so ignore it
+        const nonRoutineCodes = Object.keys(_nonRoutineVaccinces);
+        if (!nonRoutineCodes.includes(code)) {
+            console.log('dealing with code **** '+code);
+            tableData.push([
+                vaccine?.resource?.vaccineCode?.text,
+                vaccine?.resource?.doseQuantity?.value,
+                new Date(vaccine?.resource?.occurrenceDateTime)
+                  .toLocaleDateString("en-GB")
+                  .replace(/\/+/g, "-"),
+              ]);
+        }
+
+      } else {
+        tableData.push([
+          vaccine?.resource?.vaccineCode?.text,
+          vaccine?.resource?.doseQuantity?.value,
+          new Date(vaccine?.resource?.occurrenceDateTime)
+            .toLocaleDateString("en-GB")
+            .replace(/\/+/g, "-"),
+        ]);
+      }
+    }
+    console.log("Populated table data:", tableData);
+
+    const columnWidths = [150, 150, 150];
+    const tableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+    let startX = doc.page.width / 2 - tableWidth / 2;
+    let startY =
+      doc.page.height - doc.page.margins.bottom - qrCodeHeight - (150 + 100);
+    console.log("Calculated table positioning:", { startX, startY });
+
+    const drawTable = (
+      doc: PDFKit.PDFDocument,
+      tableData: any[],
+      startX: number,
+      startY: number,
+      columnWidths: number[]
+    ) => {
+      console.log("Drawing table...");
+      doc.font("Helvetica-Bold").fontSize(10);
+
+      // Draw headers
+      tableData[0].forEach((header: any, i: any) => {
+        doc.text(header, startX + columnWidths[i] * i, startY, {
+          width: columnWidths[i],
+          align: "left",
         });
+      });
+
+      startY += 20;
+
+      // Draw rows
+      tableData.slice(1).forEach((row) => {
+        row.forEach((cell: any, i: any) => {
+          doc.text(cell, startX + columnWidths[i] * i, startY, {
+            width: columnWidths[i],
+            align: "left",
+          });
+        });
+        startY += 20;
+      });
+      console.log("Table drawn successfully.");
+    };
+
+    drawTable(doc, tableData, startX, startY, columnWidths);
+
+    // Add QR Code
+    doc.image(
+      qrCodeBuffer,
+      doc.page.width / 2 - qrCodeWidth / 2,
+      doc.page.height - doc.page.margins.bottom - qrCodeHeight,
+      { width: qrCodeWidth, height: qrCodeHeight }
+    );
+    console.log("Added QR code to PDF.");
+
+    // Finalize PDF file
+    doc.end();
+
+    // Return PDF as base64 string
+    console.log("Finalizing PDF...");
+    return new Promise<string>((resolve, reject) => {
+      doc.on("end", () => {
+        const concatenatedBuffer = Buffer.concat(buffers);
+        const base64String = concatenatedBuffer.toString("base64");
+        console.log("PDF generation complete.");
+        resolve(base64String);
+      });
+      doc.on("error", (error) => {
+        console.error("Error during PDF generation:", error);
+        reject(error);
+      });
     });
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    return null;
+  }
 }
 
-
-
-
-// // Example usage
-// const outputFile = 'output.pdf';
-// const patient = pa
-// // Change this to your desired output file path
-// generatePDF("Malaria", "1", "33")
-//   .then((pdfBuffer) => savePDFToFileSystem(pdfBuffer, outputFile))
-//   .then(() => {
-//     console.log('PDF saved to file:', outputFile);
-//   })
-//   .catch((err) => {
-//     console.error('Error generating or saving PDF:', err);
-//   });
+export async function savePDFToFileSystem(
+  base64String: string,
+  filePath: string
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const buffer = Buffer.from(base64String, "base64");
+    fs.writeFile(filePath, buffer, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
