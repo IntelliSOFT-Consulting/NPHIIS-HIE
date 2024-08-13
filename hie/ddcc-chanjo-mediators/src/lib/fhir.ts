@@ -219,12 +219,17 @@ export let createFHIRSubscription = async () => {
 
 export const processIdentifiers = async (identifiers: any) => {
     try {
-        let ids: any = {};
+        let ids: any = [];
         for (let id of identifiers) {
             let idType = id?.type?.coding[0].code;
-            let idSystem = id?.type?.coding[0].system;
-            // ids[`${id?.type?.}`]
-            ids[idType] = id?.value;
+            let idSystem = id?.type?.coding[0].system; 
+            let idValue=id?.value
+
+            ids.push({
+                type: idType,
+                system: idSystem,
+                value: idValue
+            });
         }
         return ids;
     } catch (error) {
