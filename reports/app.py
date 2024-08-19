@@ -9,6 +9,7 @@ from flask_cors import CORS
 import hive
 import pg
 from configs import app, db
+from reports.moh_525_report import moh_525_report
 from reports.moh_710_report import moh_710_report
 
 CORS(app)
@@ -45,7 +46,9 @@ def defaulters():
         end_date = request.args.get("end_date", "")
         page = request.args.get("page", 1)
         per_page = request.args.get("per_page", 20)
-        result = pg.query_defaulters(name, vaccine_name, start_date, end_date, page, per_page)
+        result = pg.query_defaulters(
+            name, vaccine_name, start_date, end_date, page, per_page
+        )
         return jsonify(result)
     except Exception as e:
         return jsonify({"message": str(e)}), 500
@@ -53,8 +56,6 @@ def defaulters():
 
 @app.route("/api/moh_710_report", methods=["GET"])
 def moh_710_report_endpoint():
-
-    
     filters = {
         "facility": request.args.get("facility", ""),
         "facility_code": request.args.get("facility_code", ""),
@@ -62,11 +63,22 @@ def moh_710_report_endpoint():
         "county": request.args.get("county", ""),
         "subcounty": request.args.get("subcounty", ""),
         # The dates are YYYY-MM-DD strings, hence the strftime
-        "start_date": request.args.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")),
+        "start_date": request.args.get(
+            "start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+        ),
         "end_date": request.args.get("end_date", (datetime.now()).strftime("%Y-%m-%d")),
     }
     try:
         result = moh_710_report(filters)
+        return result
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
+
+@app.route("/api/moh_525_report", methods=["GET"])
+def moh_525_report_endpoint():
+    try:
+        result = moh_525_report()
         return result
     except Exception as e:
         return jsonify({"message": str(e)}), 500
