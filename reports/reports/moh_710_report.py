@@ -1,9 +1,7 @@
-from models.dataset import PrimaryImmunizationDataset
-from datetime import datetime, timedelta
-from helpers import to_json
-
 from sqlalchemy import func, or_
+
 from configs import db
+from models.dataset import PrimaryImmunizationDataset
 
 
 def moh_710_report(filters):
@@ -13,7 +11,7 @@ def moh_710_report(filters):
     ward = filters.get("ward")
     county = filters.get("county")
     subcounty = filters.get("subcounty")
-    
+
     start_date = filters.get("start_date")
     end_date = filters.get("end_date")
 
