@@ -117,24 +117,33 @@ router.get("/me", async (req: Request, res: Response) => {
             res.json({ status: "error", error: "Invalid Bearer token provided" });
             return;
         }
-        let userInfo = await findKeycloakUser(currentUser.preferred_username)
+        let userInfo = await findKeycloakUser(currentUser.preferred_username);
         let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}` })).data;
-        let facilityId = practitioner.extension[0].valueReference.reference;
-        let facility = await (await FhirApi({ url: `/${facilityId}` })).data;
-        let ward = await (await FhirApi({ url: `/${facility.partOf.reference}` })).data;
-        let subCounty = await (await FhirApi({ url: `/${ward.partOf.reference}` })).data;
-        let county = await (await FhirApi({ url: `/${subCounty.partOf.reference}` })).data;
-        console.log(practitioner.extension[0].valueReference.reference, facilityId);
-        if (practitioner.extension[0].valueReference.reference !== facilityId) {
-            let newLocation = [{ "url": "http://example.org/location", "valueReference": { "reference": `Location/${facility.id}`, "display": facility.name } },
-            { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": userInfo?.attributes?.practitionerRole[0]}
+        let locationInfo = {facility: "", facilityName: "", ward:"", wardName: "",subCounty: "", subCountyName: "", county: "", countyName: ""};
+        if (userInfo.attributes.practitionerRole[0] !== "ADMINISTRATOR"){
+            let facilityId = practitioner.extension[0].valueReference.reference;
+            let facility = await (await FhirApi({ url: `/${facilityId}` })).data;
+            let ward = await (await FhirApi({ url: `/${facility.partOf.reference}` })).data;
+            let subCounty = await (await FhirApi({ url: `/${ward.partOf.reference}` })).data;
+            let county = await (await FhirApi({ url: `/${subCounty.partOf?.reference}` })).data;
 
-            ]
-            practitioner = await (await FhirApi({
-                url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`,
-                method: "PUT", data: JSON.stringify({ ...practitioner, extension: newLocation })
-            })).data;
+            locationInfo = {facility: facilityId, facilityName: facility.name, ward: "Location/" + ward.id, wardName: ward.name,
+            subCounty: "Location/" + subCounty.id, subCountyName: subCounty.name, county: "Location/" + county.id, countyName: county.name}
+
+            if (practitioner.extension[0]?.valueReference?.reference !== facilityId) {
+                let newLocation = [{ "url": "http://example.org/location", "valueReference": { "reference": `Location/${facility.id}`, "display": facility.name } },
+                { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": userInfo?.attributes?.practitionerRole[0]}
+    
+                ]
+                practitioner = await (await FhirApi({
+                    url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`,
+                    method: "PUT", data: JSON.stringify({ ...practitioner, extension: newLocation })
+                })).data;
+            }
         }
+       
+        // console.log(practitioner.extension[0].valueReference.reference, facilityId);
+        
         res.statusCode = 200;
         res.json({
             status: "success", user: {
@@ -143,8 +152,7 @@ router.get("/me", async (req: Request, res: Response) => {
                 practitionerRole: userInfo.attributes.practitionerRole[0],
                 id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
                 phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null), email: userInfo.email ?? null,
-                facility: facilityId, facilityName: facility.name, ward: "Location/" + ward.id, wardName: ward.name,
-                subCounty: "Location/" + subCounty.id, subCountyName: subCounty.name, county: "Location/" + county.id, countyName: county.name
+                ...locationInfo                
             }
         });
         return;
@@ -199,10 +207,20 @@ router.post("/me", async (req: Request, res: Response) => {
         //     res.json({ status: "error", error: "Provide must be assigned to a facility first"  });
         //     return;
         // }
-        let facility = await (await FhirApi({ url: `/${facilityId}` })).data;
-        let ward = await (await FhirApi({ url: `/${facility.partOf.reference}` })).data;
-        let subCounty = await (await FhirApi({ url: `/${ward.partOf.reference}` })).data;
-        let county = await (await FhirApi({ url: `/${subCounty.partOf.reference}` })).data;
+
+        let locationInfo = {facility: "", facilityName: "", ward:"", wardName: "",subCounty: "", subCountyName: "", county: "", countyName: ""};
+
+        if (userInfo.attributes.practitionerRole[0] !== "ADMINISTRATOR"){
+            let facilityId = practitioner.extension[0].valueReference.reference;
+            let facility = await (await FhirApi({ url: `/${facilityId}` })).data;
+            let ward = await (await FhirApi({ url: `/${facility.partOf.reference}` })).data;
+            let subCounty = await (await FhirApi({ url: `/${ward.partOf.reference}` })).data;
+            let county = await (await FhirApi({ url: `/${subCounty.partOf?.reference}` })).data;
+
+            locationInfo = {facility: facilityId, facilityName: facility.name, ward: "Location/" + ward.id, wardName: ward.name,
+            subCounty: "Location/" + subCounty.id, subCountyName: subCounty.name, county: "Location/" + county.id, countyName: county.name}
+        }
+
         res.statusCode = 200;
         res.json({
             status: "success", user: {
@@ -211,8 +229,7 @@ router.post("/me", async (req: Request, res: Response) => {
                 practitionerRole: userInfo.attributes.practitionerRole[0],
                 id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
                 phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null), email: userInfo.email ?? null,
-                facility: facilityId, facilityName: facility.name, ward: "Location/" + ward.id, wardName: ward.name,
-                subCounty: "Location/" + subCounty.id, subCountyName: subCounty.name, county: "Location/" + county.id, countyName: county.name
+                ...locationInfo
             }
         });
         return;
