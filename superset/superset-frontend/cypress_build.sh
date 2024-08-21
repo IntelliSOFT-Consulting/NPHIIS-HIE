@@ -25,7 +25,7 @@ time superset load_test_users
 time superset load_examples --load-test-data
 time superset init
 echo "[completed python build steps]"
-PORT='8081'
+PORT='8082'
 flask run -p $PORT --with-threads --reload --debugger &
 
 #block on the longer running javascript process
