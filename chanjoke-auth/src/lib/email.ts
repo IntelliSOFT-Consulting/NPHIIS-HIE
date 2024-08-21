@@ -35,9 +35,64 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
             to: userData.email,
             subject: 'Password Reset',
             html: `
-                <p>Hello,</p>
-                <p>Your reset code is: <strong>${resetCode}</strong></p>
-                <p>Please use this code to reset your password.</p>
+                <!DOCTYPE html>
+<html lang="en" style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset Code</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        p {
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        strong {
+            font-weight: bold;
+            color: #007bff;
+            font-size: 18px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Password Reset Code</h1>
+        <p>Hello,</p>
+        <p>Your reset code is: <strong>${resetCode}</strong></p>
+        <p>Please use this code to reset your password.</p>
+
+        
+    </div>
+</body>
+</html>
             `
         };
         const info = await transporter.sendMail(mailOptions);
