@@ -47,8 +47,6 @@ def moh_525_report(filters):
     # Execute the query and fetch results
     results = query.all()
 
-    # Process the results into the desired format
-    today = datetime.now().strftime("%d-%m-%Y")
     formatted_data = []
 
     for idx, result in enumerate(results, start=1):
@@ -62,12 +60,15 @@ def moh_525_report(filters):
         else:
             outcome = "Vaccinated at the facility & NOT documented"
 
+        child_name = f"{result.given_name or ''} {result.family_name or ''}".strip()
+        child_name = child_name if child_name else "Name not provided"
+
         formatted_data.append(
             {
-                "Date": today,
+                "Date": result.due_date,
                 "Serial No (MOH510)": "",
                 "Child's No": result.national_id,
-                "Name of the Child": f"{result.given_name} {result.family_name}",
+                "Name of the Child": child_name,
                 "Sex (F/M)": result.gender,
                 "Age in Months of the Child": result.age_m,
                 "Name of Parent/Caregiver": result.pat_relation_name,
