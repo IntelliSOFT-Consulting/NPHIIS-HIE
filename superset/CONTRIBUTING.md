@@ -863,12 +863,12 @@ We use [Cypress](https://www.cypress.io/) for integration tests. Tests can be ru
 ```bash
 export SUPERSET_CONFIG=tests.integration_tests.superset_test_config
 export SUPERSET_TESTENV=true
-export CYPRESS_BASE_URL="http://localhost:8081"
+export CYPRESS_BASE_URL="http://localhost:8082"
 superset db upgrade
 superset load_test_users
 superset load-examples --load-test-data
 superset init
-superset run --port 8081
+superset run --port 8082
 ```
 
 Run Cypress tests:
