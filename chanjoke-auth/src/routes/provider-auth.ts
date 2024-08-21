@@ -293,8 +293,10 @@ router.post('/reset-password', async (req: Request, res: Response) => {
 router.get('/reset-password', async (req: Request, res: Response) => {
     try {
         let { idNumber, email } = req.query;
+        // console.log(encodeURIComponent(String(email)))
         let userInfo = await findKeycloakUser(String(idNumber));
-        if (userInfo.email !== email) {
+        console.log(userInfo);
+        if (userInfo.email.toLowerCase() !== String(email).toLowerCase()) {
             res.statusCode = 400;
             res.json({ status: "error", error: "Failed to initiate password reset. Invalid account details." })
             return;
