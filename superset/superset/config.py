@@ -426,7 +426,7 @@ DEFAULT_FEATURE_FLAGS: dict[str, bool] = {
     # this enables programmers to customize certain charts (like the
     # geospatial ones) by inputting javascript in controls. This exposes
     # an XSS security vulnerability
-    "ENABLE_JAVASCRIPT_CONTROLS": False,
+    "ENABLE_JAVASCRIPT_CONTROLS": True,
     "KV_STORE": False,
     # When this feature is enabled, nested types in Presto will be
     # expanded into extra columns and/or arrays. This is experimental,
@@ -778,7 +778,7 @@ HTML_SANITIZATION_SCHEMA_EXTENSIONS: dict[str, Any] = {}
 # next available socket. PR #5039 is trying to allow domain sharding for Superset,
 # and this feature will be enabled by configuration only (by default Superset
 # doesn't allow cross-domain request).
-SUPERSET_WEBSERVER_DOMAINS = None
+SUPERSET_WEBSERVER_DOMAINS = ["*"]
 
 # Allowed format types for upload on Database view
 EXCEL_EXTENSIONS = {"xlsx", "xls"}
