@@ -121,7 +121,7 @@ export const deleteResetCode = async (idNumber: string) => {
   }
 }
 
-export const updateUserProfile = async (username:string, phone: string | null, email: string | null, resetCode: string | null) => {
+export const updateUserProfile = async (username:string, phone: string | null, email: string | null, resetCode: string | null, practitionerRole: string | null) => {
   try {
     let user = (await findKeycloakUser(username));
     const accessToken = (await getKeycloakAdminToken()).access_token;
@@ -130,7 +130,8 @@ export const updateUserProfile = async (username:string, phone: string | null, e
       {headers: {Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', }, method: "PUT",
       body: JSON.stringify({
         ...(phone) && {attributes: {...user.attributes, phone:[phone]}}, ...(email) &&  {email}, ...(resetCode) &&
-        {attributes: {...user.attributes, resetCode:[resetCode]}}
+        {attributes: {...user.attributes, resetCode:[resetCode]}},
+        ...(practitionerRole) && {attributes: {...user.attributes, practitionerRole:[practitionerRole]}}
       })
       }
     ));

@@ -1,52 +1,88 @@
-from sqlalchemy import func, literal
-
-from configs import db
 from models.dataset import PrimaryImmunizationDataset
+from datetime import datetime, timedelta
+from sqlalchemy import func, or_, and_, cast, Date
+from configs import db
 
 
-def moh_525_report():
-    report_data = db.session.query(
-        PrimaryImmunizationDataset.patient_update_date.label("date"),
-        literal("*").label("serial_no"),  # Placeholder for Serial No (MOH 510)
-        literal("*").label("child_number"),  # Placeholder for Child's Number
-        func.concat(
+def moh_525_report(filters):
+    facility_code = filters.get("facility_code")
+    start_date = filters.get("start_date")
+    end_date = filters.get("end_date")
+
+    # Ensure start_date and end_date are in 'YYYY-MM-DD' format
+    start_date = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m-%d")
+
+    # Query to get defaulters data
+    query = (
+        db.session.query(
+            PrimaryImmunizationDataset.national_id,
             PrimaryImmunizationDataset.given_name,
-            " ",
             PrimaryImmunizationDataset.family_name,
-        ).label("name_of_child"),
-        PrimaryImmunizationDataset.gender,
-        PrimaryImmunizationDataset.age_m,
-        func.concat(
+            PrimaryImmunizationDataset.gender,
+            PrimaryImmunizationDataset.age_m,
             PrimaryImmunizationDataset.pat_relation_name,
-            " ",
-            PrimaryImmunizationDataset.family_name,
-        ).label("name_of_parent_or_caregiver"),
-        PrimaryImmunizationDataset.pat_relation_tel,
-        literal("*").label(
-            "name_of_village_or_estate_or_landmark"
-        ),  # Placeholder for Name of Village/Estate/Landmark
-        PrimaryImmunizationDataset.vaccine_name.label("vaccines_missed"),
-        literal("").label("traced_yes_no"),  # Placeholder for Traced Yes/No\
-        literal("").label("outcome"),  # Placeholder for Outcome
-        literal("").label("remarks"),  # Placeholder for Remarks
-    ).all()
+            PrimaryImmunizationDataset.phone,
+            PrimaryImmunizationDataset.ward,
+            PrimaryImmunizationDataset.vaccine_name,
+            PrimaryImmunizationDataset.imm_status,
+            PrimaryImmunizationDataset.faci_outr,
+            PrimaryImmunizationDataset.due_date,
+        )
+        .filter(
+            and_(
+                PrimaryImmunizationDataset.facility_code == facility_code,
+                PrimaryImmunizationDataset.due_date >= start_date,
+                PrimaryImmunizationDataset.due_date <= end_date,
+                or_(
+                    PrimaryImmunizationDataset.imm_status
+                    == "Immunized Late (Within 14 Days)",
+                    PrimaryImmunizationDataset.imm_status == "Missed Immunization",
+                ),
+            )
+        )
+        .order_by(PrimaryImmunizationDataset.due_date)
+    )
 
-    def map_result_to_dict(row):
-        return {
-            "date": row.date,
-            "serial_no": row.serial_no,
-            "child_number": row.child_number,
-            "name_of_child": row.name_of_child,
-            "gender": row.gender,
-            "age_m": row.age_m,
-            "name_of_parent_or_caregiver": row.name_of_parent_or_caregiver,
-            "pat_relation_tel": row.pat_relation_tel,
-            "name_of_village_or_estate_or_landmark": row.name_of_village_or_estate_or_landmark,
-            "vaccines_missed": row.vaccines_missed,
-            "traced_yes_no": row.traced_yes_no,
-            "outcome": row.outcome,
-            "remarks": row.remarks,
-        }
+    # Execute the query and fetch results
+    results = query.all()
 
-    report_data = [map_result_to_dict(row) for row in report_data]
-    return report_data
+    formatted_data = []
+
+    for idx, result in enumerate(results, start=1):
+        outcome = ""
+        if result.faci_outr == "Facility":
+            outcome = "Traced & vaccinated at the facility"
+        elif result.faci_outr == "Outreach":
+            outcome = "Vaccinated at another facility/outreach"
+        elif result.imm_status == "Missed Immunization":
+            outcome = "Lost to follow up"
+        else:
+            outcome = "Vaccinated at the facility & NOT documented"
+
+        child_name = f"{result.given_name or ''} {result.family_name or ''}".strip()
+        child_name = child_name if child_name else "Name not provided"
+
+        formatted_data.append(
+            {
+                "Date": result.due_date,
+                "Serial No (MOH510)": "",
+                "Child's No": result.national_id,
+                "Name of the Child": child_name,
+                "Sex (F/M)": result.gender,
+                "Age in Months of the Child": result.age_m,
+                "Name of Parent/Caregiver": result.pat_relation_name,
+                "Telephone No.": result.phone,
+                "Name of Village/Estate/Landmark": result.ward,
+                "Vaccines Missed": result.vaccine_name,
+                "Traced (YES/NO)": (
+                    "Yes"
+                    if result.imm_status == "Immunized Late (Within 14 Days)"
+                    else "No"
+                ),
+                "Outcome": outcome,
+                "Remarks": None,
+            }
+        )
+
+    return formatted_data

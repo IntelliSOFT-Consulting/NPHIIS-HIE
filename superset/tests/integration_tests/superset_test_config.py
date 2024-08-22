@@ -36,7 +36,7 @@ SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(
     DATA_DIR, "unittests.integration_tests.db"
 )
 DEBUG = False
-SUPERSET_WEBSERVER_PORT = 8081
+SUPERSET_WEBSERVER_PORT = 8082
 SILENCE_FAB = False
 # Allowing SQLALCHEMY_DATABASE_URI and SQLALCHEMY_EXAMPLES_URI to be defined as an env vars for
 # continuous integration
@@ -75,7 +75,7 @@ FEATURE_FLAGS = {
     "HORIZONTAL_FILTER_BAR": True,
 }
 
-WEBDRIVER_BASEURL = "http://0.0.0.0:8081/"
+WEBDRIVER_BASEURL = "http://0.0.0.0:8082/"
 
 
 def GET_FEATURE_FLAGS_FUNC(ff):

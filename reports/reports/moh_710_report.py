@@ -1,69 +1,98 @@
-from sqlalchemy import func, or_
-
-from configs import db
 from models.dataset import PrimaryImmunizationDataset
+from datetime import datetime
+from sqlalchemy import func, or_, and_, case
+from configs import db
+from collections import defaultdict
+from typing import Dict, Any, List
 
 
-def moh_710_report(filters):
-    facility = filters.get("facility")
-    facility_code = filters.get("facility_code")
+def parse_date(date_string: str) -> str:
+    return datetime.strptime(date_string, "%Y-%m-%d").strftime("%Y-%m-%d")
 
-    ward = filters.get("ward")
-    county = filters.get("county")
-    subcounty = filters.get("subcounty")
 
-    start_date = filters.get("start_date")
-    end_date = filters.get("end_date")
-
-    moh_710_report_query = (
+def build_query(facility_code: str, start_date: str, end_date: str):
+    return (
         db.session.query(
-            PrimaryImmunizationDataset.facility,
-            PrimaryImmunizationDataset.facility_code,
-            PrimaryImmunizationDataset.ward,
-            PrimaryImmunizationDataset.county,
-            PrimaryImmunizationDataset.subcounty,
+            PrimaryImmunizationDataset.occ_date,
             PrimaryImmunizationDataset.vaccine_name,
             PrimaryImmunizationDataset.age_group,
-            PrimaryImmunizationDataset.occ_date,
-            func.count(PrimaryImmunizationDataset.id).label("count"),
+            func.sum(
+                case((PrimaryImmunizationDataset.faci_outr == "Facility", 1), else_=0)
+            ).label("facility_count"),
+            func.sum(
+                case((PrimaryImmunizationDataset.faci_outr == "Outreach", 1), else_=0)
+            ).label("outreach_count"),
+            func.count().label("total_count"),
         )
         .filter(
-            or_(
-                PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
-                PrimaryImmunizationDataset.facility_code.ilike(f"%{facility_code}%"),
-                PrimaryImmunizationDataset.ward.ilike(f"%{ward}%"),
-                PrimaryImmunizationDataset.county.ilike(f"%{county}%"),
-                PrimaryImmunizationDataset.subcounty.ilike(f"%{subcounty}%"),
-            ),
-            PrimaryImmunizationDataset.occ_date >= start_date,
-            PrimaryImmunizationDataset.occ_date <= end_date,
+            and_(
+                PrimaryImmunizationDataset.facility_code == facility_code,
+                PrimaryImmunizationDataset.occ_date.between(start_date, end_date),
+                PrimaryImmunizationDataset.age_group.in_(
+                    ["Under 1 Year", "Above 1 Year"]
+                ),
+            )
         )
         .group_by(
-            PrimaryImmunizationDataset.facility,
-            PrimaryImmunizationDataset.facility_code,
-            PrimaryImmunizationDataset.ward,
-            PrimaryImmunizationDataset.county,
-            PrimaryImmunizationDataset.subcounty,
+            PrimaryImmunizationDataset.occ_date,
             PrimaryImmunizationDataset.vaccine_name,
             PrimaryImmunizationDataset.age_group,
+        )
+        .order_by(
             PrimaryImmunizationDataset.occ_date,
+            PrimaryImmunizationDataset.vaccine_name,
+            PrimaryImmunizationDataset.age_group,
         )
     )
 
-    report_data = moh_710_report_query.all()
 
-    def map_result_to_dict(row):
-        return {
-            "facility": row.facility,
-            "facility_code": row.facility_code,
-            "ward": row.ward,
-            "county": row.county,
-            "subcounty": row.subcounty,
-            "occ_date": row.occ_date,
-            "vaccine_name": row.vaccine_name,
-            "age_group": row.age_group,
-            "count": row.count,
+def process_results(results: List[Any]) -> Dict[tuple, Dict[str, Any]]:
+    data = defaultdict(
+        lambda: {
+            "antigen": "",
+            "ageGroup": "Under 1 Year",
+            "total": 0,
+            "facility_count": 0,
+            "outreach_count": 0,
         }
+    )
 
-    report_data = [map_result_to_dict(row) for row in report_data]
-    return report_data
+    for result in results:
+        for age_group in ["Under 1 Year", "Above 1 Year"]:
+            key = (result.vaccine_name, age_group)
+            if not data[key]["antigen"]:
+                data[key]["antigen"] = result.vaccine_name
+                data[key]["ageGroup"] = age_group
+
+            if data[key]["ageGroup"] == result.age_group:
+                data[key]["total"] += result.total_count
+                data[key]["facility_count"] += result.facility_count
+                data[key]["outreach_count"] += result.outreach_count
+
+                data[key][result.occ_date] = {
+                    "facility_count": result.facility_count,
+                    "outreach_count": result.outreach_count,
+                    "total": result.total_count,
+                }
+
+    return data
+
+
+def format_data(data: Dict[tuple, Dict[str, Any]]) -> List[Dict[str, Any]]:
+    formatted_data = list(data.values())
+    formatted_data.sort(key=lambda x: (x["antigen"], x["ageGroup"]))
+    return formatted_data
+
+
+def moh_710_report(filters: Dict[str, str]) -> List[Dict[str, Any]]:
+    facility_code = filters.get("facility_code")
+    start_date = parse_date(filters.get("start_date"))
+    end_date = parse_date(filters.get("end_date"))
+
+    query = build_query(facility_code, start_date, end_date)
+    results = query.all()
+
+    data = process_results(results)
+    formatted_data = format_data(data)
+
+    return formatted_data

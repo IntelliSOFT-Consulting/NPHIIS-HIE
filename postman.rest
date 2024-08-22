@@ -1,0 +1,47 @@
+## Creating an Immunization Resource
+POST http://localhost:3000/digital-certificate
+Content-Type: application/json
+
+{
+  "resourceType": "Immunization",
+  "id": "ecc58710-f73d-43df-aab1-49cea4cabf1b",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2024-05-02T08:10:04.424+00:00",
+    "source": "#ZlzYznvyr6A6ulzh"
+  },
+  "status": "completed",
+  "vaccineCode": {
+    "coding": [ {
+      "code": "29659",
+      "display": "IMPO-bOPV-test"
+    } ],
+    "text": "bOPV"
+  },
+  "patient": {
+    "reference": "Patient/7b4044c4-9768-4aef-81a5-f437a9f7ef5c"
+  },
+  "occurrenceDateTime": "2024-05-02T08:10:02.829Z",
+  "recorded": "2024-05-02T08:10:02.829Z",
+  "location": {
+    "reference": "Location/24979"
+  },
+  "lotNumber": "HDKKD8777847",
+  "doseQuantity": {
+    "value": 0,
+    "unit": "0",
+    "system": "http://unitsofmeasure.org"
+  },
+  "performer": [ {
+    "actor": {
+      "reference": "Practitioner/1c69e2b6-bbf3-4695-8c3e-0640a37b8f28"
+    }
+  }, {
+    "function": {
+      "coding": [ {
+        "code": "PP",
+        "display": "Primary performer"
+      } ]
+    }
+  } ]
+}
