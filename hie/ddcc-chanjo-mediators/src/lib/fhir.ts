@@ -103,7 +103,7 @@ export const createDocumentRef = async (patientId: string, compositionId: string
             url: `/DocumentReference`,
             method: "POST", data: JSON.stringify({
                 resourceType: "DocumentReference",
-                status: "current",
+                status: "current", 
                 type: {coding: [getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode])]},
                 meta: { profile: [getProfile("DigitalCertificateDocumentReference")] },
                 subject: { reference: `Patient/${patientId}` },
@@ -125,12 +125,13 @@ export const createDocumentRef = async (patientId: string, compositionId: string
     }
 }
 
-export const createDocumentRefQR = async (patientId: string, facilityId: string, pdfContent: string, vaccineCode: string) => {
+export const createDocumentRefQR = async (patientId: string, facilityId: string, pdfContent: string, vaccineCode: string,docId:string) => {
     try {
         let docRef = await (await FhirApi({
-            url: `/DocumentReference`,
-            method: "POST", data: JSON.stringify({
+            url: `/DocumentReference/${docId}`,
+            method: "PUT", data: JSON.stringify({
                 resourceType: "DocumentReference",
+                id:docId,
                 meta: { "profile": [getProfile("DigitalCertificateDocumentReferenceQR")] },
                 // identifier: { "use": "official", "system": "urn:EXAMPLE-who-:ddcc:composition:ids", "value": "999123456123456123456" },
                 type: { "coding": [{ "system": "http://loinc.org", "code": "82593-5" }, getNHDDCode(vaccineCode, vaccineCodesList[vaccineCode])] },
