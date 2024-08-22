@@ -28,7 +28,7 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
     try {
         const resetCode = generateResetCode();
         let userData = await findKeycloakUser(idNumber);
-        let resetCodeResp = updateUserProfile(idNumber, null, null, resetCode);
+        let resetCodeResp = updateUserProfile(idNumber, null, null, resetCode, null);
         // console.log(userData)
         const mailOptions = {
             from: '"OpenChanjo" apps@intellisoftkenya.com',
