@@ -7,6 +7,10 @@ import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../li
 const router = express.Router();
 router.use(express.json());
 
+const allowedRoles = [
+    "ADMINISTRATOR", "NATIONAL_SYSTEM_ADMINISTRATOR", "COUNTY_SYSTEM_ADMINISTRATOR",
+    "SUB_COUNTY_SYSTEM_ADMINISTRATOR", "SUB_COUNTY_STORE_MANAGER", "FACILITY_SYSTEM_ADMINISTRATOR", "FACILITY_STORE_MANAGER", "CLERK", "NURSE"];
+
 const generatePassword = (length: number) =>
     Array.from({ length }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~`|}{[]:;?><,./-='.charAt(Math.floor(Math.random() * 94))).join('');
 
@@ -19,9 +23,7 @@ router.post("/register", async (req: Request, res: Response) => {
         }
 
         role = String(role).toUpperCase();
-        const allowedRoles = [
-            "ADMINISTRATOR", "NATIONAL_SYSTEM_ADMINISTRATOR", "COUNTY_SYSTEM_ADMINISTRATOR",
-            "SUB_COUNTY_SYSTEM_ADMINISTRATOR", "SUB_COUNTY_STORE_MANAGER", "FACILITY_SYSTEM_ADMINISTRATOR", "FACILITY_STORE_MANAGER", "CLERK", "NURSE"];
+        
         if(allowedRoles.indexOf(role) < 0) {
             res.statusCode = 400;
             res.json({ status: "error", error: `invalid role provided. Allowed roles: ${allowedRoles.join(",")}` });
@@ -34,7 +36,7 @@ router.post("/register", async (req: Request, res: Response) => {
         let practitionerId = v4();
         let location = await (await FhirApi({ url: `/Location/${facility}` })).data;
         console.log(location);
-        if (location.resourceType != "Location") {
+        if (role !== "ADMINISTRATOR" && location.resourceType !== "Location") {
             res.statusCode = 400;
             res.json({ status: "error", error: "Failed to register client user. Invalid location provided" });
             return;
@@ -190,40 +192,71 @@ router.post("/me", async (req: Request, res: Response) => {
             res.json({ status: "error", error: "Bearer token is required but not provided" });
             return;
         }
-        // allow phone number & email
-        let { phone, email, facilityCode } = req.body;
         let currentUser = await getCurrentUserInfo(accessToken);
         if (!currentUser) {
             res.statusCode = 401;
             res.json({ status: "error", error: "Invalid Bearer token provided" });
             return;
         }
-        let response = await updateUserProfile(currentUser.preferred_username, phone, email, null);
+        // allow phone number & email
+        let { phone, email, facilityCode, county, subCounty, role } = req.body;
+        let location = county || subCounty || facilityCode;
+        role = String(role).toUpperCase();
+        let fhirLocation = await (await FhirApi({ url: `/Location/${location}` })).data;
+        console.log(fhirLocation);
+        let locationType = fhirLocation?.type?.[0]?.coding?.[0]?.code;
+        console.log(locationType);
+
+        switch(String(role)){
+            case "ADMINISTRATOR" || "NATIONAL_SYSTEM_ADMINISTRATOR":
+                location = null;
+            case "SUB_COUNTY_SYSTEM_ADMINISTRATOR" || "SUB_COUNTY_STORE_MANAGER":
+                location = subCounty;
+                if(locationType !== "SUB-COUNTY"){
+                    res.statusCode = 401;
+                    res.json({ status: "error", error: `Invalid location provided for ${role}` });
+                    return;
+                }
+            case "COUNTY_SYSTEM_ADMINISTRATOR":
+                location = county;
+                if(locationType !== "COUNTY"){
+                    res.statusCode = 401;
+                    res.json({ status: "error", error: `Invalid location provided for ${role}` });
+                    return;
+                }
+            case "FACILITY_SYSTEM_ADMINISTRATOR" || "FACILITY_STORE_MANAGER" || "NURSE" || "CLERK":
+                location = facilityCode;
+                if(locationType !== "FACILITY"){
+                    res.statusCode = 401;
+                    res.json({ status: "error", error: `Invalid location provided for ${role}` });
+                    return;
+                }           
+            
+        }
+        
+        let response = await updateUserProfile(currentUser.preferred_username, phone, email, null, role);
         // console.log(response);
         let userInfo = await findKeycloakUser(currentUser.preferred_username);
-        let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}` })).data;
+        let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo.attributes.fhirPractitionerId?.[0]}` })).data;
 
 
-        if (facilityCode) {
-            let facility = await (await FhirApi({ url: `/Location/${facilityCode}` })).data;
-            console.log(facility);
+        if (location) {
+            // let fhirLocation = await (await FhirApi({ url: `/Location/${location}` })).data;
+            console.log(fhirLocation);
             let newLocation = [
-                { "url": "http://example.org/location", "valueReference": { "reference": `Location/${facility.id}`, "display": facility.name } },
+                { "url": "http://example.org/location", "valueReference": { "reference": `Location/${fhirLocation.id}`, "display": fhirLocation.name } },
                 { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": userInfo?.attributes?.practitionerRole[0] }
             ]
             practitioner = await (await FhirApi({
                 url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`,
-                method: "PUT", data: JSON.stringify({ ...practitioner, extension: newLocation })
+                method: "PUT", data: JSON.stringify({ ...practitioner, extension: location ? newLocation: [
+                    { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": userInfo?.attributes?.practitionerRole[0] }
+                ] })
             })).data;
             // console.log(practitioner);
         }
         // console.log(practitioner.extension);
         let facilityId = practitioner.extension[0].valueReference.reference ?? null;
-        // if(!facilityId && userInfo.attributes.practitionerRole[0]){
-        //     res.statusCode = 401;
-        //     res.json({ status: "error", error: "Provide must be assigned to a facility first"  });
-        //     return;
-        // }
 
         let locationInfo = { facility: "", facilityName: "", ward: "", wardName: "", subCounty: "", subCountyName: "", county: "", countyName: "" };
 
