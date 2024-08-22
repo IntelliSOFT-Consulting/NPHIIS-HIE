@@ -80,7 +80,7 @@ services:
     build: ./superset-websocket
     image: superset-websocket
     ports:
-      - 8081:8080
+      - 8082:8080
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

@@ -57,7 +57,6 @@ def defaulters():
 @app.route("/api/moh_710_report", methods=["GET"])
 def moh_710_report_endpoint():
     filters = {
-        "facility": request.args.get("facility", ""),
         "facility_code": request.args.get("facility_code", ""),
         "ward": request.args.get("ward", ""),
         "county": request.args.get("county", ""),
@@ -70,6 +69,21 @@ def moh_710_report_endpoint():
     }
     try:
         result = moh_710_report(filters)
+        return result
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+    
+@app.route("/api/moh_525_report", methods=["GET"])
+def moh_525_endpoint():
+
+    
+    filters = {
+        "facility_code": request.args.get("facility_code", ""),
+        "start_date": request.args.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")),
+        "end_date": request.args.get("end_date", (datetime.now()).strftime("%Y-%m-%d")),
+    }
+    try:
+        result = moh_525_report(filters)
         return result
     except Exception as e:
         return jsonify({"message": str(e)}), 500

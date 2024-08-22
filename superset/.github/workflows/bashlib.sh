@@ -178,7 +178,7 @@ cypress-run-all() {
   # --no-debugger means disable the interactive debugger on the 500 page
   # so errors can print to stderr.
   local flasklog="${HOME}/flask.log"
-  local port=8081
+  local port=8082
   export CYPRESS_BASE_URL="http://localhost:${port}"
 
   nohup flask run --no-debugger -p $port >"$flasklog" 2>&1 </dev/null &
@@ -224,7 +224,7 @@ cypress-run-applitools() {
   cd "$GITHUB_WORKSPACE/superset-frontend/cypress-base"
 
   local flasklog="${HOME}/flask.log"
-  local port=8081
+  local port=8082
   local cypress="./node_modules/.bin/cypress run"
   local browser=${CYPRESS_BROWSER:-chrome}
 

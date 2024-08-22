@@ -24,7 +24,7 @@ SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(
     DATA_DIR, "unittests.integration_tests.db"
 )
 DEBUG = True
-SUPERSET_WEBSERVER_PORT = 8081
+SUPERSET_WEBSERVER_PORT = 8082
 
 # Allowing SQLALCHEMY_DATABASE_URI to be defined as an env var for
 # continuous integration
