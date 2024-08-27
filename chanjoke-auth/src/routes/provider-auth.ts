@@ -418,7 +418,7 @@ router.get("/users", async (req: Request, res: Response) => {
         }
         let userInfo = await findKeycloakUser(currentUser.preferred_username);
         // console.log(userInfo);
-        if (userInfo.attributes?.practitionerRole[0] != "ADMINISTRATOR") {
+        if (!userInfo.attributes?.practitionerRole[0].includes("ADMINISTRATOR")) {
             res.statusCode = 401;
             res.json({ error: "Unauthorized access", status: "error" });
             return;
