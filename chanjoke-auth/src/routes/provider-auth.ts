@@ -287,14 +287,14 @@ router.post("/me", async (req: Request, res: Response) => {
             const meta = {
                 resourceType: 'Parameters',
                 parameter: [
-                  {
-                    name: 'meta',
-                    valueMeta: {
-                      tag: practitioner.meta.tag
+                    {
+                        name: 'meta',
+                        valueMeta: {
+                            tag: practitioner.meta.tag
+                        },
                     },
-                  },
                 ],
-              }
+            }
 
             await (await FhirApi({ url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}/$meta-delete`, method: "POST", data: JSON.stringify(meta) })).data;
 
@@ -448,7 +448,7 @@ router.get("/user/:username", async (req: Request, res: Response) => {
                 lastName: practitioner.name[0].family || user.lastName || user.attributes.lastName,
                 fhirPractitionerId: user.attributes.fhirPractitionerId[0],
                 practitionerRole: user.attributes.practitionerRole[0],
-                id: user.id, idNumber: user.username, 
+                id: user.id, idNumber: user.username,
                 fullNames: `${practitioner.name[0].given[0] || user.firstName || user.attributes.firstName} ${practitioner.name[0].family || user.lastName || user.attributes.lastName}`,
                 phone: (user.attributes?.phone ? user.attributes?.phone[0] : null), email: user.email ?? null,
                 ...locationInfo
@@ -558,6 +558,112 @@ router.get("/users", async (req: Request, res: Response) => {
         return;
     }
 })
+
+router.put("/user/:username", async (req: Request, res: Response) => {
+    try {
+        const username = req.params.username;
+        const accessToken = req.headers.authorization?.split(' ')[1] || null;
+        if (!accessToken || req.headers.authorization?.split(' ')[0] != "Bearer") {
+            res.statusCode = 401;
+            res.json({ status: "error", error: "Bearer token is required but not provided" });
+            return;
+        }
+        let currentUser = await getCurrentUserInfo(accessToken);
+        if (!currentUser) {
+            res.statusCode = 401;
+            res.json({ status: "error", error: "Invalid Bearer token provided" });
+            return;
+        }
+        let userInfo = await findKeycloakUser(currentUser.preferred_username);
+        if (!userInfo.attributes?.practitionerRole[0].includes("ADMINISTRATOR")) {
+            res.statusCode = 401;
+            res.json({ error: "Unauthorized access", status: "error" });
+            return;
+        }
+        let { phone, email, facilityCode, county, subCounty, role, idNumber } = req.body;
+        let location = county || subCounty || facilityCode;
+        role = String(role).toUpperCase();
+        if (allowedRoles.indexOf(role) < 0) {
+            res.statusCode = 401;
+            res.json({ status: "error", error: `Invalid role ${role} provided` });
+            return;
+        }
+        let fhirLocation = await (await FhirApi({ url: `/Location/${location}` })).data;
+        let locationType = fhirLocation?.type?.[0]?.coding?.[0]?.code;
+        switch (role) {
+            case "ADMINISTRATOR" || "NATIONAL_SYSTEM_ADMINISTRATOR":
+                location = null;
+            case "SUB_COUNTY_SYSTEM_ADMINISTRATOR" || "SUB_COUNTY_STORE_MANAGER":
+                if (String(locationType) !== String("SUB-COUNTY")) {
+                    res.statusCode = 400;
+                    res.json({ status: "error", error: `Invalid location provided for ${role}` });
+                    return;
+                }
+                break;
+            case "COUNTY_SYSTEM_ADMINISTRATOR":
+                if (locationType !== "COUNTY") {
+                    res.statusCode = 400;
+                    res.json({ status: "error", error: `Invalid location provided for ${role}` });
+                    return;
+                }
+                break;
+            case "FACILITY_SYSTEM_ADMINISTRATOR" || "FACILITY_STORE_MANAGER" || "NURSE" || "CLERK":
+                if (locationType !== "FACILITY") {
+                    res.statusCode = 400;
+                    res.json({ status: "error", error: `Invalid location provided for ${role}` });
+                    return;
+                }
+                break;
+        }
+        let response = await updateUserProfile(idNumber, phone, email, null, role);
+        let user = await findKeycloakUser(idNumber);
+        let practitioner = await (await FhirApi({ url: `/Practitioner/${user.attributes.fhirPractitionerId[0]}` })).data;
+
+        if (location) {
+            // let fhirLocation = await (await FhirApi({ url: `/Location/${location}` })).data;
+            console.log(fhirLocation);
+            // remove meta tag
+            const meta = {
+                resourceType: 'Parameters',
+                parameter: [
+                    {
+                        name: 'meta',
+                        valueMeta: {
+                            tag: practitioner.meta.tag
+                        },
+                    },
+                ],
+            }
+
+            await (await FhirApi({ url: `/Practitioner/${user.attributes.fhirPractitionerId[0]}/$meta-delete`, method: "POST", data: JSON.stringify(meta) })).data;
+
+            delete practitioner.meta;
+
+            let newLocation = [
+                { "url": "http://example.org/location", "valueReference": { "reference": `Location/${fhirLocation.id}`, "display": fhirLocation.name } },
+                { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": user?.attributes?.practitionerRole[0] }
+            ]
+            practitioner = await (await FhirApi({
+                url: `/Practitioner/${user.attributes.fhirPractitionerId[0]}`,
+                method: "PUT", data: JSON.stringify({
+                    ...practitioner,
+                    extension: location ? newLocation : [
+                        { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": user?.attributes?.practitionerRole[0] }
+                    ],
+                    meta: { tag: [{ system: "http://example.org/fhir/StructureDefinition/location", code: `Location/${fhirLocation.id}` }] },
+                    identifier: [{ system: "http://hl7.org/fhir/administrative-identifier", value: idNumber }],
+                })
+            })).data;
+        }
+
+        return res.json({ status: "success", response: "User updated successfully" });
+    } catch (error) {
+        console.error(error);
+        res.statusCode = 401;
+        res.json({ error: "Invalid Bearer token provided", status: "error" });
+        return;
+    }
+});
 
 
 
