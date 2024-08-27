@@ -37,6 +37,22 @@ export const getKeycloakAdminToken = async () => {
     }
 }
 
+export const refreshToken = async (refreshToken: string) => {
+  try {
+    const tokenResponse = await fetch(`${KC_BASE_URL}/realms/${KC_REALM}/protocol/openid-connect/token`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded',},
+        body: new URLSearchParams({
+          grant_type: 'refresh_token', client_id: KC_CLIENT_ID, client_secret: KC_CLIENT_SECRET, refresh_token: refreshToken }),
+      });
+    const tokenData: any = await tokenResponse.json();
+    // console.log(tokenData)
+    return tokenData
+  } catch (error) {
+      return null;
+  }
+}
+
 
 export const findKeycloakUser = async (username: string) => {
     try {
