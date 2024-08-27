@@ -344,6 +344,91 @@ router.post("/me", async (req: Request, res: Response) => {
     }
 });
 
+router.get("/user/:username", async (req: Request, res: Response) => {
+    try {
+        const username = req.params.username;
+        const accessToken = req.headers.authorization?.split(' ')[1] || null;
+        // only admin can view other users
+        if (!accessToken || req.headers.authorization?.split(' ')[0] != "Bearer") {
+            res.statusCode = 401;
+            res.json({ status: "error", error: "Bearer token is required but not provided" });
+            return;
+        }
+        let currentUser = await getCurrentUserInfo(accessToken);
+        if (!currentUser) {
+            res.statusCode = 401;
+            res.json({ status: "error", error: "Invalid Bearer token provided" });
+            return;
+        }
+        let userInfo = await findKeycloakUser(currentUser.preferred_username);
+        if (!userInfo.attributes?.practitionerRole[0].includes("ADMINISTRATOR")) {
+            res.statusCode = 401;
+            res.json({ error: "Unauthorized access", status: "error" });
+            return;
+        }
+        let user = await findKeycloakUser(username);
+        if (!user) {
+            res.statusCode = 404;
+            res.json({ status: "error", error: "User not found" });
+            return;
+        }
+        let practitioner = await (await FhirApi({ url: `/Practitioner/${user.attributes.fhirPractitionerId[0]}` })).data;
+        let locationInfo = { facility: "", facilityName: "", ward: "", wardName: "", subCounty: "", subCountyName: "", county: "", countyName: "" };
+        if (user.attributes.practitionerRole[0] !== "ADMINISTRATOR") {
+            let fhirLocation = practitioner.extension[0].valueReference.reference;
+            fhirLocation = await (await FhirApi({ url: `/${fhirLocation}` })).data;
+            let locationType = fhirLocation?.type?.[0]?.coding?.[0]?.code;
+            let root;
+            for (let location of heirachy) {
+                let l: any = location
+                if (locationType === l[Object.keys(location)[0]]) {
+                    // start here
+                    root = locationType;
+                }
+            }
+
+            let _locationInfo: any = { facility: "", facilityName: "", ward: "", wardName: "", subCounty: "", subCountyName: "", county: "", countyName: "" };
+            let _locs = heirachy.map((x: any) => {
+                return x[Object.keys(x)[0]]
+            })
+            let _locKeys = heirachy.map((x: any) => {
+                return Object.keys(x)[0]
+            })
+            let indexOfRoot = _locs.indexOf(root);
+            let previous = fhirLocation.id;
+            for (let i of _locKeys.slice(0, indexOfRoot + 1).reverse()) {
+                let _fhirlocation = await (await FhirApi({ url: `/Location/${previous}` })).data;
+                _locationInfo[i] = _fhirlocation.id;
+                _locationInfo[`${i}Name`] = _fhirlocation.name;
+                if (_fhirlocation?.partOf) {
+                    previous = (_fhirlocation?.partOf?.reference).split("/")[1];
+                }
+            }
+            locationInfo = _locationInfo;
+
+        }
+        res.statusCode = 200;
+        res.json({
+            status: "success", user: {
+                firstName: user.firstName, lastName: user.lastName,
+                fhirPractitionerId: user.attributes.fhirPractitionerId[0],
+                practitionerRole: user.attributes.practitionerRole[0],
+                id: user.id, idNumber: user.username, fullNames: user.firstName + " " + user.lastName,
+                phone: (user.attributes?.phone ? user.attributes?.phone[0] : null), email: user.email ?? null,
+                ...locationInfo
+            }
+        });
+        return;
+
+
+    } catch (error) {
+        console.log(error);
+        res.statusCode = 401;
+        res.json({ error, status: "error" });
+        return;
+    }
+});
+
 
 router.post('/reset-password', async (req: Request, res: Response) => {
     try {
