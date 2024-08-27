@@ -147,8 +147,8 @@ router.post("/login", async (req: Request, res: Response) => {
 
 router.post("/refresh_token", async (req: Request, res: Response) => {
     try {
-        let { refreshToken } = req.body;
-        let token = await refreshToken(refreshToken);
+        let { refresh_token } = req.body;
+        let token = await refreshToken(refresh_token);
         if (!token) {
             res.statusCode = 401;
             res.json({ status: "error", error: "Invalid refresh token provided" });
