@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { FhirApi } from "../lib/utils";
-import { deleteResetCode, findKeycloakUser, getCurrentUserInfo, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode } from './../lib/keycloak'
+import { deleteResetCode, findKeycloakUser, getCurrentUserInfo, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken } from './../lib/keycloak'
 import { v4 } from "uuid";
 import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../lib/email";
 
@@ -141,6 +141,27 @@ router.post("/login", async (req: Request, res: Response) => {
         console.log(error);
         res.statusCode = 401;
         res.json({ error: "incorrect email or password", status: "error" });
+        return;
+    }
+});
+
+router.post("/refresh_token", async (req: Request, res: Response) => {
+    try {
+        let { refreshToken } = req.body;
+        let token = await refreshToken(refreshToken);
+        if (!token) {
+            res.statusCode = 401;
+            res.json({ status: "error", error: "Invalid refresh token provided" });
+            return;
+        }
+        res.statusCode = 200;
+        res.json({ ...token, status: "success" });
+        return;
+    }
+    catch (error) {
+        console.log(error);
+        res.statusCode = 401;
+        res.json({ error: "Invalid refresh token provided", status: "error" });
         return;
     }
 });
