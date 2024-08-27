@@ -52,6 +52,7 @@ router.post("/register", async (req: Request, res: Response) => {
         console.log(practitionerId);
         let practitionerResource = {
             "resourceType": "Practitioner",
+            "meta": { "tag": [{ "system": "http://example.org/fhir/StructureDefinition/location", "code": `Location/${location.id}` }] },
             "id": practitionerId,
             "active": true,
             "identifier": [
@@ -282,6 +283,23 @@ router.post("/me", async (req: Request, res: Response) => {
         if (location) {
             // let fhirLocation = await (await FhirApi({ url: `/Location/${location}` })).data;
             console.log(fhirLocation);
+            // remove meta tag
+            const meta = {
+                resourceType: 'Parameters',
+                parameter: [
+                  {
+                    name: 'meta',
+                    valueMeta: {
+                      tag: practitioner.meta.tag
+                    },
+                  },
+                ],
+              }
+
+            await (await FhirApi({ url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}/$meta-delete`, method: "POST", data: JSON.stringify(meta) })).data;
+
+            delete practitioner.meta;
+
             let newLocation = [
                 { "url": "http://example.org/location", "valueReference": { "reference": `Location/${fhirLocation.id}`, "display": fhirLocation.name } },
                 { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": userInfo?.attributes?.practitionerRole[0] }
@@ -291,7 +309,8 @@ router.post("/me", async (req: Request, res: Response) => {
                 method: "PUT", data: JSON.stringify({
                     ...practitioner, extension: location ? newLocation : [
                         { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": userInfo?.attributes?.practitionerRole[0] }
-                    ]
+                    ],
+                    meta: { tag: [{ system: "http://example.org/fhir/StructureDefinition/location", code: `Location/${fhirLocation.id}` }] }
                 })
             })).data;
             // console.log(practitioner);
