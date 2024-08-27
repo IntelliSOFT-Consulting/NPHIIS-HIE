@@ -602,7 +602,7 @@ router.put("/user/:username", async (req: Request, res: Response) => {
             return;
         }
         let { phone, email, facilityCode, county, subCounty, role, idNumber } = req.body;
-        let location = county || subCounty || facilityCode;
+        let location = facilityCode || subCounty || county;
         role = String(role).toUpperCase();
         if (allowedRoles.indexOf(role) < 0) {
             res.statusCode = 401;
