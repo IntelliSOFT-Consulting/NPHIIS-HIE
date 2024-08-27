@@ -53,6 +53,7 @@ router.post("/register", async (req: Request, res: Response) => {
         let practitionerResource = {
             "resourceType": "Practitioner",
             "id": practitionerId,
+            "active": true,
             "identifier": [
                 {
                     "system": "http://hl7.org/fhir/administrative-identifier",
@@ -116,6 +117,21 @@ router.post("/login", async (req: Request, res: Response) => {
             res.json({ status: "error", error: `${token.error} - ${token.error_description}` })
             return;
         }
+
+        let userInfo = await findKeycloakUser(idNumber);
+        if (!userInfo) {
+            res.statusCode = 401;
+            res.json({ status: "error", error: "User not found" });
+            return;
+        }
+        let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}` })).data;
+
+        if (!practitioner || !practitioner.active) {
+            res.statusCode = 401;
+            res.json({ status: "error", error: "User not found or not active" });
+            return;
+        }
+
         res.statusCode = 200;
         res.json({ ...token, status: "success" });
         return;
