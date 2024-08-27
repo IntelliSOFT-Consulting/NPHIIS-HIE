@@ -382,7 +382,6 @@ router.get("/user/:username", async (req: Request, res: Response) => {
             for (let location of heirachy) {
                 let l: any = location
                 if (locationType === l[Object.keys(location)[0]]) {
-                    // start here
                     root = locationType;
                 }
             }
@@ -410,10 +409,12 @@ router.get("/user/:username", async (req: Request, res: Response) => {
         res.statusCode = 200;
         res.json({
             status: "success", user: {
-                firstName: user.firstName, lastName: user.lastName,
+                firstName: practitioner.name[0].given[0] || user.firstName || user.attributes.firstName,
+                lastName: practitioner.name[0].family || user.lastName || user.attributes.lastName,
                 fhirPractitionerId: user.attributes.fhirPractitionerId[0],
                 practitionerRole: user.attributes.practitionerRole[0],
-                id: user.id, idNumber: user.username, fullNames: user.firstName + " " + user.lastName,
+                id: user.id, idNumber: user.username, 
+                fullNames: `${practitioner.name[0].given[0] || user.firstName || user.attributes.firstName} ${practitioner.name[0].family || user.lastName || user.attributes.lastName}`,
                 phone: (user.attributes?.phone ? user.attributes?.phone[0] : null), email: user.email ?? null,
                 ...locationInfo
             }
