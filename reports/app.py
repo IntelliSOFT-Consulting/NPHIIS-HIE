@@ -61,7 +61,8 @@ def moh_710_report_endpoint():
         "ward": request.args.get("ward", ""),
         "county": request.args.get("county", ""),
         "subcounty": request.args.get("subcounty", ""),
-        # The dates are YYYY-MM-DD strings, hence the strftime
+        "country": request.args.get("country", ""),
+
         "start_date": request.args.get(
             "start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
         ),
@@ -79,6 +80,11 @@ def moh_525_endpoint():
     
     filters = {
         "facility_code": request.args.get("facility_code", ""),
+        "facility_code": request.args.get("facility_code", ""),
+        "ward": request.args.get("ward", ""),
+        "county": request.args.get("county", ""),
+        "subcounty": request.args.get("subcounty", ""),
+        "country": request.args.get("country", ""),
         "start_date": request.args.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")),
         "end_date": request.args.get("end_date", (datetime.now()).strftime("%Y-%m-%d")),
     }

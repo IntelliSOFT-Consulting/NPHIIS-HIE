@@ -6,6 +6,9 @@ from configs import db
 
 def moh_525_report(filters):
     facility_code = filters.get("facility_code")
+    country = filters.get("country")
+    county = filters.get("county")
+    subcounty = filters.get("subcounty")
     start_date = filters.get("start_date")
     end_date = filters.get("end_date")
 
@@ -13,7 +16,15 @@ def moh_525_report(filters):
     start_date = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m-%d")
 
-    # Query to get defaulters data
+    facility_filter = PrimaryImmunizationDataset.facility_code == facility_code
+
+    if country:
+        facility_filter = PrimaryImmunizationDataset.county.ilike("")
+    elif county:
+        facility_filter = PrimaryImmunizationDataset.county.ilike(f"%{county}%")
+    elif subcounty:
+        facility_filter = PrimaryImmunizationDataset.subcounty.ilike(f"%{subcounty}%")
+    
     query = (
         db.session.query(
             PrimaryImmunizationDataset.national_id,
@@ -31,7 +42,7 @@ def moh_525_report(filters):
         )
         .filter(
             and_(
-                PrimaryImmunizationDataset.facility_code == facility_code,
+                facility_filter,
                 PrimaryImmunizationDataset.due_date >= start_date,
                 PrimaryImmunizationDataset.due_date <= end_date,
                 or_(

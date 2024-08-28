@@ -24,8 +24,6 @@ def insert_data(data):
 
 
 def query_defaulters(name="", facility="", vaccine_name="", start_date="", end_date="",page=1, per_page=20):
-
-
     if start_date and end_date:
         data = PrimaryImmunizationDataset.query.filter(
             or_(
