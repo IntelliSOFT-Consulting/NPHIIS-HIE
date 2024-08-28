@@ -20,8 +20,8 @@ def moh_525_report(filters):
 
     if country:
         facility_filter = or_(
-            PrimaryImmunizationDataset.country.ilike(f"%{country}%"),
-            PrimaryImmunizationDataset.country.is_(None),
+            PrimaryImmunizationDataset.county.ilike(f"%{country}%"),
+            PrimaryImmunizationDataset.county.is_(None),
         )
     elif county:
         facility_filter = PrimaryImmunizationDataset.county.ilike(f"%{county}%")
