@@ -22,7 +22,11 @@ def build_query(
     facility_filter = PrimaryImmunizationDataset.facility_code == facility_code
 
     if country:
-        facility_filter = PrimaryImmunizationDataset.county.ilike("")
+        facility_filter = or_(
+            PrimaryImmunizationDataset.country.ilike(f"%{country}%"),
+            PrimaryImmunizationDataset.country.is_(None),
+        )
+
     elif county:
         facility_filter = PrimaryImmunizationDataset.county.ilike(f"%{county}%")
     elif subcounty:

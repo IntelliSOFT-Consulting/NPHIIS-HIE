@@ -19,12 +19,15 @@ def moh_525_report(filters):
     facility_filter = PrimaryImmunizationDataset.facility_code == facility_code
 
     if country:
-        facility_filter = PrimaryImmunizationDataset.county.ilike("")
+        facility_filter = or_(
+            PrimaryImmunizationDataset.country.ilike(f"%{country}%"),
+            PrimaryImmunizationDataset.country.is_(None),
+        )
     elif county:
         facility_filter = PrimaryImmunizationDataset.county.ilike(f"%{county}%")
     elif subcounty:
         facility_filter = PrimaryImmunizationDataset.subcounty.ilike(f"%{subcounty}%")
-    
+
     query = (
         db.session.query(
             PrimaryImmunizationDataset.national_id,
