@@ -52,6 +52,29 @@ router.post("/", async (req, res) => {
       return;
     }
 
+    /**
+     * Only Generate certificate for completed resources
+     * 
+     */
+console.log(data.status);
+
+if(data.status!='completed'){
+  res.statusCode = 200;
+      res.json({
+        resourceType: "OperationOutcome",
+        id: "exception",
+        issue: [
+          {
+            severity: "error",
+            code: "exception",
+            details: { text: String("Operation only valid for completed Immunizations") },
+          },
+        ],
+      });
+      return;
+}
+
+
     let isRoutine = false;
     // Check if the Code matches any non-routine from the list
     if (_nonRoutineVaccince.hasOwnProperty(vaccineCode)) {
