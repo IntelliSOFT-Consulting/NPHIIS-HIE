@@ -3,6 +3,7 @@ import { FhirApi } from "../lib/utils";
 import { deleteResetCode, findKeycloakUser, getCurrentUserInfo, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken } from './../lib/keycloak'
 import { v4 } from "uuid";
 import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../lib/email";
+import { getSupersetGuestToken } from "../lib/superset";
 
 const router = express.Router();
 router.use(express.json());
@@ -685,6 +686,21 @@ router.put("/user/:username", async (req: Request, res: Response) => {
         return;
     }
 });
+
+router.get("/superset-token", async (req: Request, res: Response) => {
+    try {
+        let token = await getSupersetGuestToken();
+        res.statusCode = 200;
+        res.json({ token, status: "success" });
+        return;
+    } catch (error) {
+        console.error(error);
+        res.statusCode = 401;
+        res.json({ error: "Failed to get superset guest token", status: "error" });
+        return;
+    }
+});
+
 
 
 
