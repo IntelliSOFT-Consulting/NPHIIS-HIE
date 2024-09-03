@@ -44,9 +44,11 @@ export const getSupersetGuestToken = async () => {
         last_name: GUEST_LAST_NAME,
         username: GUEST_USERNAME,
       },
+      rls: [],
     }),
   });
 
   const guestData = await guestResponse.json();
+
   return guestData.token;
 };
