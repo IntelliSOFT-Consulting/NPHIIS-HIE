@@ -106,7 +106,7 @@ def format_data(data: Dict[tuple, Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 def moh_710_report(filters: Dict[str, str]) -> List[Dict[str, Any]]:
-    facility_code = filters.get("facility_code")
+    facility_code = filters.get("facility")
     country = filters.get("country")
     county = filters.get("county")
     subcounty = filters.get("subcounty")
