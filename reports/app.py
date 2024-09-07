@@ -57,7 +57,7 @@ def defaulters():
 @app.route("/api/moh_710_report", methods=["GET"])
 def moh_710_report_endpoint():
     filters = {
-        "facility_code": request.args.get("facility_code", ""),
+        "facility": request.args.get("facility", ""),
         "ward": request.args.get("ward", ""),
         "county": request.args.get("county", ""),
         "subcounty": request.args.get("subcounty", ""),
@@ -79,8 +79,7 @@ def moh_525_endpoint():
 
     
     filters = {
-        "facility_code": request.args.get("facility_code", ""),
-        "facility_code": request.args.get("facility_code", ""),
+        "facility": request.args.get("facility", ""),
         "ward": request.args.get("ward", ""),
         "county": request.args.get("county", ""),
         "subcounty": request.args.get("subcounty", ""),

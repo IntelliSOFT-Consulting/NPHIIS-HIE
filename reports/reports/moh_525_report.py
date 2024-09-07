@@ -5,7 +5,7 @@ from configs import db
 
 
 def moh_525_report(filters):
-    facility_code = filters.get("facility_code")
+    facility_code = filters.get("facility")
     country = filters.get("country")
     county = filters.get("county")
     subcounty = filters.get("subcounty")
