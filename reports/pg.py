@@ -23,28 +23,75 @@ def insert_data(data):
     db.session.commit()
 
 
-def query_defaulters(name="", facility="", vaccine_name="", start_date="", end_date="",page=1, per_page=20):
-    if start_date and end_date:
-        data = PrimaryImmunizationDataset.query.filter(
-            or_(
-                PrimaryImmunizationDataset.family_name.ilike(f"%{name}%"),
-                PrimaryImmunizationDataset.vaccine_name.ilike(f"%{vaccine_name}%"),
-                PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
-            ),
-            PrimaryImmunizationDataset.imm_status == "Missed Immunization",
-            PrimaryImmunizationDataset.occ_date >= start_date,
-            PrimaryImmunizationDataset.occ_date <= end_date,
-        ).limit(per_page).offset((page - 1) * per_page).all()
-        
-        return to_json(data)
-    else:
-        data = PrimaryImmunizationDataset.query.filter(
-            or_(
-                PrimaryImmunizationDataset.family_name.ilike(f"%{name}%"),
-                PrimaryImmunizationDataset.vaccine_name.ilike(f"%{vaccine_name}%"),
-                PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
-            ),
-            PrimaryImmunizationDataset.imm_status == "Missed Immunization",
-        ).limit(per_page).offset((page - 1) * per_page).all()
+from sqlalchemy import or_, desc
+from typing import Dict, Any, Optional
 
-        return to_json(data)
+def query_defaulters(
+    name: str = "",
+    facility: str = "",
+    vaccine_name: str = "",
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    page: int = 1,
+    per_page: int = 20
+) -> Dict[str, Any]:
+    query = build_base_query(name, facility, vaccine_name)
+    query = apply_date_filter(query, start_date, end_date)
+    query = apply_sorting(query)
+
+    
+    total_records = query.count()
+    if total_records == 0:
+        return create_empty_result(page, per_page)
+    
+    page, offset = calculate_pagination(page, per_page, total_records)
+    data = query.limit(per_page).offset(offset).all()
+    
+    return create_result(data, total_records, page, per_page)
+
+def build_base_query(name: str, facility: str, vaccine_name: str):
+    return PrimaryImmunizationDataset.query.filter(
+        or_(
+            PrimaryImmunizationDataset.family_name.ilike(f"%{name}%"),
+            PrimaryImmunizationDataset.vaccine_name.ilike(f"%{vaccine_name}%"),
+            PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
+        ),
+        PrimaryImmunizationDataset.imm_status == "Missed Immunization",
+    )
+
+def apply_date_filter(query, start_date: Optional[str], end_date: Optional[str]):
+    if start_date and end_date:
+        return query.filter(
+            PrimaryImmunizationDataset.occ_date >= start_date,
+            PrimaryImmunizationDataset.occ_date <= end_date
+        )
+    return query
+
+def apply_sorting(query):
+    return query.order_by(desc(PrimaryImmunizationDataset.due_date))
+
+def calculate_pagination(page: int, per_page: int, total_records: int) -> tuple[int, int]:
+    page = max(1, page)
+    offset = (page - 1) * per_page
+    if offset >= total_records:
+        page = 1
+        offset = 0
+    return page, offset
+
+def create_empty_result(page: int, per_page: int) -> Dict[str, Any]:
+    return {
+        "data": [],
+        "total_records": 0,
+        "total_pages": 0,
+        "current_page": page,
+        "per_page": per_page
+    }
+
+def create_result(data: list, total_records: int, page: int, per_page: int) -> Dict[str, Any]:
+    return {
+        "data": to_json(data),
+        "total_records": total_records,
+        "total_pages": (total_records + per_page - 1) // per_page,
+        "current_page": page,
+        "per_page": per_page
+    }

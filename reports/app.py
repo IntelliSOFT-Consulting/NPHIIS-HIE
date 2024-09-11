@@ -41,13 +41,20 @@ def analytics():
 def defaulters():
     try:
         name = request.args.get("name", "")
+        facility = request.args.get("facility", "")
         vaccine_name = request.args.get("vaccine_name", "")
         start_date = request.args.get("start_date", "")
         end_date = request.args.get("end_date", "")
         page = request.args.get("page", 1)
         per_page = request.args.get("per_page", 20)
+       
+        if page:
+            page = int(page)
+        if per_page:
+            per_page = int(per_page)
+
         result = pg.query_defaulters(
-            name, vaccine_name, start_date, end_date, page, per_page
+            name, facility, vaccine_name, start_date, end_date, page, per_page
         )
         return jsonify(result)
     except Exception as e:
@@ -62,7 +69,6 @@ def moh_710_report_endpoint():
         "county": request.args.get("county", ""),
         "subcounty": request.args.get("subcounty", ""),
         "country": request.args.get("country", ""),
-
         "start_date": request.args.get(
             "start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
         ),
@@ -73,18 +79,20 @@ def moh_710_report_endpoint():
         return result
     except Exception as e:
         return jsonify({"message": str(e)}), 500
-    
+
+
 @app.route("/api/moh_525_report", methods=["GET"])
 def moh_525_endpoint():
 
-    
     filters = {
         "facility": request.args.get("facility", ""),
         "ward": request.args.get("ward", ""),
         "county": request.args.get("county", ""),
         "subcounty": request.args.get("subcounty", ""),
         "country": request.args.get("country", ""),
-        "start_date": request.args.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")),
+        "start_date": request.args.get(
+            "start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+        ),
         "end_date": request.args.get("end_date", (datetime.now()).strftime("%Y-%m-%d")),
     }
     try:
