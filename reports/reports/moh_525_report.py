@@ -16,7 +16,10 @@ def moh_525_report(filters):
     start_date = datetime.strptime(start_date, "%Y-%m-%d").strftime("%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d").strftime("%Y-%m-%d")
 
-    facility_filter = PrimaryImmunizationDataset.facility_code == facility_code
+    facility_filter = None
+
+    if not any([facility_code, country, county, subcounty]):
+        facility_filter = PrimaryImmunizationDataset.facility_code.isnot(None)
 
     if country:
         facility_filter = or_(

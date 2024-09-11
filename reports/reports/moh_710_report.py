@@ -19,18 +19,21 @@ def build_query(
     end_date: str,
 ):
 
-    facility_filter = PrimaryImmunizationDataset.facility_code == facility_code
+    facility_filter = None
 
-    if country:
+    if not any([facility_code, country, county, subcounty]):
+        facility_filter = PrimaryImmunizationDataset.facility_code.isnot(None)
+    elif country:
         facility_filter = or_(
             PrimaryImmunizationDataset.county.ilike(f"%{country}%"),
             PrimaryImmunizationDataset.county.is_(None),
         )
-
     elif county:
         facility_filter = PrimaryImmunizationDataset.county.ilike(f"%{county}%")
     elif subcounty:
         facility_filter = PrimaryImmunizationDataset.subcounty.ilike(f"%{subcounty}%")
+    elif facility_code:
+        facility_filter = PrimaryImmunizationDataset.facility_code == facility_code
 
     return (
         db.session.query(
