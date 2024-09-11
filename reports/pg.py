@@ -53,10 +53,13 @@ def build_base_query(name: str, facility: str, vaccine_name: str):
     return PrimaryImmunizationDataset.query.filter(
         or_(
             PrimaryImmunizationDataset.family_name.ilike(f"%{name}%"),
+            PrimaryImmunizationDataset.given_name.ilike(f"%{name}%"),
             PrimaryImmunizationDataset.vaccine_name.ilike(f"%{vaccine_name}%"),
             PrimaryImmunizationDataset.facility.ilike(f"%{facility}%"),
         ),
         PrimaryImmunizationDataset.imm_status == "Missed Immunization",
+        PrimaryImmunizationDataset.imm_status_defaulter == 'Yes',
+        PrimaryImmunizationDataset.occ_date.is_(None)
     )
 
 def apply_date_filter(query, start_date: Optional[str], end_date: Optional[str]):
