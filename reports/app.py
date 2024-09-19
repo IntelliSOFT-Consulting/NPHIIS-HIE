@@ -11,6 +11,7 @@ import pg
 from configs import app, db
 from reports.moh_525_report import moh_525_report
 from reports.moh_710_report import moh_710_report
+from reports.monitoring_report import monitoring_report
 
 CORS(app)
 
@@ -109,6 +110,21 @@ def moh_525_report_endpoint():
         return result
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+    
+
+@app.route("/api/monitoring_report", methods=["GET"])
+def monitoring_report_endpoint():
+    try:
+        facility = request.args.get("facility", "")
+        year = request.args.get("year", "")
+        county = request.args.get("county", "")
+        subcounty = request.args.get("subcounty", "")
+
+        result = monitoring_report(county, subcounty, facility, year)
+        return result
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
 
 
 if __name__ == "__main__":
