@@ -208,7 +208,7 @@ http {
     ssl_certificate /opt/star.intellisoftkenya.com.crt;
 
     location / {
-      proxy_pass http://provider:8080/;
+      proxy_pass http://provider:3000/;
       proxy_set_header Host \$host;
       proxy_set_header X-Real-IP \$remote_addr;
       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
