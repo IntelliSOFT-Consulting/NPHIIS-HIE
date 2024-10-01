@@ -79,9 +79,11 @@ def monitoring_report(county: Optional[str] = None, subcounty: Optional[str] = N
 
         # Calculate cumulative dropout rates
         month_data['DO_IMDPT1_IMDPT3_cumulative'] = cumulative_data['IMDPT-1'] - cumulative_data['IMDPT-3']
-        month_data['DO%_IMDPT1_IMDPT3_cumulative'] = calculate_dropout_rate(cumulative_data['IMDPT-1'], cumulative_data['IMDPT-3'])
+        # round to 2 decimal places
+        month_data['DO%_IMDPT1_IMDPT3_cumulative'] = round(calculate_dropout_rate(cumulative_data['IMDPT-1'], cumulative_data['IMDPT-3']), 2)
         month_data['DO_IMDPT1_IMMEAS0_cumulative'] = cumulative_data['IMDPT-1'] - cumulative_data['IMMEAS-0']
-        month_data['DO%_IMDPT1_IMMEAS0_cumulative'] = calculate_dropout_rate(cumulative_data['IMDPT-1'], cumulative_data['IMMEAS-0'])
+        # round to 2 decimal places
+        month_data['DO%_IMDPT1_IMMEAS0_cumulative'] = round(calculate_dropout_rate(cumulative_data['IMDPT-1'], cumulative_data['IMMEAS-0']), 2)
         
         final_results.append(month_data)
     
