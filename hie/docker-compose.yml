@@ -141,6 +141,21 @@ services:
         env_file:
             - ddcc-chanjo-mediators/.env
 
+    provider:
+        container_name: provider
+        image: intellisoftdev/chanjoke:latest
+        restart: unless-stopped
+        networks:
+            - hapi-fhir
+            - cloudbuild
+    client:
+        container_name: client
+        image: intellisoftdev/chanjokeclient:latest
+        restart: unless-stopped
+        networks:
+            - hapi-fhir
+            - cloudbuild
+
 volumes:
     mongodb-data:
     hapi-fhir-postgres:
