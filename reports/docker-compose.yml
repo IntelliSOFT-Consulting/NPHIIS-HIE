@@ -7,7 +7,7 @@ services:
     ports:
       - "5433:5432"
     env_file:
-      - .env
+      - ./.env
     volumes:
       - reports_db:/var/lib/postgresql/data
       
@@ -23,7 +23,7 @@ services:
     depends_on:
       - reports_db
     env_file:
-      - .env
+      - ./.env
     
 volumes:
   reports_db:
