@@ -12,6 +12,7 @@ from configs import app, db
 from reports.moh_525_report import moh_525_report
 from reports.moh_710_report import moh_710_report
 from reports.monitoring_report import monitoring_report
+from models import *
 
 CORS(app)
 
@@ -128,6 +129,10 @@ def monitoring_report_endpoint():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
-    db.create_all()
+    db.init_app(app)
+    print("Initializing app context...")
+    with app.app_context():
+        print("Creating tables...")
+        db.create_all()
+        print("Tables created")
     app.run(debug=True)
