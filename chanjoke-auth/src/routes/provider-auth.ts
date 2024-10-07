@@ -43,7 +43,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
         }
         let practitionerId = v4();
-        let location = await (await FhirApi({ url: `/Location/${facility}` })).data;
+        let location = await (await FhirApi({ url: `/Location/${facility || '0'}` })).data;
         console.log(location);
         if (role !== "ADMINISTRATOR" && location.resourceType !== "Location") {
             res.statusCode = 400;
