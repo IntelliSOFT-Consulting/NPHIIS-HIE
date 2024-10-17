@@ -33,8 +33,8 @@ atexit.register(lambda: scheduler.shutdown())
 @app.route("/api/analytics", methods=["POST"])
 def analytics():
     try:
-        hive.query_data()
-        return jsonify({"message": "Data fetched and inserted into the database"})
+        response = hive.query_data()
+        return jsonify(response)
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
