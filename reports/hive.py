@@ -243,7 +243,7 @@ def query_data():
         with open("results.json", "w") as f:
             json.dump(results, f)
 
-        # db.insert_data(results)
+        db.insert_data(results)
         return "Data inserted successfully"
     except Exception as e:
         print(f"Error during data querying: {e}")
