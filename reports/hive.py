@@ -209,17 +209,6 @@ def query_data():
             patients = get_fhir_resources("Patient")
             immunizations = get_fhir_resources("Immunization")
 
-            # create a json file and save the immunization_recommendations
-            with open("immunization_recommendations.json", "w") as f:
-                json.dump(immunization_recommendations, f)
-
-            # create a json file and save the patients
-            with open("patients.json", "w") as f:
-                json.dump(patients, f)
-
-            # create a json file and save the immunizations
-            with open("immunizations.json", "w") as f:
-                json.dump(immunizations, f) 
 
         results = []
         for recommendation in immunization_recommendations:
@@ -238,10 +227,6 @@ def query_data():
                         vaccine, immunizations, patient_id
                     )
                     results.append({**payload, **vaccine_payload})
-
-        # create a json file and save the results
-        with open("results.json", "w") as f:
-            json.dump(results, f)
 
         db.insert_data(results)
         return "Data inserted successfully"
