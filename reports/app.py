@@ -1,6 +1,6 @@
 import atexit
 from datetime import datetime, timedelta
-
+import traceback
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from flask import jsonify, request
@@ -126,6 +126,16 @@ def monitoring_report_endpoint():
     except Exception as e:
         return jsonify({"message": str(e)}), 500
 
+
+@app.route("/api/insert_data", methods=["POST"])
+def insert_data_endpoint():
+    try:
+        data = request.json
+        result = pg.insert_data(data)
+        return result
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({"message": str(e)}), 500
 
 
 if __name__ == "__main__":
