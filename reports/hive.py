@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import traceback
 import os
 import json
-from datetime import datetime, time
+from datetime import datetime
 import pg as db
 import requests
 
@@ -233,6 +233,3 @@ def query_data():
         conn.close()
 
 
-while True:
-    query_data()
-    time.sleep(600)
