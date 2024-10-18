@@ -5,6 +5,7 @@ import os
 import json
 from datetime import datetime
 import pg as db
+import requests
 
 load_dotenv()
 
@@ -19,6 +20,22 @@ def get_hive_connection():
     except Exception as e:
         print(f"Error establishing Hive connection: {e}")
         return None
+
+
+fhir_server = os.getenv("FHIR_SERVER")
+
+
+def get_fhir_resources(resource_type):
+    """Get FHIR resources from the server."""
+    try:
+        response = requests.get(f"{fhir_server}/{resource_type}?_count=1000000")
+        response.raise_for_status()
+        entries = response.json().get("entry", [])
+        resources = [e["resource"] for e in entries]
+        return resources
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching FHIR resources: {e}")
+        return []
 
 
 def safe_get(data, *keys):
@@ -55,30 +72,31 @@ def fetch_data(cursor, table_name):
 
 def process_patient_data(patient_data):
     """Extract and process relevant patient information."""
+    # print("patient_data", patient_data)
     try:
         payload = {}
         payload["patient_id"] = patient_data["id"]
-        payload["family_name"] = json.loads(patient_data["name"])[0]["family"]
-        payload["given_name"] = " ".join(json.loads(patient_data["name"])[0]["given"])
-        payload["national_id"] = json.loads(patient_data["identifier"])[0]["value"]
+        payload["family_name"] = patient_data["name"][0]["family"]
+        payload["given_name"] = " ".join(patient_data["name"][0]["given"])
+        payload["national_id"] = patient_data["identifier"][0]["value"]
         payload["gender"] = patient_data["gender"]
         payload["deceased"] = patient_data.get("deceasedBoolean", False)
         payload["active"] = patient_data.get("active", True)
         payload["birth_date"] = patient_data["birthDate"].split("T")[0]
-        payload["patient_update_date"] = json.loads(patient_data["meta"])["lastUpdated"]
-        payload["phone"] = json.loads(patient_data["telecom"])[0]["value"]
-        payload["county"] = json.loads(patient_data["address"])[0]["city"]
-        payload["subcounty"] = json.loads(patient_data["address"])[0]["district"]
-        payload["ward"] = json.loads(patient_data["address"])[0]["state"]
+        payload["patient_update_date"] = patient_data["meta"]["lastUpdated"]
+        payload["phone"] = patient_data["telecom"][0]["value"]
+        payload["county"] = patient_data["address"][0]["city"]
+        payload["subcounty"] = patient_data["address"][0]["district"]
+        payload["ward"] = patient_data["address"][0]["state"]
 
-        patient_meta = json.loads(patient_data["meta"])
+        patient_meta = patient_data["meta"]
 
         tag = patient_meta.get("tag", [{}])
 
         if tag and tag[0].get("display", ""):
             payload["facility"] = tag[0].get("display", "N/A")
             payload["facility_code"] = tag[0].get("code", "").replace("Location/", "")
-        patient_contacts = json.loads(patient_data["contact"])
+        patient_contacts = patient_data["contact"]
 
         if not payload["phone"]:
             for contact in patient_contacts:
@@ -137,7 +155,7 @@ def process_vaccine_recommendation(vaccine, immunizations, patient_id):
             (
                 imm
                 for imm in immunizations
-                if json.loads(imm["vaccineCode"])["coding"][0]["code"] == vaccine_code
+                if imm["vaccineCode"]["coding"][0]["code"] == vaccine_code
             ),
             None,
         )
@@ -151,7 +169,7 @@ def process_vaccine_recommendation(vaccine, immunizations, patient_id):
                 - datetime.strptime(due_date, "%Y-%m-%d").date()
             ).days
             payload["days_from_due"] = days_from_due
-            payload["faci_outr"] = json.loads(immunization_record["note"])[0]["text"]
+            payload["faci_outr"] = immunization_record["note"][0]["text"]
             payload["batch_number"] = immunization_record["lotNumber"]
             payload["imm_status_defaulter"] = "Yes" if days_from_due > 14 else "No"
         else:
@@ -176,22 +194,28 @@ def query_data():
 
     try:
         with conn.cursor() as cursor:
-            immunization_recommendations = fetch_data(
-                cursor, "immunizationrecommendation"
+
+            # immunization_recommendations = fetch_data(
+            #     cursor, "immunizationrecommendation"
+            # )
+            # patients = fetch_data(cursor, "Patient")
+            # immunizations = fetch_data(cursor, "Immunization")
+
+            immunization_recommendations = get_fhir_resources(
+                "ImmunizationRecommendation"
             )
-            patients = fetch_data(cursor, "patient")
-            immunizations = fetch_data(cursor, "immunization")
+            patients = get_fhir_resources("Patient")
+            immunizations = get_fhir_resources("Immunization")
 
         results = []
         for recommendation in immunization_recommendations:
-            patient_id = json.loads(recommendation["patient"])["reference"].split("/")[
-                -1
-            ]
+            patient_id = recommendation["patient"]["reference"].split("/")[1]
+
             patient_data = next((p for p in patients if p["id"] == patient_id), None)
 
             if patient_data:
                 payload = process_patient_data(patient_data)
-                vaccine_recommendation = json.loads(recommendation["recommendation"])
+                vaccine_recommendation = recommendation["recommendation"]
 
                 for vaccine in vaccine_recommendation:
                     vaccine_payload = process_vaccine_recommendation(
@@ -199,7 +223,6 @@ def query_data():
                     )
                     results.append({**payload, **vaccine_payload})
 
-        # insert data into postgres
         db.insert_data(results)
         return "Data inserted successfully"
     except Exception as e:
@@ -208,7 +231,6 @@ def query_data():
         return []
     finally:
         conn.close()
-
 
     # cursor.execute(query)
     # rows = cursor.fetchall()
