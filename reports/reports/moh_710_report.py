@@ -51,10 +51,8 @@ def build_query(
         .filter(
             and_(
                 facility_filter,
+                PrimaryImmunizationDataset.vaccine_category == 'routine',
                 PrimaryImmunizationDataset.occ_date.between(start_date, end_date),
-                PrimaryImmunizationDataset.age_group.in_(
-                    ["Under 1 Year", "Above 1 Year"]
-                ),
             )
         )
         .group_by(

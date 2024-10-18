@@ -51,11 +51,8 @@ def moh_525_report(filters):
                 facility_filter,
                 PrimaryImmunizationDataset.due_date >= start_date,
                 PrimaryImmunizationDataset.due_date <= end_date,
-                or_(
-                    PrimaryImmunizationDataset.imm_status
-                    == "Immunized Late (Within 14 Days)",
-                    PrimaryImmunizationDataset.imm_status == "Missed Immunization",
-                ),
+                PrimaryImmunizationDataset.vaccine_category == "routine",
+                or_(PrimaryImmunizationDataset.imm_status_defaulter == "Yes"),
             )
         )
         .order_by(PrimaryImmunizationDataset.due_date)

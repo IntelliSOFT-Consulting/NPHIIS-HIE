@@ -99,3 +99,11 @@ def create_result(data: list, total_records: int, page: int, per_page: int) -> D
         "current_page": page,
         "per_page": per_page
     }
+
+def insert_data(data):
+    # insert data into the database (an array of objects)
+    for row in data:
+        db.session.add(PrimaryImmunizationDataset(**row))
+    db.session.commit()
+    return "Data inserted successfully"
+
