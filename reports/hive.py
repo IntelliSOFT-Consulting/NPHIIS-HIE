@@ -175,7 +175,7 @@ def process_vaccine_recommendation(vaccine, immunizations, patient_id):
             payload["batch_number"] = immunization_record.get("lotNumber", "N/A")
             payload["imm_status_defaulter"] = "Yes" if days_from_due > 14 else "No"
         else:
-            payload["imm_status"] = "Not Administered"
+            payload["imm_status"] = "Missed Immunization"
             days_from_due = (
                 datetime.strptime(due_date, "%Y-%m-%d").date() - datetime.now().date()
             ).days
@@ -208,6 +208,18 @@ def query_data():
             )
             patients = get_fhir_resources("Patient")
             immunizations = get_fhir_resources("Immunization")
+
+            # create a json file and save the immunization_recommendations
+            with open("immunization_recommendations.json", "w") as f:
+                json.dump(immunization_recommendations, f)
+
+            # create a json file and save the patients
+            with open("patients.json", "w") as f:
+                json.dump(patients, f)
+
+            # create a json file and save the immunizations
+            with open("immunizations.json", "w") as f:
+                json.dump(immunizations, f) 
 
         results = []
         for recommendation in immunization_recommendations:
