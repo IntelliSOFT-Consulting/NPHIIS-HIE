@@ -59,6 +59,7 @@ def build_base_query(name: str, facility: str, vaccine_name: str):
         ),
         PrimaryImmunizationDataset.imm_status == "Missed Immunization",
         PrimaryImmunizationDataset.imm_status_defaulter == 'Yes',
+        PrimaryImmunizationDataset.vaccine_category == 'routine',
         PrimaryImmunizationDataset.occ_date.is_(None)
     )
 
