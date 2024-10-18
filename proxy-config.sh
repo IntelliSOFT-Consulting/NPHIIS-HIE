@@ -7,8 +7,8 @@ read -p "Enter the certificate path: " CERTIFICATE
 
 # Check if .env file exists
 if [ ! -f .env ]; then
-    echo "Error: .env file not found."
-    exit 1
+  echo "Error: .env file not found."
+  exit 1
 fi
 
 # Load environment variables from .env file
@@ -18,22 +18,22 @@ set +a
 
 # Check if all required domain variables are set
 required_vars=(
-    "DOMAIN_NAME"
-    "CERTIFICATE_KEY"
-    "CERTIFICATE"
+  "DOMAIN_NAME"
+  "CERTIFICATE_KEY"
+  "CERTIFICATE"
 )
 
 for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-        echo "Error: $var is not set in the .env file."
-        exit 1
-    fi
+  if [ -z "${!var}" ]; then
+    echo "Error: $var is not set in the .env file."
+    exit 1
+  fi
 done
 
 mkdir -p proxy
 
 # Create the Nginx configuration file
-cat << EOF > proxy/nginx.conf
+cat <<EOF >proxy/nginx.conf
 worker_processes 1;
 
 events {
@@ -58,12 +58,7 @@ http {
         ssl_certificate $CERTIFICATE;
 
         location / {
-            if ($x_auth_request) {
-                proxy_pass http://keycloak:8080;
-            } else {
-                proxy_pass http://provider:3000/;
-            }
-
+            proxy_pass http://provider:3000/;
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
@@ -75,6 +70,21 @@ http {
             proxy_set_header X-Forwarded-Server $host;
             proxy_set_header X-Forwarded-Port $server_port;
             proxy_set_header Accept-Encoding *;
+        }
+
+        location /sso/ {
+          proxy_pass http://localhost:8080/;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header Host $http_host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header Accept-Encoding *;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Forwarded-Server $host;
+          proxy_set_header X-Forwarded-Port $server_port;
+          proxy_set_header X-Forwarded-Proto $scheme;
         }
 
         location /pipeline/ {
