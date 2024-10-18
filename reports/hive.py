@@ -84,10 +84,10 @@ def process_patient_data(patient_data):
         payload["active"] = patient_data.get("active", True)
         payload["birth_date"] = patient_data["birthDate"].split("T")[0]
         payload["patient_update_date"] = patient_data["meta"]["lastUpdated"]
-        payload["phone"] = patient_data["telecom"][0]["value"]
-        payload["county"] = patient_data["address"][0]["city"]
-        payload["subcounty"] = patient_data["address"][0]["district"]
-        payload["ward"] = patient_data["address"][0]["state"]
+        payload["phone"] = patient_data.get("telecom", [{}])[0].get("value", None)
+        payload["county"] = patient_data.get("address", [{}])[0].get("city", None)
+        payload["subcounty"] = patient_data.get("address", [{}])[0].get("district", None)
+        payload["ward"] = patient_data.get("address", [{}])[0].get("state", None)
 
         patient_meta = patient_data["meta"]
 
@@ -160,6 +160,8 @@ def process_vaccine_recommendation(vaccine, immunizations, patient_id):
             None,
         )
 
+        print("immunization_record", immunization_record)
+
         if immunization_record:
             payload["imm_status"] = immunization_record["status"]
             occ_date = immunization_record.get("recorded", None)
@@ -169,8 +171,8 @@ def process_vaccine_recommendation(vaccine, immunizations, patient_id):
                 - datetime.strptime(due_date, "%Y-%m-%d").date()
             ).days
             payload["days_from_due"] = days_from_due
-            payload["faci_outr"] = immunization_record["note"][0]["text"]
-            payload["batch_number"] = immunization_record["lotNumber"]
+            payload["faci_outr"] = immunization_record.get("note", [{}])[0].get("text", "N/A")
+            payload["batch_number"] = immunization_record.get("lotNumber", "N/A")
             payload["imm_status_defaulter"] = "Yes" if days_from_due > 14 else "No"
         else:
             payload["imm_status"] = "Not Administered"
@@ -213,6 +215,8 @@ def query_data():
 
             patient_data = next((p for p in patients if p["id"] == patient_id), None)
 
+            print("patient_data", patient_data)
+
             if patient_data:
                 payload = process_patient_data(patient_data)
                 vaccine_recommendation = recommendation["recommendation"]
@@ -223,7 +227,11 @@ def query_data():
                     )
                     results.append({**payload, **vaccine_payload})
 
-        db.insert_data(results)
+        # create a json file and save the results
+        with open("results.json", "w") as f:
+            json.dump(results, f)
+
+        # db.insert_data(results)
         return "Data inserted successfully"
     except Exception as e:
         print(f"Error during data querying: {e}")
