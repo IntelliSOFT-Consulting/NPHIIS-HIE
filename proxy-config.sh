@@ -6,29 +6,9 @@ read -p "Enter the certificate key path: " CERTIFICATE_KEY
 read -p "Enter the certificate path: " CERTIFICATE
 
 # Check if .env file exists
-if [ ! -f .env ]; then
-  echo "Error: .env file not found."
-  exit 1
-fi
 
 # Load environment variables from .env file
 set -a
-source .env
-set +a
-
-# Check if all required domain variables are set
-required_vars=(
-  "DOMAIN_NAME"
-  "CERTIFICATE_KEY"
-  "CERTIFICATE"
-)
-
-for var in "${required_vars[@]}"; do
-  if [ -z "${!var}" ]; then
-    echo "Error: $var is not set in the .env file."
-    exit 1
-  fi
-done
 
 mkdir -p proxy
 
