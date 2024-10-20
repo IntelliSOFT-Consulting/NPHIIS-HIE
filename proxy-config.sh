@@ -117,6 +117,7 @@ http {
             proxy_set_header X-Forwarded-Proto \$scheme;
         }
 }
+}
 
 EOF
 
