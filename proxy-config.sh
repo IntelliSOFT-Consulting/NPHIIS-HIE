@@ -26,7 +26,7 @@ http {
         server_name $DOMAIN_NAME;
 
         location / {
-            return 301 https://$host$request_uri;
+            return 301 https://\$host\$request_uri;
         }
     }
 
@@ -40,31 +40,31 @@ http {
         location / {
             proxy_pass http://provider:3000/;
             proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Upgrade \$http_upgrade;
             proxy_set_header Connection "upgrade";
-            proxy_set_header Host $http_host;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header X-Forwarded-Host $host;
-            proxy_set_header X-Forwarded-Server $host;
-            proxy_set_header X-Forwarded-Port $server_port;
+            proxy_set_header Host \$http_host;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-Proto \$scheme;
+            proxy_set_header X-Forwarded-Host \$host;
+            proxy_set_header X-Forwarded-Server \$host;
+            proxy_set_header X-Forwarded-Port \$server_port;
             proxy_set_header Accept-Encoding *;
         }
 
         location /sso/ {
-          proxy_pass http://localhost:8080/;
+          proxy_pass http://keycloak:8080/;
           proxy_http_version 1.1;
-          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Upgrade \$http_upgrade;
           proxy_set_header Connection "upgrade";
-          proxy_set_header Host $http_host;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header Host \$http_host;
+          proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
           proxy_set_header Accept-Encoding *;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-Host $host;
-          proxy_set_header X-Forwarded-Server $host;
-          proxy_set_header X-Forwarded-Port $server_port;
-          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Real-IP \$remote_addr;
+          proxy_set_header X-Forwarded-Host \$host;
+          proxy_set_header X-Forwarded-Server \$host;
+          proxy_set_header X-Forwarded-Port \$server_port;
+          proxy_set_header X-Forwarded-Proto \$scheme;
         }
 
         location /pipeline/ {
@@ -74,28 +74,28 @@ http {
             add_header 'Access-Control-Allow-Credentials' 'true' always;
         }
 
-        location /auth/ {
+        location /authentication/ {
         proxy_pass http://chanjoke-auth:3000/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
         }
 
         location /reports/ {
         proxy_pass http://reports_app:8000/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
         }
 
         location /chanjo-hapi/ {
         client_max_body_size 60M;
         proxy_pass http://hapi-fhir-jpa:8080/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
         add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
         add_header 'Access-Control-Allow-Credentials' 'true' always;
@@ -103,18 +103,18 @@ http {
 
         location /client/ {
             proxy_pass http://client:3000/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto \$scheme;
         }
 
         location /analytics/ {
             proxy_pass http://23.239.27.44:8088/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto \$scheme;
         }
 }
 

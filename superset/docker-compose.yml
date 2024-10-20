@@ -72,6 +72,8 @@ services:
     user: *superset-user
     depends_on: *superset-depends-on
     volumes: *superset-volumes
+    networks:
+      - cloudbuild
     environment:
       CYPRESS_CONFIG: "${CYPRESS_CONFIG}"
 
