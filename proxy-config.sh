@@ -41,22 +41,22 @@ http {
 
         location / {
             if (\$http_referer ~* "/client") {
-                proxy_pass http://client:3000;
+                rewrite ^/$ /client/ break;
             } 
             if (\$http_referer ~* "/analytics") {
-                proxy_pass http://23.239.27.44:8088;
+                rewrite ^/$ /analytics/ break;
             } 
             if (\$http_referer ~* "/reports") {
-                proxy_pass http://reports_app:8000;
+                rewrite ^/$ /reports/ break;
             } 
             if (\$http_referer ~* "/sso") {
-                proxy_pass http://keycloak:8080;
+                rewrite ^/$ /sso/ break;
             } 
             if (\$http_referer ~* "/pipeline") {
-                proxy_pass http://pipeline-controller:8080;
+                rewrite ^/$ /pipeline/ break;
             } 
             if (\$http_referer ~* "/chanjo-hapi") {
-                proxy_pass http://hapi-fhir-jpa:8080;
+                rewrite ^/$ /chanjo-hapi/ break;
             }
 
             proxy_pass http://provider:3000;
