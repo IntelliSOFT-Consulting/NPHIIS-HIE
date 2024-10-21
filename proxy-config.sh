@@ -41,22 +41,22 @@ http {
 
         location / {
             if (\$http_referer ~* "/client") {
-                rewrite ^/$ /client/ break;
+                proxy_pass http://client:3000/;
             } 
             if (\$http_referer ~* "/analytics") {
-                rewrite ^/$ /analytics/ break;
+                proxy_pass http://superset:8088/;
             } 
             if (\$http_referer ~* "/reports") {
-                rewrite ^/$ /reports/ break;
+                proxy_pass http://reports_app:8000/;
             } 
             if (\$http_referer ~* "/sso") {
-                rewrite ^/$ /sso/ break;
+                proxy_pass http://keycloak:8080/;
             } 
             if (\$http_referer ~* "/pipeline") {
-                rewrite ^/$ /pipeline/ break;
+                proxy_pass http://pipeline-controller:8080/;
             } 
             if (\$http_referer ~* "/chanjo-hapi") {
-                rewrite ^/$ /chanjo-hapi/ break;
+                proxy_pass http://hapi-fhir-jpa:8080/;
             }
 
             proxy_pass http://provider:3000;
@@ -131,7 +131,7 @@ http {
         }
 
         location /analytics/ {
-            proxy_pass http://23.239.27.44:8088/;
+            proxy_pass http://superset:8088/;
             proxy_set_header Host \$host;
             proxy_set_header X-Real-IP \$remote_addr;
             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
