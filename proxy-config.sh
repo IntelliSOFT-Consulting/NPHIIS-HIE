@@ -2,8 +2,7 @@
 
 # prompt the user to enter the domain name
 read -p "Enter the domain name: " DOMAIN_NAME
-read -p "Enter the certificate key path: " CERTIFICATE_KEY
-read -p "Enter the certificate path: " CERTIFICATE
+
 
 # Check if .env file exists
 
@@ -37,8 +36,8 @@ http {
         listen 443 ssl;
         server_name $DOMAIN_NAME;
 
-        ssl_certificate_key $CERTIFICATE_KEY;
-        ssl_certificate $CERTIFICATE;
+        ssl_certificate_key /opt/star.intellisoftkenya.com.key;
+        ssl_certificate /opt/star.intellisoftkenya.com.crt;
 
         location / {
 
