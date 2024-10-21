@@ -40,10 +40,6 @@ http {
         ssl_certificate /opt/star.intellisoftkenya.com.crt;
 
         location / {
-
-            if (\$http_referer ~* "/provider") {
-                rewrite ^/provider/(.*)\$ /\$1 break;
-            } 
             if (\$http_referer ~* "/client") {
                 rewrite ^/client/(.*)\$ /\$1 break;
             } 
@@ -63,6 +59,7 @@ http {
                 rewrite ^/chanjo-hapi/(.*)\$ /\$1 break;
             }
 
+            proxy_pass http://provider:3000;
             proxy_http_version 1.1;
             proxy_set_header Upgrade \$http_upgrade;
             proxy_set_header Connection "upgrade";
