@@ -21,6 +21,9 @@ events {
 }
 
 http {
+
+    include /etc/nginx/mime.types;
+
     server {
         listen 80;
         server_name $DOMAIN_NAME;
@@ -38,7 +41,23 @@ http {
         ssl_certificate $CERTIFICATE;
 
         location / {
-            proxy_pass http://provider:3000/;
+
+            if (\$http_referer ~* "/provider") {
+                rewrite ^/provider/(.*)\$ /\$1 break;
+            } elseif (\$http_referer ~* "/client") {
+                rewrite ^/client/(.*)\$ /\$1 break;
+            } elseif (\$http_referer ~* "/analytics") {
+                rewrite ^/analytics/(.*)\$ /\$1 break;
+            } elseif (\$http_referer ~* "/reports") {
+                rewrite ^/reports/(.*)\$ /\$1 break;
+            } elseif (\$http_referer ~* "/sso") {
+                rewrite ^/sso/(.*)\$ /\$1 break;
+            } elseif (\$http_referer ~* "/pipeline") {
+                rewrite ^/pipeline/(.*)\$ /\$1 break;
+            } elseif (\$http_referer ~* "/chanjo-hapi") {
+                rewrite ^/chanjo-hapi/(.*)\$ /\$1 break;
+            }
+
             proxy_http_version 1.1;
             proxy_set_header Upgrade \$http_upgrade;
             proxy_set_header Connection "upgrade";
