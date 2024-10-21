@@ -43,17 +43,23 @@ http {
 
             if (\$http_referer ~* "/provider") {
                 rewrite ^/provider/(.*)\$ /\$1 break;
-            } elseif (\$http_referer ~* "/client") {
+            } 
+            if (\$http_referer ~* "/client") {
                 rewrite ^/client/(.*)\$ /\$1 break;
-            } elseif (\$http_referer ~* "/analytics") {
+            } 
+            if (\$http_referer ~* "/analytics") {
                 rewrite ^/analytics/(.*)\$ /\$1 break;
-            } elseif (\$http_referer ~* "/reports") {
+            } 
+            if (\$http_referer ~* "/reports") {
                 rewrite ^/reports/(.*)\$ /\$1 break;
-            } elseif (\$http_referer ~* "/sso") {
+            } 
+            if (\$http_referer ~* "/sso") {
                 rewrite ^/sso/(.*)\$ /\$1 break;
-            } elseif (\$http_referer ~* "/pipeline") {
+            } 
+            if (\$http_referer ~* "/pipeline") {
                 rewrite ^/pipeline/(.*)\$ /\$1 break;
-            } elseif (\$http_referer ~* "/chanjo-hapi") {
+            } 
+            if (\$http_referer ~* "/chanjo-hapi") {
                 rewrite ^/chanjo-hapi/(.*)\$ /\$1 break;
             }
 
