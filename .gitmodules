@@ -1,0 +1,6 @@
+[submodule "ChanjoKe-provider-web-app"]
+	path = ChanjoKe-provider-web-app
+	url = https://github.com/IntelliSOFT-Consulting/ChanjoKe-provider-web-app.git
+[submodule "ChanjoKe-patient-web-app"]
+	path = ChanjoKe-patient-web-app
+	url = https://github.com/IntelliSOFT-Consulting/ChanjoKe-patient-web-app.git

@@ -142,15 +142,19 @@ services:
             - ddcc-chanjo-mediators/.env
 
     provider:
+        build:
+            context: ../provider
+            dockerfile: Dockerfile
         container_name: provider
-        image: intellisoftdev/chanjoke:latest
         restart: unless-stopped
         networks:
             - hapi-fhir
             - cloudbuild
     client:
+        build:
+            context: ../client
+            dockerfile: Dockerfile
         container_name: client
-        image: intellisoftdev/chanjokeclient:latest
         restart: unless-stopped
         networks:
             - hapi-fhir
