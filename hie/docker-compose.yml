@@ -143,7 +143,7 @@ services:
 
     provider:
         build:
-            context: ../provider
+            context: ../ChanjoKe-provider-web-app
             dockerfile: Dockerfile
         container_name: provider
         restart: unless-stopped
@@ -152,7 +152,7 @@ services:
             - cloudbuild
     client:
         build:
-            context: ../client
+            context: ../ChanjoKe-patient-web-app
             dockerfile: Dockerfile
         container_name: client
         restart: unless-stopped
