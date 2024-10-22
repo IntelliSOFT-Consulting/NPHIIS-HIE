@@ -40,22 +40,22 @@ http {
         ssl_certificate /opt/star.intellisoftkenya.com.crt;
 
         location / {
-            if (\$http_referer ~* "/client") {
+            if (\$http_referer ~* /client) {
                 proxy_pass http://client:3000/;
             } 
-            if (\$http_referer ~* "/analytics") {
+            if (\$http_referer ~* /analytics) {
                 proxy_pass http://superset:8088/;
             } 
-            if (\$http_referer ~* "/reports") {
+            if (\$http_referer ~* /reports) {
                 proxy_pass http://reports_app:8000/;
             } 
-            if (\$http_referer ~* "/sso") {
+            if (\$http_referer ~* /sso) {
                 proxy_pass http://keycloak:8080/;
             } 
-            if (\$http_referer ~* "/pipeline") {
+            if (\$http_referer ~* /pipeline) {
                 proxy_pass http://pipeline-controller:8080/;
             } 
-            if (\$http_referer ~* "/chanjo-hapi") {
+            if (\$http_referer ~* /chanjo-hapi) {
                 proxy_pass http://hapi-fhir-jpa:8080/;
             }
 
