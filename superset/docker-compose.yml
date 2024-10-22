@@ -182,3 +182,7 @@ volumes:
     external: false
   redis:
     external: false
+
+networks:
+    cloudbuild:
+        external: true
