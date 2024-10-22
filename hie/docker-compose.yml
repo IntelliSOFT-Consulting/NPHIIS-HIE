@@ -106,7 +106,9 @@ services:
     
     chanjoke-auth:
         container_name: chanjoke-auth
-        build: ../chanjoke-auth
+        build: 
+            context: ../chanjoke-auth
+            dockerfile: Dockerfile
         restart: unless-stopped
         networks:
             - cloudbuild
