@@ -146,7 +146,7 @@ services:
     provider:
         build:
             context: ../ChanjoKe-provider-web-app
-            dockerfile: docker/Dockerfile
+            dockerfile: docker/Dockerfile.prod
         container_name: provider
         restart: unless-stopped
         networks:
@@ -155,7 +155,7 @@ services:
     client:
         build:
             context: ../ChanjoKe-patient-web-app
-            dockerfile: docker/Dockerfile
+            dockerfile: docker/Dockerfile.prod
         container_name: client
         restart: unless-stopped
         networks:
