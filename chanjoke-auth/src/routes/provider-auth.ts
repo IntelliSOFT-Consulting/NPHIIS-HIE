@@ -92,7 +92,7 @@ router.post("/register", async (req: Request, res: Response) => {
         }
         let practitioner = (await FhirApi({ url: `/Practitioner/${practitionerId}`, method: "PUT", data: JSON.stringify(practitionerResource) })).data;
         console.log(practitioner);
-        sendRegistrationConfirmationEmail(email, password);
+        sendRegistrationConfirmationEmail(email, password, idNumber);
         res.statusCode = 201;
         res.json({ response: keycloakUser.success, status: "success" });
         return;
