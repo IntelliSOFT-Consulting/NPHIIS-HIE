@@ -106,7 +106,7 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
 }
 
 
-export const sendRegistrationConfirmationEmail = async (email: string, password: string) => {
+export const sendRegistrationConfirmationEmail = async (email: string, password: string, idNumber: string = '') => {
     try {
         // const resetCode = generateResetCode();
         // let userData = await findKeycloakUser(idNumber);
@@ -170,14 +170,13 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
 
         <p>Please use the credentials below to get started.</p>
 
-        <p>Email: <strong>${email}</strong></p>
+        <p>ID Number: <strong>${idNumber}</strong></p>
         <p>Password: <strong>${password}</strong></p>
 
         <p>Please remember to change your password once you login.</p>
         
         <br>
-
-        <a href="#" class="btn">Login to OpenChanjo</a>
+        <a href=${process.env['FRONTEND_URL'] || '#'} class="btn">Login to OpenChanjo</a>
     </div>
 </body>
 </html>
