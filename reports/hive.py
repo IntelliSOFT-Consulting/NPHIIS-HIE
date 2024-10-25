@@ -102,7 +102,10 @@ def process_patient_data(patient_data):
         payload["age_y"] = age_in_years
         payload["age_group"] = "Above 1 year" if age_in_years > 1 else "Below 1 year"
         payload["age_m"] = round(age.days / 30.4375, 2)
-
+        if(payload["patient_id"] == "61417072-d631-45e8-84b0-859ba52cec8e"):
+            meta = json.loads(patient_data["meta"])
+            print(meta)
+            print(meta["tag"])
         return payload
     except Exception as e:
         print(f"Error processing patient data: {e}")
@@ -151,9 +154,15 @@ def process_vaccine_recommendation(vaccine, immunizations, patient_id):
                 - datetime.strptime(due_date, "%Y-%m-%d").date()
             ).days
             payload["days_from_due"] = days_from_due
-            payload["faci_outr"] = json.loads(immunization_record["note"])[0]["text"]
+
+            note = json.loads(immunization_record["note"])
+            if note and len(note) > 0:
+                payload["faci_outr"] = note[0].get("text", "Facility")
+            else:
+                payload["faci_outr"] = "Facility"
             payload["batch_number"] = immunization_record["lotNumber"]
             payload["imm_status_defaulter"] = "Yes" if days_from_due > 14 else "No"
+
         else:
             payload["imm_status"] = "Not Administered"
             days_from_due = (
@@ -185,7 +194,7 @@ def query_data():
         results = []
         for recommendation in immunization_recommendations:
             patient_id = json.loads(recommendation["patient"])["reference"].split("/")[
-                -1
+                1
             ]
             patient_data = next((p for p in patients if p["id"] == patient_id), None)
 
