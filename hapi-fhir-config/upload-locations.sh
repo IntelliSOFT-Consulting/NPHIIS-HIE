@@ -32,6 +32,8 @@ curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d @/fhir-bun
 echo "Uploading wards complete." && \
 curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d @/fhir-bundle-facilities-kenya.json $HAPI_FHIR_BASE && \
 echo "Uploading facilities complete." && \
+curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d @/fhir-bundle-community-units-kenya.json $HAPI_FHIR_BASE && \
+echo "Uploading community units complete."
 
 echo "Upload complete."
 
