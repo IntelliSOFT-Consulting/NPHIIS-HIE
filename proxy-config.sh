@@ -122,22 +122,26 @@ http {
         add_header 'Access-Control-Allow-Credentials' 'true' always;
         }
 
-        location /client/ {
-            proxy_pass http://client:3000/;
-            proxy_set_header Host \$host;
-            proxy_set_header X-Real-IP \$remote_addr;
-            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto \$scheme;
+        location /client {
+            return 308 \$scheme://\$host/client\$uri\$is_args\$query_string;
         }
 
-        location /analytics/ {
-            proxy_pass http://superset:8088/;
+        location /analytics {
             proxy_set_header Host \$host;
-            proxy_set_header X-Real-IP \$remote_addr;
             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto \$scheme;
+            proxy_set_header X-Script-Name /analytics;
+            proxy_pass http://superset:8088;
+            proxy_redirect off;
         }
-}
+
+        location ~ ^/(static|superset|sqllab|savedqueryview|druid|tablemodelview|databaseasync|dashboardmodelview|slicemodelview|dashboardasync|druiddatasourcemodelview|api|csstemplateasyncmodelview|chart|savedqueryviewapi|r|datasource|sliceaddview) {
+            try_files \$uri /analytics/\$uri /analytics/\$uri?\$query_string @rules;
+        }
+
+        location @rules {
+            return 308 \$scheme://\$host/analytics\$uri\$is_args\$query_string;
+        }
+    }
 }
 
 EOF
