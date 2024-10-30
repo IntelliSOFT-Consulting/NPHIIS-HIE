@@ -7,6 +7,7 @@ from flask import jsonify, request
 from flask_cors import CORS
 
 import hive
+from hive import ImmunizationDataProcessor
 import pg
 from configs import app, db
 from reports.moh_525_report import moh_525_report
@@ -33,7 +34,8 @@ atexit.register(lambda: scheduler.shutdown())
 @app.route("/api/analytics", methods=["POST"])
 def analytics():
     try:
-        response = hive.query_data()
+        processor = ImmunizationDataProcessor()
+        response = processor.process_data()
         return jsonify(response)
     except Exception as e:
         return jsonify({"message": str(e)}), 500
