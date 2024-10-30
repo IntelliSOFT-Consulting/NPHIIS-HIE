@@ -727,7 +727,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/NAKURU-EAST"
+      "url": "Location/NAKURU-EAST-WARD"
     }
   },
   {
@@ -909,7 +909,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/ROYSAMBU"
+      "url": "Location/ROYSAMBU-WARD"
     }
   },
   {
@@ -961,7 +961,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/LOIMA"
+      "url": "Location/LOIMA-WARD"
     }
   },
   {
@@ -1091,7 +1091,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/LAFEY"
+      "url": "Location/LAFEY-WARD"
     }
   },
   {
@@ -1377,7 +1377,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/ATHI-RIVER"
+      "url": "Location/ATHI-RIVER-WARD"
     }
   },
   {
@@ -1897,7 +1897,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/ELDAS"
+      "url": "Location/ELDAS-WARD"
     }
   },
   {
@@ -2911,7 +2911,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MWEA"
+      "url": "Location/MWEA-WARD"
     }
   },
   {
@@ -3353,7 +3353,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/TONGAREN"
+      "url": "Location/TONGAREN-WARD"
     }
   },
   {
@@ -5251,7 +5251,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KUTULO"
+      "url": "Location/KUTULO-WARD"
     }
   },
   {
@@ -6265,7 +6265,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MANGA"
+      "url": "Location/MANGA-WARD"
     }
   },
   {
@@ -7123,7 +7123,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/LAISAMIS"
+      "url": "Location/LAISAMIS-WARD"
     }
   },
   {
@@ -7253,7 +7253,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KWANZA"
+      "url": "Location/KWANZA-WARD"
     }
   },
   {
@@ -8345,7 +8345,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/TARBAJ"
+      "url": "Location/TARBAJ-WARD"
     }
   },
   {
@@ -9047,7 +9047,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KABETE"
+      "url": "Location/KABETE-WARD"
     }
   },
   {
@@ -9749,7 +9749,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KALAMA"
+      "url": "Location/KALAMA-WARD"
     }
   },
   {
@@ -10685,7 +10685,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KIKUYU"
+      "url": "Location/KIKUYU-WARD"
     }
   },
   {
@@ -10841,7 +10841,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/NJORO"
+      "url": "Location/NJORO-WARD"
     }
   },
   {
@@ -10867,7 +10867,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/GILGIL"
+      "url": "Location/GILGIL-WARD"
     }
   },
   {
@@ -11049,7 +11049,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KIMILILI"
+      "url": "Location/KIMILILI-WARD"
     }
   },
   {
@@ -11101,7 +11101,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/CHEPTAIS"
+      "url": "Location/CHEPTAIS-WARD"
     }
   },
   {
@@ -11569,7 +11569,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MARIGAT"
+      "url": "Location/MARIGAT-WARD"
     }
   },
   {
@@ -11621,7 +11621,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KIBISH"
+      "url": "Location/KIBISH-WARD"
     }
   },
   {
@@ -11985,7 +11985,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KINANGO"
+      "url": "Location/KINANGO-WARD"
     }
   },
   {
@@ -12297,7 +12297,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/ITHANGA"
+      "url": "Location/ITHANGA-WARD"
     }
   },
   {
@@ -12479,7 +12479,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/GITHUNGURI"
+      "url": "Location/GITHUNGURI-WARD"
     }
   },
   {
@@ -12609,7 +12609,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KASARANI"
+      "url": "Location/KASARANI-WARD"
     }
   },
   {
@@ -13233,7 +13233,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/BURA"
+      "url": "Location/BURA-WARD"
     }
   },
   {
@@ -13935,7 +13935,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/NANDI-HILLS"
+      "url": "Location/NANDI-HILLS-WARD"
     }
   },
   {
@@ -14429,7 +14429,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/GANZE"
+      "url": "Location/GANZE-WARD"
     }
   },
   {
@@ -15157,7 +15157,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/LIKONI"
+      "url": "Location/LIKONI-WARD"
     }
   },
   {
@@ -15729,7 +15729,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/UGUNJA"
+      "url": "Location/UGUNJA-WARD"
     }
   },
   {
@@ -16249,7 +16249,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MWATATE"
+      "url": "Location/MWATATE-WARD"
     }
   },
   {
@@ -17315,7 +17315,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/SOY"
+      "url": "Location/SOY-WARD"
     }
   },
   {
@@ -17861,7 +17861,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MOIBEN"
+      "url": "Location/MOIBEN-WARD"
     }
   },
   {
@@ -18147,7 +18147,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KALOLENI"
+      "url": "Location/KALOLENI-WARD"
     }
   },
   {
@@ -19135,7 +19135,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KIPIPIRI"
+      "url": "Location/KIPIPIRI-WARD"
     }
   },
   {
@@ -19161,7 +19161,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/ARABIA"
+      "url": "Location/ARABIA-WARD"
     }
   },
   {
@@ -19239,7 +19239,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/GATANGA"
+      "url": "Location/GATANGA-WARD"
     }
   },
   {
@@ -19629,7 +19629,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MOGOTIO"
+      "url": "Location/MOGOTIO-WARD"
     }
   },
   {
@@ -19811,7 +19811,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/NAMBALE"
+      "url": "Location/NAMBALE-WARD"
     }
   },
   {
@@ -19863,7 +19863,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MUTHAMBI"
+      "url": "Location/MUTHAMBI-WARD"
     }
   },
   {
@@ -20851,7 +20851,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KIMININI"
+      "url": "Location/KIMININI-WARD"
     }
   },
   {
@@ -20877,7 +20877,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/CHANGAMWE"
+      "url": "Location/CHANGAMWE-WARD"
     }
   },
   {
@@ -21085,7 +21085,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MWIMBI"
+      "url": "Location/MWIMBI-WARD"
     }
   },
   {
@@ -21189,7 +21189,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/AINAMOI"
+      "url": "Location/AINAMOI-WARD"
     }
   },
   {
@@ -21761,7 +21761,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/LIKUYANI"
+      "url": "Location/LIKUYANI-WARD"
     }
   },
   {
@@ -21969,7 +21969,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/BANISSA"
+      "url": "Location/BANISSA-WARD"
     }
   },
   {
@@ -22307,7 +22307,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/LUGARI"
+      "url": "Location/LUGARI-WARD"
     }
   },
   {
@@ -22801,7 +22801,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/IJARA"
+      "url": "Location/IJARA-WARD"
     }
   },
   {
@@ -23763,7 +23763,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MOLO"
+      "url": "Location/MOLO-WARD"
     }
   },
   {
@@ -25661,7 +25661,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/BUMULA"
+      "url": "Location/BUMULA-WARD"
     }
   },
   {
@@ -26285,7 +26285,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/SABOTI"
+      "url": "Location/SABOTI-WARD"
     }
   },
   {
@@ -26311,7 +26311,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/ENDEBESS"
+      "url": "Location/ENDEBESS-WARD"
     }
   },
   {
@@ -27013,7 +27013,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KIGUMO"
+      "url": "Location/KIGUMO-WARD"
     }
   },
   {
@@ -27377,7 +27377,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/JUJA"
+      "url": "Location/JUJA-WARD"
     }
   },
   {
@@ -27871,7 +27871,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/DADAAB"
+      "url": "Location/DADAAB-WARD"
     }
   },
   {
@@ -27949,7 +27949,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/HULUGHO"
+      "url": "Location/HULUGHO-WARD"
     }
   },
   {
@@ -28001,7 +28001,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/FAFI"
+      "url": "Location/FAFI-WARD"
     }
   },
   {
@@ -28937,7 +28937,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/NORTH-HORR"
+      "url": "Location/NORTH-HORR-WARD"
     }
   },
   {
@@ -29197,7 +29197,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/BALAMBALA"
+      "url": "Location/BALAMBALA-WARD"
     }
   },
   {
@@ -30055,7 +30055,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/KOIBATEK"
+      "url": "Location/KOIBATEK-WARD"
     }
   },
   {
@@ -31875,7 +31875,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MBOONI"
+      "url": "Location/MBOONI-WARD"
     }
   },
   {
@@ -32343,7 +32343,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/SUBUKIA"
+      "url": "Location/SUBUKIA-WARD"
     }
   },
   {
@@ -35489,7 +35489,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/TINDERET"
+      "url": "Location/TINDERET-WARD"
     }
   },
   {
@@ -35645,7 +35645,7 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Location/MAGARINI"
+      "url": "Location/MAGARINI-WARD"
     }
   },
   {
@@ -36636,4 +36636,6 @@
       "url": "Location/MEGUN"
     }
   }
-]}
+]
+
+}
