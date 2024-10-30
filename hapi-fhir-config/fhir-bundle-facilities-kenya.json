@@ -1868,7 +1868,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -2668,7 +2668,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -2918,7 +2918,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LOIMA",
+        "reference": "Location/LOIMA-WARD",
         "display": "LOIMA"
       },
       "status": "active",
@@ -3018,7 +3018,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LOIMA",
+        "reference": "Location/LOIMA-WARD",
         "display": "LOIMA"
       },
       "status": "active",
@@ -3518,7 +3518,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/LAFEY",
+        "reference": "Location/LAFEY-WARD",
         "display": "LAFEY"
       },
       "status": "active",
@@ -4068,7 +4068,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -5214,7 +5214,7 @@
         "display": "Private Practice- Pharmacist"
       },
       "partOf": {
-        "reference": "Location/ELDAS",
+        "reference": "Location/ELDAS-WARD",
         "display": "ELDAS"
       },
       "status": "active",
@@ -6310,7 +6310,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -8106,7 +8106,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -8806,7 +8806,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -9306,7 +9306,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/TONGAREN",
+        "reference": "Location/TONGAREN-WARD",
         "display": "TONGAREN"
       },
       "status": "active",
@@ -15498,7 +15498,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -18948,7 +18948,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -19748,7 +19748,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LAFEY",
+        "reference": "Location/LAFEY-WARD",
         "display": "LAFEY"
       },
       "status": "active",
@@ -20898,7 +20898,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -22544,7 +22544,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -22840,7 +22840,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LAISAMIS",
+        "reference": "Location/LAISAMIS-WARD",
         "display": "LAISAMIS"
       },
       "status": "active",
@@ -23290,7 +23290,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -26436,7 +26436,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/TARBAJ",
+        "reference": "Location/TARBAJ-WARD",
         "display": "TARBAJ"
       },
       "status": "active",
@@ -27036,7 +27036,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ELDAS",
+        "reference": "Location/ELDAS-WARD",
         "display": "ELDAS"
       },
       "status": "active",
@@ -27186,7 +27186,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -29586,7 +29586,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -29686,7 +29686,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -29736,7 +29736,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -30236,7 +30236,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -32432,7 +32432,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -32482,7 +32482,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -35478,7 +35478,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -35678,7 +35678,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -36278,7 +36278,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -36328,7 +36328,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -36528,7 +36528,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -37228,7 +37228,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TONGAREN",
+        "reference": "Location/TONGAREN-WARD",
         "display": "TONGAREN"
       },
       "status": "active",
@@ -37278,7 +37278,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TONGAREN",
+        "reference": "Location/TONGAREN-WARD",
         "display": "TONGAREN"
       },
       "status": "active",
@@ -37578,7 +37578,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -37878,7 +37878,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -39724,7 +39724,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -39824,7 +39824,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -40074,7 +40074,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -40524,7 +40524,7 @@
         "display": "Private Practice- Pharmacist"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -40624,7 +40624,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -41424,7 +41424,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -42474,7 +42474,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/ITHANGA",
+        "reference": "Location/ITHANGA-WARD",
         "display": "ITHANGA"
       },
       "status": "active",
@@ -42974,7 +42974,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -43574,7 +43574,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -44174,7 +44174,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -44624,7 +44624,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -45070,7 +45070,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -45120,7 +45120,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -45770,7 +45770,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -45820,7 +45820,7 @@
         "display": "Private Practice- Pharmacist"
       },
       "partOf": {
-        "reference": "Location/ELDAS",
+        "reference": "Location/ELDAS-WARD",
         "display": "ELDAS"
       },
       "status": "active",
@@ -46970,7 +46970,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -48470,7 +48470,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -48570,7 +48570,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -48770,7 +48770,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LAFEY",
+        "reference": "Location/LAFEY-WARD",
         "display": "LAFEY"
       },
       "status": "active",
@@ -50570,7 +50570,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -51520,7 +51520,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -52470,7 +52470,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -53670,7 +53670,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -55420,7 +55420,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LIKONI",
+        "reference": "Location/LIKONI-WARD",
         "display": "LIKONI"
       },
       "status": "active",
@@ -58320,7 +58320,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -61420,7 +61420,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWATATE",
+        "reference": "Location/MWATATE-WARD",
         "display": "MWATATE"
       },
       "status": "active",
@@ -63066,7 +63066,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -63816,7 +63816,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -64266,7 +64266,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -64816,7 +64816,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -66666,7 +66666,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -66716,7 +66716,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -68866,7 +68866,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/SOY",
+        "reference": "Location/SOY-WARD",
         "display": "SOY"
       },
       "status": "active",
@@ -70016,7 +70016,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -70916,7 +70916,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -71866,7 +71866,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/MOIBEN",
+        "reference": "Location/MOIBEN-WARD",
         "display": "MOIBEN"
       },
       "status": "active",
@@ -73716,7 +73716,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -74116,7 +74116,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -74816,7 +74816,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/MWATATE",
+        "reference": "Location/MWATATE-WARD",
         "display": "MWATATE"
       },
       "status": "active",
@@ -75762,7 +75762,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -76512,7 +76512,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -76562,7 +76562,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -78858,7 +78858,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TARBAJ",
+        "reference": "Location/TARBAJ-WARD",
         "display": "TARBAJ"
       },
       "status": "active",
@@ -79258,7 +79258,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIPIPIRI",
+        "reference": "Location/KIPIPIRI-WARD",
         "display": "KIPIPIRI"
       },
       "status": "active",
@@ -79608,7 +79608,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ARABIA",
+        "reference": "Location/ARABIA-WARD",
         "display": "ARABIA"
       },
       "status": "active",
@@ -80008,7 +80008,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -80258,7 +80258,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GATANGA",
+        "reference": "Location/GATANGA-WARD",
         "display": "GATANGA"
       },
       "status": "active",
@@ -80808,7 +80808,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -81458,7 +81458,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ELDAS",
+        "reference": "Location/ELDAS-WARD",
         "display": "ELDAS"
       },
       "status": "active",
@@ -82958,7 +82958,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -83008,7 +83008,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -84108,7 +84108,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAMBALE",
+        "reference": "Location/NAMBALE-WARD",
         "display": "NAMBALE"
       },
       "status": "active",
@@ -84358,7 +84358,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -84408,7 +84408,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -84758,7 +84758,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -85258,7 +85258,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -85758,7 +85758,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -88208,7 +88208,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -89208,7 +89208,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -89658,7 +89658,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -89908,7 +89908,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -89958,7 +89958,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -91508,7 +91508,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/SOY",
+        "reference": "Location/SOY-WARD",
         "display": "SOY"
       },
       "status": "active",
@@ -91908,7 +91908,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KIMININI",
+        "reference": "Location/KIMININI-WARD",
         "display": "KIMININI"
       },
       "status": "active",
@@ -92058,7 +92058,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/CHANGAMWE",
+        "reference": "Location/CHANGAMWE-WARD",
         "display": "CHANGAMWE"
       },
       "status": "active",
@@ -93408,7 +93408,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -93608,7 +93608,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -94358,7 +94358,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -94758,7 +94758,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/AINAMOI",
+        "reference": "Location/AINAMOI-WARD",
         "display": "AINAMOI"
       },
       "status": "active",
@@ -95708,7 +95708,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -95758,7 +95758,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -95808,7 +95808,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -95958,7 +95958,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -96058,7 +96058,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -96208,7 +96208,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -96258,7 +96258,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -96358,7 +96358,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -96508,7 +96508,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -96608,7 +96608,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -97708,7 +97708,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LAISAMIS",
+        "reference": "Location/LAISAMIS-WARD",
         "display": "LAISAMIS"
       },
       "status": "active",
@@ -97808,7 +97808,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/LAISAMIS",
+        "reference": "Location/LAISAMIS-WARD",
         "display": "LAISAMIS"
       },
       "status": "active",
@@ -99104,7 +99104,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -99154,7 +99154,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -100354,7 +100354,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -100504,7 +100504,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -100704,7 +100704,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -101554,7 +101554,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -101604,7 +101604,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -101904,7 +101904,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LIKUYANI",
+        "reference": "Location/LIKUYANI-WARD",
         "display": "LIKUYANI"
       },
       "status": "active",
@@ -104704,7 +104704,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BANISSA",
+        "reference": "Location/BANISSA-WARD",
         "display": "BANISSA"
       },
       "status": "active",
@@ -106904,7 +106904,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -107804,7 +107804,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LUGARI",
+        "reference": "Location/LUGARI-WARD",
         "display": "LUGARI"
       },
       "status": "active",
@@ -108304,7 +108304,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -109954,7 +109954,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -110004,7 +110004,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -110504,7 +110504,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -110554,7 +110554,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -110904,7 +110904,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -111854,7 +111854,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -112404,7 +112404,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LUGARI",
+        "reference": "Location/LUGARI-WARD",
         "display": "LUGARI"
       },
       "status": "active",
@@ -112604,7 +112604,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/IJARA",
+        "reference": "Location/IJARA-WARD",
         "display": "IJARA"
       },
       "status": "active",
@@ -117504,7 +117504,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -117904,7 +117904,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -118054,7 +118054,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -118904,7 +118904,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -120652,7 +120652,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -121652,7 +121652,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -127352,7 +127352,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -127402,7 +127402,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -127752,7 +127752,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -128448,7 +128448,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -131098,7 +131098,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MWATATE",
+        "reference": "Location/MWATATE-WARD",
         "display": "MWATATE"
       },
       "status": "active",
@@ -131548,7 +131548,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -135144,7 +135144,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIPIPIRI",
+        "reference": "Location/KIPIPIRI-WARD",
         "display": "KIPIPIRI"
       },
       "status": "active",
@@ -135394,7 +135394,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/KIPIPIRI",
+        "reference": "Location/KIPIPIRI-WARD",
         "display": "KIPIPIRI"
       },
       "status": "active",
@@ -145494,7 +145494,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -147544,7 +147544,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIPIPIRI",
+        "reference": "Location/KIPIPIRI-WARD",
         "display": "KIPIPIRI"
       },
       "status": "active",
@@ -148594,7 +148594,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -148644,7 +148644,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -148844,7 +148844,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -152344,7 +152344,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -154894,7 +154894,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -154944,7 +154944,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -155094,7 +155094,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -155244,7 +155244,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -155444,7 +155444,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -155744,7 +155744,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -159544,7 +159544,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -159744,7 +159744,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -159794,7 +159794,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -160344,7 +160344,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -160694,7 +160694,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -160994,7 +160994,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -161094,7 +161094,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -161194,7 +161194,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -161294,7 +161294,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -161394,7 +161394,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -161444,7 +161444,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -161794,7 +161794,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -162794,7 +162794,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIPIPIRI",
+        "reference": "Location/KIPIPIRI-WARD",
         "display": "KIPIPIRI"
       },
       "status": "active",
@@ -165044,7 +165044,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BUMULA",
+        "reference": "Location/BUMULA-WARD",
         "display": "BUMULA"
       },
       "status": "active",
@@ -166294,7 +166294,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/KIBISH",
+        "reference": "Location/KIBISH-WARD",
         "display": "KIBISH"
       },
       "status": "active",
@@ -168594,7 +168594,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TONGAREN",
+        "reference": "Location/TONGAREN-WARD",
         "display": "TONGAREN"
       },
       "status": "active",
@@ -175744,7 +175744,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -189594,7 +189594,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SABOTI",
+        "reference": "Location/SABOTI-WARD",
         "display": "SABOTI"
       },
       "status": "active",
@@ -190244,7 +190244,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ENDEBESS",
+        "reference": "Location/ENDEBESS-WARD",
         "display": "ENDEBESS"
       },
       "status": "active",
@@ -190594,7 +190594,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TARBAJ",
+        "reference": "Location/TARBAJ-WARD",
         "display": "TARBAJ"
       },
       "status": "active",
@@ -192594,7 +192594,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/NAMBALE",
+        "reference": "Location/NAMBALE-WARD",
         "display": "NAMBALE"
       },
       "status": "active",
@@ -192994,7 +192994,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NAMBALE",
+        "reference": "Location/NAMBALE-WARD",
         "display": "NAMBALE"
       },
       "status": "active",
@@ -193194,7 +193194,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/NAMBALE",
+        "reference": "Location/NAMBALE-WARD",
         "display": "NAMBALE"
       },
       "status": "active",
@@ -193594,7 +193594,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NAMBALE",
+        "reference": "Location/NAMBALE-WARD",
         "display": "NAMBALE"
       },
       "status": "active",
@@ -194844,7 +194844,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -195444,7 +195444,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -195544,7 +195544,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -195594,7 +195594,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -195644,7 +195644,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -195744,7 +195744,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -195794,7 +195794,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -195894,7 +195894,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -195944,7 +195944,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -196094,7 +196094,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -196144,7 +196144,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -196194,7 +196194,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -196294,7 +196294,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -196344,7 +196344,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -196544,7 +196544,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -196594,7 +196594,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/NAMBALE",
+        "reference": "Location/NAMBALE-WARD",
         "display": "NAMBALE"
       },
       "status": "active",
@@ -196644,7 +196644,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/NAMBALE",
+        "reference": "Location/NAMBALE-WARD",
         "display": "NAMBALE"
       },
       "status": "active",
@@ -201644,7 +201644,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIGUMO",
+        "reference": "Location/KIGUMO-WARD",
         "display": "KIGUMO"
       },
       "status": "active",
@@ -201694,7 +201694,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -201744,7 +201744,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MANGA",
+        "reference": "Location/MANGA-WARD",
         "display": "MANGA"
       },
       "status": "active",
@@ -204344,7 +204344,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -204394,7 +204394,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -204444,7 +204444,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -204794,7 +204794,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -205294,7 +205294,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -205344,7 +205344,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -205444,7 +205444,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -205644,7 +205644,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -205944,7 +205944,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -206994,7 +206994,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIGUMO",
+        "reference": "Location/KIGUMO-WARD",
         "display": "KIGUMO"
       },
       "status": "active",
@@ -207394,7 +207394,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -207886,7 +207886,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -208236,7 +208236,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SABOTI",
+        "reference": "Location/SABOTI-WARD",
         "display": "SABOTI"
       },
       "status": "active",
@@ -209186,7 +209186,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -210136,7 +210136,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -210786,7 +210786,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -211436,7 +211436,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LAFEY",
+        "reference": "Location/LAFEY-WARD",
         "display": "LAFEY"
       },
       "status": "active",
@@ -212482,7 +212482,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -214332,7 +214332,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -215782,7 +215782,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/DADAAB",
+        "reference": "Location/DADAAB-WARD",
         "display": "DADAAB"
       },
       "status": "active",
@@ -219532,7 +219532,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BANISSA",
+        "reference": "Location/BANISSA-WARD",
         "display": "BANISSA"
       },
       "status": "active",
@@ -220082,7 +220082,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/HULUGHO",
+        "reference": "Location/HULUGHO-WARD",
         "display": "HULUGHO"
       },
       "status": "active",
@@ -220132,7 +220132,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/HULUGHO",
+        "reference": "Location/HULUGHO-WARD",
         "display": "HULUGHO"
       },
       "status": "active",
@@ -220532,7 +220532,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/FAFI",
+        "reference": "Location/FAFI-WARD",
         "display": "FAFI"
       },
       "status": "active",
@@ -220632,7 +220632,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/FAFI",
+        "reference": "Location/FAFI-WARD",
         "display": "FAFI"
       },
       "status": "active",
@@ -220782,7 +220782,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/FAFI",
+        "reference": "Location/FAFI-WARD",
         "display": "FAFI"
       },
       "status": "active",
@@ -221332,7 +221332,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/FAFI",
+        "reference": "Location/FAFI-WARD",
         "display": "FAFI"
       },
       "status": "active",
@@ -225032,7 +225032,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -225132,7 +225132,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -225282,7 +225282,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -234328,7 +234328,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NORTH-HORR",
+        "reference": "Location/NORTH-HORR-WARD",
         "display": "NORTH HORR"
       },
       "status": "active",
@@ -234928,7 +234928,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -238678,7 +238678,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BALAMBALA",
+        "reference": "Location/BALAMBALA-WARD",
         "display": "BALAMBALA"
       },
       "status": "active",
@@ -238728,7 +238728,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BALAMBALA",
+        "reference": "Location/BALAMBALA-WARD",
         "display": "BALAMBALA"
       },
       "status": "active",
@@ -238878,7 +238878,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BALAMBALA",
+        "reference": "Location/BALAMBALA-WARD",
         "display": "BALAMBALA"
       },
       "status": "active",
@@ -239128,7 +239128,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -239478,7 +239478,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -240328,7 +240328,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LOIMA",
+        "reference": "Location/LOIMA-WARD",
         "display": "LOIMA"
       },
       "status": "active",
@@ -240378,7 +240378,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -240978,7 +240978,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/LOIMA",
+        "reference": "Location/LOIMA-WARD",
         "display": "LOIMA"
       },
       "status": "active",
@@ -241178,7 +241178,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LOIMA",
+        "reference": "Location/LOIMA-WARD",
         "display": "LOIMA"
       },
       "status": "active",
@@ -244624,7 +244624,7 @@
         "display": "Private Practice- Kenya Nuclear Regulatory Authority"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -247124,7 +247124,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -249720,7 +249720,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/LOIMA",
+        "reference": "Location/LOIMA-WARD",
         "display": "LOIMA"
       },
       "status": "active",
@@ -249820,7 +249820,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LOIMA",
+        "reference": "Location/LOIMA-WARD",
         "display": "LOIMA"
       },
       "status": "active",
@@ -250870,7 +250870,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -253920,7 +253920,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -253970,7 +253970,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -255270,7 +255270,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -255370,7 +255370,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -255570,7 +255570,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -255620,7 +255620,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -255770,7 +255770,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -255870,7 +255870,7 @@
         "display": "Public Institution - Academic"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -255920,7 +255920,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -255970,7 +255970,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -256170,7 +256170,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -256270,7 +256270,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -257870,7 +257870,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -257970,7 +257970,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -258720,7 +258720,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KOIBATEK",
+        "reference": "Location/KOIBATEK-WARD",
         "display": "KOIBATEK"
       },
       "status": "active",
@@ -259870,7 +259870,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -261420,7 +261420,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWEA",
+        "reference": "Location/MWEA-WARD",
         "display": "MWEA"
       },
       "status": "active",
@@ -261520,7 +261520,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -261620,7 +261620,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -262370,7 +262370,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/KIMININI",
+        "reference": "Location/KIMININI-WARD",
         "display": "KIMININI"
       },
       "status": "active",
@@ -266470,7 +266470,7 @@
         "display": "Private Practice- Pharmacist"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -271458,7 +271458,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -272608,7 +272608,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -276150,7 +276150,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -276200,7 +276200,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -277700,7 +277700,7 @@
         "display": "Private Practice- Pharmacist"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -285396,7 +285396,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -285896,7 +285896,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -286146,7 +286146,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -287192,7 +287192,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -287342,7 +287342,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -287892,7 +287892,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -287942,7 +287942,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -290792,7 +290792,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SOY",
+        "reference": "Location/SOY-WARD",
         "display": "SOY"
       },
       "status": "active",
@@ -291792,7 +291792,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -291892,7 +291892,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -294242,7 +294242,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -295442,7 +295442,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -295492,7 +295492,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -295692,7 +295692,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -296192,7 +296192,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ITHANGA",
+        "reference": "Location/ITHANGA-WARD",
         "display": "ITHANGA"
       },
       "status": "active",
@@ -298238,7 +298238,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -300588,7 +300588,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -301138,7 +301138,7 @@
         "display": "Private Practice- Pharmacist"
       },
       "partOf": {
-        "reference": "Location/TARBAJ",
+        "reference": "Location/TARBAJ-WARD",
         "display": "TARBAJ"
       },
       "status": "active",
@@ -302238,7 +302238,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIMININI",
+        "reference": "Location/KIMININI-WARD",
         "display": "KIMININI"
       },
       "status": "active",
@@ -302338,7 +302338,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SABOTI",
+        "reference": "Location/SABOTI-WARD",
         "display": "SABOTI"
       },
       "status": "active",
@@ -303788,7 +303788,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -305438,7 +305438,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -306038,7 +306038,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -307188,7 +307188,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -310088,7 +310088,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -311188,7 +311188,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -311388,7 +311388,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -314434,7 +314434,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -315584,7 +315584,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -316484,7 +316484,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -317534,7 +317534,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -318134,7 +318134,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -322980,7 +322980,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -324130,7 +324130,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -324830,7 +324830,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -325580,7 +325580,7 @@
         "display": "Private Practice Lab Technician/Technologist"
       },
       "partOf": {
-        "reference": "Location/KIGUMO",
+        "reference": "Location/KIGUMO-WARD",
         "display": "KIGUMO"
       },
       "status": "active",
@@ -326930,7 +326930,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -331618,7 +331618,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MUTHAMBI",
+        "reference": "Location/MUTHAMBI-WARD",
         "display": "MUTHAMBI"
       },
       "status": "active",
@@ -332618,7 +332618,7 @@
         "display": "Private Practice- Pharmacist"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -334514,7 +334514,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -334564,7 +334564,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -335164,7 +335164,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -335214,7 +335214,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -335264,7 +335264,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -335314,7 +335314,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -335414,7 +335414,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -335564,7 +335564,7 @@
         "display": "Private Practice- Pharmacist"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -335614,7 +335614,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -335664,7 +335664,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -335764,7 +335764,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -336114,7 +336114,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KOIBATEK",
+        "reference": "Location/KOIBATEK-WARD",
         "display": "KOIBATEK"
       },
       "status": "active",
@@ -336664,7 +336664,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KOIBATEK",
+        "reference": "Location/KOIBATEK-WARD",
         "display": "KOIBATEK"
       },
       "status": "active",
@@ -337164,7 +337164,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -337714,7 +337714,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -338060,7 +338060,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -339056,7 +339056,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -341334,7 +341334,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -341434,7 +341434,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -342976,7 +342976,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -343510,7 +343510,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/IJARA",
+        "reference": "Location/IJARA-WARD",
         "display": "IJARA"
       },
       "status": "active",
@@ -344960,7 +344960,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/GATANGA",
+        "reference": "Location/GATANGA-WARD",
         "display": "GATANGA"
       },
       "status": "active",
@@ -345310,7 +345310,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/AINAMOI",
+        "reference": "Location/AINAMOI-WARD",
         "display": "AINAMOI"
       },
       "status": "active",
@@ -346710,7 +346710,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -346810,7 +346810,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/MOGOTIO",
+        "reference": "Location/MOGOTIO-WARD",
         "display": "MOGOTIO"
       },
       "status": "active",
@@ -348260,7 +348260,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KOIBATEK",
+        "reference": "Location/KOIBATEK-WARD",
         "display": "KOIBATEK"
       },
       "status": "active",
@@ -348310,7 +348310,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KOIBATEK",
+        "reference": "Location/KOIBATEK-WARD",
         "display": "KOIBATEK"
       },
       "status": "active",
@@ -351560,7 +351560,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -354256,7 +354256,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -354456,7 +354456,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -354556,7 +354556,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -357294,7 +357294,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -359790,7 +359790,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -370986,7 +370986,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/LIKUYANI",
+        "reference": "Location/LIKUYANI-WARD",
         "display": "LIKUYANI"
       },
       "status": "active",
@@ -372086,7 +372086,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ENDEBESS",
+        "reference": "Location/ENDEBESS-WARD",
         "display": "ENDEBESS"
       },
       "status": "active",
@@ -372136,7 +372136,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ENDEBESS",
+        "reference": "Location/ENDEBESS-WARD",
         "display": "ENDEBESS"
       },
       "status": "active",
@@ -372236,7 +372236,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -372986,7 +372986,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -373036,7 +373036,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/LIKUYANI",
+        "reference": "Location/LIKUYANI-WARD",
         "display": "LIKUYANI"
       },
       "status": "active",
@@ -375586,7 +375586,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -376736,7 +376736,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LIKUYANI",
+        "reference": "Location/LIKUYANI-WARD",
         "display": "LIKUYANI"
       },
       "status": "active",
@@ -378986,7 +378986,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LIKUYANI",
+        "reference": "Location/LIKUYANI-WARD",
         "display": "LIKUYANI"
       },
       "status": "active",
@@ -379136,7 +379136,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LIKUYANI",
+        "reference": "Location/LIKUYANI-WARD",
         "display": "LIKUYANI"
       },
       "status": "active",
@@ -379236,7 +379236,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LIKUYANI",
+        "reference": "Location/LIKUYANI-WARD",
         "display": "LIKUYANI"
       },
       "status": "active",
@@ -379286,7 +379286,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/LIKUYANI",
+        "reference": "Location/LIKUYANI-WARD",
         "display": "LIKUYANI"
       },
       "status": "active",
@@ -381986,7 +381986,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KOIBATEK",
+        "reference": "Location/KOIBATEK-WARD",
         "display": "KOIBATEK"
       },
       "status": "active",
@@ -382036,7 +382036,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KOIBATEK",
+        "reference": "Location/KOIBATEK-WARD",
         "display": "KOIBATEK"
       },
       "status": "active",
@@ -382636,7 +382636,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KOIBATEK",
+        "reference": "Location/KOIBATEK-WARD",
         "display": "KOIBATEK"
       },
       "status": "active",
@@ -385932,7 +385932,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -385982,7 +385982,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -386032,7 +386032,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ENDEBESS",
+        "reference": "Location/ENDEBESS-WARD",
         "display": "ENDEBESS"
       },
       "status": "active",
@@ -388332,7 +388332,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ENDEBESS",
+        "reference": "Location/ENDEBESS-WARD",
         "display": "ENDEBESS"
       },
       "status": "active",
@@ -388832,7 +388832,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BUMULA",
+        "reference": "Location/BUMULA-WARD",
         "display": "BUMULA"
       },
       "status": "active",
@@ -391732,7 +391732,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -391932,7 +391932,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -392032,7 +392032,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -392082,7 +392082,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -392182,7 +392182,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/CHANGAMWE",
+        "reference": "Location/CHANGAMWE-WARD",
         "display": "CHANGAMWE"
       },
       "status": "active",
@@ -392282,7 +392282,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/CHANGAMWE",
+        "reference": "Location/CHANGAMWE-WARD",
         "display": "CHANGAMWE"
       },
       "status": "active",
@@ -392332,7 +392332,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -394382,7 +394382,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -394432,7 +394432,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -394532,7 +394532,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -394632,7 +394632,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -394732,7 +394732,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -395032,7 +395032,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ENDEBESS",
+        "reference": "Location/ENDEBESS-WARD",
         "display": "ENDEBESS"
       },
       "status": "active",
@@ -405674,7 +405674,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -407224,7 +407224,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -409374,7 +409374,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LAISAMIS",
+        "reference": "Location/LAISAMIS-WARD",
         "display": "LAISAMIS"
       },
       "status": "active",
@@ -414174,7 +414174,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/LAFEY",
+        "reference": "Location/LAFEY-WARD",
         "display": "LAFEY"
       },
       "status": "active",
@@ -414774,7 +414774,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -414924,7 +414924,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -415024,7 +415024,7 @@
         "display": "Public Institution - Academic"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -415124,7 +415124,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -415874,7 +415874,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -416974,7 +416974,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -420670,7 +420670,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -421966,7 +421966,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SOY",
+        "reference": "Location/SOY-WARD",
         "display": "SOY"
       },
       "status": "active",
@@ -422016,7 +422016,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SOY",
+        "reference": "Location/SOY-WARD",
         "display": "SOY"
       },
       "status": "active",
@@ -422566,7 +422566,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LAFEY",
+        "reference": "Location/LAFEY-WARD",
         "display": "LAFEY"
       },
       "status": "active",
@@ -422766,7 +422766,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -422866,7 +422866,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -423516,7 +423516,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -424766,7 +424766,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -425916,7 +425916,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -428166,7 +428166,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOIBEN",
+        "reference": "Location/MOIBEN-WARD",
         "display": "MOIBEN"
       },
       "status": "active",
@@ -428666,7 +428666,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/AINAMOI",
+        "reference": "Location/AINAMOI-WARD",
         "display": "AINAMOI"
       },
       "status": "active",
@@ -430216,7 +430216,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/AINAMOI",
+        "reference": "Location/AINAMOI-WARD",
         "display": "AINAMOI"
       },
       "status": "active",
@@ -430466,7 +430466,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -432254,7 +432254,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/BANISSA",
+        "reference": "Location/BANISSA-WARD",
         "display": "BANISSA"
       },
       "status": "active",
@@ -434480,7 +434480,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/LIKONI",
+        "reference": "Location/LIKONI-WARD",
         "display": "LIKONI"
       },
       "status": "active",
@@ -436368,7 +436368,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ARABIA",
+        "reference": "Location/ARABIA-WARD",
         "display": "ARABIA"
       },
       "status": "active",
@@ -436818,7 +436818,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/LAFEY",
+        "reference": "Location/LAFEY-WARD",
         "display": "LAFEY"
       },
       "status": "active",
@@ -436868,7 +436868,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ARABIA",
+        "reference": "Location/ARABIA-WARD",
         "display": "ARABIA"
       },
       "status": "active",
@@ -438460,7 +438460,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ARABIA",
+        "reference": "Location/ARABIA-WARD",
         "display": "ARABIA"
       },
       "status": "active",
@@ -438660,7 +438660,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/BANISSA",
+        "reference": "Location/BANISSA-WARD",
         "display": "BANISSA"
       },
       "status": "active",
@@ -440160,7 +440160,7 @@
         "display": "Private Practice- Pharmacist"
       },
       "partOf": {
-        "reference": "Location/DADAAB",
+        "reference": "Location/DADAAB-WARD",
         "display": "DADAAB"
       },
       "status": "active",
@@ -440760,7 +440760,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ITHANGA",
+        "reference": "Location/ITHANGA-WARD",
         "display": "ITHANGA"
       },
       "status": "active",
@@ -440810,7 +440810,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -441310,7 +441310,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -441410,7 +441410,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -445456,7 +445456,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/BANISSA",
+        "reference": "Location/BANISSA-WARD",
         "display": "BANISSA"
       },
       "status": "active",
@@ -447802,7 +447802,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -448052,7 +448052,7 @@
         "display": "Private Practice Lab Technician/Technologist"
       },
       "partOf": {
-        "reference": "Location/KIGUMO",
+        "reference": "Location/KIGUMO-WARD",
         "display": "KIGUMO"
       },
       "status": "active",
@@ -449502,7 +449502,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -451202,7 +451202,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TARBAJ",
+        "reference": "Location/TARBAJ-WARD",
         "display": "TARBAJ"
       },
       "status": "active",
@@ -453502,7 +453502,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -454948,7 +454948,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -454998,7 +454998,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -455648,7 +455648,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -456348,7 +456348,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -456648,7 +456648,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -456898,7 +456898,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -457748,7 +457748,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -458794,7 +458794,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/BANISSA",
+        "reference": "Location/BANISSA-WARD",
         "display": "BANISSA"
       },
       "status": "active",
@@ -458894,7 +458894,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/BANISSA",
+        "reference": "Location/BANISSA-WARD",
         "display": "BANISSA"
       },
       "status": "active",
@@ -459144,7 +459144,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -460144,7 +460144,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -462140,7 +462140,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ENDEBESS",
+        "reference": "Location/ENDEBESS-WARD",
         "display": "ENDEBESS"
       },
       "status": "active",
@@ -462790,7 +462790,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -465486,7 +465486,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -465786,7 +465786,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/SABOTI",
+        "reference": "Location/SABOTI-WARD",
         "display": "SABOTI"
       },
       "status": "active",
@@ -467786,7 +467786,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALAMA",
+        "reference": "Location/KALAMA-WARD",
         "display": "KALAMA"
       },
       "status": "active",
@@ -471616,7 +471616,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -472466,7 +472466,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/TONGAREN",
+        "reference": "Location/TONGAREN-WARD",
         "display": "TONGAREN"
       },
       "status": "active",
@@ -472816,7 +472816,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/SABOTI",
+        "reference": "Location/SABOTI-WARD",
         "display": "SABOTI"
       },
       "status": "active",
@@ -473266,7 +473266,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NORTH-HORR",
+        "reference": "Location/NORTH-HORR-WARD",
         "display": "NORTH HORR"
       },
       "status": "active",
@@ -473466,7 +473466,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -473616,7 +473616,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NORTH-HORR",
+        "reference": "Location/NORTH-HORR-WARD",
         "display": "NORTH HORR"
       },
       "status": "active",
@@ -474016,7 +474016,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -474266,7 +474266,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -474366,7 +474366,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -475016,7 +475016,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -475216,7 +475216,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ELDAS",
+        "reference": "Location/ELDAS-WARD",
         "display": "ELDAS"
       },
       "status": "active",
@@ -477616,7 +477616,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -479616,7 +479616,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -479666,7 +479666,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -480816,7 +480816,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -483762,7 +483762,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -483912,7 +483912,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/BALAMBALA",
+        "reference": "Location/BALAMBALA-WARD",
         "display": "BALAMBALA"
       },
       "status": "active",
@@ -485708,7 +485708,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -486458,7 +486458,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -486908,7 +486908,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/DADAAB",
+        "reference": "Location/DADAAB-WARD",
         "display": "DADAAB"
       },
       "status": "active",
@@ -487108,7 +487108,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/DADAAB",
+        "reference": "Location/DADAAB-WARD",
         "display": "DADAAB"
       },
       "status": "active",
@@ -487758,7 +487758,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ELDAS",
+        "reference": "Location/ELDAS-WARD",
         "display": "ELDAS"
       },
       "status": "active",
@@ -488254,7 +488254,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -488804,7 +488804,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -491446,7 +491446,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -492596,7 +492596,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -492996,7 +492996,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -493046,7 +493046,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -493096,7 +493096,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -493196,7 +493196,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -494742,7 +494742,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/GATANGA",
+        "reference": "Location/GATANGA-WARD",
         "display": "GATANGA"
       },
       "status": "active",
@@ -494842,7 +494842,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ITHANGA",
+        "reference": "Location/ITHANGA-WARD",
         "display": "ITHANGA"
       },
       "status": "active",
@@ -495338,7 +495338,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TARBAJ",
+        "reference": "Location/TARBAJ-WARD",
         "display": "TARBAJ"
       },
       "status": "active",
@@ -495738,7 +495738,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -496688,7 +496688,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -497834,7 +497834,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -497984,7 +497984,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TARBAJ",
+        "reference": "Location/TARBAJ-WARD",
         "display": "TARBAJ"
       },
       "status": "active",
@@ -498084,7 +498084,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TARBAJ",
+        "reference": "Location/TARBAJ-WARD",
         "display": "TARBAJ"
       },
       "status": "active",
@@ -499984,7 +499984,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/NORTH-HORR",
+        "reference": "Location/NORTH-HORR-WARD",
         "display": "NORTH HORR"
       },
       "status": "active",
@@ -500434,7 +500434,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -500484,7 +500484,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -500534,7 +500534,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -500584,7 +500584,7 @@
         "display": "Private Practice Lab Technician/Technologist"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -502184,7 +502184,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MWIMBI",
+        "reference": "Location/MWIMBI-WARD",
         "display": "MWIMBI"
       },
       "status": "active",
@@ -502930,7 +502930,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/KIGUMO",
+        "reference": "Location/KIGUMO-WARD",
         "display": "KIGUMO"
       },
       "status": "active",
@@ -504280,7 +504280,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -504380,7 +504380,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -504430,7 +504430,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -504680,7 +504680,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -504730,7 +504730,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -505180,7 +505180,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -505926,7 +505926,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -506672,7 +506672,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ITHANGA",
+        "reference": "Location/ITHANGA-WARD",
         "display": "ITHANGA"
       },
       "status": "active",
@@ -506914,7 +506914,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GATANGA",
+        "reference": "Location/GATANGA-WARD",
         "display": "GATANGA"
       },
       "status": "active",
@@ -508532,7 +508532,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KIGUMO",
+        "reference": "Location/KIGUMO-WARD",
         "display": "KIGUMO"
       },
       "status": "active",
@@ -509512,7 +509512,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/AINAMOI",
+        "reference": "Location/AINAMOI-WARD",
         "display": "AINAMOI"
       },
       "status": "active",
@@ -512006,7 +512006,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -514152,7 +514152,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/BANISSA",
+        "reference": "Location/BANISSA-WARD",
         "display": "BANISSA"
       },
       "status": "active",
@@ -514452,7 +514452,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -514802,7 +514802,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -515302,7 +515302,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -515352,7 +515352,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -516302,7 +516302,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -516352,7 +516352,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -516548,7 +516548,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -516598,7 +516598,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -516798,7 +516798,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -517098,7 +517098,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -517498,7 +517498,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -517548,7 +517548,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -518748,7 +518748,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -518798,7 +518798,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -519648,7 +519648,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/CHANGAMWE",
+        "reference": "Location/CHANGAMWE-WARD",
         "display": "CHANGAMWE"
       },
       "status": "active",
@@ -519748,7 +519748,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -519848,7 +519848,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -520348,7 +520348,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/CHANGAMWE",
+        "reference": "Location/CHANGAMWE-WARD",
         "display": "CHANGAMWE"
       },
       "status": "active",
@@ -520398,7 +520398,7 @@
         "display": "Public Institution - Academic"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -521040,7 +521040,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -521190,7 +521190,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -521436,7 +521436,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -523886,7 +523886,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -525528,7 +525528,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -526424,7 +526424,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -526524,7 +526524,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -528966,7 +528966,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -529016,7 +529016,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -529466,7 +529466,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -529966,7 +529966,7 @@
         "display": "Armed Forces"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -530116,7 +530116,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -530216,7 +530216,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -530316,7 +530316,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -531116,7 +531116,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -531266,7 +531266,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -532558,7 +532558,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -532658,7 +532658,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -532808,7 +532808,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -532908,7 +532908,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -532958,7 +532958,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -533508,7 +533508,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -533558,7 +533558,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -534258,7 +534258,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -535342,7 +535342,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -535638,7 +535638,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -535738,7 +535738,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -535838,7 +535838,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -536138,7 +536138,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -536388,7 +536388,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -537538,7 +537538,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -537788,7 +537788,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -537888,7 +537888,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -537988,7 +537988,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -539138,7 +539138,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -540084,7 +540084,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -540134,7 +540134,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -540384,7 +540384,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -540484,7 +540484,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -540684,7 +540684,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -544326,7 +544326,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -547168,7 +547168,7 @@
         "display": "Public Institution - Academic"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -547964,7 +547964,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -548114,7 +548114,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -548414,7 +548414,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -548764,7 +548764,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -548814,7 +548814,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -550360,7 +550360,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -550460,7 +550460,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -552402,7 +552402,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -552452,7 +552452,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ARABIA",
+        "reference": "Location/ARABIA-WARD",
         "display": "ARABIA"
       },
       "status": "active",
@@ -552898,7 +552898,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -553748,7 +553748,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -554394,7 +554394,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/CHANGAMWE",
+        "reference": "Location/CHANGAMWE-WARD",
         "display": "CHANGAMWE"
       },
       "status": "active",
@@ -555194,7 +555194,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -555794,7 +555794,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -556294,7 +556294,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -556444,7 +556444,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -557244,7 +557244,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -557890,7 +557890,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -558190,7 +558190,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -559320,7 +559320,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -559670,7 +559670,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -559720,7 +559720,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -559920,7 +559920,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -560220,7 +560220,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -562212,7 +562212,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -562658,7 +562658,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -563896,7 +563896,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -564946,7 +564946,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -565096,7 +565096,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -565746,7 +565746,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -565996,7 +565996,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -566346,7 +566346,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -566846,7 +566846,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -567246,7 +567246,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -568346,7 +568346,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -569046,7 +569046,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIGUMO",
+        "reference": "Location/KIGUMO-WARD",
         "display": "KIGUMO"
       },
       "status": "active",
@@ -569546,7 +569546,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -569596,7 +569596,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -569696,7 +569696,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KUTULO",
+        "reference": "Location/KUTULO-WARD",
         "display": "KUTULO"
       },
       "status": "active",
@@ -572480,7 +572480,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -572676,7 +572676,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -572976,7 +572976,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LAISAMIS",
+        "reference": "Location/LAISAMIS-WARD",
         "display": "LAISAMIS"
       },
       "status": "active",
@@ -573276,7 +573276,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -573676,7 +573676,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KIMILILI",
+        "reference": "Location/KIMILILI-WARD",
         "display": "KIMILILI"
       },
       "status": "active",
@@ -574176,7 +574176,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -578718,7 +578718,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -580164,7 +580164,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -580214,7 +580214,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MOLO",
+        "reference": "Location/MOLO-WARD",
         "display": "MOLO"
       },
       "status": "active",
@@ -581464,7 +581464,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -583214,7 +583214,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -583264,7 +583264,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -585314,7 +585314,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -585914,7 +585914,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -586614,7 +586614,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -586664,7 +586664,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MARIGAT",
+        "reference": "Location/MARIGAT-WARD",
         "display": "MARIGAT"
       },
       "status": "active",
@@ -587610,7 +587610,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -588010,7 +588010,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -589148,7 +589148,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -589544,7 +589544,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/HULUGHO",
+        "reference": "Location/HULUGHO-WARD",
         "display": "HULUGHO"
       },
       "status": "active",
@@ -589594,7 +589594,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/HULUGHO",
+        "reference": "Location/HULUGHO-WARD",
         "display": "HULUGHO"
       },
       "status": "active",
@@ -589686,7 +589686,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SOY",
+        "reference": "Location/SOY-WARD",
         "display": "SOY"
       },
       "status": "active",
@@ -590170,7 +590170,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ELDAS",
+        "reference": "Location/ELDAS-WARD",
         "display": "ELDAS"
       },
       "status": "active",
@@ -590220,7 +590220,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ELDAS",
+        "reference": "Location/ELDAS-WARD",
         "display": "ELDAS"
       },
       "status": "active",
@@ -590270,7 +590270,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/CHEPTAIS",
+        "reference": "Location/CHEPTAIS-WARD",
         "display": "CHEPTAIS"
       },
       "status": "active",
@@ -590570,7 +590570,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/LUGARI",
+        "reference": "Location/LUGARI-WARD",
         "display": "LUGARI"
       },
       "status": "active",
@@ -591270,7 +591270,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/IJARA",
+        "reference": "Location/IJARA-WARD",
         "display": "IJARA"
       },
       "status": "active",
@@ -591320,7 +591320,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/DADAAB",
+        "reference": "Location/DADAAB-WARD",
         "display": "DADAAB"
       },
       "status": "active",
@@ -594042,7 +594042,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SOY",
+        "reference": "Location/SOY-WARD",
         "display": "SOY"
       },
       "status": "active",
@@ -594142,7 +594142,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -594238,7 +594238,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOIBEN",
+        "reference": "Location/MOIBEN-WARD",
         "display": "MOIBEN"
       },
       "status": "active",
@@ -597048,7 +597048,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -597344,7 +597344,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -598882,7 +598882,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOIBEN",
+        "reference": "Location/MOIBEN-WARD",
         "display": "MOIBEN"
       },
       "status": "active",
@@ -605130,7 +605130,7 @@
         "display": "Armed Forces"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -610076,7 +610076,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KWANZA",
+        "reference": "Location/KWANZA-WARD",
         "display": "KWANZA"
       },
       "status": "active",
@@ -611676,7 +611676,7 @@
         "display": "Private Practice - Medical Specialist"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -612864,7 +612864,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GILGIL",
+        "reference": "Location/GILGIL-WARD",
         "display": "GILGIL"
       },
       "status": "active",
@@ -614764,7 +614764,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/CHANGAMWE",
+        "reference": "Location/CHANGAMWE-WARD",
         "display": "CHANGAMWE"
       },
       "status": "active",
@@ -616410,7 +616410,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -617260,7 +617260,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -617506,7 +617506,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -618228,7 +618228,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -618374,7 +618374,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -618424,7 +618424,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/SUBUKIA",
+        "reference": "Location/SUBUKIA-WARD",
         "display": "SUBUKIA"
       },
       "status": "active",
@@ -618974,7 +618974,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -619874,7 +619874,7 @@
         "display": "Christian Health Association of Kenya"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -619974,7 +619974,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MBOONI",
+        "reference": "Location/MBOONI-WARD",
         "display": "MBOONI"
       },
       "status": "active",
@@ -621474,7 +621474,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -621524,7 +621524,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -621574,7 +621574,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -621674,7 +621674,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -624274,7 +624274,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -627624,7 +627624,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/CHANGAMWE",
+        "reference": "Location/CHANGAMWE-WARD",
         "display": "CHANGAMWE"
       },
       "status": "active",
@@ -627724,7 +627724,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/CHANGAMWE",
+        "reference": "Location/CHANGAMWE-WARD",
         "display": "CHANGAMWE"
       },
       "status": "active",
@@ -629962,7 +629962,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -630012,7 +630012,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -634392,7 +634392,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -634492,7 +634492,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/GANZE",
+        "reference": "Location/GANZE-WARD",
         "display": "GANZE"
       },
       "status": "active",
@@ -637668,7 +637668,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -640502,7 +640502,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -640652,7 +640652,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -642190,7 +642190,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -643524,7 +643524,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -644020,7 +644020,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -645670,7 +645670,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/AINAMOI",
+        "reference": "Location/AINAMOI-WARD",
         "display": "AINAMOI"
       },
       "status": "active",
@@ -645770,7 +645770,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/LAFEY",
+        "reference": "Location/LAFEY-WARD",
         "display": "LAFEY"
       },
       "status": "active",
@@ -646470,7 +646470,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -647512,7 +647512,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NORTH-HORR",
+        "reference": "Location/NORTH-HORR-WARD",
         "display": "NORTH HORR"
       },
       "status": "active",
@@ -648746,7 +648746,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SOY",
+        "reference": "Location/SOY-WARD",
         "display": "SOY"
       },
       "status": "active",
@@ -648892,7 +648892,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NORTH-HORR",
+        "reference": "Location/NORTH-HORR-WARD",
         "display": "NORTH HORR"
       },
       "status": "active",
@@ -649576,7 +649576,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/SOY",
+        "reference": "Location/SOY-WARD",
         "display": "SOY"
       },
       "status": "active",
@@ -650736,7 +650736,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -653382,7 +653382,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TARBAJ",
+        "reference": "Location/TARBAJ-WARD",
         "display": "TARBAJ"
       },
       "status": "active",
@@ -660308,7 +660308,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -660780,7 +660780,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -663118,7 +663118,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ARABIA",
+        "reference": "Location/ARABIA-WARD",
         "display": "ARABIA"
       },
       "status": "active",
@@ -664686,7 +664686,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -666566,7 +666566,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NAKURU-EAST",
+        "reference": "Location/NAKURU-EAST-WARD",
         "display": "NAKURU EAST"
       },
       "status": "active",
@@ -667204,7 +667204,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -667254,7 +667254,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -667796,7 +667796,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -671574,7 +671574,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -675476,7 +675476,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -676618,7 +676618,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NORTH-HORR",
+        "reference": "Location/NORTH-HORR-WARD",
         "display": "NORTH HORR"
       },
       "status": "active",
@@ -678990,7 +678990,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -680832,7 +680832,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -681274,7 +681274,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -681520,7 +681520,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -683550,7 +683550,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -684100,7 +684100,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -685130,7 +685130,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -685472,7 +685472,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -685518,7 +685518,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/KASARANI",
+        "reference": "Location/KASARANI-WARD",
         "display": "KASARANI"
       },
       "status": "active",
@@ -685756,7 +685756,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -685806,7 +685806,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -685898,7 +685898,7 @@
         "display": "Public Institution - Parastatal"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -688558,7 +688558,7 @@
         "display": "Non-Governmental Organizations"
       },
       "partOf": {
-        "reference": "Location/UGUNJA",
+        "reference": "Location/UGUNJA-WARD",
         "display": "UGUNJA"
       },
       "status": "active",
@@ -689784,7 +689784,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -690672,7 +690672,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -691372,7 +691372,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -692018,7 +692018,7 @@
         "display": "Private Practice - Nurse / Midwifery"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -694032,7 +694032,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/KIKUYU",
+        "reference": "Location/KIKUYU-WARD",
         "display": "KIKUYU"
       },
       "status": "active",
@@ -694232,7 +694232,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -697092,7 +697092,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -697392,7 +697392,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -700030,7 +700030,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KABETE",
+        "reference": "Location/KABETE-WARD",
         "display": "KABETE"
       },
       "status": "active",
@@ -701344,7 +701344,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -701644,7 +701644,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -701794,7 +701794,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -701844,7 +701844,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ATHI-RIVER",
+        "reference": "Location/ATHI-RIVER-WARD",
         "display": "ATHI RIVER"
       },
       "status": "active",
@@ -702036,7 +702036,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -702382,7 +702382,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/GATANGA",
+        "reference": "Location/GATANGA-WARD",
         "display": "GATANGA"
       },
       "status": "active",
@@ -702878,7 +702878,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -702928,7 +702928,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/GATANGA",
+        "reference": "Location/GATANGA-WARD",
         "display": "GATANGA"
       },
       "status": "active",
@@ -703078,7 +703078,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -706262,7 +706262,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ITHANGA",
+        "reference": "Location/ITHANGA-WARD",
         "display": "ITHANGA"
       },
       "status": "active",
@@ -706312,7 +706312,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ITHANGA",
+        "reference": "Location/ITHANGA-WARD",
         "display": "ITHANGA"
       },
       "status": "active",
@@ -707708,7 +707708,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/JUJA",
+        "reference": "Location/JUJA-WARD",
         "display": "JUJA"
       },
       "status": "active",
@@ -712154,7 +712154,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MAGARINI",
+        "reference": "Location/MAGARINI-WARD",
         "display": "MAGARINI"
       },
       "status": "active",
@@ -713292,7 +713292,7 @@
         "display": "Kenya Episcopal Conference-Catholic Secretariat"
       },
       "partOf": {
-        "reference": "Location/GATANGA",
+        "reference": "Location/GATANGA-WARD",
         "display": "GATANGA"
       },
       "status": "active",
@@ -714684,7 +714684,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/NJORO",
+        "reference": "Location/NJORO-WARD",
         "display": "NJORO"
       },
       "status": "active",
@@ -716734,7 +716734,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ARABIA",
+        "reference": "Location/ARABIA-WARD",
         "display": "ARABIA"
       },
       "status": "active",
@@ -720626,7 +720626,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -720726,7 +720726,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KINANGO",
+        "reference": "Location/KINANGO-WARD",
         "display": "KINANGO"
       },
       "status": "active",
@@ -721126,7 +721126,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -721176,7 +721176,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -722426,7 +722426,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/ITHANGA",
+        "reference": "Location/ITHANGA-WARD",
         "display": "ITHANGA"
       },
       "status": "active",
@@ -724826,7 +724826,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/KALOLENI",
+        "reference": "Location/KALOLENI-WARD",
         "display": "KALOLENI"
       },
       "status": "active",
@@ -727368,7 +727368,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -727514,7 +727514,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/ROYSAMBU",
+        "reference": "Location/ROYSAMBU-WARD",
         "display": "ROYSAMBU"
       },
       "status": "active",
@@ -731574,7 +731574,7 @@
         "display": "Private Practice - Private Institution Academic"
       },
       "partOf": {
-        "reference": "Location/MWATATE",
+        "reference": "Location/MWATATE-WARD",
         "display": "MWATATE"
       },
       "status": "active",
@@ -733334,7 +733334,7 @@
         "display": "Private Practice - Clinical Officer"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -733434,7 +733434,7 @@
         "display": "Private Practice - General Practitioner"
       },
       "partOf": {
-        "reference": "Location/GITHUNGURI",
+        "reference": "Location/GITHUNGURI-WARD",
         "display": "GITHUNGURI"
       },
       "status": "active",
@@ -736710,7 +736710,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -737460,7 +737460,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/AINAMOI",
+        "reference": "Location/AINAMOI-WARD",
         "display": "AINAMOI"
       },
       "status": "active",
@@ -737656,7 +737656,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOIBEN",
+        "reference": "Location/MOIBEN-WARD",
         "display": "MOIBEN"
       },
       "status": "active",
@@ -738002,7 +738002,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOIBEN",
+        "reference": "Location/MOIBEN-WARD",
         "display": "MOIBEN"
       },
       "status": "active",
@@ -738798,7 +738798,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -739394,7 +739394,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -739594,7 +739594,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -739994,7 +739994,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/AINAMOI",
+        "reference": "Location/AINAMOI-WARD",
         "display": "AINAMOI"
       },
       "status": "active",
@@ -740594,7 +740594,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -740644,7 +740644,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -740744,7 +740744,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -740944,7 +740944,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -741094,7 +741094,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -741394,7 +741394,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -741494,7 +741494,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -741594,7 +741594,7 @@
         "display": "Private Practice - Private Company"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -743144,7 +743144,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/BURA",
+        "reference": "Location/BURA-WARD",
         "display": "BURA"
       },
       "status": "active",
@@ -743936,7 +743936,7 @@
         "display": "Other Faith Based"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
@@ -745086,7 +745086,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/MOIBEN",
+        "reference": "Location/MOIBEN-WARD",
         "display": "MOIBEN"
       },
       "status": "active",
@@ -746224,7 +746224,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/NANDI-HILLS",
+        "reference": "Location/NANDI-HILLS-WARD",
         "display": "NANDI HILLS"
       },
       "status": "active",
@@ -746324,7 +746324,7 @@
         "display": "Ministry of Health"
       },
       "partOf": {
-        "reference": "Location/TINDERET",
+        "reference": "Location/TINDERET-WARD",
         "display": "TINDERET"
       },
       "status": "active",
