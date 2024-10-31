@@ -137,27 +137,49 @@ export const deleteResetCode = async (idNumber: string) => {
   }
 }
 
-export const updateUserProfile = async (username:string, phone: string | null, email: string | null, resetCode: string | null, practitionerRole: string | null) => {
+export const updateUserProfile = async (
+  username: string,
+  phone: string | null,
+  email: string | null,
+  resetCode: string | null,
+  practitionerRole: string | null
+) => {
   try {
-    let user = (await findKeycloakUser(username));
+    let user = await findKeycloakUser(username);
     const accessToken = (await getKeycloakAdminToken()).access_token;
+    
+    let updatedAttributes = { ...user.attributes };
+    
+    updatedAttributes.phone = phone ? [phone] : updatedAttributes.phone || user.phone ? [user.phone] : null;
+    
+    if (resetCode !== null) {
+      updatedAttributes.resetCode = [resetCode];
+    }
+    
+    if (practitionerRole !== null) {
+      updatedAttributes.practitionerRole = [practitionerRole];
+    }
+    
+    const requestBody: any = {
+      attributes: updatedAttributes
+    };
+    
+    requestBody.email = email || user.email;
+  
+
     const response = await (await fetch(
       `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`,
-      {headers: {Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', }, method: "PUT",
-      body: JSON.stringify({
-        ...(phone) && {attributes: {...user.attributes, phone:[phone]}}, ...(email) &&  {email}, ...(resetCode) &&
-        {attributes: {...user.attributes, resetCode:[resetCode]}},
-        ...(practitionerRole) && {attributes: {...user.attributes, practitionerRole:[practitionerRole]}}
-      })
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        method: "PUT",
+        body: JSON.stringify(requestBody)
       }
     ));
-    // let result = await response.json()
-    // console.log(response);
-    if(response.ok){
-      return true;
-    }
-    // console.log(await response.json());
-    return null;
+
+    return response.ok ? true : null;
   } catch (error) {
     console.error(error);
     return null;
