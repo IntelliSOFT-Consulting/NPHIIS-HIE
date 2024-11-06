@@ -2,14 +2,14 @@ from pyhive import hive
 from dotenv import load_dotenv
 import os
 import json
-from datetime import datetime, date, timedelta
-from typing import List, Dict, Any
+from datetime import datetime, date
+from typing import List, Dict
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import create_engine
 import logging
 import traceback
 from configs import db, app
 from models.dataset import PrimaryImmunizationDataset
+from locations import LocationProcessor
 
 # Configure logging
 logging.basicConfig(
@@ -58,6 +58,11 @@ class ImmunizationDataProcessor:
         try:
             logger.info("Fetching data from Hive...")
 
+            locations = self.execute_hive_query("SELECT * FROM location")
+            locations_dict = {l["id"]: l for l in locations}
+
+            logger.info(f"Retrieved {len(locations)} locations")
+
             recommendations = self.execute_hive_query(
                 "SELECT * FROM immunizationrecommendation"
             )
@@ -72,7 +77,7 @@ class ImmunizationDataProcessor:
                 f"{len(patients)} patients, and {len(immunizations)} immunizations"
             )
 
-            return recommendations, patients_dict, immunizations
+            return recommendations, patients_dict, immunizations, locations_dict
         except Exception as e:
             logger.error(f"Error fetching data from Hive: {e}")
             raise
@@ -154,7 +159,7 @@ class ImmunizationDataProcessor:
             logger.error(f"Problematic record: {record}")
             return False
 
-    def process_patient_data(self, patient_data: Dict) -> Dict:
+    def process_patient_data(self, patient_data: Dict, locations_dict: Dict) -> Dict:
         """Process patient information"""
         try:
             birth_date = self.parse_date(patient_data.get("birthDate").split("T")[0])
@@ -194,6 +199,16 @@ class ImmunizationDataProcessor:
             # Safely get contact data
             contact_data = json.loads(patient_data.get("contact", "[]"))
 
+            facility_code = (
+                facility_info.get("code", "").replace("Location/", "")
+                if facility_info.get("code")
+                else None
+            )
+
+            location_hierarchy = LocationProcessor.get_location_hierarchy(
+                facility_code, locations_dict
+            )
+
             processed_data = {
                 "patient_id": patient_data["id"],
                 "family_name": name_data.get("family", ""),
@@ -218,15 +233,11 @@ class ImmunizationDataProcessor:
                 "is_active": patient_data.get("active", True),
                 "is_deceased": patient_data.get("deceasedBoolean", False),
                 "is_multiple_birth": patient_data.get("multipleBirthBoolean", False),
-                "county": address_data.get("city"),
-                "subcounty": address_data.get("district"),
-                "ward": address_data.get("state"),
+                "county": location_hierarchy["county"],
+                "subcounty": location_hierarchy["subcounty"],
+                "ward": location_hierarchy["ward"],
                 "facility_name": facility_info.get("display", "N/A"),
-                "facility_code": (
-                    facility_info.get("code", "").replace("Location/", "")
-                    if facility_info.get("code")
-                    else None
-                ),
+                "facility_code": facility_code,
                 "phone_primary": telecom_data[0].get("value") if telecom_data else None,
                 "patient_last_updated": self.parse_date(meta.get("lastUpdated")),
                 "guardian_relationship": None,
@@ -388,11 +399,6 @@ class ImmunizationDataProcessor:
                 logger.warning("No valid records to insert after cleaning")
                 return
 
-            # add the cleaned data to a txt file line by line
-            with open("cleaned_data.txt", "w") as file:
-                for record in cleaned_data:
-                    file.write(str(record) + "\n")
-
             stmt = insert(PrimaryImmunizationDataset).values(cleaned_data)
 
             with app.app_context():
@@ -415,13 +421,20 @@ class ImmunizationDataProcessor:
     def process_data(self) -> str:
         """Main processing function with progress tracking"""
         start_time = datetime.now()
+
+        db.session.query(PrimaryImmunizationDataset).delete()
+        db.session.commit()
+
+        logger.info("Cleaning up any invalid records")
         logger.info("Starting data processing...")
         total_processed = 0
 
         try:
             with app.app_context():
                 # Fetch all required data
-                recommendations, patients, immunizations = self.fetch_data_from_hive()
+                recommendations, patients, immunizations, locations_dict = (
+                    self.fetch_data_from_hive()
+                )
                 total_recommendations = len(recommendations)
                 logger.info(f"Processing {total_recommendations} recommendations...")
                 processed_records = []
@@ -436,7 +449,7 @@ class ImmunizationDataProcessor:
                             "/"
                         )[1]
                         vaccine_code = json.loads(imm["vaccineCode"])["coding"][0][
-                            "code"
+                            "display"
                         ]
                         key = f"{patient_ref}_{vaccine_code}"
                         immunizations_dict[key] = imm
@@ -463,7 +476,9 @@ class ImmunizationDataProcessor:
                             )
                             continue
 
-                        base_data = self.process_patient_data(patient_data)
+                        base_data = self.process_patient_data(
+                            patient_data, locations_dict
+                        )
 
                         if not base_data:
                             invalid_records += 1
@@ -485,7 +500,7 @@ class ImmunizationDataProcessor:
                         for vaccine in recommendations_list:
                             try:
                                 vaccine_code = vaccine["vaccineCode"][0]["coding"][0][
-                                    "code"
+                                    "display"
                                 ]
                                 matching_immunization = immunizations_dict.get(
                                     f"{patient_id}_{vaccine_code}"
@@ -670,9 +685,6 @@ def main():
     try:
         logger.info("Starting immunization data processing")
 
-   # empty the table
-        db.session.query(PrimaryImmunizationDataset).delete()
-        db.session.commit()
         # # Clean up any invalid records first
         # cleanup_result = clean_database()
         # logger.info(cleanup_result)
