@@ -12,7 +12,7 @@ from hive import ImmunizationDataProcessor
 import pg
 from configs import app, db
 from reports.moh_525_report import moh_525_report
-from reports.moh_710_report import generate_moh_710_section_a
+from reports.moh_710_report import moh_710_report
 from reports.monitoring_report import monitoring_report
 from models import *
 
@@ -210,7 +210,7 @@ def moh_710_report_endpoint():
             "end_date": request.args.get("end_date", default_end),
         }
 
-        result = generate_moh_710_section_a(filters)
+        result = moh_710_report(filters)
         return create_response(result)
     except Exception as e:
         return handle_error(e)
