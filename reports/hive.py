@@ -19,6 +19,15 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
+def clear_existing_data():
+    try:
+        db.session.query(PrimaryImmunizationDataset).delete()
+        db.session.commit()
+    except Exception as e:
+        logger.error(f"Error clearing existing data: {e}")
+        logger.error(traceback.format_exc())
+        db.session.rollback()
+
 
 class ImmunizationDataProcessor:
     def __init__(self):

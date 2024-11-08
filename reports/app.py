@@ -8,7 +8,7 @@ from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from flask import jsonify, request
 from flask_cors import CORS
 from typing import Any
-from hive import ImmunizationDataProcessor
+from hive import ImmunizationDataProcessor, clear_existing_data
 import pg
 from configs import app, db
 from reports.moh_525_report import moh_525_report
@@ -60,6 +60,7 @@ def initialize_scheduler():
 
             try:
                 with app.app_context():
+                    clear_existing_data()
                     processor = ImmunizationDataProcessor()
                     result = processor.process_data()
 
@@ -107,9 +108,9 @@ def initialize_scheduler():
         # Add jobs to scheduler
         scheduler.add_job(
             func=sync_data_job,
-            trigger=IntervalTrigger(minutes=30),
+            trigger=IntervalTrigger(hours=4),
             id="data_sync_job",
-            name="Sync data from Hive every 30 minutes",
+            name="Sync data from Hive every 4 hours",
             replace_existing=True,
             next_run_time=datetime.now(),
         )
