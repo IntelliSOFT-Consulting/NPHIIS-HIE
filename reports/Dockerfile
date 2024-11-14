@@ -1,19 +1,35 @@
-FROM python:3.9-slim
+FROM node:22-alpine
 
-# Set the working directory in the container
+RUN apk update && \
+    apk add --no-cache \
+    python3 \
+    py3-pip \
+    build-base \
+    python3-dev
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1
+
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY requirements.txt .
-
-
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY wait-for-it.sh /wait-for-it.sh
+RUN python3 -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
 
 COPY . .
 
-# RUN rm -rf migrations
+RUN yarn install
 
-# Run the application 
-CMD ["./wait-for-it.sh", "reports_db", "${POSTGRES_PORT}", "--", "gunicorn", "-w", "4", "--threads", "2", "--worker-class", "gthread", "--worker-connections", "1000","--max-requests","1000", "--max-requests-jitter", "50", "--timeout", "120", "-b", "0.0.0.0:8000", "app:app"]
+RUN yarn build
+
+
+RUN . /app/venv/bin/activate && \
+    pip3 install --no-cache-dir -r requirements.txt
+
+RUN apk del build-base python3-dev
+
+ENV VIRTUAL_ENV=/app/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+
+CMD ["sh", "-c", "npx prisma migrate deploy && yarn serve"]
