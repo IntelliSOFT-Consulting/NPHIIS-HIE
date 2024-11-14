@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PrimaryImmunizationDataset {
+  // Primary Key
+  id           Int     @id @default(autoincrement())
+  // Patient Identification
+  patientId    String  @map("patient_id") @db.VarChar(50)
+  documentId   String? @map("document_id") @db.VarChar(50)
+  documentType String? @map("document_type") @db.VarChar(50)
+
+  // Patient Demographics
+  familyName String?   @map("family_name") @db.VarChar(100)
+  givenName  String?   @map("given_name") @db.VarChar(100)
+  birthDate  DateTime? @map("birth_date")
+  gender     String?   @db.VarChar(20)
+  ageYears   Float?      @map("age_years")
+  ageMonths  Float?      @map("age_months")
+  ageGroup   String?   @map("age_group") @db.VarChar(50)
+
+  // Patient Status
+  isActive        Boolean  @default(true) @map("is_active")
+  isDeceased      Boolean  @default(false) @map("is_deceased")
+  isMultipleBirth Boolean? @map("is_multiple_birth")
+
+  // Contact Information
+  phonePrimary   String? @map("phone_primary") @db.VarChar(50)
+  phoneSecondary String? @map("phone_secondary") @db.VarChar(50)
+
+  // Guardian/Emergency Contact
+  guardianRelationship String? @map("guardian_relationship") @db.VarChar(50)
+  guardianName         String? @map("guardian_name") @db.VarChar(100)
+  guardianPhone        String? @map("guardian_phone") @db.VarChar(50)
+
+  // Location Information
+  county        String? @db.VarChar(100)
+  countyCode    String? @map("county_code") @db.VarChar(50)
+  subcounty     String? @db.VarChar(100)
+  subcountyCode String? @map("subcounty_code") @db.VarChar(50)
+  ward          String? @db.VarChar(100)
+  wardCode      String? @map("ward_code") @db.VarChar(50)
+  facilityName  String? @map("facility_name") @db.VarChar(500)
+  facilityCode  String? @map("facility_code") @db.VarChar(50)
+  village       String? @db.VarChar(100)
+
+  // Vaccination Details
+  vaccineCode     String? @map("vaccine_code") @db.VarChar(50)
+  vaccineName     String? @map("vaccine_name") @db.VarChar(100)
+  vaccineCategory String? @map("vaccine_category") @db.VarChar(50)
+  doseNumber      Int?    @map("dose_number")
+  seriesName      String? @map("series_name") @db.VarChar(100)
+
+  // Schedule Information
+  scheduleDueDate  DateTime? @map("schedule_due_date")
+  administeredDate DateTime? @map("administered_date")
+  daysFromDueDate  Int?      @map("days_from_due_date")
+
+  // Administration Details
+  administrationLocation String? @map("administration_location") @db.VarChar(200)
+  batchNumber            String? @map("batch_number") @db.VarChar(50)
+
+  // Status Tracking
+  immunizationStatus String?  @map("immunization_status") @db.VarChar(50)
+  isDefaulter        Boolean? @map("is_defaulter")
+  defaulterDays      Int?     @map("defaulter_days")
+
+  // Disease Prevention
+  targetDisease   String? @map("target_disease") @db.VarChar(200)
+  diseaseCategory String? @map("disease_category") @db.VarChar(100)
+
+  // Metadata
+  recordCreatedAt    DateTime  @default(now()) @map("record_created_at")
+  recordUpdatedAt    DateTime  @updatedAt @map("record_updated_at")
+  patientLastUpdated DateTime? @map("patient_last_updated")
+  dataSource         String?   @map("data_source") @db.VarChar(50)
+
+  // Indexes
+  @@index([patientId])
+  @@index([documentId])
+  @@index([documentType])
+  @@index([county])
+  @@index([subcounty])
+  @@index([vaccineCode])
+  @@index([immunizationStatus])
+  @@index([isDefaulter])
+  @@map("primary_immunization_dataset")
+}
