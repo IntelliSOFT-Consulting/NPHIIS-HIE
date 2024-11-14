@@ -1,0 +1,36 @@
+{
+  "name": "reports-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "nodemon --env-file=.env --watch src --exec babel-node src/server.js",
+    "dev": "nodemon src/server.js",
+    "build": "rm -rf dist && babel src -d dist",
+    "serve": "node dist/server.js --env-file=.env",
+    "lint": "eslint .",
+    "clean": "rimraf build"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.23.9",
+    "@babel/node": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "nodemon": "^3.0.3"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "5.22.0",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "express": "^4.21.1",
+    "morgan": "^1.10.0",
+    "node-cron": "^3.0.3",
+    "prisma": "^5.22.0",
+    "uuid": "^11.0.3"
+  }
+}
