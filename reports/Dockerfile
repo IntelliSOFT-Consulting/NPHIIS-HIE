@@ -23,9 +23,6 @@ RUN yarn install
 RUN yarn build
 
 
-# RUN npx prisma migrate deploy
-# RUN npx prisma generate
-
 RUN . /app/venv/bin/activate && \
     pip3 install --no-cache-dir -r requirements.txt
 
