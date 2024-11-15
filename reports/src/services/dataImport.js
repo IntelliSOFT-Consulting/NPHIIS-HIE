@@ -5,7 +5,8 @@ import { getLocationHierarchy, getLocationName, getPatientIdentifier, locationId
 const prisma = new PrismaClient();
 
 const clearData = async () => {
-  const tableExists = await prisma.$queryRaw`SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'primary_immunization_dataset')`;
+  const tableExists =
+    await prisma.$queryRaw`SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'primary_immunization_dataset')`;
   if (tableExists[0].exists) {
     await prisma.primaryImmunizationDataset.deleteMany();
     console.log("Data cleared successfully");
@@ -104,7 +105,7 @@ export const importData = async (data) => {
           vaccinationData.administeredDate = new Date(immunization.recorded);
           vaccinationData.defaulterDays = differenceInDays(new Date(), new Date(dueDate));
           vaccinationData.isDefaulter = differenceInDays(new Date(), new Date(dueDate)) > 0;
-          vaccinationData.recordUpdatedAt = new Date(immunization.meta?.lastUpdated);
+          vaccinationData.recordUpdatedAt = new Date(immunization.occurrence?.dateTime) || new Date(immunization.occurrenceDatetime);
           vaccinationData.ageYears = Math.round(immunizationAgeDifferenceInYears * 10) / 10;
           vaccinationData.ageMonths = Math.round(immunizationAgeDifferenceInMonths * 10) / 10;
           vaccinationData.ageGroup = immunizationAgeDifferenceInYears < 1 ? "Below 1 year" : "Above 1 year";
