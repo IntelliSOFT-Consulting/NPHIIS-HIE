@@ -236,6 +236,25 @@ export const defaulters = async (req, res) => {
 
     const query = {
       where: queryConditions,
+      select: {
+        patientId: true,
+        documentId: true,
+        documentType: true,
+        familyName: true,
+        givenName: true,
+        birthDate: true,
+        gender: true,
+        phonePrimary: true,
+        guardianRelationship: true,
+        guardianName: true,
+        guardianPhone: true,
+        village: true,
+        vaccineName: true,
+        doseNumber: true,
+        scheduleDueDate: true,
+        defaulterDays: true,
+        targetDisease: true,
+      },
       take: parseInt(page_size, 10),
       skip: (parseInt(page, 10) - 1) * parseInt(page_size, 10),
     };

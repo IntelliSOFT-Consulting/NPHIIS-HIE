@@ -44,6 +44,10 @@ export const importData = async (data) => {
 
       const identity = getPatientIdentifier(patient);
 
+      const creationDate = patient.identifier.find(
+        (identifier) => identifier.system === "system-creation" || identifier.type?.coding?.[0]?.system === "system-creation"
+      )?.value;
+
       const patientData = {
         patientId: patient.id,
         familyName: patient.name[0].family,
@@ -105,7 +109,7 @@ export const importData = async (data) => {
           vaccinationData.administeredDate = new Date(immunization.recorded);
           vaccinationData.defaulterDays = differenceInDays(new Date(), new Date(dueDate));
           vaccinationData.isDefaulter = differenceInDays(new Date(), new Date(dueDate)) > 0;
-          vaccinationData.recordUpdatedAt = new Date(immunization.occurrence?.dateTime) || new Date(immunization.occurrenceDatetime);
+          vaccinationData.recordUpdatedAt = new Date(immunization.recorded);
           vaccinationData.ageYears = Math.round(immunizationAgeDifferenceInYears * 10) / 10;
           vaccinationData.ageMonths = Math.round(immunizationAgeDifferenceInMonths * 10) / 10;
           vaccinationData.ageGroup = immunizationAgeDifferenceInYears < 1 ? "Below 1 year" : "Above 1 year";
