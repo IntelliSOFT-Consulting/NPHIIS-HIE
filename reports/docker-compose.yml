@@ -18,8 +18,6 @@ services:
     container_name: reports_app
     networks:
       - cloudbuild
-    # ports:
-    #   - "8000:8000"
     depends_on:
       - reports_db
     env_file:

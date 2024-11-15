@@ -198,3 +198,64 @@ export const monitoringReport = async (req, res) => {
     await prisma.$disconnect();
   }
 };
+
+export const defaulters = async (req, res) => {
+  try {
+    const { start_date, end_date, page_size = 20, page = 1, name, vaccine_name } = req.query;
+    const passedLocation = locationPriority(req.query);
+
+    const queryConditions = {
+      isDefaulter: true,
+      immunizationStatus: { not: "completed" },
+      isDeceased: false,
+      vaccineCategory: "routine",
+    };
+
+    if (start_date && end_date) {
+      queryConditions.recordCreatedAt = {
+        gte: new Date(start_date),
+        lte: new Date(end_date),
+      };
+    }
+
+    if (passedLocation) {
+      Object.assign(queryConditions, passedLocation);
+    }
+
+    if (name) {
+      queryConditions.OR = [
+        { givenName: { contains: name, mode: "insensitive" } },
+        { familyName: { contains: name, mode: "insensitive" } },
+        { documentId: { contains: name, mode: "insensitive" } },
+      ];
+    }
+
+    if (vaccine_name) {
+      queryConditions.vaccineName = { contains: vaccine_name, mode: "insensitive" };
+    }
+
+    const query = {
+      where: queryConditions,
+      take: parseInt(page_size, 10),
+      skip: (parseInt(page, 10) - 1) * parseInt(page_size, 10),
+    };
+
+    const [total, data] = await Promise.all([
+      prisma.primaryImmunizationDataset.count({ where: queryConditions }),
+      prisma.primaryImmunizationDataset.findMany(query),
+    ]);
+
+    const totalPages = Math.ceil(total / page_size);
+    res.status(200).json({
+      data,
+      per_page: page_size,
+      total_records: total,
+      current_page: page,
+      total_pages: totalPages,
+      generated_at: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching defaulters report data" });
+  }
+};
