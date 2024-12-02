@@ -186,7 +186,7 @@ export const updateUserProfile = async (
   }
 }
 
-export const registerKeycloakUser = async (username: string, email: string | null, phone: string | null,firstName: string, lastName: string, password: string, fhirPatientId: string | null, fhirPractitionerId: string | null, practitionerRole: string | null) => {
+export const registerKeycloakUser = async (username: string, email: string | null, phone: string | null,lastName: string, firstName: string, password: string, fhirPatientId: string | null, fhirPractitionerId: string | null, practitionerRole: string | null) => {
     try {
         
         // Authenticate
