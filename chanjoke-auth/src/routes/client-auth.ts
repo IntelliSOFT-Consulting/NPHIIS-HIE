@@ -20,7 +20,7 @@ router.post("/register", async (req: Request, res: Response) => {
             let patient = response.data.entry[0].resource;
             console.log(patient);
             // register patient/client user on Keycloak
-            let keycloakUser = await registerKeycloakUser(idNumber, email, phone, patient.name[0].family, patient.name[0].given[0], password, patient.id, null, null);
+            let keycloakUser = await registerKeycloakUser(idNumber, email, phone, patient.name[0].family, patient.name[0].given.join(' '), password, patient.id, null, null);
             if(!keycloakUser){
                 res.statusCode = 400;
                 res.json({ status: "error", error: "Failed to register client user" });
