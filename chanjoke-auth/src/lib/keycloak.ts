@@ -30,7 +30,7 @@ export const getKeycloakAdminToken = async () => {
               grant_type: 'client_credentials', client_id: KC_CLIENT_ID, client_secret: KC_CLIENT_SECRET, }),
           });
         const tokenData: any = await tokenResponse.json();
-        // console.log(tokenData)
+        console.log("TOKEn", tokenData)
         return tokenData
     } catch (error) {
         return null;
@@ -213,9 +213,9 @@ export const registerKeycloakUser = async (username: string, email: string | nul
                 },],
               attributes: {
                 fhirPatientId,
-                fhirPractitionerId,
                 practitionerRole,
-                phone
+                phone,
+                ...(fhirPractitionerId != null && { fhirPractitionerId })
               },
             }),
           })
