@@ -18,5 +18,3 @@ services:
         - ./../proxy/nginx.conf:/etc/nginx/nginx.conf:ro
         - ./certs/star.intellisoftkenya.com.crt:/opt/star.intellisoftkenya.com.crt:ro
         - ./certs/star.intellisoftkenya.com.key:/opt/star.intellisoftkenya.com.key:ro
-
-        
