@@ -12,6 +12,7 @@ services:
         image: mongo:4.0
         networks:
             - openhim
+            - cloudbuild
         volumes:
             - mongodb-data:/data/db
         restart: unless-stopped
@@ -45,6 +46,7 @@ services:
             - "./hapi-fhir:/hapi"
         environment:
             SPRING_CONFIG_LOCATION: /hapi/application.yaml
+            TZ: Africa/Nairobi
 
     # hapi-fhir-jpa-r5:
     #     image: hapiproject/hapi:latest
@@ -78,6 +80,7 @@ services:
             # - "7788:7788"
         depends_on:
             - mongo
+            - openhim-console
         networks:
             - openhim
             - hapi-fhir
@@ -92,6 +95,8 @@ services:
         container_name: openhim-console
         image: jembi/openhim-console:latest
         restart: unless-stopped
+        ports:
+            - "9000:80"
         networks:
             - openhim
             - cloudbuild
@@ -104,17 +109,17 @@ services:
             - ./default.json:/usr/share/nginx/html/config/default.json:ro
             - /etc/ssl/crt:/etc/nginx/certs
     
-    chanjoke-auth:
-        container_name: chanjoke-auth
+    hie-auth:
+        container_name: hie-auth
         build: 
-            context: ../chanjoke-auth
+            context: ../hie-auth
             dockerfile: Dockerfile
         restart: unless-stopped
         networks:
             - cloudbuild
             - hapi-fhir
         env_file:
-            - ../chanjoke-auth/.env
+            - ../hie-auth/.env
             
     hapi-fhir-config:
         depends_on:
@@ -126,41 +131,41 @@ services:
             context: ../hapi-fhir-config
             dockerfile: Dockerfile
 
-    ddcc-mediators:
+    dsrf-mediators:
         depends_on:
-            - openhim-core
             - hapi-fhir-jpa
-        container_name: ddcc-mediators
+        container_name: dsrf-mediators
         build:
-            context: ddcc-chanjo-mediators
+            context: dsrf-mediators
             dockerfile: Dockerfile
         restart: unless-stopped
-        volumes:
-            - ./ddcc-chanjo-mediators/src/lib/MOH-Logo.png:/usr/mediators/build/lib/MOH-Logo.png
         networks:
             - openhim
             - hapi-fhir
+            - cloudbuild
+        ports:
+            - "8082:3000"
         env_file:
-            - ddcc-chanjo-mediators/.env
+            - dsrf-mediators/.env
 
-    provider:
-        build:
-            context: ../ChanjoKe-provider-web-app
-            dockerfile: docker/Dockerfile.prod
-        container_name: provider
-        restart: unless-stopped
-        networks:
-            - hapi-fhir
-            - cloudbuild
-    client:
-        build:
-            context: ../ChanjoKe-patient-web-app
-            dockerfile: docker/Dockerfile.prod
-        container_name: client
-        restart: unless-stopped
-        networks:
-            - hapi-fhir
-            - cloudbuild
+    # provider:
+    #     build:
+    #         context: ../ChanjoKe-provider-web-app
+    #         dockerfile: docker/Dockerfile.prod
+    #     container_name: provider
+    #     restart: unless-stopped
+    #     networks:
+    #         - hapi-fhir
+    #         - cloudbuild
+    # client:
+    #     build:
+    #         context: ../ChanjoKe-patient-web-app
+    #         dockerfile: docker/Dockerfile.prod
+    #     container_name: client
+    #     restart: unless-stopped
+    #     networks:
+    #         - hapi-fhir
+    #         - cloudbuild
 
 volumes:
     mongodb-data:
