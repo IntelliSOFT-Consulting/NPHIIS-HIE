@@ -10,7 +10,7 @@ router.use(express.json());
 
 const allowedRoles = [
     "ADMINISTRATOR", "NATIONAL_SYSTEM_ADMINISTRATOR", "COUNTY_SYSTEM_ADMINISTRATOR",
-    "SUB_COUNTY_SYSTEM_ADMINISTRATOR", "SUB_COUNTY_STORE_MANAGER", "FACILITY_SYSTEM_ADMINISTRATOR", "FACILITY_STORE_MANAGER", "CLERK", "NURSE"];
+    "SUB_COUNTY_SYSTEM_ADMINISTRATOR", "SUB_COUNTY_STORE_MANAGER", "FACILITY_SYSTEM_ADMINISTRATOR", "CLERK", "NURSE"];
 
 const heirachy = [
     { country: "COUNTRY" },
@@ -42,44 +42,50 @@ router.post("/register", async (req: Request, res: Response) => {
         if (!idNumber || !firstName || !lastName || !role || !email) {
 
         }
-        let practitionerId = v4();
-        let location = await (await FhirApi({ url: `/Location/${facility || '0'}` })).data;
-        console.log(location);
-        if (role !== "ADMINISTRATOR" && location.resourceType !== "Location") {
+        if (role !== "ADMINISTRATOR" && !facility) {
             res.statusCode = 400;
             res.json({ status: "error", error: "Failed to register client user. Invalid location provided" });
             return;
         }
-        console.log(practitionerId);
-        let practitionerResource = {
-            "resourceType": "Practitioner",
-            "meta": { "tag": [{ "system": "http://example.org/fhir/StructureDefinition/location", "code": `Location/${location.id}` }] },
-            "id": practitionerId,
-            "active": true,
-            "identifier": [
-                {
-                    "system": "http://hl7.org/fhir/administrative-identifier",
-                    "value": idNumber
-                }
-            ],
-            "name": [{ "use": "official", "family": lastName, "given": [firstName] }],
-            "extension": [
-                {
-                    "url": "http://example.org/location",
-                    "valueReference": {
-                        "reference": `Location/${location.id}`,
-                        "display": location.name
+        let practitionerId = null;
+        if (role !== "ADMINISTRATOR") {
+            practitionerId = v4();
+            let location = await (await FhirApi({ url: `/Location/${facility || '0'}` })).data;
+            let practitionerResource = {
+                "resourceType": "Practitioner",
+                "meta": { "tag": [{ "system": "http://example.org/fhir/StructureDefinition/location", "code": `Location/${location.id}` }] },
+                "id": practitionerId,
+                "active": true,
+                "identifier": [
+                    {
+                        "system": "http://hl7.org/fhir/administrative-identifier",
+                        "value": idNumber
                     }
-                },
-                {
-                    "url": "http://example.org/fhir/StructureDefinition/role-group",
-                    "valueString": role
-                }
-            ]
-            // "telecom": [{"system": "phone","value": "123-456-7890"}]
-        };
+                ],
+                "name": [{ "use": "official", "family": lastName, "given": [firstName] }],
+                "extension": [
+                    {
+                        "url": "http://example.org/location",
+                        "valueReference": {
+                            "reference": `Location/${location.id}`,
+                            "display": location.name
+                        }
+                    },
+                    {
+                        "url": "http://example.org/fhir/StructureDefinition/role-group",
+                        "valueString": role
+                    }
+                ]
+                // "telecom": [{"system": "phone","value": "123-456-7890"}]
+            };
+            let practitioner = (await FhirApi({ url: `/Practitioner/${practitionerId}`, method: "PUT", data: JSON.stringify(practitionerResource) })).data;
+
+        }
+
+
         let keycloakUser = await registerKeycloakUser(idNumber, email, phone, firstName,
             lastName, password, null, practitionerId, role);
+        console.log(keycloakUser);
         if (!keycloakUser) {
             res.statusCode = 400;
             res.json({ status: "error", error: "Failed to register client user" });
@@ -90,8 +96,7 @@ router.post("/register", async (req: Request, res: Response) => {
             res.json({ ...keycloakUser, status: "error" });
             return;
         }
-        let practitioner = (await FhirApi({ url: `/Practitioner/${practitionerId}`, method: "PUT", data: JSON.stringify(practitionerResource) })).data;
-        console.log(practitioner);
+
         sendRegistrationConfirmationEmail(email, password, idNumber);
         res.statusCode = 201;
         res.json({ response: keycloakUser.success, status: "success" });
@@ -121,18 +126,22 @@ router.post("/login", async (req: Request, res: Response) => {
         }
 
         let userInfo = await findKeycloakUser(idNumber);
+        console.log(userInfo);
         if (!userInfo) {
             res.statusCode = 401;
             res.json({ status: "error", error: "User not found" });
             return;
         }
-        let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}` })).data;
+        if(userInfo.attributes?.fhirPractitionerId?.[0]){
+            let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}` })).data;
 
-        if (!practitioner || !practitioner.active) {
-            res.statusCode = 401;
-            res.json({ status: "error", error: "User not found or not active" });
-            return;
+            if (!practitioner || !practitioner.active) {
+                res.statusCode = 401;
+                res.json({ status: "error", error: "User not found or not active" });
+                return;
+            } 
         }
+        
 
         res.statusCode = 200;
         res.json({ ...token, status: "success" });
@@ -182,6 +191,9 @@ router.get("/me", async (req: Request, res: Response) => {
             return;
         }
         let userInfo = await findKeycloakUser(currentUser.preferred_username);
+        console.log(userInfo)
+        let locationInfo = null;
+        if(userInfo.attributes?.fhirPractitionerId?.[0]){
         let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}` })).data;
         let locationInfo = { facility: "", facilityName: "", ward: "", wardName: "", subCounty: "", subCountyName: "", county: "", countyName: "" };
         if (userInfo.attributes.practitionerRole[0] !== "ADMINISTRATOR") {
@@ -217,18 +229,20 @@ router.get("/me", async (req: Request, res: Response) => {
             locationInfo = _locationInfo;
 
         }
+    }
 
-        // console.log(practitioner.extension[0].valueReference.reference, facilityId);
+        // console.log(practitioner.extension[0].valueReference.reference, facilityId);}
 
         res.statusCode = 200;
         res.json({
             status: "success", user: {
                 firstName: userInfo.firstName, lastName: userInfo.lastName,
-                fhirPractitionerId: userInfo.attributes.fhirPractitionerId[0],
-                practitionerRole: userInfo.attributes.practitionerRole[0],
+                // fhirPractitionerId: userInfo.attributes.fhirPractitionerId[0],
+                // practitionerRole: userInfo.attributes.practitionerRole[0],
+                role: "ADMINISTRATOR",
                 id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
                 phone: (userInfo.attributes?.phone ? userInfo.attributes?.phone[0] : null), email: userInfo.email ?? null,
-                ...locationInfo
+                ...(locationInfo != null && { locationInfo })
             }
         });
         return;
