@@ -55,6 +55,7 @@ version: '2.4'
 services:
   pipeline-controller:
     image: us-docker.pkg.dev/cloud-build-fhir/fhir-analytics/main:latest
+    restart: always
     container_name: pipeline-controller
     volumes:
       - ${PIPELINE_CONFIG}:/app/config:ro
@@ -70,6 +71,7 @@ services:
 
   spark:
     image: docker.io/bitnami/spark:3.3
+    restart: always
     container_name: spark-thriftserver
     command:
       - sbin/start-thriftserver.sh
