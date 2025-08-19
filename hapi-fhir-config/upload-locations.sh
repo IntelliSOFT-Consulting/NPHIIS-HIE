@@ -22,19 +22,19 @@ echo $HAPI_FHIR_BASE
 # FHIR base is online, proceed with upload
 echo "FHIR base is online. Uploading files..."
 
-HAPI_FHIR_BASE="https://immunization.health.go.ke/chanjo-hapi/fhir"
+HAPI_FHIR_BASE="https://dsrfhir.intellisoftkenya.com/hapi/fhir"
 
 # Upload files using curl
 echo "Beginning Upload"
-curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d ./fhir-bundle-counties-kenya.json $HAPI_FHIR_BASE && \
+curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d @fhir-bundle-counties-kenya.json $HAPI_FHIR_BASE && \
 echo "Uploading counties complete." && \
-curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d ./fhir-bundle-sub-counties-kenya.json $HAPI_FHIR_BASE && \
+curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d @fhir-bundle-sub-counties-kenya.json $HAPI_FHIR_BASE && \
 echo "Uploading sub-counties complete." && \
-curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d ./fhir-bundle-wards-kenya.json $HAPI_FHIR_BASE && \
+curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d @fhir-bundle-wards-kenya.json $HAPI_FHIR_BASE && \
 echo "Uploading wards complete." && \
-curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d ./fhir-bundle-facilities-kenya.json $HAPI_FHIR_BASE && \
+curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d @fhir-bundle-facilities-kenya.json $HAPI_FHIR_BASE && \
 echo "Uploading facilities complete." && \
-curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d ./fhir-bundle-community-units-kenya.json $HAPI_FHIR_BASE && \
+curl -X POST -H "Content-Type: application/fhir+json" -o /dev/null -d @fhir-bundle-community-units-kenya.json $HAPI_FHIR_BASE && \
 echo "Uploading community units complete."
 
 echo "Upload complete."
