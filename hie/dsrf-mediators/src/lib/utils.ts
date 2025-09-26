@@ -120,7 +120,9 @@ export const installChannels = async () => {
 
 // a fetch wrapper for HAPI FHIR server.
 export const FhirApi = async (params: any) => {
-    let _defaultHeaders = { "Content-Type": 'application/json' }
+    // disable cache
+    params.disableCache = true;
+    let _defaultHeaders = { "Content-Type": 'application/json', "Cache-Control": "no-cache" }
     if (!params.method) {
         params.method = 'GET';
     }
