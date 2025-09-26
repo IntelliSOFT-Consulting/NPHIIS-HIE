@@ -130,21 +130,21 @@ services:
             - ./echis-chanjo-mediators:/usr/app
 
 
-    chanjoke-auth:
+    hie-auth:
         depends_on:
             - hapi-fhir-jpa
-        container_name: chanjoke-auth
+        container_name: hie-auth
         build:
-            context: ../chanjoke-auth
+            context: ../hie-auth
             dockerfile: Dockerfile.dev
         restart: unless-stopped
         networks:
             - cloudbuild
             - hapi-fhir
         env_file:
-            - ../chanjoke-auth/.env
+            - ../hie-auth/.env
         volumes:
-            - ../chanjoke-auth:/usr/chanjoke-auth
+            - ../hie-auth:/usr/hie-auth
         ports:
             - "8088:3000"
 

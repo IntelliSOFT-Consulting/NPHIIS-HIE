@@ -42,6 +42,8 @@ services:
   redis:
     image: redis:7
     container_name: superset_cache
+    networks:
+      - cloudbuild
     restart: unless-stopped
     # ports:
       # - "127.0.0.1:6379:6379"
@@ -53,6 +55,8 @@ services:
     image: postgres:15
     container_name: superset_db
     restart: unless-stopped
+    networks:
+      - cloudbuild
     # ports:
       # - "127.0.0.1:5432:5432"
     volumes:
