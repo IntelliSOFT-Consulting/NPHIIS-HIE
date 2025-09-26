@@ -27,8 +27,8 @@ fhirdata:
   fhirServerUrl: "http://hapi-fhir-jpa:8080/fhir"
   dbConfig: "config/hapi-postgres-config_local.json"
   dwhRootPrefix: "/dwh/controller_DWH"
-  incrementalSchedule: "0/30 * * * * *"
-  purgeSchedule: "0 30 * * * *"
+  incrementalSchedule: "0 0 */2 * * *"
+  purgeSchedule: "0 30 */2 * * *"
   numOfDwhSnapshotsToRetain: 2
   # There is no Questionnaire in our test FHIR server, but it is added to
   # prevent regression of https://github.com/google/fhir-data-pipes/issues/785.

@@ -134,6 +134,7 @@ services:
     dsrf-mediators:
         depends_on:
             - hapi-fhir-jpa
+            - dsrf-mediators-postgres
         container_name: dsrf-mediators
         build:
             context: dsrf-mediators
@@ -147,6 +148,23 @@ services:
             - "8082:3000"
         env_file:
             - dsrf-mediators/.env
+            
+
+    dsrf-mediators-postgres:
+        container_name: dsrf-mediators-postgres
+        image: postgres:14-alpine
+        restart: always
+        networks:
+            - hapi-fhir
+            - cloudbuild
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_DB: dsrf-mediators
+            POSTGRES_PASSWORD: dsrf-mediators123
+        # ports:
+            # - "5432:5432"
+        volumes:
+            - 'dsrf-mediators-postgres:/var/lib/postgresql/data'
 
     # provider:
     #     build:
@@ -171,3 +189,4 @@ volumes:
     mongodb-data:
     hapi-fhir-postgres:
     hapi:
+    dsrf-mediators-postgres:

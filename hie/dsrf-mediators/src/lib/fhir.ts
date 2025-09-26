@@ -1,8 +1,9 @@
 
 
-// Criteria for a ChanjoKE Service Request
 
 import { FhirApi } from "./utils";
+
+let reasonCode = "mpox-register";
 
 
 let OperationOutcome = (error: any) => {
@@ -27,7 +28,7 @@ export let createFHIRSubscription = async () => {
                 resourceType: 'Subscription',
                 id: FHIR_SUBSCRIPTION_ID,
                 status: "active",
-                criteria: 'Encounter?reason-code=case-information',
+                criteria: `Encounter?reason-code=${reasonCode}`,
                 channel: {
                     type: 'rest-hook',
                     endpoint: FHIR_SUBSCRIPTION_CALLBACK_URL,
