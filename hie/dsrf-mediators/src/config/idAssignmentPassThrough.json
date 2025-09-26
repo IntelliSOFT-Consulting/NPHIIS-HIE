@@ -1,0 +1,35 @@
+{
+    "urn": "urn:mediator:id-assign-mediator",
+    "version": "1.0.0",
+    "name": "ID Assignment Mediator",
+    "description": "This mediator is responsible for handling Case ID Assignment.",
+    "defaultChannelConfig": [
+      {
+        "name": "ID Assignment Channel",
+        "urlPattern": "/process-case-encounter/assign-ids",
+        "routes": [
+          {
+            "name": "ID Assignment Route",
+            "host": "dsrf-mediators",
+            "path": "/process-case-encounter/assign-ids",
+            "port": "3000",
+            "primary": true,
+            "type": "http"
+          }
+        ],
+        "allow": ["*"],
+        "methods": ["GET", "POST", "PUT", "PATCH"],
+        "type": "http"
+      }
+    ],
+    "endpoints": [
+      {
+        "name": "ID Assignment Mediator Endpoint",
+        "host": "dsrf-mediators",
+        "path": "/process-case-encounter/assign-ids",
+        "port": "3000",
+        "primary": true,
+        "type": "http"
+      }
+    ]
+  }

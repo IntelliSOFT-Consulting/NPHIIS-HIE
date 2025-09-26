@@ -1,0 +1,21 @@
+FROM node:18-slim
+WORKDIR /usr/app/
+
+# Install required dependencies for Prisma
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# COPY package.json .
+RUN npm install typescript yarn -g --force
+# Remove any global Prisma installation to avoid version conflicts
+RUN npm uninstall -g prisma || true
+COPY . .
+
+# Generate Prisma client using local version
+RUN ./node_modules/.bin/prisma generate
+
+EXPOSE 3000
+# CMD ["node", "./build/index.js"]
+CMD ["yarn", "dev"]
