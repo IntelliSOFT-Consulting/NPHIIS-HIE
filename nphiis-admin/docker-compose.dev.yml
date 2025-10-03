@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  nphiis-admin-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST:-http://localhost:3000}
+      - PORT=3000
+    volumes:
+      # Mount source code for hot reloading
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    restart: unless-stopped
+    networks:
+      - nphiis-network
+
+networks:
+  nphiis-network:
+    driver: bridge
