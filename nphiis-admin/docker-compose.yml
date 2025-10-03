@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  nphiis-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST:-http://localhost:3000}
+      - PORT=3000
+    volumes:
+      # Mount logs if needed
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - nphiis-network
+
+networks:
+  nphiis-network:
+    driver: bridge
