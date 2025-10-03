@@ -20,7 +20,7 @@ router.post("/register", async (req: Request, res: Response) => {
             let patient = response.data.entry[0].resource;
             console.log(patient);
             // register patient/client user on Keycloak
-            let keycloakUser = await registerKeycloakUser(idNumber, email, phone, patient.name[0].family, patient.name[0].given.join(' '), password, patient.id, null, null);
+            let keycloakUser = await registerKeycloakUser(idNumber, email, phone, patient.name[0].family, patient.name[0].given.join(' '), password, patient.id);
             if(!keycloakUser){
                 res.statusCode = 400;
                 res.json({ status: "error", error: "Failed to register client user" });
@@ -59,9 +59,11 @@ router.post("/login", async (req: Request, res: Response) => {
 
         console.log(userInfo)
 
+        let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo?.id}` })).data;
 
-        let isPractitioner = userInfo?.attributes?.practitionerRole;
-        if(isPractitioner){
+
+        let isPractitioner = practitioner.resourceType === "Practitioner";
+        if(!isPractitioner){
             res.statusCode = 401;
             res.json({ status: "error", error:"Unauthorized client login." });
             return;
@@ -125,6 +127,8 @@ router.get("/me", async (req: Request, res: Response) => {
     }
 });
 
+// Note: POST /me functionality has been moved to PUT /users/{username} in provider-auth.ts
+// This endpoint is kept for backward compatibility but should be considered deprecated
 router.post("/me", async (req: Request, res: Response) => {
     try {
         const accessToken = req.headers.authorization?.split(' ')[1] || null;

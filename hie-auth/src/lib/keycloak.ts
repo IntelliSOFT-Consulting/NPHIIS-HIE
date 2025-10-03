@@ -30,7 +30,6 @@ export const getKeycloakAdminToken = async () => {
               grant_type: 'client_credentials', client_id: KC_CLIENT_ID, client_secret: KC_CLIENT_SECRET, }),
           });
         const tokenData: any = await tokenResponse.json();
-        console.log("TOKEn", tokenData)
         return tokenData
     } catch (error) {
         return null;
@@ -146,16 +145,29 @@ export const updateUserProfile = async (
 ) => {
   try {
     let user = await findKeycloakUser(username);
+    if (!user) {
+      console.error(`User not found: ${username}`);
+      return null;
+    }
+    
     const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) {
+      console.error('Failed to get admin token');
+      return null;
+    }
     
     let updatedAttributes = { ...user.attributes };
     
-    updatedAttributes.phone = phone ? [phone] : updatedAttributes.phone || user.phone ? [user.phone] : null;
+    // Fix phone attribute handling - only update if phone is provided
+    if (phone !== null) {
+      updatedAttributes.phone = [phone];
+    }
     
     if (resetCode !== null) {
       updatedAttributes.resetCode = [resetCode];
     }
     
+    // Fix role update logic - only update if practitionerRole is provided
     if (practitionerRole !== null) {
       updatedAttributes.practitionerRole = [practitionerRole];
     }
@@ -164,10 +176,19 @@ export const updateUserProfile = async (
       attributes: updatedAttributes
     };
     
-    requestBody.email = email || user.email;
-  
+    // Only update email if provided
+    if (email !== null) {
+      requestBody.email = email;
+    }
 
-    const response = await (await fetch(
+    console.log(`Updating user profile for ${username}:`, {
+      phone: phone !== null ? phone : 'not updating',
+      email: email !== null ? email : 'not updating', 
+      resetCode: resetCode !== null ? 'updating' : 'not updating',
+      practitionerRole: practitionerRole !== null ? practitionerRole : 'not updating'
+    });
+
+    const response = await fetch(
       `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`,
       {
         headers: {
@@ -177,16 +198,27 @@ export const updateUserProfile = async (
         method: "PUT",
         body: JSON.stringify(requestBody)
       }
-    ));
+    );
 
-    return response.ok ? true : null;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Failed to update user profile for ${username}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      return null;
+    }
+
+    console.log(`Successfully updated user profile for ${username}`);
+    return true;
   } catch (error) {
-    console.error(error);
+    console.error(`Error updating user profile for ${username}:`, error);
     return null;
   }
 }
 
-export const registerKeycloakUser = async (username: string, email: string | null, phone: string | null,lastName: string, firstName: string, password: string, fhirPatientId: string | null, fhirPractitionerId: string | null, practitionerRole: string | null) => {
+export const registerKeycloakUser = async (username: string, email: string | null, phone: string | null,lastName: string, firstName: string, password: string, fhirPatientId: string | null) => {
     try {
         
         // Authenticate
@@ -213,9 +245,7 @@ export const registerKeycloakUser = async (username: string, email: string | nul
                 },],
               attributes: {
                 fhirPatientId,
-                practitionerRole,
                 phone,
-                ...(fhirPractitionerId != null && { fhirPractitionerId })
               },
             }),
           })
@@ -223,14 +253,16 @@ export const registerKeycloakUser = async (username: string, email: string | nul
         let responseCode = (createUserResponse.status)
         if(responseCode === 201){
           await updateUserPassword(username, password);
-          return {success: "User registered successfully"}
+          const token = await getKeycloakUserToken(username, password);
+          const user =  await getCurrentUserInfo(token.access_token);
+          return {success: "User registered successfully", id: user?.sub}
         }
-        const userData = await createUserResponse.json();
+        const userData: any = await createUserResponse.json();
         console.log('User created successfully:', userData);
         if (Object.keys(userData).indexOf('errorMessage') > -1){
-          return {error: userData.errorMessage.replace("username", "idNumber or email")}
+          return {error: userData.errorMessage.replace("username", "idNumber or email"), }
         }
-        return userData;
+        return {error: userData.errorMessage.replace("username", "idNumber or email"),};
     } catch (error) {
         console.log(error);
         return null;
@@ -294,7 +326,8 @@ export const getCurrentUserInfo = async (accessToken: string) => {
 export const getKeycloakUsers = async () => {
   try {
     const accessToken = (await getKeycloakAdminToken()).access_token;
-    const response = await (await fetch(
+    
+    const response = await fetch(
       `${KC_BASE_URL}/admin/realms/${KC_REALM}/users`,
       {
         headers: {
@@ -302,26 +335,32 @@ export const getKeycloakUsers = async () => {
           'Content-Type': 'application/json',
         },
       }
-    )).json();
-    // console.log(response);
-    // return response.data;
+    );
 
-    let responseData: any = [];
-    response.map((i: any) =>{
-      responseData.push({
-        username: i.username, 
-        firstName: i.firstName, 
-        lastName: i.lastName, 
-        email: i.email, 
-        phone: i?.attributes?.phone?.[0],
-        role: i?.attributes?.practitionerRole?.[0],
-        // attr: i?.attributes
-      })
-    });
+    if (!response.ok) {
+      console.error(`Keycloak API error: ${response.status} ${response.statusText}`);
+      return null;
+    }
+
+    const users = await response.json();
+    
+    // Optimized transformation using proper map instead of map + push
+    const responseData = users.map((user: any) => ({
+      id: user.id,
+      username: user.username, 
+      firstName: user.firstName, 
+      lastName: user.lastName, 
+      email: user.email, 
+      phone: user?.attributes?.phone?.[0] || null,
+      role: user?.attributes?.practitionerRole?.[0] || null,
+      active: user.enabled,
+      createdTimestamp: user.createdTimestamp
+    }));
+
     return responseData;
   } catch (error) {
-    console.log(error);
-   return null;   
+    console.error('Error fetching Keycloak users:', error);
+    return null;   
   }
 }
 
@@ -367,6 +406,23 @@ export const sendPasswordResetLink = async (idNumber: string) => {
     return {status: "error", error: JSON.stringify(error)}
   }
 }
+
+// Authentication helper functions
+export const validateBearerToken = (req: any): string | null => {
+    const accessToken = req.headers.authorization?.split(' ')[1] || null;
+    if (!accessToken || req.headers.authorization?.split(' ')[0] !== "Bearer") {
+        return null;
+    }
+    return accessToken;
+};
+
+export const validateUserAuthentication = async (accessToken: string) => {
+    const currentUser = await getCurrentUserInfo(accessToken);
+    if (!currentUser) {
+        return null;
+    }
+    return currentUser;
+};
 
 
 // validateResetCodeAndResetPassword("123456", "89898")
