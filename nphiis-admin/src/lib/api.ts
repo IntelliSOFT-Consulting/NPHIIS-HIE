@@ -2,6 +2,7 @@ import { User, CreateUserRequest } from '@/types/user';
 
 // API host configuration
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:3000';
+const FHIR_BASE_URL = process.env.NEXT_PUBLIC_FHIR_BASE_URL || 'https://dsrfhir.intellisoftkenya.com/hapi/fhir';
 
 // Authentication types
 interface LoginRequest {
@@ -109,7 +110,7 @@ export const userApi = {
       const data = await response.json();
       
       if (data.status === 'success') {
-        // Map the API response to our User interface
+        // Map the API response to our User interface with full location details
         return {
           id: data.user.id,
           username: data.user.idNumber,
@@ -120,7 +121,22 @@ export const userApi = {
           locationId: data.user.locationInfo?.facility || '',
           role: data.user.role || data.user.practitionerRole,
           enabled: true, // Default to enabled since API doesn't provide this
-          createdTimestamp: Date.now() // Default timestamp
+          createdTimestamp: Date.now(), // Default timestamp
+          fhirPractitionerId: data.user.fhirPractitionerId,
+          practitionerRole: data.user.practitionerRole,
+          idNumber: data.user.idNumber,
+          locationInfo: data.user.locationInfo ? {
+            facility: data.user.locationInfo.facility || '',
+            facilityName: data.user.locationInfo.facilityName || '',
+            ward: data.user.locationInfo.ward || '',
+            wardName: data.user.locationInfo.wardName || '',
+            subCounty: data.user.locationInfo.subCounty || '',
+            subCountyName: data.user.locationInfo.subCountyName || '',
+            county: data.user.locationInfo.county || '',
+            countyName: data.user.locationInfo.countyName || '',
+            country: data.user.locationInfo.country || '',
+            countryName: data.user.locationInfo.countryName || ''
+          } : undefined
         };
       } else {
         const error = new Error(data.error || 'Failed to fetch user');
@@ -326,6 +342,22 @@ export const getAccessToken = (): string | null => {
   return null;
 };
 
+// Helper function to check if error is unauthorized
+export const isUnauthorizedError = (error: any): boolean => {
+  return error?.response?.status === 401 || error?.response?.status === 403;
+};
+
+// Helper function to handle logout and redirect to login
+export const handleUnauthorized = (): void => {
+  if (typeof window === 'undefined') return;
+  
+  // Clear authentication data
+  localStorage.removeItem('nphiis-admin-auth');
+  
+  // Redirect to login page
+  window.location.href = '/login';
+};
+
 // Authentication API functions
 export const authApi = {
   // Login with ID number and password
@@ -429,6 +461,259 @@ export const authApi = {
         success: false,
         error: 'Authentication failed'
       };
+    }
+  }
+};
+
+// FHIR types
+export interface FhirCounty {
+  id: string;
+  name: string;
+  code?: string;
+}
+
+export interface FhirSubCounty {
+  id: string;
+  name: string;
+  countyId: string;
+  countyName?: string;
+}
+
+export interface FhirWard {
+  id: string;
+  name: string;
+  subCountyId: string;
+  subCountyName?: string;
+}
+
+export interface FhirFacility {
+  id: string;
+  name: string;
+  wardId: string;
+  wardName?: string;
+}
+
+interface FhirCoding {
+  system?: string;
+  code?: string;
+  display?: string;
+}
+
+interface FhirType {
+  coding?: FhirCoding[];
+}
+
+interface FhirPartOf {
+  reference?: string;
+  display?: string;
+}
+
+interface FhirLocation {
+  resourceType: string;
+  id: string;
+  name?: string;
+  type?: FhirType[];
+  partOf?: FhirPartOf;
+}
+
+interface FhirBundleEntry {
+  fullUrl?: string;
+  resource?: FhirLocation;
+}
+
+interface FhirBundle {
+  resourceType: string;
+  type: string;
+  entry?: FhirBundleEntry[];
+  link?: Array<{
+    relation: string;
+    url: string;
+  }>;
+}
+
+// FHIR API functions
+export const fhirApi = {
+  // Get all counties from FHIR server
+  getCounties: async (): Promise<FhirCounty[]> => {
+    try {
+      const response = await fetch(`${FHIR_BASE_URL}/Location?type:code=COUNTY&_count=100`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const bundle: FhirBundle = await response.json();
+      
+      if (!bundle.entry) {
+        return [];
+      }
+
+      // Map FHIR Location resources to our County interface
+      const counties: FhirCounty[] = bundle.entry
+        .filter(entry => entry.resource && entry.resource.name)
+        .map(entry => ({
+          id: entry.resource!.id,
+          name: entry.resource!.name!,
+          code: entry.resource!.type?.[0]?.coding?.[0]?.code
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+
+      return counties;
+    } catch (error) {
+      console.error('Error fetching counties from FHIR:', error);
+      throw error;
+    }
+  },
+
+  // Get sub-counties for a specific county
+  getSubCounties: async (countyId: string): Promise<FhirSubCounty[]> => {
+    try {
+      const response = await fetch(`${FHIR_BASE_URL}/Location?partof=Location/${countyId}&_count=100`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const bundle: FhirBundle = await response.json();
+      
+      if (!bundle.entry) {
+        return [];
+      }
+
+      // Map FHIR Location resources to our SubCounty interface
+      const subCounties: FhirSubCounty[] = bundle.entry
+        .filter(entry => entry.resource && entry.resource.name)
+        .map(entry => ({
+          id: entry.resource!.id,
+          name: entry.resource!.name!,
+          countyId: countyId,
+          countyName: entry.resource!.partOf?.display
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+
+      return subCounties;
+    } catch (error) {
+      console.error('Error fetching sub-counties from FHIR:', error);
+      throw error;
+    }
+  },
+
+  // Get wards for a specific sub-county
+  getWards: async (subCountyId: string): Promise<FhirWard[]> => {
+    try {
+      const response = await fetch(`${FHIR_BASE_URL}/Location?partof=Location/${subCountyId}&_count=100`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const bundle: FhirBundle = await response.json();
+      
+      if (!bundle.entry) {
+        return [];
+      }
+
+      // Map FHIR Location resources to our Ward interface
+      const wards: FhirWard[] = bundle.entry
+        .filter(entry => entry.resource && entry.resource.name)
+        .map(entry => ({
+          id: entry.resource!.id,
+          name: entry.resource!.name!,
+          subCountyId: subCountyId,
+          subCountyName: entry.resource!.partOf?.display
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+
+      return wards;
+    } catch (error) {
+      console.error('Error fetching wards from FHIR:', error);
+      throw error;
+    }
+  },
+
+  // Get facilities for a specific ward
+  getFacilities: async (wardId: string): Promise<FhirFacility[]> => {
+    try {
+      const response = await fetch(`${FHIR_BASE_URL}/Location?partof=Location/${wardId}&_count=100`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const bundle: FhirBundle = await response.json();
+      
+      if (!bundle.entry) {
+        return [];
+      }
+
+      // Map FHIR Location resources to our Facility interface
+      const facilities: FhirFacility[] = bundle.entry
+        .filter(entry => entry.resource && entry.resource.name)
+        .map(entry => ({
+          id: entry.resource!.id,
+          name: entry.resource!.name!,
+          wardId: wardId,
+          wardName: entry.resource!.partOf?.display
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+
+      return facilities;
+    } catch (error) {
+      console.error('Error fetching facilities from FHIR:', error);
+      throw error;
+    }
+  },
+
+  // Get all locations (for future use)
+  getLocations: async (typeCode?: string): Promise<FhirLocation[]> => {
+    try {
+      const url = typeCode 
+        ? `${FHIR_BASE_URL}/Location?type:code=${typeCode}&_count=100`
+        : `${FHIR_BASE_URL}/Location?_count=100`;
+        
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const bundle: FhirBundle = await response.json();
+      
+      if (!bundle.entry) {
+        return [];
+      }
+
+      return bundle.entry
+        .filter(entry => entry.resource)
+        .map(entry => entry.resource!);
+    } catch (error) {
+      console.error('Error fetching locations from FHIR:', error);
+      throw error;
     }
   }
 };
