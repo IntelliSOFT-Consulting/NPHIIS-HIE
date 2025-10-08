@@ -39,6 +39,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [passwordResetUser, setPasswordResetUser] = useState<User | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [loadingUserDetails, setLoadingUserDetails] = useState(false);
   // const { notifications, showSuccess, showError, removeNotification } = useNotification();
 
   useEffect(() => {
@@ -123,6 +124,26 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
 
   const handlePasswordReset = () => {
     loadUsers();
+  };
+
+  const handleViewUserDetails = async (user: User) => {
+    setLoadingUserDetails(true);
+    try {
+      const accessToken = getAccessToken();
+      if (!accessToken) {
+        alert('No access token found. Please log in again.');
+        return;
+      }
+      
+      // Fetch detailed user information using the idNumber (username)
+      const detailedUser = await userApi.getUserById(user.username, accessToken);
+      setSelectedUser(detailedUser);
+    } catch (err: any) {
+      console.error('Error fetching user details:', err);
+      alert('Failed to load user details. Please try again.');
+    } finally {
+      setLoadingUserDetails(false);
+    }
   };
 
   const getRoleBadgeColor = (role: string) => {
@@ -243,15 +264,6 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                     Contact
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Location ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -282,29 +294,21 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                       <div className="text-sm text-gray-900">{user.email || 'N/A'}</div>
                       <div className="text-sm text-gray-500">{user.phone || 'N/A'}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(user.role || 'Unknown')}`}>
-                        {user.role || 'Unknown'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.locationId || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {user.enabled ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => setSelectedUser(user)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                          onClick={() => handleViewUserDetails(user)}
+                          disabled={loadingUserDetails}
+                          className={`text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 relative ${
+                            loadingUserDetails ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                           title="View details"
                         >
-                          <EyeIcon className="h-4 w-4" />
+                          {loadingUserDetails ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          ) : (
+                            <EyeIcon className="h-4 w-4" />
+                          )}
                         </button>
                         <button
                           onClick={() => setEditingUser(user)}
@@ -356,8 +360,21 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
         )}
       </div>
 
+      {/* Loading Modal */}
+      {loadingUserDetails && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-8 border w-96 shadow-lg rounded-md bg-white">
+            <div className="flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading User Details</h3>
+              <p className="text-sm text-gray-600 text-center">Please wait while we fetch the user information...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Enhanced User Details Modal */}
-      {selectedUser && (
+      {selectedUser && !loadingUserDetails && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
             <div className="mt-3">
@@ -366,7 +383,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                 <div className="flex items-center space-x-3">
                   <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                     <span className="text-lg font-semibold text-blue-600">
-                      {selectedUser.firstName.charAt(0)}{selectedUser.lastName.charAt(0)}
+                      {selectedUser.firstName?.charAt(0) || 'U'}{selectedUser.lastName?.charAt(0) || ''}
                     </span>
                   </div>
                   <div>
@@ -421,34 +438,43 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                   <div className="space-y-4">
                     <div className="flex items-start space-x-3">
                       <IdentificationIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                      <div>
+                      <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700">Full Name</label>
                         <p className="text-sm text-gray-900">{selectedUser.firstName} {selectedUser.lastName}</p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
                       <IdentificationIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Username</label>
-                        <p className="text-sm text-gray-900 font-mono" title={selectedUser.username}>
-                          {selectedUser.username.length > 10 ? `${selectedUser.username.substring(0, 10)}...` : selectedUser.username}
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700">ID Number</label>
+                        <p className="text-sm text-gray-900 font-mono">
+                          {selectedUser.idNumber || selectedUser.username}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
                       <EnvelopeIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                      <div>
+                      <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700">Email Address</label>
-                        <p className="text-sm text-gray-900">{selectedUser.email}</p>
+                        <p className="text-sm text-gray-900">{selectedUser.email || 'N/A'}</p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
                       <PhoneIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                      <div>
+                      <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                        <p className="text-sm text-gray-900">{selectedUser.phone}</p>
+                        <p className="text-sm text-gray-900">{selectedUser.phone || 'N/A'}</p>
                       </div>
                     </div>
+                    {selectedUser.fhirPractitionerId && (
+                      <div className="flex items-start space-x-3">
+                        <IdentificationIcon className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700">FHIR Practitioner ID</label>
+                          <p className="text-sm text-gray-900 font-mono break-all">{selectedUser.fhirPractitionerId}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -461,23 +487,16 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                   <div className="space-y-4">
                     <div className="flex items-start space-x-3">
                       <ShieldCheckIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                      <div>
+                      <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700">User Role</label>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role)}`}>
-                          {selectedUser.role}
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role || selectedUser.practitionerRole)}`}>
+                          {selectedUser.role || selectedUser.practitionerRole}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
-                      <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Location ID</label>
-                        <p className="text-sm text-gray-900 font-mono">{selectedUser.locationId}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
                       <CheckCircleIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                      <div>
+                      <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700">Account Status</label>
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           selectedUser.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -488,7 +507,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                     </div>
                     <div className="flex items-start space-x-3">
                       <CalendarIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                      <div>
+                      <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700">Created Date</label>
                         <p className="text-sm text-gray-900">
                           {selectedUser.createdTimestamp 
@@ -507,6 +526,75 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                   </div>
                 </div>
               </div>
+
+              {/* Location Information Section */}
+              {selectedUser.locationInfo && (
+                <div className="mt-6 bg-white border border-gray-200 rounded-lg p-6">
+                  <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <MapPinIcon className="h-5 w-5 mr-2 text-blue-600" />
+                    Location Information
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedUser.locationInfo.countryName && (
+                      <div className="flex items-start space-x-3">
+                        <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700">Country</label>
+                          <p className="text-sm text-gray-900">{selectedUser.locationInfo.countryName}</p>
+                        </div>
+                      </div>
+                    )}
+                    {selectedUser.locationInfo.countyName && (
+                      <div className="flex items-start space-x-3">
+                        <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700">County</label>
+                          <p className="text-sm text-gray-900">{selectedUser.locationInfo.countyName}</p>
+                          {selectedUser.locationInfo.county && (
+                            <p className="text-xs text-gray-500 font-mono">Code: {selectedUser.locationInfo.county}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {selectedUser.locationInfo.subCountyName && (
+                      <div className="flex items-start space-x-3">
+                        <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700">Sub-County</label>
+                          <p className="text-sm text-gray-900">{selectedUser.locationInfo.subCountyName}</p>
+                          {selectedUser.locationInfo.subCounty && (
+                            <p className="text-xs text-gray-500 font-mono">Code: {selectedUser.locationInfo.subCounty}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {selectedUser.locationInfo.wardName && (
+                      <div className="flex items-start space-x-3">
+                        <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700">Ward</label>
+                          <p className="text-sm text-gray-900">{selectedUser.locationInfo.wardName}</p>
+                          {selectedUser.locationInfo.ward && (
+                            <p className="text-xs text-gray-500 font-mono">Code: {selectedUser.locationInfo.ward}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {selectedUser.locationInfo.facilityName && (
+                      <div className="flex items-start space-x-3 md:col-span-2">
+                        <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700">Facility</label>
+                          <p className="text-sm text-gray-900">{selectedUser.locationInfo.facilityName}</p>
+                          {selectedUser.locationInfo.facility && (
+                            <p className="text-xs text-gray-500 font-mono">Code: {selectedUser.locationInfo.facility}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Quick Actions */}
               <div className="mt-6 bg-gray-50 rounded-lg p-4">

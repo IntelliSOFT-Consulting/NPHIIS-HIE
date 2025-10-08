@@ -423,8 +423,3 @@ export const validateUserAuthentication = async (accessToken: string) => {
     }
     return currentUser;
 };
-
-
-// validateResetCodeAndResetPassword("123456", "89898")
-// sendPasswordResetLink("1234567")
-// deleteResetCode("123456")
