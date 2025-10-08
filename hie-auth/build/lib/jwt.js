@@ -11,7 +11,7 @@ function encodeSession(secretKey, partialSession) {
     const expires = issued + fifteenMinutesInMs;
     const session = Object.assign(Object.assign({}, partialSession), { issued: issued, expires: expires });
     return {
-        token: jwt_simple_1.encode(session, secretKey, algorithm),
+        token: (0, jwt_simple_1.encode)(session, secretKey, algorithm),
         issued: issued,
         expires: expires
     };
@@ -33,7 +33,7 @@ function decodeSession(secretKey, tokenString) {
     const algorithm = "HS512";
     let result;
     try {
-        result = jwt_simple_1.decode(tokenString, secretKey, false, algorithm);
+        result = (0, jwt_simple_1.decode)(tokenString, secretKey, false, algorithm);
     }
     catch (e) {
         const _e = e;

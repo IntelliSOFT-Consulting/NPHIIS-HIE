@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const utils_1 = require("../lib/utils");
 const keycloak_1 = require("./../lib/keycloak");
+const email_1 = require("../lib/email");
 const router = express_1.default.Router();
 router.use(express_1.default.json());
 router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -27,12 +28,12 @@ router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, functio
             res.json({ status: "error", error: "secretCode, idNumber and password are required" });
             return;
         }
-        let response = yield utils_1.FhirApi({ url: `/Patient?identifier=${secretCode},${idNumber}` });
+        let response = yield (0, utils_1.FhirApi)({ url: `/Patient?identifier=${secretCode},${idNumber}` });
         if (((_a = response.data) === null || _a === void 0 ? void 0 : _a.entry) || ((_b = response.data) === null || _b === void 0 ? void 0 : _b.count)) { // Patient is found
             let patient = response.data.entry[0].resource;
             console.log(patient);
             // register patient/client user on Keycloak
-            let keycloakUser = yield keycloak_1.registerKeycloakUser(idNumber, email, phone, patient.name[0].family, patient.name[0].given[0], password, patient.id, null, null);
+            let keycloakUser = yield (0, keycloak_1.registerKeycloakUser)(idNumber, email, phone, patient.name[0].family, patient.name[0].given.join(' '), password, patient.id);
             if (!keycloakUser) {
                 res.statusCode = 400;
                 res.json({ status: "error", error: "Failed to register client user" });
@@ -65,7 +66,17 @@ router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, functio
 router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let { idNumber, password } = req.body;
-        let token = yield keycloak_1.getKeycloakUserToken(idNumber, password);
+        let token = yield (0, keycloak_1.getKeycloakUserToken)(idNumber, password);
+        let user = yield (0, keycloak_1.getCurrentUserInfo)(token.access_token);
+        let userInfo = yield (0, keycloak_1.findKeycloakUser)(user.preferred_username);
+        console.log(userInfo);
+        let practitioner = yield (yield (0, utils_1.FhirApi)({ url: `/Practitioner/${userInfo === null || userInfo === void 0 ? void 0 : userInfo.id}` })).data;
+        let isPractitioner = practitioner.resourceType === "Practitioner";
+        if (!isPractitioner) {
+            res.statusCode = 401;
+            res.json({ status: "error", error: "Unauthorized client login." });
+            return;
+        }
         if (!token) {
             res.statusCode = 401;
             res.json({ status: "error", error: "Incorrect ID Number or Password provided" });
@@ -96,9 +107,9 @@ router.get("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.json({ status: "error", error: "Bearer token is required but not provided" });
             return;
         }
-        let currentUser = yield keycloak_1.getCurrentUserInfo(accessToken);
+        let currentUser = yield (0, keycloak_1.getCurrentUserInfo)(accessToken);
         console.log(currentUser);
-        let userInfo = yield keycloak_1.findKeycloakUser(currentUser.preferred_username);
+        let userInfo = yield (0, keycloak_1.findKeycloakUser)(currentUser.preferred_username);
         console.log(userInfo);
         if (!currentUser) {
             res.statusCode = 401;
@@ -108,7 +119,8 @@ router.get("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.statusCode = 200;
         res.json({ status: "success", user: { firstName: userInfo.firstName, lastName: userInfo.lastName,
                 fhirPatientId: userInfo.attributes.fhirPatientId[0],
-                id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name, phone: (((_e = userInfo.attributes) === null || _e === void 0 ? void 0 : _e.phone) ? (_f = userInfo.attributes) === null || _f === void 0 ? void 0 : _f.phone[0] : null), email: (_g = userInfo.email) !== null && _g !== void 0 ? _g : null
+                id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
+                phone: (((_e = userInfo.attributes) === null || _e === void 0 ? void 0 : _e.phone) ? (_f = userInfo.attributes) === null || _f === void 0 ? void 0 : _f.phone[0] : null), email: (_g = userInfo.email) !== null && _g !== void 0 ? _g : null
             } });
         return;
     }
@@ -119,6 +131,8 @@ router.get("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
 }));
+// Note: POST /me functionality has been moved to PUT /users/{username} in provider-auth.ts
+// This endpoint is kept for backward compatibility but should be considered deprecated
 router.post("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _h, _j, _k, _l, _m;
     try {
@@ -130,10 +144,10 @@ router.post("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         // allow phone number & email
         let { phone, email } = req.body;
-        let currentUser = yield keycloak_1.getCurrentUserInfo(accessToken);
+        let currentUser = yield (0, keycloak_1.getCurrentUserInfo)(accessToken);
         console.log(currentUser);
-        yield keycloak_1.updateUserProfile(currentUser.preferred_username, phone, email);
-        let userInfo = yield keycloak_1.findKeycloakUser(currentUser.preferred_username);
+        yield (0, keycloak_1.updateUserProfile)(currentUser.preferred_username, phone, email, null, null);
+        let userInfo = yield (0, keycloak_1.findKeycloakUser)(currentUser.preferred_username);
         if (!currentUser) {
             res.statusCode = 401;
             res.json({ status: "error", error: "Invalid Bearer token provided" });
@@ -142,7 +156,8 @@ router.post("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.statusCode = 200;
         res.json({ status: "success", user: { firstName: userInfo.firstName, lastName: userInfo.lastName,
                 fhirPatientId: userInfo.attributes.fhirPatientId[0],
-                id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name, phone: (((_k = userInfo.attributes) === null || _k === void 0 ? void 0 : _k.phone) ? (_l = userInfo.attributes) === null || _l === void 0 ? void 0 : _l.phone[0] : null), email: (_m = userInfo.email) !== null && _m !== void 0 ? _m : null
+                id: userInfo.id, idNumber: userInfo.username, fullNames: currentUser.name,
+                phone: (((_k = userInfo.attributes) === null || _k === void 0 ? void 0 : _k.phone) ? (_l = userInfo.attributes) === null || _l === void 0 ? void 0 : _l.phone[0] : null), email: (_m = userInfo.email) !== null && _m !== void 0 ? _m : null
             } });
         return;
     }
@@ -153,5 +168,58 @@ router.post("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return;
     }
 }));
-// router.delete('/user')
+router.post('/reset-password', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let { idNumber, password, resetCode } = req.body;
+        let resetResp = yield (0, keycloak_1.validateResetCode)(idNumber, resetCode);
+        if (!resetResp) {
+            res.statusCode = 401;
+            res.json({ error: "Failed to update new password. Try again", status: "error" });
+            return;
+        }
+        let resp = (0, keycloak_1.updateUserPassword)(idNumber, password);
+        (0, keycloak_1.deleteResetCode)(idNumber);
+        if (!resp) {
+            res.statusCode = 401;
+            res.json({ error: "Failed to update new password. Try again", status: "error" });
+            return;
+        }
+        res.statusCode = 200;
+        res.json({ response: "Password updated successfully", status: "success" });
+        return;
+    }
+    catch (error) {
+        console.error(error);
+        res.statusCode = 401;
+        res.json({ error: "Invalid Bearer token provided", status: "error" });
+        return;
+    }
+}));
+router.get('/reset-password', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let { idNumber, email } = req.query;
+        let userInfo = yield (0, keycloak_1.findKeycloakUser)(String(idNumber));
+        if (userInfo.email !== email) {
+            res.statusCode = 400;
+            res.json({ status: "error", error: "Failed to initiate password reset. Invalid account details." });
+            return;
+        }
+        idNumber = String(idNumber);
+        let resp = yield (0, email_1.sendPasswordResetEmail)(idNumber);
+        if (!resp) {
+            res.statusCode = 400;
+            res.json({ status: "error", error: "Failed to initiate password reset. Try again." });
+            return;
+        }
+        res.statusCode = 200;
+        res.json({ status: "success", response: "Check your email for the password reset code sent." });
+        return;
+    }
+    catch (error) {
+        console.error(error);
+        res.statusCode = 401;
+        res.json({ error: "Failed to initiate password reset", status: "error" });
+        return;
+    }
+}));
 exports.default = router;

@@ -166,15 +166,11 @@ export const updatePractitionerLocation = async (userInfo: any, practitioner: an
     return updatedPractitioner;
 };
 
-export const buildLocationInfo = async (fhirLocation: any, userInfo: any, heirachy: any[]) => {
+export const buildLocationInfo = async (fhirLocation: any, heirachy: any[]) => {
     const locationInfo = {
         facility: "", facilityName: "", ward: "", wardName: "",
-        subCounty: "", subCountyName: "", county: "", countyName: ""
+        subCounty: "", subCountyName: "", county: "", countyName: "", country: "", countryName:""
     };
-
-    if (userInfo.attributes.practitionerRole[0] === "ADMINISTRATOR") {
-        return locationInfo;
-    }
 
     const assignedLocationType = fhirLocation?.type?.[0]?.coding?.[0]?.code;
     if (!assignedLocationType || !fhirLocation) {
@@ -216,7 +212,7 @@ export const buildLocationInfo = async (fhirLocation: any, userInfo: any, heirac
     // Build location info by traversing up the hierarchy
     const _locationInfo: any = {
         facility: "", facilityName: "", ward: "", wardName: "",
-        subCounty: "", subCountyName: "", county: "", countyName: ""
+        subCounty: "", subCountyName: "", county: "", countyName: "", country: "", countryName:""
     };
 
     let currentId = fhirLocation.id;
@@ -260,34 +256,3 @@ export const buildUserResponse = (userInfo: any, currentUser: any, locationInfo:
     };
 };
 
-export const buildLocationInfoForUser = async (user: any, practitioner: any, heirachy: any[]): Promise<any> => {
-    if (user.attributes.practitionerRole[0] === "ADMINISTRATOR") {
-        return { facility: "", facilityName: "", ward: "", wardName: "", subCounty: "", subCountyName: "", county: "", countyName: "" };
-    }
-
-    let fhirLocationRef = practitioner.extension[0].valueReference.reference;
-    let fhirLocation = await (await FhirApi({ url: `/${fhirLocationRef}` })).data;
-    let locationType = fhirLocation?.type?.[0]?.coding?.[0]?.code;
-    let root;
-    for (let location of heirachy) {
-        let l: any = location;
-        if (locationType === l[Object.keys(location)[0]]) {
-            root = locationType;
-        }
-    }
-
-    let _locationInfo: any = { facility: "", facilityName: "", ward: "", wardName: "", subCounty: "", subCountyName: "", county: "", countyName: "" };
-    let _locs = heirachy.map((x: any) => x[Object.keys(x)[0]]);
-    let _locKeys = heirachy.map((x: any) => Object.keys(x)[0]);
-    let indexOfRoot = _locs.indexOf(root);
-    let previous = fhirLocation.id;
-    for (let i of _locKeys.slice(0, indexOfRoot + 1).reverse()) {
-        let _fhirlocation = await (await FhirApi({ url: `/Location/${previous}` })).data;
-        _locationInfo[i] = _fhirlocation.id;
-        _locationInfo[`${i}Name`] = _fhirlocation.name;
-        if (_fhirlocation?.partOf) {
-            previous = (_fhirlocation?.partOf?.reference).split("/")[1];
-        }
-    }
-    return _locationInfo;
-};

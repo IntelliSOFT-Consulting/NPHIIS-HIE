@@ -1,3 +1,16 @@
+export interface LocationInfo {
+  facility: string;
+  facilityName: string;
+  ward: string;
+  wardName: string;
+  subCounty: string;
+  subCountyName: string;
+  county: string;
+  countyName: string;
+  country: string;
+  countryName: string;
+}
+
 export interface User {
   id?: string;
   username: string;
@@ -9,6 +22,10 @@ export interface User {
   role?: UserRole;
   enabled?: boolean;
   createdTimestamp?: number;
+  fhirPractitionerId?: string;
+  practitionerRole?: string;
+  idNumber?: string;
+  locationInfo?: LocationInfo;
 }
 
 // UserRole is loaded from process.env.USER_ROLES at runtime, not statically typed here.

@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse, buildLocationInfoForUser } from "../lib/utils";
+import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
 import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken } from './../lib/keycloak'
 import { authenticateUser } from "../lib/middleware";
 import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../lib/email";
@@ -79,7 +79,7 @@ router.post("/register", async (req: Request, res: Response) => {
             // Only fetch location if needed (not for ADMINISTRATOR role)
             role !== "ADMINISTRATOR" ?
                 (await FhirApi({ url: `/Location/${facility}` })).data :
-                Promise.resolve({ id: '0', name: 'Kenya' })
+                Promise.resolve({ id: '0', name: process.env.ROOT_LOCATION_NAME || 'Kenya' })
         ]);
 
         // Validate keycloak user creation
@@ -219,32 +219,10 @@ router.get("/me", authenticateUser, async (req: Request, res: Response) => {
         const practitionerRole = practitioner?.extension?.length > 0 ?
             practitioner.extension[1]?.valueString : "ADMINISTRATOR";
 
-        if (practitionerRole === "ADMINISTRATOR") {
-            return res.status(200).json({
-                status: "success",
-                user: {
-                    firstName: userInfo.firstName,
-                    lastName: userInfo.lastName,
-                    fhirPractitionerId: userId,
-                    practitionerRole,
-                    role: practitionerRole,
-                    id: userInfo.id,
-                    idNumber: userInfo.username,
-                    fullNames: currentUser.name,
-                    phone: userInfo.attributes?.phone?.[0] || null,
-                    email: userInfo.email || null,
-                    locationInfo: {
-                        facility: "", facilityName: "", ward: "", wardName: "",
-                        subCounty: "", subCountyName: "", county: "", countyName: "Kenya"
-                    }
-                }
-            });
-        }
-
         // For non-ADMINISTRATOR roles, build location info efficiently
         let locationInfo = {
             facility: "", facilityName: "", ward: "", wardName: "",
-            subCounty: "", subCountyName: "", county: "", countyName: ""
+            subCounty: "", subCountyName: "", county: "", countyName: "", country: "", countryName: ""
         };
 
         if (practitioner?.extension?.length > 0) {
@@ -256,7 +234,7 @@ router.get("/me", authenticateUser, async (req: Request, res: Response) => {
 
             if (locationType && fhirLocation) {
                 // Use the optimized buildLocationInfo utility function
-                locationInfo = await buildLocationInfo(fhirLocation, userInfo, heirachy);
+                locationInfo = await buildLocationInfo(fhirLocation, heirachy);
             }
         }
 
@@ -268,6 +246,7 @@ router.get("/me", authenticateUser, async (req: Request, res: Response) => {
                 fhirPractitionerId: userId,
                 practitionerRole,
                 role: practitionerRole,
+                status: practitioner.active,
                 id: userInfo.id,
                 idNumber: userInfo.username,
                 fullNames: currentUser.name,
@@ -289,29 +268,36 @@ router.get("/user/:username", authenticateUser, async (req: Request, res: Respon
         const username = req.params.username;
         const currentUser = (req as any).user;
         let userInfo = await findKeycloakUser(currentUser.preferred_username);
-        if (!userInfo.attributes?.practitionerRole[0].includes("ADMINISTRATOR")) {
+        let currentUserPractitioner = await (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
+        let currentUserPractitionerRole = currentUserPractitioner?.extension?.length > 0 ?
+            currentUserPractitioner.extension[1]?.valueString : "ADMINISTRATOR";
+        if (currentUserPractitionerRole !== "ADMINISTRATOR") {
             return res.status(401).json({ error: "Unauthorized access", status: "error" });
         }
         let user = await findKeycloakUser(username);
         if (!user) {
             return res.status(404).json({ status: "error", error: "User not found" });
         }
-        let practitioner = await (await FhirApi({ url: `/Practitioner/${user.attributes.fhirPractitionerId[0]}` })).data;
-        let locationInfo = { facility: "", facilityName: "", ward: "", wardName: "", subCounty: "", subCountyName: "", county: "", countyName: "" };
-        
-        if (user.attributes.practitionerRole[0] !== "ADMINISTRATOR") {
-            locationInfo = await buildLocationInfoForUser(user, practitioner, heirachy);
-        }
+        let practitioner = await (await FhirApi({ url: `/Practitioner/${user.id}` })).data;
+        let practitionerRole = practitioner?.extension?.length > 0 ?
+            practitioner.extension[1]?.valueString : "ADMINISTRATOR";
+        let locationInfo = { facility: "", facilityName: "", ward: "", wardName: "", subCounty: "", subCountyName: "", county: "", countyName: "", country: "", countryName: "" };
+        let fhirLocationRef = practitioner.extension[0].valueReference.reference;
+        let fhirLocation = await (await FhirApi({ url: `/${fhirLocationRef}` })).data;
+        locationInfo = await buildLocationInfo(fhirLocation, heirachy);
         return res.status(200).json({
             status: "success", user: {
-                firstName: practitioner.name[0].given[0] || user.firstName || user.attributes.firstName,
-                lastName: practitioner.name[0].family || user.lastName || user.attributes.lastName,
-                fhirPractitionerId: user.attributes.fhirPractitionerId[0],
-                practitionerRole: user.attributes.practitionerRole[0],
-                id: user.id, idNumber: user.username,
-                fullNames: `${practitioner.name[0].given[0] || user.firstName || user.attributes.firstName} ${practitioner.name[0].family || user.lastName || user.attributes.lastName}`,
-                phone: (user.attributes?.phone ? user.attributes?.phone[0] : null), email: user.email ?? null,
-                ...locationInfo
+                firstName: user.firstName,
+                lastName: user.lastName,
+                fhirPractitionerId: user.id,
+                practitionerRole,
+                id: user.id,
+                idNumber: user.username,
+                status: practitioner.active,
+                fullNames: user.name,
+                phone: user.attributes?.phone?.[0] || null,
+                email: user.email || null,
+                locationInfo
             }
         });
         return;
@@ -377,7 +363,7 @@ router.get('/reset-password', async (req: Request, res: Response) => {
 router.get("/users", authenticateUser, async (req: Request, res: Response) => {
     try {
         const currentUser = (req as any).user;
-        
+
         // Optimized authorization check - early return for better performance
         const userInfo = await findKeycloakUser(currentUser.preferred_username);
         if (!userInfo?.id) {
@@ -400,17 +386,17 @@ router.get("/users", authenticateUser, async (req: Request, res: Response) => {
             return res.status(500).json({ error: "Failed to retrieve users from Keycloak", status: "error" });
         }
 
-        return res.status(200).json({ 
-            users, 
+        return res.status(200).json({
+            users,
             total: users.length,
-            status: "success" 
+            status: "success"
         });
 
     } catch (error) {
         console.error('GET /users error:', error);
-        return res.status(500).json({ 
-            error: "Internal server error while fetching users", 
-            status: "error" 
+        return res.status(500).json({
+            error: "Internal server error while fetching users",
+            status: "error"
         });
     }
 });
@@ -420,31 +406,31 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
         const currentUser = (req as any).user;
         const { username } = req.params;
         let { phone, email, facilityCode, county, subCounty, role } = req.body;
-        
+
         // Get current user info to check permissions
         let currentUserInfo = await findKeycloakUser(currentUser.preferred_username);
         const isAdmin = currentUserInfo.attributes?.practitionerRole?.[0]?.includes("ADMINISTRATOR");
-        
+
         // Authorization check: Only administrators can edit users (self-editing is disabled)
         if (!isAdmin) {
             return res.status(403).json({ error: "Unauthorized access. Only administrators can edit users.", status: "error" });
         }
-        
+
         // Get target user info
         let targetUserInfo = await findKeycloakUser(username);
         if (!targetUserInfo) {
             return res.status(404).json({ error: "User not found", status: "error" });
         }
-        
+
         // Determine location and role
         let location = facilityCode || subCounty || county;
         let normalizedRole = role ? String(role).toUpperCase() : null;
-        
+
         // Validate role if provided
         if (normalizedRole && !validateRole(normalizedRole, allowedRoles)) {
             return res.status(400).json({ status: "error", error: `Invalid role ${normalizedRole} provided. Supported roles: ${allowedRoles.join(",")}` });
         }
-        
+
         // Validate location for role if both are provided
         if (location && normalizedRole) {
             const locationValidation = await validateLocationForRole(normalizedRole, location);
@@ -452,26 +438,26 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
                 return res.status(400).json({ status: "error", error: locationValidation.error });
             }
         }
-        
+
         // Update user profile
         await updateUserProfile(username, phone, email, null, normalizedRole);
-        
+
         // Get updated user info
         let updatedUserInfo = await findKeycloakUser(username);
         let locationInfo;
-        
+
         // Handle practitioner location updates if applicable
         if (updatedUserInfo?.attributes?.fhirPractitionerId?.[0] && location) {
             let practitioner = await (await FhirApi({ url: `/Practitioner/${updatedUserInfo.attributes.fhirPractitionerId[0]}` })).data;
-            
+
             // Get FHIR location
             let fhirLocation = await (await FhirApi({ url: `/Location/${location}` })).data;
-            
+
             // Update practitioner location
             practitioner = await updatePractitionerLocation(updatedUserInfo, practitioner, fhirLocation);
-            locationInfo = await buildLocationInfo(fhirLocation, updatedUserInfo, heirachy);
+            locationInfo = await buildLocationInfo(fhirLocation, heirachy);
         }
-        
+
         // Build response based on whether it's provider or client user
         if (updatedUserInfo?.attributes?.fhirPractitionerId?.[0]) {
             // Provider user response
@@ -479,8 +465,8 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
             return res.status(200).json(response);
         } else {
             // Client user response (simplified)
-            return res.status(200).json({ 
-                status: "success", 
+            return res.status(200).json({
+                status: "success",
                 user: {
                     firstName: updatedUserInfo.firstName,
                     lastName: updatedUserInfo.lastName,
@@ -493,7 +479,7 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
                 }
             });
         }
-        
+
     } catch (error) {
         console.error('PUT /users/:username error:', error);
         return res.status(500).json({ error: "Internal server error", status: "error" });
