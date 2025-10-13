@@ -423,3 +423,46 @@ export const validateUserAuthentication = async (accessToken: string) => {
     }
     return currentUser;
 };
+
+export const deleteKeycloakUser = async (username: string) => {
+  try {
+    let user = await findKeycloakUser(username);
+    if (!user) {
+      console.error(`User not found: ${username}`);
+      return { success: false, error: "User not found" };
+    }
+    
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) {
+      console.error('Failed to get admin token');
+      return { success: false, error: "Failed to authenticate with Keycloak" };
+    }
+    
+    const response = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        method: "DELETE"
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Failed to delete user ${username}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      return { success: false, error: `Failed to delete user: ${response.statusText}` };
+    }
+
+    console.log(`Successfully deleted user ${username} from Keycloak`);
+    return { success: true, userId: user.id };
+  } catch (error) {
+    console.error(`Error deleting user ${username}:`, error);
+    return { success: false, error: "Internal server error" };
+  }
+};
