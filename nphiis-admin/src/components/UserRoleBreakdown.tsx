@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { User, UserRole } from '@/types/user';
 import { userApi, getAccessToken } from '@/lib/api';
 import {
@@ -26,11 +26,7 @@ export default function UserRoleBreakdown() {
   const [error, setError] = useState<string | null>(null);
   const [roleStats, setRoleStats] = useState<RoleStats[]>([]);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -48,7 +44,11 @@ export default function UserRoleBreakdown() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const calculateRoleStats = (userData: User[]) => {
     const totalUsers = userData.length;
