@@ -10,6 +10,7 @@ import { XMarkIcon, KeyIcon } from '@heroicons/react/24/outline';
 // import { useNotification } from './Notification';
 
 const passwordResetSchema = z.object({
+  resetCode: z.string().min(1, 'Reset code is required'),
   newPassword: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string().min(8, 'Password must be at least 8 characters'),
 }).refine((data) => data.newPassword === data.confirmPassword, {
@@ -50,7 +51,12 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
     setErrorMessage('');
 
     try {
-      await userApi.resetPassword(user.id, data.newPassword);
+      if (!user.id) {
+        setErrorMessage('User ID is required');
+        setSubmitStatus('error');
+        return;
+      }
+      await userApi.resetPassword(user.id, data.newPassword, data.resetCode);
       setSubmitStatus('success');
       reset();
       setTimeout(() => {
@@ -112,6 +118,23 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Reset Code */}
+            <div>
+              <label htmlFor="resetCode" className="block text-sm font-medium text-gray-700">
+                Reset Code *
+              </label>
+              <input
+                {...register('resetCode')}
+                id="resetCode"
+                type="text"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                placeholder="Enter reset code"
+              />
+              {errors.resetCode && (
+                <p className="mt-1 text-sm text-red-600">{errors.resetCode.message}</p>
+              )}
+            </div>
+
             {/* New Password */}
             <div>
               <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">

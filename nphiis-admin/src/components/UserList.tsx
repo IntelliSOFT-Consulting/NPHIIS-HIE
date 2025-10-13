@@ -388,7 +388,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900">
-                      {selectedUser.firstName} {selectedUser.lastName}
+                      {selectedUser.firstName || ''} {selectedUser.lastName || ''}
                     </h3>
                     <p className="text-sm text-gray-500">User ID: {selectedUser.id}</p>
                   </div>
@@ -412,8 +412,8 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                     }`}>
                       {selectedUser.enabled ? 'Active' : 'Inactive'}
                     </span>
-                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role)}`}>
-                      {selectedUser.role}
+                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role || 'Unknown')}`}>
+                      {selectedUser.role || 'Unknown'}
                     </span>
                   </div>
                   <div className="text-sm text-gray-500">
@@ -489,8 +489,8 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                       <ShieldCheckIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                       <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700">User Role</label>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role || selectedUser.practitionerRole)}`}>
-                          {selectedUser.role || selectedUser.practitionerRole}
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role || selectedUser.practitionerRole || 'Unknown')}`}>
+                          {selectedUser.role || selectedUser.practitionerRole || 'Unknown'}
                         </span>
                       </div>
                     </div>
