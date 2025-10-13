@@ -19,11 +19,15 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
-# Copy source code
+# Copy source code and environment files
 COPY . .
 
+# Set build-time environment variables
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
 # Build the application
-RUN npm run build
+RUN yarn build
 
 # Stage 2: Production stage
 FROM node:18-alpine AS runner
