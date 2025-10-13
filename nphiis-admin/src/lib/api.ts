@@ -1,8 +1,8 @@
 import { User, CreateUserRequest } from '@/types/user';
 
-// API host configuration
-const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'https://dsrkeycloak.intellisoftkenya.com/auth';
-const FHIR_BASE_URL = process.env.NEXT_PUBLIC_FHIR_BASE_URL || 'https://dsrfhir.intellisoftkenya.com/hapi/fhir';
+// API host configurations
+const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'https://auth.nphiis.nphl.go.ke';
+const FHIR_BASE_URL = process.env.NEXT_PUBLIC_FHIR_BASE_URL || 'https://api.nphiis.nphl.go.ke/fhir';
 
 // Authentication types
 interface LoginRequest {
@@ -276,10 +276,40 @@ export const userApi = {
     }
   },
 
-  // Delete user - Note: This endpoint doesn't exist in provider-auth.ts
-  // Keeping the function but throwing an error to indicate it's not implemented
+  // Delete user using real API
   deleteUser: async (userId: string, accessToken?: string): Promise<void> => {
-    throw new Error('Delete user functionality is not available in the current API');
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+    
+    try {
+      const response = await fetch(`${API_HOST}/provider/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Cookie': 'frontend_lang=en_US'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        (error as any).response = { data: errorData, status: response.status };
+        throw error;
+      }
+
+      const data = await response.json();
+      
+      if (data.status !== 'success') {
+        const error = new Error(data.error || 'Failed to delete user');
+        (error as any).response = { data, status: response.status };
+        throw error;
+      }
+    } catch (error) {
+      console.error('Delete user error:', error);
+      throw error;
+    }
   },
 
   // Reset user password using real API
