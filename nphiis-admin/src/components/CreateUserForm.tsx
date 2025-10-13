@@ -466,7 +466,7 @@ export default function CreateUserForm({ onUserCreated }: CreateUserFormProps) {
           <div>
             <h3 className="text-base font-medium text-gray-900 mb-1">Location Information</h3>
             <p className="text-sm text-gray-600 mb-3">
-              Select the user's location. {showWard && 'Select options in order from county to facility.'}
+              Select the user&apos;s location. {showWard && 'Select options in order from county to facility.'}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {!isLocationDisabled && (

@@ -2,9 +2,8 @@
 const nextConfig = {
   outputFileTracingRoot: __dirname,
   output: 'standalone',
-  experimental: {
-    outputFileTracingRoot: __dirname,
-  },
+  basePath: '/admin',
+  assetPrefix: '/admin',
 }
 
 module.exports = nextConfig

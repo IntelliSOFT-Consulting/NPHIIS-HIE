@@ -166,6 +166,26 @@ services:
         volumes:
             - 'dsrf-mediators-postgres:/var/lib/postgresql/data'
 
+    nphiis-admin:
+        container_name: nphiis-admin
+        build:
+            context: ../nphiis-admin
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        networks:
+            - cloudbuild
+            - hapi-fhir
+        env_file:
+            - ../nphiis-admin/.env
+        ports:
+            - "8085:3000"
+        depends_on:
+            - hapi-fhir-jpa
+            - openhim-core
+            - openhim-console
+            - hie-auth
+            - hapi-fhir-config
+
     # provider:
     #     build:
     #         context: ../ChanjoKe-provider-web-app

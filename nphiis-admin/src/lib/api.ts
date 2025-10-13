@@ -1,7 +1,7 @@
 import { User, CreateUserRequest } from '@/types/user';
 
 // API host configuration
-const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:3000';
+const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'https://dsrkeycloak.intellisoftkenya.com/auth';
 const FHIR_BASE_URL = process.env.NEXT_PUBLIC_FHIR_BASE_URL || 'https://dsrfhir.intellisoftkenya.com/hapi/fhir';
 
 // Authentication types
