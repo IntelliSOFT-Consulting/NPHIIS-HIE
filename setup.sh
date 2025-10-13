@@ -12,6 +12,10 @@ elif [ "$1" == "fhir-superset" ]; then
     ./start-superset.sh
 elif [ "$1" == "reports" ]; then
     ./start-reports.sh
+elif [ "$1" == "admin" ]; then
+    ./start-admin.sh
+elif [ "$1" == "proxy" ]; then
+    ./start-proxy.sh
 else
     echo "Invalid option $1
   
@@ -23,6 +27,7 @@ else
 4. FHIR Datapipes
 5. Apache Superset
 4. Reports
+5. Admin
 
 #   Help:
 
