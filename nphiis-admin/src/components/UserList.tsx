@@ -23,6 +23,7 @@ import {
 } from '@heroicons/react/24/outline';
 import EditUserForm from './EditUserForm';
 import PasswordResetModal from './PasswordResetModal';
+import DeleteUserModal from './DeleteUserModal';
 // import Notification, { useNotification } from './Notification';
 
 interface UserListProps {
@@ -38,6 +39,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [passwordResetUser, setPasswordResetUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [loadingUserDetails, setLoadingUserDetails] = useState(false);
   // const { notifications, showSuccess, showError, removeNotification } = useNotification();
@@ -81,21 +83,25 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
     (user.role?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
   );
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) {
-      return;
-    }
+  const handleConfirmDelete = async () => {
+    if (!deletingUser) return;
 
-    setActionLoading(userId);
+    const username = deletingUser.username;
     try {
-      await userApi.deleteUser(userId);
-      setUsers(users.filter(user => user.id !== userId));
+      const accessToken = getAccessToken();
+      if (!accessToken) {
+        alert('No access token found. Please log in again.');
+        return;
+      }
+      
+      await userApi.deleteUser(username, accessToken);
+      setUsers(users.filter(user => user.username !== username));
       alert('User deleted successfully');
-    } catch (err) {
-      alert('Failed to delete user');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to delete user';
+      alert(errorMessage);
       console.error('Error deleting user:', err);
-    } finally {
-      setActionLoading(null);
+      throw err; // Re-throw to let modal handle loading state
     }
   };
 
@@ -341,11 +347,8 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                           )}
                         </button>
                         <button
-                          onClick={() => user.id && handleDeleteUser(user.id)}
-                          disabled={actionLoading === user.id}
-                          className={`text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 ${
-                            actionLoading === user.id ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
+                          onClick={() => setDeletingUser(user)}
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
                           title="Delete user"
                         >
                           <TrashIcon className="h-4 w-4" />
@@ -671,6 +674,15 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
           user={passwordResetUser}
           onPasswordReset={handlePasswordReset}
           onClose={() => setPasswordResetUser(null)}
+        />
+      )}
+
+      {/* Delete User Modal */}
+      {deletingUser && (
+        <DeleteUserModal
+          user={deletingUser}
+          onConfirm={handleConfirmDelete}
+          onClose={() => setDeletingUser(null)}
         />
       )}
     </div>
