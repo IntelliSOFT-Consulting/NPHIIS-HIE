@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
-import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken } from './../lib/keycloak'
+import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken, deleteKeycloakUser } from './../lib/keycloak'
 import { authenticateUser } from "../lib/middleware";
 import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../lib/email";
 import { getSupersetGuestToken } from "../lib/superset";
@@ -482,6 +482,82 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
 
     } catch (error) {
         console.error('PUT /users/:username error:', error);
+        return res.status(500).json({ error: "Internal server error", status: "error" });
+    }
+});
+
+router.delete("/users/:username", authenticateUser, async (req: Request, res: Response) => {
+    try {
+        const currentUser = (req as any).user;
+        const { username } = req.params;
+
+        // Get current user info to check permissions
+        let currentUserInfo = await findKeycloakUser(currentUser.preferred_username);
+        if (!currentUserInfo?.id) {
+            return res.status(403).json({ error: "User not found", status: "error" });
+        }
+
+        const currentPractitioner = await (await FhirApi({ url: `/Practitioner/${currentUserInfo.id}` })).data;
+        const currentUserRole = currentPractitioner?.extension?.length > 0 ?
+            currentPractitioner.extension[1]?.valueString : "ADMINISTRATOR";
+
+        // Authorization check: Only administrators can delete users
+        if (currentUserRole !== "ADMINISTRATOR" && currentUserRole !== "SUPERUSER") {
+            return res.status(403).json({ error: "Unauthorized access. Only administrators can delete users.", status: "error" });
+        }
+
+        // Prevent self-deletion
+        if (currentUser.preferred_username === username) {
+            return res.status(400).json({ error: "Cannot delete your own account", status: "error" });
+        }
+
+        // Get target user info
+        let targetUserInfo = await findKeycloakUser(username);
+        if (!targetUserInfo) {
+            return res.status(404).json({ error: "User not found", status: "error" });
+        }
+
+        // Delete practitioner from FHIR if exists
+        if (targetUserInfo.id) {
+            try {
+                const deletePractitionerResponse = await FhirApi({
+                    url: `/Practitioner/${targetUserInfo.id}`,
+                    method: "DELETE"
+                });
+                
+                const statusCode = Number(deletePractitionerResponse.status);
+                if (statusCode >= 200 && statusCode < 300) {
+                    console.log(`Successfully deleted practitioner ${targetUserInfo.id} from FHIR`);
+                } else {
+                    console.log(`Practitioner ${targetUserInfo.id} may not exist in FHIR or already deleted`);
+                }
+            } catch (fhirError) {
+                // Log but don't fail the entire operation if FHIR deletion fails
+                console.error(`Error deleting practitioner from FHIR:`, fhirError);
+            }
+        }
+
+        // Delete user from Keycloak
+        const deleteResult = await deleteKeycloakUser(username);
+        
+        if (!deleteResult.success) {
+            return res.status(400).json({ 
+                error: deleteResult.error || "Failed to delete user from Keycloak", 
+                status: "error" 
+            });
+        }
+
+        return res.status(200).json({ 
+            status: "success", 
+            message: "User deleted successfully",
+            deletedUser: {
+                username,
+                id: targetUserInfo.id
+            }
+        });
+
+    } catch (error) {
+        console.error('DELETE /users/:username error:', error);
         return res.status(500).json({ error: "Internal server error", status: "error" });
     }
 });

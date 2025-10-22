@@ -41,7 +41,7 @@ services:
         depends_on:
             - hapi-fhir-postgres
         ports:
-             - "8081:8080"
+             - "8888:8080"
         volumes:
             - "./hapi-fhir:/hapi"
         environment:
@@ -71,7 +71,7 @@ services:
         env_file:
             - .env
         ports:
-            - "8080:8080"
+            # - "8080:8080"
             # - "5000:5000"
             - "5001:5001"
             # - "5050:5050"
@@ -120,6 +120,8 @@ services:
             - hapi-fhir
         env_file:
             - ../hie-auth/.env
+        ports:
+            - "8443:3000"
             
     hapi-fhir-config:
         depends_on:
@@ -178,7 +180,7 @@ services:
         env_file:
             - ../nphiis-admin/.env
         ports:
-            - "8085:3000"
+            - "8080:3000"
         depends_on:
             - hapi-fhir-jpa
             - openhim-core
