@@ -2,7 +2,7 @@ import { User, CreateUserRequest } from '@/types/user';
 
 // API host configurations
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'https://auth.nphiis.nphl.go.ke';
-const FHIR_BASE_URL = process.env.NEXT_PUBLIC_FHIR_BASE_URL || 'https://api.nphiis.nphl.go.ke/fhir';
+const FHIR_BASE_URL = '/api/fhir';
 
 // Authentication types
 interface LoginRequest {
