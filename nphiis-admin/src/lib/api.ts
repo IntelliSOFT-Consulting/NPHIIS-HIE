@@ -747,3 +747,343 @@ export const fhirApi = {
     }
   }
 };
+
+// Import location types
+import { 
+  FhirLocation as FhirLocationResource, 
+  FhirBundle as LocationBundle, 
+  Location, 
+  CreateLocationRequest 
+} from '@/types/location';
+
+// Location Management API functions
+export const locationApi = {
+  // Get all locations with optional filtering by type
+  getLocations: async (typeCode?: string, parentId?: string): Promise<Location[]> => {
+    try {
+      let url = `${FHIR_BASE_URL}/Location?_count=1000`;
+      
+      if (typeCode) {
+        url += `&type=${typeCode}`;
+      }
+      
+      if (parentId) {
+        url += `&partof=Location/${parentId}`;
+      }
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const bundle: LocationBundle = await response.json();
+      
+      if (!bundle.entry) {
+        return [];
+      }
+
+      // Map FHIR Location resources to our simplified Location interface
+      const locations: Location[] = bundle.entry
+        .filter(entry => entry.resource)
+        .map(entry => {
+          const resource = entry.resource!;
+          return {
+            id: resource.id || '',
+            name: resource.name || '',
+            type: resource.type?.[0]?.coding?.[0]?.display,
+            typeCode: resource.type?.[0]?.coding?.[0]?.code,
+            status: resource.status || 'active',
+            description: resource.description,
+            parentId: resource.partOf?.reference?.replace('Location/', ''),
+            parentName: resource.partOf?.display,
+            address: resource.address?.text || 
+                     [resource.address?.line?.join(', '), resource.address?.city, resource.address?.state]
+                       .filter(Boolean).join(', '),
+            phone: resource.telecom?.find(t => t.system === 'phone')?.value,
+            email: resource.telecom?.find(t => t.system === 'email')?.value,
+            position: resource.position,
+          };
+        })
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+      return locations;
+    } catch (error) {
+      console.error('Error fetching locations from FHIR:', error);
+      throw error;
+    }
+  },
+
+  // Get a single location by ID
+  getLocationById: async (locationId: string): Promise<Location> => {
+    try {
+      const response = await fetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const resource: FhirLocationResource = await response.json();
+      
+      return {
+        id: resource.id || '',
+        name: resource.name || '',
+        type: resource.type?.[0]?.coding?.[0]?.display,
+        typeCode: resource.type?.[0]?.coding?.[0]?.code,
+        status: resource.status || 'active',
+        description: resource.description,
+        parentId: resource.partOf?.reference?.replace('Location/', ''),
+        parentName: resource.partOf?.display,
+        address: resource.address?.text || 
+                 [resource.address?.line?.join(', '), resource.address?.city, resource.address?.state]
+                   .filter(Boolean).join(', '),
+        phone: resource.telecom?.find(t => t.system === 'phone')?.value,
+        email: resource.telecom?.find(t => t.system === 'email')?.value,
+        position: resource.position,
+      };
+    } catch (error) {
+      console.error('Error fetching location from FHIR:', error);
+      throw error;
+    }
+  },
+
+  // Create a new location
+  createLocation: async (locationData: CreateLocationRequest): Promise<Location> => {
+    try {
+      const fhirLocation: FhirLocationResource = {
+        resourceType: 'Location',
+        status: locationData.status || 'active',
+        name: locationData.name,
+        description: locationData.description,
+        mode: 'instance',
+      };
+
+      // Add type if provided
+      if (locationData.typeCode) {
+        fhirLocation.type = [{
+          coding: [{
+            system: 'http://terminology.hl7.org/CodeSystem/location-physical-type',
+            code: locationData.typeCode,
+            display: locationData.type || locationData.typeCode,
+          }],
+        }];
+      }
+
+      // Add parent location reference if provided
+      if (locationData.parentId) {
+        fhirLocation.partOf = {
+          reference: `Location/${locationData.parentId}`,
+        };
+      }
+
+      // Add address if provided
+      if (locationData.address) {
+        fhirLocation.address = locationData.address;
+      }
+
+      // Add telecom (phone/email) if provided
+      if (locationData.phone || locationData.email) {
+        fhirLocation.telecom = [];
+        
+        if (locationData.phone) {
+          fhirLocation.telecom.push({
+            system: 'phone',
+            value: locationData.phone,
+            use: 'work',
+          });
+        }
+        
+        if (locationData.email) {
+          fhirLocation.telecom.push({
+            system: 'email',
+            value: locationData.email,
+            use: 'work',
+          });
+        }
+      }
+
+      // Add position if provided
+      if (locationData.position) {
+        fhirLocation.position = locationData.position;
+      }
+
+      const response = await fetch(`${FHIR_BASE_URL}/Location`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/fhir+json',
+          'Accept': 'application/fhir+json',
+        },
+        body: JSON.stringify(fhirLocation),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.issue?.[0]?.diagnostics || `HTTP error! status: ${response.status}`);
+      }
+
+      const createdResource: FhirLocationResource = await response.json();
+      
+      return {
+        id: createdResource.id || '',
+        name: createdResource.name || '',
+        type: createdResource.type?.[0]?.coding?.[0]?.display,
+        typeCode: createdResource.type?.[0]?.coding?.[0]?.code,
+        status: createdResource.status || 'active',
+        description: createdResource.description,
+        parentId: createdResource.partOf?.reference?.replace('Location/', ''),
+        parentName: createdResource.partOf?.display,
+        address: createdResource.address?.text,
+        phone: createdResource.telecom?.find(t => t.system === 'phone')?.value,
+        email: createdResource.telecom?.find(t => t.system === 'email')?.value,
+        position: createdResource.position,
+      };
+    } catch (error) {
+      console.error('Error creating location:', error);
+      throw error;
+    }
+  },
+
+  // Update an existing location
+  updateLocation: async (locationId: string, locationData: Partial<CreateLocationRequest>): Promise<Location> => {
+    try {
+      // First, get the existing location
+      const existingResponse = await fetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!existingResponse.ok) {
+        throw new Error(`Failed to fetch existing location: ${existingResponse.status}`);
+      }
+
+      const existingLocation: FhirLocationResource = await existingResponse.json();
+
+      // Update fields
+      const updatedLocation: FhirLocationResource = {
+        ...existingLocation,
+        name: locationData.name ?? existingLocation.name,
+        description: locationData.description ?? existingLocation.description,
+        status: locationData.status ?? existingLocation.status,
+      };
+
+      // Update type if provided
+      if (locationData.typeCode) {
+        updatedLocation.type = [{
+          coding: [{
+            system: 'http://terminology.hl7.org/CodeSystem/location-physical-type',
+            code: locationData.typeCode,
+            display: locationData.type || locationData.typeCode,
+          }],
+        }];
+      }
+
+      // Update parent location if provided
+      if (locationData.parentId !== undefined) {
+        if (locationData.parentId) {
+          updatedLocation.partOf = {
+            reference: `Location/${locationData.parentId}`,
+          };
+        } else {
+          delete updatedLocation.partOf;
+        }
+      }
+
+      // Update address if provided
+      if (locationData.address) {
+        updatedLocation.address = locationData.address;
+      }
+
+      // Update telecom if provided
+      if (locationData.phone !== undefined || locationData.email !== undefined) {
+        updatedLocation.telecom = [];
+        
+        if (locationData.phone) {
+          updatedLocation.telecom.push({
+            system: 'phone',
+            value: locationData.phone,
+            use: 'work',
+          });
+        }
+        
+        if (locationData.email) {
+          updatedLocation.telecom.push({
+            system: 'email',
+            value: locationData.email,
+            use: 'work',
+          });
+        }
+      }
+
+      // Update position if provided
+      if (locationData.position !== undefined) {
+        updatedLocation.position = locationData.position;
+      }
+
+      const response = await fetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/fhir+json',
+          'Accept': 'application/fhir+json',
+        },
+        body: JSON.stringify(updatedLocation),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.issue?.[0]?.diagnostics || `HTTP error! status: ${response.status}`);
+      }
+
+      const resource: FhirLocationResource = await response.json();
+      
+      return {
+        id: resource.id || '',
+        name: resource.name || '',
+        type: resource.type?.[0]?.coding?.[0]?.display,
+        typeCode: resource.type?.[0]?.coding?.[0]?.code,
+        status: resource.status || 'active',
+        description: resource.description,
+        parentId: resource.partOf?.reference?.replace('Location/', ''),
+        parentName: resource.partOf?.display,
+        address: resource.address?.text,
+        phone: resource.telecom?.find(t => t.system === 'phone')?.value,
+        email: resource.telecom?.find(t => t.system === 'email')?.value,
+        position: resource.position,
+      };
+    } catch (error) {
+      console.error('Error updating location:', error);
+      throw error;
+    }
+  },
+
+  // Delete a location
+  deleteLocation: async (locationId: string): Promise<void> => {
+    try {
+      const response = await fetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!response.ok && response.status !== 204) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.issue?.[0]?.diagnostics || `HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error deleting location:', error);
+      throw error;
+    }
+  },
+};
