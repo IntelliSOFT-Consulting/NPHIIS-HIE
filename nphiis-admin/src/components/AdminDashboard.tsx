@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import UserList from './UserList';
 import CreateUserForm from './CreateUserForm';
+import LocationList from './LocationList';
+import CreateLocationForm from './CreateLocationForm';
 import Navigation from './Navigation';
 import UserRoleBreakdown from './UserRoleBreakdown';
 
@@ -11,12 +13,14 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type ActiveTab = 'dashboard' | 'users' | 'settings';
+type ActiveTab = 'dashboard' | 'users' | 'locations' | 'settings';
 
 export default function AdminDashboard({ userInfo, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateLocationModal, setShowCreateLocationModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [refreshLocationsTrigger, setRefreshLocationsTrigger] = useState(0);
 
   const handleLogout = () => {
     onLogout();
@@ -27,12 +31,19 @@ export default function AdminDashboard({ userInfo, onLogout }: AdminDashboardPro
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleLocationCreated = () => {
+    setShowCreateLocationModal(false);
+    setRefreshLocationsTrigger(prev => prev + 1);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
         return <UserRoleBreakdown />;
       case 'users':
         return <UserList onCreateUser={() => setShowCreateModal(true)} refreshTrigger={refreshTrigger} />;
+      case 'locations':
+        return <LocationList onCreateLocation={() => setShowCreateLocationModal(true)} refreshTrigger={refreshLocationsTrigger} />;
       case 'settings':
         return (
           <div className="bg-white shadow rounded-lg p-6">
@@ -118,6 +129,31 @@ export default function AdminDashboard({ userInfo, onLogout }: AdminDashboardPro
               {/* Modal Content - Scrollable */}
               <div className="flex-1 overflow-y-auto p-6">
                 <CreateUserForm onUserCreated={handleUserCreated} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Location Modal */}
+        {showCreateLocationModal && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[95vh] flex flex-col">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+                <h3 className="text-lg font-medium text-gray-900">Create New Location</h3>
+                <button
+                  onClick={() => setShowCreateLocationModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Modal Content - Scrollable */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <CreateLocationForm onLocationCreated={handleLocationCreated} />
               </div>
             </div>
           </div>

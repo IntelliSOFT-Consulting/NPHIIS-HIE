@@ -1,17 +1,17 @@
 {
-    "urn": "urn:mediator:id-assign-mediator",
+    "urn": "urn:mediator:afp-follow-up-mediator",
     "version": "1.0.0",
-    "name": "ID Assignment Mediator",
-    "description": "This mediator is responsible for handling Case ID Assignment.",
+    "name": "AFP Follow Up Mediator",
+    "description": "This mediator is responsible for handling AFP Follow Up Notification.",
     "defaultChannelConfig": [
       {
-        "name": "ID Assignment Channel",
-        "urlPattern": "/process-encounters/assign-ids",
+        "name": "AFP Follow Up Channel",
+        "urlPattern": "/process-observations/afp-follow-up",
         "routes": [
           {
-            "name": "ID Assignment Route",
+            "name": "AFP Follow Up Route",
             "host": "dsrf-mediators",
-            "path": "/process-encounters/assign-ids",
+            "path": "/process-observations/afp-follow-up",
             "port": "3000",
             "primary": true,
             "type": "http"
@@ -26,7 +26,7 @@
       {
         "name": "ID Assignment Mediator Endpoint",
         "host": "dsrf-mediators",
-        "path": "/process-encounters/assign-ids",
+        "path": "/process-observations/afp-follow-up",
         "port": "3000",
         "primary": true,
         "type": "http"
