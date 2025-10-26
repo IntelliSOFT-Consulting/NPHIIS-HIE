@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Google LLC
+ * Copyright 2021-2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,10 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.parser.IParser;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.fhir.gateway.HttpFhirClient;
+import com.google.fhir.gateway.TokenVerifier;
+import com.google.fhir.gateway.HttpUtil;
+import com.google.fhir.gateway.FhirClientFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
