@@ -2,7 +2,7 @@
   "version": "1.18.2",
   "minimumCoreVersion": "5.2.0",
   "protocol": "https",
-  "host": "dsrfhir.intellisoftkenya.com",
+  "host": "localhost",
   "hostPath": "",
   "port": "8080",
   "title": "Public Health Information System HIM Console",

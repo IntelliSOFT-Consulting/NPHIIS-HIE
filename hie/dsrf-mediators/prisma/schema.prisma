@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -17,4 +18,31 @@ model CaseIdTracker {
   lastCaseId   Int    @default(0)
 
   @@unique([countryCode, subCountyCode]) // enforce uniqueness of combination
+}
+
+model Notification {
+  id String @id @default(uuid())
+  practitionerId String
+  encounterId String @unique
+  investigationDate DateTime
+  dueDate DateTime
+  title String
+  body String
+  status NotificationStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationRecipient {
+  id String @id @default(uuid())
+  practitionerId String
+  token String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
 }
