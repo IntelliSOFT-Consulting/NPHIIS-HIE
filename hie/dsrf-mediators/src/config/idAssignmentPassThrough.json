@@ -6,12 +6,12 @@
     "defaultChannelConfig": [
       {
         "name": "ID Assignment Channel",
-        "urlPattern": "/process-case-encounter/assign-ids",
+        "urlPattern": "/process-encounters/assign-ids",
         "routes": [
           {
             "name": "ID Assignment Route",
             "host": "dsrf-mediators",
-            "path": "/process-case-encounter/assign-ids",
+            "path": "/process-encounters/assign-ids",
             "port": "3000",
             "primary": true,
             "type": "http"
@@ -26,7 +26,7 @@
       {
         "name": "ID Assignment Mediator Endpoint",
         "host": "dsrf-mediators",
-        "path": "/process-case-encounter/assign-ids",
+        "path": "/process-encounters/assign-ids",
         "port": "3000",
         "primary": true,
         "type": "http"

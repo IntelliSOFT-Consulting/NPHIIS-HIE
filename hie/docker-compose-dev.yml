@@ -92,43 +92,6 @@ services:
             - ./default.json:/usr/share/nginx/html/config/default.json:ro
             - /etc/ssl/crt:/etc/nginx/certs
 
-    ddcc-mediators:
-        depends_on:
-            - openhim-core
-            - hapi-fhir-jpa
-        container_name: ddcc-mediators
-        build:
-            context: ddcc-chanjo-mediators
-            dockerfile: Dockerfile.dev
-        restart: unless-stopped
-        networks:
-            - openhim
-            - hapi-fhir
-        ports:
-            - "8084:3000"
-        env_file:
-            - ddcc-chanjo-mediators/.env
-        volumes:
-            - ./ddcc-chanjo-mediators:/usr/app
-    
-    echis-mediators:
-        depends_on:
-            - openhim-core
-        container_name: echis-mediators
-        build:
-            context: echis-chanjo-mediators
-            dockerfile: Dockerfile.dev
-        restart: unless-stopped
-        networks:
-            - openhim
-            - hapi-fhir
-        ports:
-            - "8083:3000"
-        env_file:
-            - echis-chanjo-mediators/.env.example
-        volumes:
-            - ./echis-chanjo-mediators:/usr/app
-
 
     hie-auth:
         depends_on:
@@ -147,6 +110,78 @@ services:
             - ../hie-auth:/usr/hie-auth
         ports:
             - "8088:3000"
+    
+    dsrf-mediators:
+        depends_on:
+            - hapi-fhir-jpa
+            - dsrf-mediators-postgres
+        container_name: dsrf-mediators
+        build:
+            context: dsrf-mediators
+            dockerfile: Dockerfile.dev
+        restart: unless-stopped
+        volumes:
+            - ./dsrf-mediators:/usr/app
+        networks:
+            - openhim
+            - hapi-fhir
+            - cloudbuild
+        ports:
+            - "8082:3000"
+        env_file:
+            - ./dsrf-mediators/.env
+            
+
+    dsrf-mediators-postgres:
+        container_name: dsrf-mediators-postgres
+        image: postgres:14-alpine
+        restart: always
+        networks:
+            - hapi-fhir
+            - cloudbuild
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_DB: dsrf-mediators
+            POSTGRES_PASSWORD: dsrf-mediators123
+        # ports:
+            # - "5432:5432"
+        volumes:
+            - 'dsrf-mediators-postgres:/var/lib/postgresql/data'
+
+    nphiis-admin:
+        container_name: nphiis-admin
+        build:
+            context: ../nphiis-admin
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        networks:
+            - cloudbuild
+            - hapi-fhir
+        env_file:
+            - ../nphiis-admin/.env
+        ports:
+            - "8080:3000"
+        depends_on:
+            - hapi-fhir-jpa
+            - openhim-core
+            - openhim-console
+            - hie-auth
+            - hapi-fhir-config
+    fhir-gateway:
+        container_name: fhir-gateway
+        build:
+            context: ../fhir-gateway
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        env_file:
+            - ../fhir-gateway/.env
+        depends_on:
+            - hapi-fhir-jpa
+        networks:
+            - cloudbuild
+            - hapi-fhir
+        ports:
+            - "8099:8080"
 
     hapi-fhir-config:
         depends_on:
@@ -163,3 +198,5 @@ volumes:
     chanjo-mongodb-data:
     hapi-fhir-postgres:
     hapi:
+    dsrf-mediators-postgres:
+

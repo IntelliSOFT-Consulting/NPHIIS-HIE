@@ -7,6 +7,7 @@ dotenv.config() // Load environment variables
 //Import routes
 
 import ProcessEncounter from './routes/encounter-subscription';
+import Notifications from './routes/notifications';
 const app = express();
 const PORT = 3000;
 
@@ -25,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/process-case-encounter', ProcessEncounter)
-
+app.use('/notifications', Notifications)
 
 app.listen(PORT, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);

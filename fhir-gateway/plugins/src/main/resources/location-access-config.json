@@ -1,0 +1,16 @@
+{
+  "roleHierarchy": {
+    "ADMINISTRATOR": "COUNTRY",
+    "SUPERUSER": "COUNTRY",
+    "COUNTY_DISEASE_SURVEILLANCE_OFFICER": "COUNTY",
+    "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER": "SUB-COUNTY",
+    "FACILITY_SURVEILLANCE_FOCAL_PERSON": "FACILITY",
+    "SUPERVISORS": "FACILITY",
+    "VACCINATOR": "FACILITY"
+  },
+  "locationTagSystem": "http://example.org/fhir/StructureDefinition/encounter-managingLocation",
+  "practitionerClaimName": "sub",
+  "locationExtensionUrl": "http://example.org/location",
+  "roleExtensionUrl": "http://example.org/fhir/StructureDefinition/role-group"
+}
+
