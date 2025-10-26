@@ -1,0 +1,35 @@
+{
+    "urn": "urn:mediator:afp-follow-up-mediator",
+    "version": "1.0.0",
+    "name": "AFP Follow Up Mediator",
+    "description": "This mediator is responsible for handling AFP Follow Up Notification.",
+    "defaultChannelConfig": [
+      {
+        "name": "AFP Follow Up Channel",
+        "urlPattern": "/process-observations/afp-follow-up",
+        "routes": [
+          {
+            "name": "AFP Follow Up Route",
+            "host": "dsrf-mediators",
+            "path": "/process-observations/afp-follow-up",
+            "port": "3000",
+            "primary": true,
+            "type": "http"
+          }
+        ],
+        "allow": ["*"],
+        "methods": ["GET", "POST", "PUT", "PATCH"],
+        "type": "http"
+      }
+    ],
+    "endpoints": [
+      {
+        "name": "ID Assignment Mediator Endpoint",
+        "host": "dsrf-mediators",
+        "path": "/process-observations/afp-follow-up",
+        "port": "3000",
+        "primary": true,
+        "type": "http"
+      }
+    ]
+  }

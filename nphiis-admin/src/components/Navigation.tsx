@@ -5,12 +5,13 @@ import {
   UserPlusIcon, 
   CogIcon,
   HomeIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline';
 
 interface NavigationProps {
-  activeTab: 'dashboard' | 'users' | 'settings';
-  onTabChange: (tab: 'dashboard' | 'users' | 'settings') => void;
+  activeTab: 'dashboard' | 'users' | 'locations' | 'settings';
+  onTabChange: (tab: 'dashboard' | 'users' | 'locations' | 'settings') => void;
 }
 
 export default function Navigation({ activeTab, onTabChange }: NavigationProps) {
@@ -26,6 +27,12 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
       tab: 'users' as const,
       icon: UsersIcon,
       current: activeTab === 'users',
+    },
+    {
+      name: 'Locations',
+      tab: 'locations' as const,
+      icon: MapPinIcon,
+      current: activeTab === 'locations',
     },
     {
       name: 'Settings',

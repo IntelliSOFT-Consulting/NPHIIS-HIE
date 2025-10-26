@@ -1,4 +1,6 @@
 import idAssignmentConfig from '../config/idAssignmentPassThrough.json';
+import afpFollowUpConfig from '../config/afpFollowUp.json';
+import notificationServiceConfig from '../config/notificationService.json';
 import utils from 'openhim-mediator-utils';
 
 
@@ -11,7 +13,9 @@ import { createFHIRSubscription } from './fhir';
 
 // mediators to be registered
 const mediators = [
-    idAssignmentConfig
+    idAssignmentConfig,
+    afpFollowUpConfig,
+    notificationServiceConfig,
 ];
 
 const fetch = (url: RequestInfo, init?: RequestInit) =>
@@ -20,6 +24,7 @@ const fetch = (url: RequestInfo, init?: RequestInit) =>
 
 export let apiHost = process.env.FHIR_BASE_URL;
 console.log("HAPI FHIR: ", apiHost)
+
 
 
 const openhimApiUrl = process.env.OPENHIM_API_URL;
@@ -165,11 +170,6 @@ export const parseIdentifiers = async (patientId: string) => {
     })
 }
 
-
-
-
-
-
 export const getPatientById = async (crossBorderId: string) => {
     try {
         let patient: any = (await FhirApi({ url: `/Patient?identifier=${crossBorderId}` })).data;
@@ -187,3 +187,49 @@ export const getPatientById = async (crossBorderId: string) => {
 
 // export const getPractitionerLocation = async ( practitioner: String)
 
+
+/**
+ * Create a FHIR OperationOutcome response
+ * @param message - Error or status message
+ * @param severity - Severity level (error, warning, information)
+ * @param code - Issue type code
+ * @returns FHIR OperationOutcome object
+ */
+export const OperationOutcome = (
+    message: string,
+    severity: 'fatal' | 'error' | 'warning' | 'information' = 'error',
+    code: string = 'exception'
+) => {
+    return {
+        "resourceType": "OperationOutcome",
+        "id": "exception",
+        "issue": [{
+            "severity": severity,
+            "code": code,
+            "details": {
+                "text": message
+            }
+        }]
+    };
+};
+
+
+
+export const sendMediatorRequest = async (url: string, data: any) => {
+    try {
+        let OPENHIM_CLIENT_ID = process.env['OPENHIM_CLIENT_ID'] ?? "";
+        let OPENHIM_CLIENT_PASSWORD = process.env['OPENHIM_CLIENT_PASSWORD'] ?? "";
+        let response = await (await fetch(url, {
+            body: JSON.stringify(data),
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": 'Basic ' + Buffer.from(OPENHIM_CLIENT_ID + ':' + OPENHIM_CLIENT_PASSWORD).toString('base64')
+            }
+        })).json();
+        return response;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
