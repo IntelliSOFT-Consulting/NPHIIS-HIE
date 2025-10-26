@@ -1,7 +1,8 @@
 import { User, CreateUserRequest } from '@/types/user';
 
 // API host configurations
-const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'https://auth.nphiis.nphl.go.ke';
+const API_HOST = process.env.NEXT_PUBLIC_API_HOST;
+console.log("API HOST: ", API_HOST)
 const FHIR_BASE_URL = '/api/fhir';
 
 // Authentication types
