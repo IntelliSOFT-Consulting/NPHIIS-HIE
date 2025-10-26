@@ -1,21 +1,32 @@
-FROM node:18-slim
+FROM node:20-slim
 WORKDIR /usr/app/
 
-# Install required dependencies for Prisma
+# Install required dependencies for Prisma and native modules (bcrypt)
 RUN apt-get update && apt-get install -y \
     openssl \
     ca-certificates \
+    python3 \
+    make \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# COPY package.json .
+# Install global dependencies
 RUN npm install typescript yarn -g --force
-# Remove any global Prisma installation to avoid version conflicts
-RUN npm uninstall -g prisma || true
+
+# Copy package files
+COPY package.json yarn.lock* ./
+
+# Copy Prisma schema first (needed for proper installation)
+COPY prisma ./prisma
+
+# Install dependencies
+RUN yarn install
+
+# Generate Prisma client for the correct platform
+RUN yarn prisma generate
+
+# Copy the rest of the source code
 COPY . .
 
-# Generate Prisma client using local version
-RUN ./node_modules/.bin/prisma generate
-
 EXPOSE 3000
-# CMD ["node", "./build/index.js"]
 CMD ["yarn", "dev"]

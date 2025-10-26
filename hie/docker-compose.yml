@@ -187,25 +187,22 @@ services:
             - openhim-console
             - hie-auth
             - hapi-fhir-config
+    fhir-gateway:
+        container_name: fhir-gateway
+        build:
+            context: ../fhir-gateway
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        env_file:
+            - ../fhir-gateway/.env
+        depends_on:
+            - hapi-fhir-jpa
+        networks:
+            - cloudbuild
+            - hapi-fhir
+        ports:
+            - "8099:8080"
 
-    # provider:
-    #     build:
-    #         context: ../ChanjoKe-provider-web-app
-    #         dockerfile: docker/Dockerfile.prod
-    #     container_name: provider
-    #     restart: unless-stopped
-    #     networks:
-    #         - hapi-fhir
-    #         - cloudbuild
-    # client:
-    #     build:
-    #         context: ../ChanjoKe-patient-web-app
-    #         dockerfile: docker/Dockerfile.prod
-    #     container_name: client
-    #     restart: unless-stopped
-    #     networks:
-    #         - hapi-fhir
-    #         - cloudbuild
 
 volumes:
     mongodb-data:
