@@ -19,31 +19,75 @@ export const FhirIdentifier = (system: string, code: string, display: string, va
 }
 
 
-export let createFHIRSubscription = async () => {
+/**
+ * General function to create a FHIR Subscription
+ * @param subscriptionId - The ID for the subscription
+ * @param callbackUrl - The endpoint URL to receive notifications
+ * @param criteria - The FHIR search criteria for the subscription
+ */
+const createSubscription = async (subscriptionId: string, callbackUrl: string, criteria: string) => {
     try {
-        let FHIR_SUBSCRIPTION_ID = process.env['FHIR_SUBSCRIPTION_ID'];
-        let FHIR_SUBSCRIPTION_CALLBACK_URL = process.env['FHIR_SUBSCRIPTION_CALLBACK_URL'];
-        let response = await (await FhirApi({ url:`/Subscription/${FHIR_SUBSCRIPTION_ID}`,
-            method: "PUT", data: JSON.stringify({
+        let response = await (await FhirApi({ 
+            url: `/Subscription/${subscriptionId}`,
+            method: "PUT", 
+            data: JSON.stringify({
                 resourceType: 'Subscription',
-                id: FHIR_SUBSCRIPTION_ID,
+                id: subscriptionId,
                 status: "active",
-                criteria: `Encounter?reason-code=${reasonCode}`,
+                criteria: criteria,
                 channel: {
                     type: 'rest-hook',
-                    endpoint: FHIR_SUBSCRIPTION_CALLBACK_URL,
+                    endpoint: callbackUrl,
                     payload: 'application/json'
-                } 
+                }
             })
         })).data
+        
         if(response.resourceType != "OperationOutcome"){
-            console.log(`FHIR Subscription ID: ${FHIR_SUBSCRIPTION_ID}`);
+            console.log(`FHIR Subscription ID: ${subscriptionId}`);
             return;
         }
-        console.log(`Failed to create FHIR Subscription: \n${response}`);
+        console.log(`Failed to create FHIR Subscription: \n${JSON.stringify(response)}`);
     } catch (error) {
         console.log(error);
     }
+}
+
+export let createEpidFHIRSubscription = async () => {
+    let FHIR_EPID_SUBSCRIPTION_ID = process.env['FHIR_EPID_SUBSCRIPTION_ID'];
+    let FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL = process.env['FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL'];
+    
+    if (!FHIR_EPID_SUBSCRIPTION_ID || !FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL) {
+        console.log('Missing environment variables for Epid subscription');
+        return;
+    }
+    
+    await createSubscription(
+        FHIR_EPID_SUBSCRIPTION_ID, 
+        FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL, 
+        `Encounter?reason-code=${reasonCode}`
+    );
+}
+
+const createFollowUpFHIRSubscription = async () => {
+    let FHIR_AFP_FOLLOW_UP_SUBSCRIPTION_ID = process.env['FHIR_AFP_FOLLOW_UP_SUBSCRIPTION_ID'];
+    let FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL = process.env['FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL'];
+    
+    if (!FHIR_AFP_FOLLOW_UP_SUBSCRIPTION_ID || !FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL) {
+        console.log('Missing environment variables for Follow-up subscription');
+        return;
+    }
+    
+    await createSubscription(
+        FHIR_AFP_FOLLOW_UP_SUBSCRIPTION_ID, 
+        FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL, 
+        `Observation?code=502488184403`
+    );
+}
+
+export let createFHIRSubscription = async () => {
+    await createEpidFHIRSubscription();
+    await createFollowUpFHIRSubscription();
 }
 
 // createFHIRSubscription();

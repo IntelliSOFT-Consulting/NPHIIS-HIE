@@ -7,7 +7,7 @@ import { generateCaseId } from '../lib/caseIdTracker';
 
 export const router = express.Router();
 
-router.use(express.json());
+router.use(express.json() as any);
 
 
 function padStart(str: string, targetLength: number, padChar: string = '0'): string {
@@ -109,25 +109,6 @@ router.post('/assign-ids', async (req, res) => {
       console.log("Patient does not have an id with the code mpox-register");
       return;
     }
-
-    // if (Array.isArray(data?.identifier) &&
-    //   data.identifier.some((id: any) => id.system === encounterCodeSystem)
-    // ) {
-    //   res.statusCode = 200;
-    //   res.json({
-    //     "resourceType": "OperationOutcome",
-    //     "id": uuid(),
-    //     "issue": [{
-    //       "severity": "information",
-    //       "code": "informational",
-    //       "details": {
-    //         "text": `ID already assigned - ${JSON.stringify(data)}`
-    //       }
-    //     }]
-    //   });
-    //   return;
-    // }
-
 
     let patientIdentifier = patient?.identifier?.find((id: any) => id.system === encounterCodeSystem);
     if (patientIdentifier) {
