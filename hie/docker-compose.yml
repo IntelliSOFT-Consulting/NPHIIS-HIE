@@ -40,29 +40,11 @@ services:
             - cloudbuild
         depends_on:
             - hapi-fhir-postgres
-        ports:
-             - "8888:8080"
         volumes:
             - "./hapi-fhir:/hapi"
         environment:
             SPRING_CONFIG_LOCATION: /hapi/application.yaml
             TZ: Africa/Nairobi
-
-    # hapi-fhir-jpa-r5:
-    #     image: hapiproject/hapi:latest
-    #     container_name: hapi-fhir-jpa-r5
-    #     restart: unless-stopped
-    #     networks:
-    #         - hapi-fhir
-    #         - cloudbuild
-    #     depends_on:
-    #         - hapi-fhir-postgres
-    #     ports:
-    #          - "8087:8080"
-    #     volumes:
-    #         - "./hapi-fhir-r5:/hapi"
-    #     environment:
-    #         SPRING_CONFIG_LOCATION: /hapi/application.yaml
 
     openhim-core:
         container_name: openhim-core
@@ -148,6 +130,8 @@ services:
             - cloudbuild
         env_file:
             - nphiis-mediators/.env
+        ports:
+            - "8888:3000"
             
 
     nphiis-mediators-postgres:
