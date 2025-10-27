@@ -38,6 +38,7 @@ router.post('/send', async (req, res) => {
 router.post('/config', async (req, res) => {
     try {
         let accessToken = req.headers.authorization?.split(' ')[1];
+        let data = req.body;
         if (!accessToken) {
             res.statusCode = 401;
             res.json(OperationOutcome("Unauthorized", "error", "security"));
@@ -52,8 +53,8 @@ router.post('/config', async (req, res) => {
         // create or update the user's notification settings
         const notificationRecipient = await prisma.notificationRecipient.create({
             data: {
-                token: userInfo.token,
-                practitionerId: userInfo.id,
+                token: data?.token,
+                practitionerId: userInfo?.id,
             }
         });
         const practitioner = (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
