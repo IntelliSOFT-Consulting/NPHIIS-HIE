@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { FhirApi, OperationOutcome } from '../lib/utils';
 import { v4 as uuid } from 'uuid';
 import fetch from 'node-fetch';
@@ -11,31 +11,21 @@ export const router = express.Router();
 
 router.use(express.json() as any);
 
-router.post('/send', async (req, res) => {
+router.post('/send', async (req: Request, res: Response) => {
     try {
         let { token, title, body } = req.body;
         let response = await fcmService.sendToDevice(token, { title, body });
-        res.statusCode = 200;
-        res.json(response);
+        return res.status(200).json({ ...response, status: "success" });
     } catch (error) {
         console.error(error);
-        res.statusCode = 500;
-        res.json({
-            "resourceType": "OperationOutcome",
-            "id": "exception",
-            "issue": [{
-                "severity": "error",
-                "code": "exception",
-                "details": {
-                    "text": `Failed to send notification - ${JSON.stringify(error)}`
-                }
-            }]
+        return res.status(500).json({
+            status: "error",
+            error: `Failed to send notification - ${JSON.stringify(error)}`
         });
-        return;
     }
 });
 
-router.post('/config', authenticateUser, async (req: AuthenticatedRequest, res) => {
+router.post('/config', authenticateUser, async (req: AuthenticatedRequest, res: Response) => {
     try {
         let data = req.body;
         const userInfo = req.userInfo;
@@ -48,32 +38,29 @@ router.post('/config', authenticateUser, async (req: AuthenticatedRequest, res) 
             }
         });
         const practitioner = (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
-        return res.status(200).json({...practitioner, extension: [...(practitioner.extension || []), {
-            url: "http://example.org/fhir/StructureDefinition/notification-recipient",
-            valueReference: {
-                reference: `NotificationRecipient/${notificationRecipient.id}`,
-                display: notificationRecipient.token
+        return res.status(200).json({
+            status: "success",
+            practitioner: {
+                ...practitioner, 
+                extension: [...(practitioner.extension || []), {
+                    url: "http://example.org/fhir/StructureDefinition/notification-recipient",
+                    valueReference: {
+                        reference: `NotificationRecipient/${notificationRecipient.id}`,
+                        display: notificationRecipient.token
+                    }
+                }]
             }
-        }]});
+        });
     } catch (error) {
         console.error(error);
-        res.statusCode = 500;
-        res.json({
-            "resourceType": "OperationOutcome",
-            "id": "exception",
-            "issue": [{
-                "severity": "error",
-                "code": "exception",
-                "details": {
-                    "text": `Failed to configure notification - ${JSON.stringify(error)}`
-                }
-            }]
+        return res.status(500).json({
+            status: "error",
+            error: `Failed to configure notification - ${JSON.stringify(error)}`
         });
-        return;
     }
 });
 
-router.get('/', authenticateUser, async (req: AuthenticatedRequest, res) => {
+router.get('/', authenticateUser, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const userInfo = req.userInfo;
         const notifications = await prisma.notification.findMany({
@@ -81,10 +68,17 @@ router.get('/', authenticateUser, async (req: AuthenticatedRequest, res) => {
                 practitionerId: userInfo.id
             }
         });
-        return res.status(200).json(notifications);
+        return res.status(200).json({ 
+            status: "success", 
+            notifications,
+            total: notifications.length 
+        });
     } catch (error) {
         console.error(error);
-        return res.status(500).json(OperationOutcome("Failed to get notifications", "error", "exception"));
+        return res.status(500).json({ 
+            status: "error", 
+            error: "Failed to get notifications" 
+        });
     }
 });
 
