@@ -1,7 +1,7 @@
 import { prisma } from "./prisma";
 import { FhirApi, sendMediatorRequest } from "./utils";
 
-const AUTH_SERVICE_URL = process.env['AUTH_SERVICE_URL'] || "http://auth:8080"
+const AUTH_SERVICE_URL = process.env['AUTH_SERVICE_URL'] || "http://hie-auth:3000"
 
 const reminderMessage = `Follow up for AFP case {} is due. Please complete and submit the follow-up investigation form.`
 const messageTitle = "60-day AFP Follow Up Reminder"
