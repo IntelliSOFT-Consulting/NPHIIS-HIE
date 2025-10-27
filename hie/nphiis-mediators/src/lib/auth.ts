@@ -22,18 +22,20 @@ export const authenticateUser = async (
         const accessToken = req.headers.authorization?.split(' ')[1];
         
         if (!accessToken) {
-            return res.status(401).json(
-                OperationOutcome("Unauthorized - No token provided", "error", "security")
-            );
+            return res.status(401).json({
+                status: "error",
+                error: "Bearer token is required but not provided"
+            });
         }
 
         // Validate token and get user info
         const userInfo = await getUserInfoFromToken(accessToken);
         
         if (!userInfo) {
-            return res.status(401).json(
-                OperationOutcome("Invalid Bearer token provided", "error", "security")
-            );
+            return res.status(401).json({
+                status: "error",
+                error: "Invalid Bearer token provided"
+            });
         }
 
         // Attach user info to request object
@@ -43,9 +45,10 @@ export const authenticateUser = async (
         next();
     } catch (error) {
         console.error('Authentication error:', error);
-        return res.status(500).json(
-            OperationOutcome("Authentication failed", "error", "exception")
-        );
+        return res.status(500).json({
+            status: "error",
+            error: "Authentication failed"
+        });
     }
 };
 
