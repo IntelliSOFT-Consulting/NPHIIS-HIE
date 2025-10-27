@@ -111,17 +111,17 @@ services:
         ports:
             - "8088:3000"
     
-    dsrf-mediators:
+    nphiis-mediators:
         depends_on:
             - hapi-fhir-jpa
-            - dsrf-mediators-postgres
-        container_name: dsrf-mediators
+            - nphiis-mediators-postgres
+        container_name: nphiis-mediators
         build:
-            context: dsrf-mediators
+            context: nphiis-mediators
             dockerfile: Dockerfile.dev
         restart: unless-stopped
         volumes:
-            - ./dsrf-mediators:/usr/app
+            - ./nphiis-mediators:/usr/app
         networks:
             - openhim
             - hapi-fhir
@@ -129,11 +129,11 @@ services:
         ports:
             - "8082:3000"
         env_file:
-            - ./dsrf-mediators/.env
+            - ./nphiis-mediators/.env
             
 
-    dsrf-mediators-postgres:
-        container_name: dsrf-mediators-postgres
+    nphiis-mediators-postgres:
+        container_name: nphiis-mediators-postgres
         image: postgres:14-alpine
         restart: always
         networks:
@@ -141,12 +141,12 @@ services:
             - cloudbuild
         environment:
             POSTGRES_USER: postgres
-            POSTGRES_DB: dsrf-mediators
-            POSTGRES_PASSWORD: dsrf-mediators123
+            POSTGRES_DB: nphiis-mediators
+            POSTGRES_PASSWORD: nphiis-mediators123
         # ports:
             # - "5432:5432"
         volumes:
-            - 'dsrf-mediators-postgres:/var/lib/postgresql/data'
+            - 'nphiis-mediators-postgres:/var/lib/postgresql/data'
 
     nphiis-admin:
         container_name: nphiis-admin
@@ -198,5 +198,5 @@ volumes:
     chanjo-mongodb-data:
     hapi-fhir-postgres:
     hapi:
-    dsrf-mediators-postgres:
+    nphiis-mediators-postgres:
 

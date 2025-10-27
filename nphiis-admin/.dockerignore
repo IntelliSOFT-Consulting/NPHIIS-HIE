@@ -9,7 +9,7 @@ yarn-error.log*
 out
 
 # Environment variables
-.env
+# .env - Allow .env to be copied for build-time variables
 .env.local
 .env.development.local
 .env.test.local

@@ -1,4 +1,0 @@
-{
-  "/api/fhir/[...path]/route": "app/api/fhir/[...path]/route.js",
-  "/page": "app/page.js"
-}

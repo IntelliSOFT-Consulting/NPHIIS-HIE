@@ -9,7 +9,6 @@ services:
       - "8080:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST:-nphiis.nphl.go.ke}
       - PORT=3000
     volumes:
       # Mount logs if needed
