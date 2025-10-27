@@ -1,5 +1,7 @@
 import * as admin from 'firebase-admin';
 
+import serviceAccountKey from '../config/serviceAccountKey.json';
+
 // Types for notification payloads
 export interface NotificationPayload {
   title: string;
@@ -359,8 +361,7 @@ class FCMService {
 }
 
 // Export singleton instance
-const serviceAccountKey = require('../config/serviceAccountKey.json');
 const fcmService = new FCMService();
-fcmService.initialize(serviceAccountKey);
+fcmService.initialize(serviceAccountKey as admin.ServiceAccount);
 
 export { fcmService };

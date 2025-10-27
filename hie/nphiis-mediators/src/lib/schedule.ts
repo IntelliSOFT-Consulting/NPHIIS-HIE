@@ -44,7 +44,9 @@ console.log('Cron job started.');
 // 30 3 * * * = 3:30 AM UTC = 6:30 AM EAT (UTC+3)
 const notificationCronSchedule = '30 3 * * *';
 
-const notificationCronJob = new cron.CronJob(notificationCronSchedule, sendDueNotifications);
+const notificationCronJob = new cron.CronJob(notificationCronSchedule, async () => {
+    await sendDueNotifications();
+});
 
 // Start the notification cron job
 notificationCronJob.start();
