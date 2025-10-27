@@ -15,6 +15,8 @@ RUN npm install typescript yarn -g --force
 # Copy package files
 COPY package.json yarn.lock* ./
 
+COPY src/config/serviceAccountKey.json ./src/config/serviceAccountKey.json
+
 # Copy Prisma schema first (needed for proper installation)
 COPY prisma ./prisma
 
