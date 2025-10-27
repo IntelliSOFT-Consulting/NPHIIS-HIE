@@ -3,7 +3,7 @@ import { FhirApi, OperationOutcome } from '../lib/utils';
 import { v4 as uuid } from 'uuid';
 import fetch from 'node-fetch';
 import { fcmService } from '../lib/fcm';
-import { getUserInfoFromToken } from '../lib/notification';
+import { authenticateUser, AuthenticatedRequest } from '../lib/auth';
 import { prisma } from '../lib/prisma';
 
 
@@ -35,21 +35,11 @@ router.post('/send', async (req, res) => {
     }
 });
 
-router.post('/config', async (req, res) => {
+router.post('/config', authenticateUser, async (req: AuthenticatedRequest, res) => {
     try {
-        let accessToken = req.headers.authorization?.split(' ')[1];
         let data = req.body;
-        if (!accessToken) {
-            res.statusCode = 401;
-            res.json(OperationOutcome("Unauthorized", "error", "security"));
-            return;
-        }
-        const userInfo = await getUserInfoFromToken(accessToken);
-        if (!userInfo) {
-            res.statusCode = 401;
-            res.json(OperationOutcome("Invalid Bearer token provided", "error", "security"));
-            return;
-        }
+        const userInfo = req.userInfo;
+        
         // create or update the user's notification settings
         const notificationRecipient = await prisma.notificationRecipient.create({
             data: {
@@ -65,7 +55,6 @@ router.post('/config', async (req, res) => {
                 display: notificationRecipient.token
             }
         }]});
-        return;
     } catch (error) {
         console.error(error);
         res.statusCode = 500;
@@ -81,6 +70,21 @@ router.post('/config', async (req, res) => {
             }]
         });
         return;
+    }
+});
+
+router.get('/', authenticateUser, async (req: AuthenticatedRequest, res) => {
+    try {
+        const userInfo = req.userInfo;
+        const notifications = await prisma.notification.findMany({
+            where: {
+                practitionerId: userInfo.id
+            }
+        });
+        return res.status(200).json(notifications);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json(OperationOutcome("Failed to get notifications", "error", "exception"));
     }
 });
 
