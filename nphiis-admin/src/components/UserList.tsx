@@ -331,16 +331,16 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                           <KeyIcon className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => user.id && handleToggleUserStatus(user.id, user.enabled ?? true)}
+                          onClick={() => user.id && handleToggleUserStatus(user.id, user.active ?? true)}
                           disabled={actionLoading === user.id}
                           className={`p-1 rounded ${
-                            user.enabled 
+                            user.active 
                               ? 'text-orange-600 hover:text-orange-900 hover:bg-orange-50' 
                               : 'text-green-600 hover:text-green-900 hover:bg-green-50'
                           } ${actionLoading === user.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          title={user.enabled ? 'Disable user' : 'Enable user'}
+                          title={user.active ? 'Disable user' : 'Enable user'}
                         >
-                          {user.enabled ? (
+                          {user.active ? (
                             <XCircleIcon className="h-4 w-4" />
                           ) : (
                             <CheckCircleIcon className="h-4 w-4" />
@@ -411,9 +411,9 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
-                      selectedUser.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      selectedUser.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {selectedUser.enabled ? 'Active' : 'Inactive'}
+                      {selectedUser.active ? 'Active' : 'Inactive'}
                     </span>
                     <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role || 'Unknown')}`}>
                       {selectedUser.role || 'Unknown'}
@@ -502,9 +502,9 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                       <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700">Account Status</label>
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          selectedUser.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          selectedUser.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
-                          {selectedUser.enabled ? 'Active' : 'Inactive'}
+                          {selectedUser.active ? 'Active' : 'Inactive'}
                         </span>
                       </div>
                     </div>
@@ -626,7 +626,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                   <button
                     onClick={() => {
                       if (selectedUser.id) {
-                        handleToggleUserStatus(selectedUser.id, selectedUser.enabled ?? true);
+                        handleToggleUserStatus(selectedUser.id, selectedUser.active ?? true);
                         setSelectedUser(null);
                       }
                     }}
@@ -635,12 +635,12 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                     }`}
                     disabled={actionLoading === selectedUser.id}
                   >
-                    {selectedUser.enabled ? (
+                    {selectedUser.active ? (
                       <XCircleIcon className="h-4 w-4 mr-2" />
                     ) : (
                       <CheckCircleIcon className="h-4 w-4 mr-2" />
                     )}
-                    {selectedUser.enabled ? 'Disable User' : 'Enable User'}
+                    {selectedUser.active ? 'Disable User' : 'Enable User'}
                   </button>
                 </div>
               </div>
