@@ -8,8 +8,6 @@ import { getSupersetGuestToken } from "../lib/superset";
 const router = express.Router();
 router.use(express.json());
 
-
-
 const USER_ROLES = process.env.USER_ROLES?.split(",") || [];
 
 
@@ -93,8 +91,8 @@ router.post("/register", async (req: Request, res: Response) => {
 
         const practitionerId = keycloakUser.id;
 
-        // Build practitioner resource
-        const practitionerResource = {
+        // Build practitioner resource with telecom information
+        const practitionerResource: any = {
             "resourceType": "Practitioner",
             "id": practitionerId,
             "meta": {
@@ -125,6 +123,26 @@ router.post("/register", async (req: Request, res: Response) => {
                 }
             ]
         };
+
+        // Add telecom (phone and email) if provided
+        const telecom = [];
+        if (phone) {
+            telecom.push({
+                "system": "phone",
+                "value": phone,
+                "use": "work"
+            });
+        }
+        if (email) {
+            telecom.push({
+                "system": "email",
+                "value": email,
+                "use": "work"
+            });
+        }
+        if (telecom.length > 0) {
+            practitionerResource.telecom = telecom;
+        }
 
         // Create practitioner in FHIR
         const practitioner = (await FhirApi({
@@ -317,20 +335,16 @@ router.post('/reset-password', async (req: Request, res: Response) => {
         let resetResp = await validateResetCode(idNumber, resetCode)
         if (!resetResp) {
             return res.status(401).json({ error: "Failed to update new password. Try again", status: "error" });
-            return;
         }
-        let resp = updateUserPassword(idNumber, password);
+        let resp = await updateUserPassword(idNumber, password);
         deleteResetCode(idNumber);
         if (!resp) {
             return res.status(401).json({ error: "Failed to update new password. Try again", status: "error" });
-            return;
         }
         return res.status(200).json({ response: "Password updated successfully", status: "success" });
-        return;
     } catch (error) {
         console.error(error);
         return res.status(401).json({ error: "Invalid Bearer token provided", status: "error" });
-        return;
     }
 });
 
@@ -340,23 +354,15 @@ router.get('/reset-password', async (req: Request, res: Response) => {
         let { idNumber, email } = req.query;
         // console.log(encodeURIComponent(String(email)))
         let userInfo = await findKeycloakUser(String(idNumber));
-        console.log(userInfo);
-        if (userInfo.email.toLowerCase() !== String(email).toLowerCase()) {
-            return res.status(400).json({ status: "error", error: "Failed to initiate password reset. Invalid account details." })
-            return;
-        }
         idNumber = String(idNumber);
         let resp = await sendPasswordResetEmail(idNumber);
         if (!resp) {
             return res.status(400).json({ status: "error", error: "Failed to initiate password reset. Try again." })
-            return;
         }
         return res.status(200).json({ status: "success", response: "Check your email for the password reset code sent." })
-        return;
     } catch (error) {
         console.error(error);
         return res.status(401).json({ error: "Failed to initiate password reset", status: "error" });
-        return;
     }
 });
 
@@ -385,6 +391,17 @@ router.get("/users", authenticateUser, async (req: Request, res: Response) => {
         if (!users) {
             return res.status(500).json({ error: "Failed to retrieve users from Keycloak", status: "error" });
         }
+        const response = [];
+        for(let user of users){
+            if(!user.id){
+                continue;
+            }
+            const practitioner = await (await FhirApi({ url: `/Practitioner/${user.id}` })).data;
+            const role = practitioner?.extension?.length > 0 ?
+                practitioner.extension[1]?.valueString : "ADMINISTRATOR";
+            user.role = role;
+            response.push({...user, role});
+        }
 
         return res.status(200).json({
             users,
@@ -407,14 +424,18 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
         const { username } = req.params;
         let { phone, email, facilityCode, county, subCounty, role } = req.body;
 
-        // Get current user info to check permissions
+       
         let currentUserInfo = await findKeycloakUser(currentUser.preferred_username);
-        const isAdmin = currentUserInfo.attributes?.practitionerRole?.[0]?.includes("ADMINISTRATOR");
-
-        // Authorization check: Only administrators can edit users (self-editing is disabled)
-        if (!isAdmin) {
+        if (!currentUserInfo?.id) {
+            return res.status(403).json({ error: "User not found", status: "error" });
+        }
+        const practitioner = await (await FhirApi({ url: `/Practitioner/${currentUserInfo.id}` })).data;
+        const practitionerRole = practitioner?.extension?.length > 0 ?
+            practitioner.extension[1]?.valueString : "ADMINISTRATOR";
+        if (practitionerRole !== "ADMINISTRATOR" && practitionerRole !== "SUPERUSER") {
             return res.status(403).json({ error: "Unauthorized access. Only administrators can edit users.", status: "error" });
         }
+
 
         // Get target user info
         let targetUserInfo = await findKeycloakUser(username);

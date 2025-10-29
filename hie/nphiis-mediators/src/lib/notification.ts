@@ -8,9 +8,22 @@ const messageTitle = "60-day AFP Follow Up Reminder"
 
 
 export const processAfpObservation = async (observation: any) => {
+    // Derive investigation date from the Observation with multiple fallbacks
+    const candidateDates: Array<string | undefined> = [
+        observation?.valueDateTime,
+        observation?.valueDate,
+        observation?.valueString,
+    ];
 
-    const date = observation?.code?.coding?.[0]?.text;
-    const parsedDate = new Date(date);
+    const dateStr = candidateDates.find(Boolean);
+    const investigation = dateStr ? new Date(dateStr as string) : new Date(0);
+    if (isNaN(investigation.getTime())) {
+        return { status: "error", error: "Invalid or missing investigation date in Observation" };
+    }
+
+    // 60-day follow up due date
+    const due = new Date(investigation);
+    due.setDate(due.getDate() + 60);
     const practitionerId = observation?.performer?.[0]?.reference?.split('/')[1];
     const encounterId = observation?.encounter?.reference?.split('/')[1];
     const encounter = (await FhirApi({ url: `/Encounter/${encounterId}` })).data;
@@ -31,7 +44,8 @@ export const processAfpObservation = async (observation: any) => {
                 id: notification.id,
             },
             data: {
-                dueDate: parsedDate.toISOString(),
+                dueDate: due.toISOString(),
+                investigationDate: investigation.toISOString(),
             }
         })
     }
@@ -39,11 +53,11 @@ export const processAfpObservation = async (observation: any) => {
         notification = await prisma.notification.create({
             data: {
                 title: messageTitle,
-                body: reminderMessage.replace('{}', caseId),
+                body: reminderMessage.replace('{}', caseId ?? ""),
                 practitionerId,
                 encounterId,
-                investigationDate: new Date(date).toISOString(),
-                dueDate: parsedDate.toISOString(),
+                investigationDate: investigation.toISOString(),
+                dueDate: due.toISOString(),
             }
         })
     }
@@ -55,7 +69,7 @@ export const processAfpObservation = async (observation: any) => {
     });
 
     if (!config) {
-        return { status: "error", error: "User is missing notication token configuration" };
+        return { status: "error", error: "User is missing notification token configuration" };
     }
 
     return { status: "success", notificationId: notification.id, message: "Notification created successfully" };
@@ -64,7 +78,7 @@ export const processAfpObservation = async (observation: any) => {
 
 export const getUserInfoFromToken = async (token: string) => {
     try {
-        const response = await fetch(`${AUTH_SERVICE_URL}/users/me`, {
+        const response = await fetch(`${AUTH_SERVICE_URL}/provider/me`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             }
