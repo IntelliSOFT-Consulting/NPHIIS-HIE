@@ -10,7 +10,7 @@
         "routes": [
           {
             "name": "ID Assignment Route",
-            "host": "dsrf-mediators",
+            "host": "nphiis-mediators",
             "path": "/process-encounters/assign-ids",
             "port": "3000",
             "primary": true,
@@ -25,7 +25,7 @@
     "endpoints": [
       {
         "name": "ID Assignment Mediator Endpoint",
-        "host": "dsrf-mediators",
+        "host": "nphiis-mediators",
         "path": "/process-encounters/assign-ids",
         "port": "3000",
         "primary": true,

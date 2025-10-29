@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "module": "es6",
   "dependencies": {
-    "@prisma/client": "^5.11.0",
+    "@prisma/client": "6.18.0",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "cron": "^3.1.7",
@@ -31,7 +31,7 @@
     "eslint-import-resolver-typescript": "^2.7.1",
     "eslint-plugin-import": "^2.26.0",
     "nodemon": "^3.0.2",
-    "prisma": "^5.11.0",
+    "prisma": "6.18.0",
     "react-error-overlay": "6.0.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
