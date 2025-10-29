@@ -93,6 +93,15 @@ export interface Location {
   position?: FhirPosition;
 }
 
+// Paginated location response
+export interface PaginatedLocationResponse {
+  locations: Location[];
+  total: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  currentPage: number;
+}
+
 // For creating/updating locations
 export interface CreateLocationRequest {
   name: string;
@@ -111,10 +120,9 @@ export interface CreateLocationRequest {
 export const LOCATION_TYPES = [
   { code: 'COUNTRY', display: 'Country' },
   { code: 'COUNTY', display: 'County' },
-  { code: 'SUBCOUNTY', display: 'Sub-County' },
+  { code: 'SUB-COUNTY', display: 'Sub-County' },
   { code: 'WARD', display: 'Ward' },
   { code: 'FACILITY', display: 'Health Facility' },
-  { code: 'COMMUNITY', display: 'Community Unit' },
 ] as const;
 
 export type LocationTypeCode = typeof LOCATION_TYPES[number]['code'];

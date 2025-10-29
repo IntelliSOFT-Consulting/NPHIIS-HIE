@@ -14,10 +14,12 @@ datasource db {
 model CaseIdTracker {
   id           Int    @id @default(autoincrement())
   countryCode  String
+  countyCode String
   subCountyCode String
+  conditionCode String
   lastCaseId   Int    @default(0)
 
-  @@unique([countryCode, subCountyCode]) // enforce uniqueness of combination
+  @@unique([countryCode, countyCode, subCountyCode, conditionCode]) // enforce uniqueness of combination
 }
 
 model Notification {

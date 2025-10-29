@@ -24,21 +24,24 @@ function toThreeDigits(num: number): string {
 
 //process FHIR beneficiary
 router.put('/notifications/Observation/:id', async (req, res) => {
+  console.log("🟢 Observation subscription triggered for ID:", req.params.id);
   try {
     let { id } = req.params;
+    console.log("🟢 Fetching observation data...");
     let data = await (await FhirApi({ url: `/Observation/${id}` })).data;
-    let response = await sendMediatorRequest("/process-observations/create-notification", data);
-    console.log(response);
+    console.log("🟢 About to call sendMediatorRequest...");
+    let response = await sendMediatorRequest("/process-observations/afp-follow-up", data);
+    console.log("🟢 sendMediatorRequest returned:", response);
     res.statusCode = 200;
     return res.json(OperationOutcome('AFP Follow Up processed successfully', 'information'));
   } catch (error) {
-    console.error(error);
+    console.error("🔴 Error in Observation subscription:", error);
     return res.status(400).json(OperationOutcome('Failed to process AFP Follow Up', 'error'));
   }
 });
 
 //process FHIR beneficiary
-router.post('/create-notification', async (req, res) => {
+router.post('/afp-follow-up', async (req, res) => {
   try {
     let data = req.body;
     const response = await processAfpObservation(data);
