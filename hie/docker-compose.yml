@@ -71,7 +71,7 @@ services:
         env_file:
             - .env
         ports:
-            # - "8080:8080"
+            - "8087:8080"
             # - "5000:5000"
             - "5001:5001"
             # - "5050:5050"
@@ -142,6 +142,8 @@ services:
             context: nphiis-mediators
             dockerfile: Dockerfile
         restart: unless-stopped
+        ports:
+            - "5555:5555"
         networks:
             - openhim
             - hapi-fhir

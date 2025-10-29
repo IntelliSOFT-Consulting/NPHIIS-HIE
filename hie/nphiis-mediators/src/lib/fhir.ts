@@ -6,7 +6,7 @@ import { FhirApi } from "./utils";
 let reasonCode = "mpox-register";
 
 
-let OperationOutcome = (error: any) => {
+export let OperationOutcome = (error: any) => {
     return {
         "resourceType": "OperationOutcome",
         "id": "exception",
@@ -14,8 +14,8 @@ let OperationOutcome = (error: any) => {
     }
 }
 
-export const FhirIdentifier = (system: string, code: string, display: string, value: string) => {
-    return { type: { coding: [{ system, code, display }] }, value }
+export const FhirIdentifier = (system: string, code: string, display: string, value: string, official: boolean = false) => {
+    return { type: { coding: [{ system, code, display }] }, value, use: official ? "official" : "usual" }
 }
 
 
@@ -65,7 +65,7 @@ export let createEpidFHIRSubscription = async () => {
     await createSubscription(
         FHIR_EPID_SUBSCRIPTION_ID, 
         FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL, 
-        `Encounter?reason-code=${reasonCode}`
+        `Encounter?`
     );
 }
 

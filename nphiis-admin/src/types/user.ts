@@ -21,6 +21,7 @@ export interface User {
   locationId?: string;
   role?: UserRole;
   enabled?: boolean;
+  active?: boolean;
   createdTimestamp?: number;
   fhirPractitionerId?: string;
   practitionerRole?: string;

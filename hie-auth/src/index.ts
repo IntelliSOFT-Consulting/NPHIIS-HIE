@@ -37,7 +37,7 @@ app.use((req, res, next) => {
 
 app.use('/client', ClientAuth)
 app.use('/provider', ProviderAuth)
-// app.use('/reports', Reports)
+app.use('/reports', Reports)
 
 
 app.listen(PORT, () => {

@@ -1,13 +1,21 @@
 import express from 'express';
-import { FhirApi } from '../lib/utils';
+import { FhirApi, sendMediatorRequest } from '../lib/utils';
 import { v4 as uuid } from 'uuid';
 import fetch from 'node-fetch';
 import { FhirIdentifier } from '../lib/fhir';
 import { generateCaseId } from '../lib/caseIdTracker';
+import { OperationOutcome } from '../lib/fhir';
 
 export const router = express.Router();
 
 router.use(express.json() as any);
+
+const POSSIBLE_REASON_CODES = {
+  "Measles Case Information": "MEA",
+  "MOH 505 Reporting Form": "MOH505",
+  "AFP Case Information": "AFP"
+}
+
 
 
 function padStart(str: string, targetLength: number, padChar: string = '0'): string {
@@ -18,64 +26,26 @@ function padStart(str: string, targetLength: number, padChar: string = '0'): str
 }
 
 function toThreeDigits(num: number): string {
-  return padStart(num.toString(), 3);
+  return padStart(num.toString(), 3, '0');
 }
 
 //process FHIR beneficiary
 router.put('/notifications/Encounter/:id', async (req, res) => {
+  console.log("🟢 Encounter subscription triggered for ID:", req.params.id);
   try {
     let { id } = req.params;
+    console.log("🟢 Fetching encounter data...");
     let data = await (await FhirApi({ url: `/Encounter/${id}` })).data;
 
-
-    let ASSIGN_ID_ENDPOINT = process.env['ASSIGN_ID_ENDPOINT'] ?? "";
-    let OPENHIM_CLIENT_ID = process.env['OPENHIM_CLIENT_ID'] ?? "";
-    let OPENHIM_CLIENT_PASSWORD = process.env['OPENHIM_CLIENT_PASSWORD'] ?? "";
-    let response = await (await fetch(ASSIGN_ID_ENDPOINT, {
-      body: JSON.stringify(data),
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": 'Basic ' + Buffer.from(OPENHIM_CLIENT_ID + ':' + OPENHIM_CLIENT_PASSWORD).toString('base64')
-      }
-    })).json();
-    // let response = await (await fetch("http://localhost:3000/process-case-encounter/assign-ids", {
-    //   body: JSON.stringify(data),
-    //   method: "POST", headers: { "Content-Type": "application/json" }
-    // })).json()
-    if (response.code >= 400) {
-      res.statusCode = response.code;
-      res.json({
-        "resourceType": "OperationOutcome",
-        "id": "exception",
-        "issue": [{
-          "severity": "error",
-          "code": "exception",
-          "details": {
-            "text": `Failed to post - ${JSON.stringify(response)}`
-          }
-        }]
-      });
-      return;
-    }
-    console.log(response);
-    res.statusCode = 200;
-    res.json(response);
+    let response = await sendMediatorRequest("/process-encounters/assign-ids", data);
+    console.log("🟢 sendMediatorRequest returned:", response);
+    res.statusCode = response.code || 200;
+    res.json(response.data || response);
     return;
   } catch (error) {
-    console.error(error);
+    console.error("🔴 Error in Encounter subscription:", error);
     res.statusCode = 400;
-    res.json({
-      "resourceType": "OperationOutcome",
-      "id": "exception",
-      "issue": [{
-        "severity": "error",
-        "code": "exception",
-        "details": {
-          "text": `Failed to post - ${JSON.stringify(error)}`
-        }
-      }]
-    });
+    res.json(OperationOutcome(error));
     return;
   }
 });
@@ -84,100 +54,91 @@ router.put('/notifications/Encounter/:id', async (req, res) => {
 router.post('/assign-ids', async (req, res) => {
   try {
     let data = req.body;
+    let caseId;
 
-    let reasonCode = "mpox-register";
+
     let encounterCodeSystem = "http://hie.org/identifiers/EPID";
 
+    
+    let reasonCode = data?.reasonCode?.[0]?.coding?.[0]?.code;
 
     let patientId = data?.subject?.reference?.split("/")[1];
     let patient = await (await FhirApi({ url: `/Patient/${patientId}` })).data;
 
-    // if patient does not have an id with the code mpox-register, return
-    if (!patient?.identifier?.some((id: any) => id?.type?.coding[0]?.code === reasonCode)) {
-      res.statusCode = 200;
-      res.json({
-        "resourceType": "OperationOutcome",
-        "id": uuid(),
-        "issue": [{
-          "severity": "information",
-          "code": "informational",
-          "details": {
-            "text": `Patient does not have an id with the code mpox-register`
-          }
-        }]
-      });
-      console.log("Patient does not have an id with the code mpox-register");
-      return;
+
+    let onsetDate = data?.identifier?.find((id: any) =>
+      id.system === "system-creation" &&
+      id.type?.coding?.some((coding: any) =>
+        coding.code === "system_creation"
+      )
+    )?.value;
+    // Convert onsetDate to a normal date format (YYYY-MM-DD)
+    // onsetDate is expected to be in the format "YYYY-MM-DD HH:mm:ss"
+    let normalizedOnsetDate = onsetDate;
+    if (onsetDate && typeof onsetDate === "string") {
+      // Extract only the date part before any space
+      normalizedOnsetDate = onsetDate.split(" ")[0];
     }
 
-    let patientIdentifier = patient?.identifier?.find((id: any) => id.system === encounterCodeSystem);
-    if (patientIdentifier) {
+    
+    let epidIdentifier = patient?.identifier?.find((id: any) =>
+      id.type?.coding?.some((coding: any) =>
+        coding.system === "http://hie.org/identifiers/EPID"
+      )
+    );
+
+    if(epidIdentifier?.use === "official") {
+      console.log("Patient already has an official id with the system http://hie.org/identifiers/EPID");
+      return res.status(200).json(OperationOutcome("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
+    }
+
+    if (epidIdentifier) {
       // remove the patient identifier with the system http://hie.org/identifiers/EPID
-      patient.identifier = patient.identifier.filter((id: any) => id.system !== encounterCodeSystem);
+      patient.identifier = patient.identifier.filter((id: any) => !(
+        Array.isArray(id?.type?.coding) &&
+        id.type.coding.some(
+          (coding: any) =>
+            coding.system === "http://hie.org/identifiers/EPID"
+        )
+      ));
     }
 
+    let caseCondition = POSSIBLE_REASON_CODES?.[reasonCode as keyof typeof POSSIBLE_REASON_CODES] || reasonCode.toUpperCase().slice(0, 3);
+    if(caseCondition === "MPOX"){
 
-
-    let observations = await (await FhirApi({ url: `/Observation?encounter=Encounter/${data?.id}&_count=1000` })).data;
-    observations = observations.entry;
-    let county;
-    let subCounty;
-    let caseCondition = "MPOVAC";
-    let caseId;
-    let epidNo;
-    let epidNoObservation;
-    let onsetDate;
-    let countryOfOrigin;
-
-
-    const subCountyCode = "a3-sub-county";
-    const countyCode = "a4-county";
-    const caseConditionCode = "a5-disease-reported";
-    const epidNoCode = "EPID";
-    const onsetDateCode = "date_given";
-    const countryOfOriginCode = "country_of_origin";
-
-    for (let obs of observations) {
-      if (obs.resource.code.coding[0].code === countyCode) {
-        county = obs.resource.code.text;
-      }
-      if (obs.resource.code.coding[0].code === subCountyCode) {
-        subCounty = obs.resource.code.text;
-      }
-      // if (obs.resource.code.coding[0].code === caseConditionCode) {
-      //   caseCondition = obs.resource.code.text;
-      // }
-      if (obs.resource.code.coding[0].code === epidNoCode) {
-        epidNoObservation = obs.resource;
-        epidNo = obs.resource.valueString;
-      }
-      if (obs.resource.code.coding[0].code === countryOfOriginCode) {
-        countryOfOrigin = obs.resource.valueString;
-      }
-      if (obs.resource.code.coding[0].code === onsetDateCode) {
-        onsetDate = obs.resource.valueString;
-      }
+      const subCountyCode = "a3-sub-county";
+      const countyCode = "a4-county";
+      const epidNoCode = "EPID";
+      const onsetDateCode = "date_given";
+      const countryOfOriginCode = "country_of_origin";
+    // fetch by code.....observations
     }
 
-    caseId = await generateCaseId(county ?? countryOfOrigin, subCounty);
-    if(!countryOfOrigin){
-      countryOfOrigin = "KEN";
-    }
+      // Find the tag with the correct system for encounter-managingLocation (not observation-managingLocation)
+      const locationMeta = data?.meta?.tag?.find((tag: any) => tag.system === "http://example.org/fhir/StructureDefinition/encounter-managingLocation");
+      const location = locationMeta?.code?.split("/")[1];
+      console.log("Location:", location);
+      const facility = await (await FhirApi({ url: `/Location/${location}` })).data;
+      const ward = await (await FhirApi({ url: `/Location/${facility?.partOf?.reference?.split("/")[1]}` })).data;
+      const subCounty = await (await FhirApi({ url: `/Location/${ward?.partOf?.reference?.split("/")[1]}` })).data;
+      const county = await (await FhirApi({ url: `/Location/${subCounty?.partOf?.reference?.split("/")[1]}` })).data;
+      const countryOfOrigin = await (await FhirApi({ url: `/Location/${county?.partOf?.reference?.split("/")[1]}` })).data;
 
-    console.log(countryOfOrigin, county, subCounty, onsetDate, caseId);
+      const countryName = countryOfOrigin?.name?.toUpperCase()?.trim();
+      const countyName = county?.name?.toUpperCase()?.trim();
+      const subCountyName = subCounty?.name?.toUpperCase()?.trim();
 
-    let formattedId = `${countryOfOrigin.substring(0, 3).toUpperCase()}-${county.substring(0, 3).toUpperCase()}-${subCounty.substring(0, 3).toUpperCase()}-${new Date(onsetDate).getFullYear()}-${caseCondition}-${toThreeDigits(caseId)}`;
+      console.log("Assigning EPID with:", { countryName, countyName, subCountyName, caseCondition, onsetDate });
 
-    // check if formattedId is already in use
-    let encounters = await (await FhirApi({ url: `/Encounter?identifier=${formattedId}&_summary=count` })).data;
-    if (encounters.total > 0) {
-      formattedId = `${countryOfOrigin.substring(0, 3).toUpperCase()}-${county.substring(0, 3).toUpperCase()}-${subCounty.substring(0, 3).toUpperCase()}-${new Date(onsetDate).getFullYear()}-${caseCondition}-${toThreeDigits(caseId + 1)}`;
-    }
+      if (!countryName || !countyName || !subCountyName) {
+        return res.status(400).json(OperationOutcome("Missing required location names for EPID generation (country, county, or sub-county)."));
+      }
 
-    // let formattedId = epidNo + String(toThreeDigits(caseId));
+      caseId = await generateCaseId(countryName, countyName, subCountyName, caseCondition);
 
+    let formattedId = `${countryName.substring(0, 3)}-${countyName.substring(0, 3)}-${subCountyName.substring(0, 3)}-${new Date(normalizedOnsetDate).getFullYear()}-${caseCondition}-${toThreeDigits(caseId)}`;
 
-    let newId = FhirIdentifier(encounterCodeSystem, "EPID", "Epidemiological ID", formattedId);
+    let newId = FhirIdentifier(encounterCodeSystem, "EPID", "Epidemiological ID", formattedId, true);
 
     let updatedPatient = await (await FhirApi({
       url: `/Patient/${patientId}`, method: "PUT",
@@ -189,20 +150,9 @@ router.post('/assign-ids', async (req, res) => {
         ]
       })
     })).data;
-    console.log(updatedPatient);
+    console.log("updatedPatient");
+    console.log(newId);
 
-    // updated epid No in obs
-    // Update the code text and valueString of the epidNoObservation with the new formattedId
-    if (epidNoObservation && epidNoObservation.code) {
-      epidNoObservation.code = {
-        ...epidNoObservation.code,
-        text: formattedId
-      };
-      epidNoObservation.valueString = formattedId;
-    }
-
-    let updatedObservation = await (await FhirApi({ url: `/Observation/${epidNoObservation?.id}`, method: "PUT", data: JSON.stringify({ ...epidNoObservation, code: { ...epidNoObservation.code, text: formattedId } }) })).data;
-    console.log(updatedObservation)
 
     // update the encounter with the new caseId
     // remove the encounter identifier with the system http://hie.org/identifiers/EPID

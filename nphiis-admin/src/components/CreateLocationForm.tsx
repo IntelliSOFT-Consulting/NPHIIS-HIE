@@ -23,6 +23,10 @@ const createLocationSchema = z.object({
   status: z.enum(['active', 'suspended', 'inactive']).default('active'),
   description: z.string().optional(),
   parentId: z.string().optional(),
+  // Additional fields for cascading dropdowns
+  countyId: z.string().optional(),
+  subCountyId: z.string().optional(),
+  wardId: z.string().optional(),
   addressLine: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -42,29 +46,22 @@ export default function CreateLocationForm({ onLocationCreated }: CreateLocation
   const [errorMessage, setErrorMessage] = useState('');
   const [parentLocations, setParentLocations] = useState<Location[]>([]);
   const [loadingParentLocations, setLoadingParentLocations] = useState(false);
-
-  // Fetch all locations to use as potential parent locations
-  useEffect(() => {
-    const fetchParentLocations = async () => {
-      setLoadingParentLocations(true);
-      try {
-        const locations = await locationApi.getLocations();
-        setParentLocations(locations);
-      } catch (error) {
-        console.error('Error fetching parent locations:', error);
-      } finally {
-        setLoadingParentLocations(false);
-      }
-    };
-
-    fetchParentLocations();
-  }, []);
+  
+  // State for cascading dropdowns
+  const [counties, setCounties] = useState<Location[]>([]);
+  const [subCounties, setSubCounties] = useState<Location[]>([]);
+  const [wards, setWards] = useState<Location[]>([]);
+  const [loadingCounties, setLoadingCounties] = useState(false);
+  const [loadingSubCounties, setLoadingSubCounties] = useState(false);
+  const [loadingWards, setLoadingWards] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(createLocationSchema),
     mode: 'onChange',
@@ -74,6 +71,9 @@ export default function CreateLocationForm({ onLocationCreated }: CreateLocation
       status: 'active',
       description: '',
       parentId: '',
+      countyId: '',
+      subCountyId: '',
+      wardId: '',
       addressLine: '',
       city: '',
       state: '',
@@ -85,6 +85,141 @@ export default function CreateLocationForm({ onLocationCreated }: CreateLocation
       longitude: '',
     },
   });
+
+  // Watch fields for cascading logic
+  const selectedTypeCode = watch('typeCode');
+  const selectedParentId = watch('parentId');
+  const selectedCountyId = watch('countyId');
+  const selectedSubCountyId = watch('subCountyId');
+
+  // Fetch parent locations based on the selected type
+  useEffect(() => {
+    const fetchParentLocations = async () => {
+      if (!selectedTypeCode) {
+        setParentLocations([]);
+        return;
+      }
+
+      // Determine what type of parent locations to fetch
+      let parentTypeCode: string | undefined;
+      
+      if (selectedTypeCode === 'COUNTY') {
+        parentTypeCode = 'COUNTRY';
+      } else if (selectedTypeCode === 'SUB-COUNTY') {
+        parentTypeCode = 'COUNTY';
+      } else if (selectedTypeCode === 'COUNTRY') {
+        // Country has no parent
+        setParentLocations([]);
+        setValue('parentId', '');
+        return;
+      }
+      
+      // For WARD and FACILITY, we'll use cascading dropdowns instead
+      if (selectedTypeCode === 'WARD' || selectedTypeCode === 'FACILITY') {
+        setParentLocations([]);
+        return;
+      }
+
+      if (parentTypeCode) {
+        setLoadingParentLocations(true);
+        try {
+          const response = await locationApi.getLocations(1, 1000, parentTypeCode);
+          setParentLocations(response.locations);
+        } catch (error) {
+          console.error('Error fetching parent locations:', error);
+        } finally {
+          setLoadingParentLocations(false);
+        }
+      }
+    };
+
+    fetchParentLocations();
+  }, [selectedTypeCode, setValue]);
+
+  // Fetch counties for WARD and FACILITY types
+  useEffect(() => {
+    const fetchCounties = async () => {
+      if (selectedTypeCode === 'WARD' || selectedTypeCode === 'FACILITY') {
+        setLoadingCounties(true);
+        try {
+          const response = await locationApi.getLocations(1, 1000, 'COUNTY');
+          setCounties(response.locations);
+        } catch (error) {
+          console.error('Error fetching counties:', error);
+        } finally {
+          setLoadingCounties(false);
+        }
+      } else {
+        setCounties([]);
+        setSubCounties([]);
+        setWards([]);
+      }
+    };
+
+    fetchCounties();
+  }, [selectedTypeCode]);
+
+  // Fetch sub-counties when county is selected (for WARD and FACILITY)
+  useEffect(() => {
+    const fetchSubCounties = async () => {
+      if ((selectedTypeCode === 'WARD' || selectedTypeCode === 'FACILITY') && selectedCountyId) {
+        setLoadingSubCounties(true);
+        try {
+          const response = await locationApi.getLocations(1, 1000, 'SUB-COUNTY', undefined, selectedCountyId);
+          setSubCounties(response.locations);
+          // Reset sub-county and ward selections
+          setValue('subCountyId', '');
+          setValue('wardId', '');
+        } catch (error) {
+          console.error('Error fetching sub-counties:', error);
+        } finally {
+          setLoadingSubCounties(false);
+        }
+      } else {
+        setSubCounties([]);
+        setWards([]);
+      }
+    };
+
+    fetchSubCounties();
+  }, [selectedCountyId, selectedTypeCode, setValue]);
+
+  // Fetch wards when sub-county is selected (for FACILITY only)
+  useEffect(() => {
+    const fetchWards = async () => {
+      if (selectedTypeCode === 'FACILITY' && selectedSubCountyId) {
+        setLoadingWards(true);
+        try {
+          const response = await locationApi.getLocations(1, 1000, 'WARD', undefined, selectedSubCountyId);
+          setWards(response.locations);
+          // Reset ward selection
+          setValue('wardId', '');
+        } catch (error) {
+          console.error('Error fetching wards:', error);
+        } finally {
+          setLoadingWards(false);
+        }
+      } else {
+        setWards([]);
+      }
+    };
+
+    fetchWards();
+  }, [selectedSubCountyId, selectedTypeCode, setValue]);
+
+  // Watch ward selection for FACILITY type
+  const selectedWardId = watch('wardId');
+
+  // Auto-set parentId based on cascading selections
+  useEffect(() => {
+    if (selectedTypeCode === 'WARD' && selectedSubCountyId) {
+      // For WARD, parent is the selected sub-county
+      setValue('parentId', selectedSubCountyId);
+    } else if (selectedTypeCode === 'FACILITY' && selectedWardId) {
+      // For FACILITY, parent is the selected ward
+      setValue('parentId', selectedWardId);
+    }
+  }, [selectedTypeCode, selectedSubCountyId, selectedWardId, setValue]);
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -243,27 +378,172 @@ export default function CreateLocationForm({ onLocationCreated }: CreateLocation
               )}
             </div>
 
-            <div>
-              <label htmlFor="parentId" className="block text-sm font-medium text-gray-700">
-                Parent Location {loadingParentLocations && <span className="text-gray-500 text-xs">(Loading...)</span>}
-              </label>
-              <select
-                {...register('parentId')}
-                id="parentId"
-                disabled={loadingParentLocations}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
-              >
-                <option value="">None (Top Level)</option>
-                {parentLocations.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.name} {location.type ? `(${location.type})` : ''}
-                  </option>
-                ))}
-              </select>
-              {errors.parentId && (
-                <p className="mt-1 text-sm text-red-600">{errors.parentId.message}</p>
-              )}
-            </div>
+            {/* Parent Location - conditional rendering based on type */}
+            {selectedTypeCode === 'COUNTRY' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Parent Location
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value="None (Top Level)"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm bg-gray-100 text-gray-500 sm:text-sm"
+                />
+                <p className="mt-1 text-xs text-gray-500">Country is always at the top level</p>
+              </div>
+            )}
+
+            {(selectedTypeCode === 'COUNTY' || selectedTypeCode === 'SUB-COUNTY') && (
+              <div>
+                <label htmlFor="parentId" className="block text-sm font-medium text-gray-700">
+                  Parent Location {loadingParentLocations && <span className="text-gray-500 text-xs">(Loading...)</span>}
+                </label>
+                <select
+                  {...register('parentId')}
+                  id="parentId"
+                  disabled={loadingParentLocations}
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">Select {selectedTypeCode === 'COUNTY' ? 'country' : 'county'}</option>
+                  {parentLocations.map((location) => (
+                    <option key={location.id} value={location.id}>
+                      {location.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.parentId && (
+                  <p className="mt-1 text-sm text-red-600">{errors.parentId.message}</p>
+                )}
+              </div>
+            )}
+
+            {selectedTypeCode === 'WARD' && (
+              <>
+                <div>
+                  <label htmlFor="countyId" className="block text-sm font-medium text-gray-700">
+                    County {loadingCounties && <span className="text-gray-500 text-xs">(Loading...)</span>}
+                  </label>
+                  <select
+                    {...register('countyId')}
+                    id="countyId"
+                    disabled={loadingCounties}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select county</option>
+                    {counties.map((county) => (
+                      <option key={county.id} value={county.id}>
+                        {county.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.countyId && (
+                    <p className="mt-1 text-sm text-red-600">{errors.countyId.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="subCountyId" className="block text-sm font-medium text-gray-700">
+                    Sub-County (Parent) {loadingSubCounties && <span className="text-gray-500 text-xs">(Loading...)</span>}
+                  </label>
+                  <select
+                    {...register('subCountyId')}
+                    id="subCountyId"
+                    disabled={loadingSubCounties || !selectedCountyId}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select sub-county</option>
+                    {subCounties.map((subCounty) => (
+                      <option key={subCounty.id} value={subCounty.id}>
+                        {subCounty.name}
+                      </option>
+                    ))}
+                  </select>
+                  {!selectedCountyId && (
+                    <p className="mt-1 text-xs text-gray-500">Select a county first</p>
+                  )}
+                  {errors.subCountyId && (
+                    <p className="mt-1 text-sm text-red-600">{errors.subCountyId.message}</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {selectedTypeCode === 'FACILITY' && (
+              <>
+                <div>
+                  <label htmlFor="countyId" className="block text-sm font-medium text-gray-700">
+                    County {loadingCounties && <span className="text-gray-500 text-xs">(Loading...)</span>}
+                  </label>
+                  <select
+                    {...register('countyId')}
+                    id="countyId"
+                    disabled={loadingCounties}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select county</option>
+                    {counties.map((county) => (
+                      <option key={county.id} value={county.id}>
+                        {county.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.countyId && (
+                    <p className="mt-1 text-sm text-red-600">{errors.countyId.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="subCountyId" className="block text-sm font-medium text-gray-700">
+                    Sub-County {loadingSubCounties && <span className="text-gray-500 text-xs">(Loading...)</span>}
+                  </label>
+                  <select
+                    {...register('subCountyId')}
+                    id="subCountyId"
+                    disabled={loadingSubCounties || !selectedCountyId}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select sub-county</option>
+                    {subCounties.map((subCounty) => (
+                      <option key={subCounty.id} value={subCounty.id}>
+                        {subCounty.name}
+                      </option>
+                    ))}
+                  </select>
+                  {!selectedCountyId && (
+                    <p className="mt-1 text-xs text-gray-500">Select a county first</p>
+                  )}
+                  {errors.subCountyId && (
+                    <p className="mt-1 text-sm text-red-600">{errors.subCountyId.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="wardId" className="block text-sm font-medium text-gray-700">
+                    Ward (Parent) {loadingWards && <span className="text-gray-500 text-xs">(Loading...)</span>}
+                  </label>
+                  <select
+                    {...register('wardId')}
+                    id="wardId"
+                    disabled={loadingWards || !selectedSubCountyId}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select ward</option>
+                    {wards.map((ward) => (
+                      <option key={ward.id} value={ward.id}>
+                        {ward.name}
+                      </option>
+                    ))}
+                  </select>
+                  {!selectedSubCountyId && (
+                    <p className="mt-1 text-xs text-gray-500">Select a sub-county first</p>
+                  )}
+                  {errors.wardId && (
+                    <p className="mt-1 text-sm text-red-600">{errors.wardId.message}</p>
+                  )}
+                </div>
+              </>
+            )}
 
             <div className="md:col-span-2">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">

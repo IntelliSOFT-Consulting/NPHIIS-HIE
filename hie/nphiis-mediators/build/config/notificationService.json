@@ -1,0 +1,35 @@
+{
+    "urn": "urn:mediator:notification-service",
+    "version": "1.0.0",
+    "name": "Notification Service",
+    "description": "This mediator is responsible for handling Notifications via FCM.",
+    "defaultChannelConfig": [
+        {
+            "name": "Notification Service Channel",
+            "urlPattern": "/notifications",
+            "routes": [
+                {
+                    "name": "Notification Service Route",
+                    "host": "nphiis-mediators",
+                    "path": "/notifications",
+                    "port": "3000",
+                    "primary": true,
+                    "type": "http"
+                }
+            ],
+            "allow": ["*"],
+            "methods": ["POST"],
+            "type": "http"
+        }
+    ],
+    "endpoints": [
+        {
+            "name": "Notification Service Endpoint",
+            "host": "nphiis-mediators",
+            "path": "/notifications",
+            "port": "3000",
+            "primary": true,
+            "type": "http"
+        }
+    ]
+}
