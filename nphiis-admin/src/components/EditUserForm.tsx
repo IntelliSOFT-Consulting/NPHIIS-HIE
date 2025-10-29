@@ -100,7 +100,8 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
         return;
       }
 
-      await userApi.updateUser(user.id!, data, accessToken);
+      // Use username (idNumber) instead of id for the update
+      await userApi.updateUser(user.username, data, accessToken);
       setSubmitStatus('success');
       setTimeout(() => {
         onUserUpdated();

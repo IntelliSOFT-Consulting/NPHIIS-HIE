@@ -2,7 +2,8 @@ version: '3'
 
 volumes:
   keycloak-postgres:
-      driver: local
+      external: true
+      name: keycloak_keycloak-postgres
 
 networks:
   cloudbuild:
@@ -13,7 +14,8 @@ networks:
 services:
   keycloak-postgres:
       image: postgres:14-alpine
-      restart: on-failure
+      container_name: keycloak-postgres
+      restart: always
       networks:
             - cloudbuild
       environment:
@@ -26,13 +28,13 @@ services:
   keycloak:
       image: quay.io/keycloak/keycloak:26.0.1
       container_name: keycloak
-      restart: on-failure
+      restart: always
       networks:
         - cloudbuild
       env_file:
         - ../keycloak/.env
       depends_on:
         - keycloak-postgres
-      command: start-dev --db=postgres --db-url=jdbc:postgresql://keycloak-postgres:5432/keycloak
+      command: start-dev
       ports:
         - 8889:8080

@@ -28,10 +28,13 @@ interface PasswordResetModalProps {
 
 export default function PasswordResetModal({ user, onPasswordReset, onClose }: PasswordResetModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [sendCodeStatus, setSendCodeStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [sendCodeMessage, setSendCodeMessage] = useState('');
   // const { showSuccess, showError } = useNotification();
 
   const {
@@ -51,12 +54,12 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
     setErrorMessage('');
 
     try {
-      if (!user.id) {
-        setErrorMessage('User ID is required');
+      if (!user.username) {
+        setErrorMessage('Username is required');
         setSubmitStatus('error');
         return;
       }
-      await userApi.resetPassword(user.id, data.newPassword, data.resetCode);
+      await userApi.resetPassword(user.username, data.newPassword, data.resetCode);
       setSubmitStatus('success');
       reset();
       setTimeout(() => {
@@ -91,6 +94,33 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
     setValue('confirmPassword', randomPassword);
   };
 
+  const handleSendResetCode = async () => {
+    setIsSendingCode(true);
+    setSendCodeStatus('idle');
+    setSendCodeMessage('');
+
+    try {
+      if (!user.username || !user.email) {
+        setSendCodeMessage('User ID or email is missing');
+        setSendCodeStatus('error');
+        return;
+      }
+      await userApi.sendPasswordResetCode(user.username, user.email);
+      setSendCodeStatus('success');
+      setSendCodeMessage('Reset code sent successfully to ' + user.email);
+    } catch (error: any) {
+      setSendCodeStatus('error');
+      setSendCodeMessage(
+        error.response?.data?.error || 
+        error.message || 
+        'Failed to send reset code. Please try again.'
+      );
+      console.error('Error sending reset code:', error);
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -117,6 +147,33 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
             </p>
           </div>
 
+          {/* Send Reset Code Section */}
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm text-gray-700 mb-2">
+              First, send a reset code to the user&apos;s email:
+            </p>
+            <button
+              type="button"
+              onClick={handleSendResetCode}
+              disabled={isSendingCode}
+              className="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSendingCode ? 'Sending...' : 'Send Reset Code to Email'}
+            </button>
+            
+            {/* Send Code Status Messages */}
+            {sendCodeStatus === 'success' && (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                {sendCodeMessage}
+              </div>
+            )}
+            {sendCodeStatus === 'error' && (
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+                {sendCodeMessage}
+              </div>
+            )}
+          </div>
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Reset Code */}
             <div>
@@ -128,7 +185,7 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
                 id="resetCode"
                 type="text"
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                placeholder="Enter reset code"
+                placeholder="Enter reset code from email"
               />
               {errors.resetCode && (
                 <p className="mt-1 text-sm text-red-600">{errors.resetCode.message}</p>

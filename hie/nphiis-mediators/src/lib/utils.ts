@@ -92,7 +92,7 @@ utils.authenticate(openhimConfig, (e: any) => {
     createFHIRSubscription();
 })
 
-createClient(process.env['OPENHIM_CLIENT_ID'] || '', process.env['OPENHIM_CLIENT_PASSWORD'] || '');
+// createClient(process.env['OPENHIM_CLIENT_ID'] || '', process.env['OPENHIM_CLIENT_PASSWORD'] || '');
 
 
 export const importMediators = () => {
@@ -216,20 +216,32 @@ export const OperationOutcome = (
 
 
 export const sendMediatorRequest = async (url: string, data: any) => {
+    console.log("🔵 sendMediatorRequest CALLED with url:", url);
     try {
         let OPENHIM_CLIENT_ID = process.env['OPENHIM_CLIENT_ID'] ?? "";
         let OPENHIM_CLIENT_PASSWORD = process.env['OPENHIM_CLIENT_PASSWORD'] ?? "";
-        let response = await (await fetch(url, {
+        console.log("🔵 Client ID:", OPENHIM_CLIENT_ID ? "✓ Set" : "✗ Missing");
+        
+        const _url = `${process.env['MEDIATORS_BASE_URL'] ?? "http://openhim-core:5001"}${url}`;
+        console.log("🔵 Sending mediator request to:", _url);
+        console.log("🔵 Request data:", JSON.stringify(data).substring(0, 200));
+        
+        const fetchResponse = await fetch(_url, {
             body: JSON.stringify(data),
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": 'Basic ' + Buffer.from(OPENHIM_CLIENT_ID + ':' + OPENHIM_CLIENT_PASSWORD).toString('base64')
             }
-        })).json();
+        });
+        
+        console.log("🔵 Fetch response status:", fetchResponse.status);
+        
+        let response = await fetchResponse.json();
+        console.log("🔵 Mediator Response:", response);
         return response;
     } catch (error) {
-        console.log(error);
-        return null;
+        console.error("🔴 sendMediatorRequest ERROR:", error);
+        return {error, status: "error"};
     }
 }

@@ -203,7 +203,7 @@ export const userApi = {
   },
 
   // Update user using real API
-  updateUser: async (userId: string, userData: Partial<User>, accessToken?: string): Promise<User> => {
+  updateUser: async (username: string, userData: Partial<User>, accessToken?: string): Promise<User> => {
     if (!accessToken) {
       throw new Error('Access token required');
     }
@@ -229,8 +229,8 @@ export const userApi = {
         apiPayload.facilityCode = userData.locationId;
       }
       
-      // Use the PUT /users/{username} endpoint with userId as username
-      const response = await fetch(`${API_HOST}/provider/users/${userId}`, {
+      // Use the PUT /users/{username} endpoint with username (idNumber)
+      const response = await fetch(`${API_HOST}/provider/users/${username}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -309,6 +309,36 @@ export const userApi = {
       }
     } catch (error) {
       console.error('Delete user error:', error);
+      throw error;
+    }
+  },
+
+  // Send password reset code to user's email
+  sendPasswordResetCode: async (idNumber: string, email: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API_HOST}/provider/reset-password?idNumber=${encodeURIComponent(idNumber)}&email=${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Cookie': 'frontend_lang=en_US'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        (error as any).response = { data: errorData, status: response.status };
+        throw error;
+      }
+
+      const data = await response.json();
+      
+      if (data.status !== 'success') {
+        const error = new Error(data.error || 'Failed to send reset code');
+        (error as any).response = { data, status: response.status };
+        throw error;
+      }
+    } catch (error) {
+      console.error('Send reset code error:', error);
       throw error;
     }
   },
@@ -754,23 +784,46 @@ import {
   FhirLocation as FhirLocationResource, 
   FhirBundle as LocationBundle, 
   Location, 
-  CreateLocationRequest 
+  CreateLocationRequest,
+  PaginatedLocationResponse
 } from '@/types/location';
 
 // Location Management API functions
 export const locationApi = {
-  // Get all locations with optional filtering by type
-  getLocations: async (typeCode?: string, parentId?: string): Promise<Location[]> => {
+  // Get all locations with pagination, filtering, and search
+  getLocations: async (
+    page: number = 1,
+    count: number = 10,
+    typeCode?: string,
+    nameSearch?: string,
+    parentId?: string
+  ): Promise<PaginatedLocationResponse> => {
     try {
-      let url = `${FHIR_BASE_URL}/Location?_count=1000`;
+      // Build URL with server-side filtering and pagination
+      let url = `${FHIR_BASE_URL}/Location?_count=${count}`;
       
-      if (typeCode) {
-        url += `&type=${typeCode}`;
+      // Add page offset (FHIR uses _offset for pagination)
+      if (page > 1) {
+        const offset = (page - 1) * count;
+        url += `&_offset=${offset}`;
       }
       
+      // Add type filter using type:code
+      if (typeCode) {
+        url += `&type:code=${typeCode}`;
+      }
+      
+      // Add name search using name:contains (supports partial matching)
+      if (nameSearch && nameSearch.trim()) {
+        url += `&name:contains=${encodeURIComponent(nameSearch.trim())}`;
+      }
+      
+      // Add parent filter
       if (parentId) {
         url += `&partof=Location/${parentId}`;
       }
+      
+      console.log('Fetching locations from:', url); // Debug log
       
       const response = await fetch(url, {
         method: 'GET',
@@ -780,40 +833,57 @@ export const locationApi = {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('FHIR API Error:', response.status, errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const bundle: LocationBundle = await response.json();
       
-      if (!bundle.entry) {
-        return [];
+      // The server returns the total count in bundle.total
+      const total = bundle.total || 0;
+      const locations: Location[] = [];
+
+      if (bundle.entry) {
+        // Map FHIR Location resources to our simplified Location interface
+        bundle.entry
+          .filter(entry => entry.resource)
+          .forEach(entry => {
+            const resource = entry.resource!;
+            locations.push({
+              id: resource.id || '',
+              name: resource.name || '',
+              type: resource.type?.[0]?.coding?.[0]?.display,
+              typeCode: resource.type?.[0]?.coding?.[0]?.code,
+              status: resource.status || 'active',
+              description: resource.description,
+              parentId: resource.partOf?.reference?.replace('Location/', ''),
+              parentName: resource.partOf?.display,
+              address: resource.address?.text || 
+                       [resource.address?.line?.join(', '), resource.address?.city, resource.address?.state]
+                         .filter(Boolean).join(', '),
+              phone: resource.telecom?.find(t => t.system === 'phone')?.value,
+              email: resource.telecom?.find(t => t.system === 'email')?.value,
+              position: resource.position,
+            });
+          });
       }
 
-      // Map FHIR Location resources to our simplified Location interface
-      const locations: Location[] = bundle.entry
-        .filter(entry => entry.resource)
-        .map(entry => {
-          const resource = entry.resource!;
-          return {
-            id: resource.id || '',
-            name: resource.name || '',
-            type: resource.type?.[0]?.coding?.[0]?.display,
-            typeCode: resource.type?.[0]?.coding?.[0]?.code,
-            status: resource.status || 'active',
-            description: resource.description,
-            parentId: resource.partOf?.reference?.replace('Location/', ''),
-            parentName: resource.partOf?.display,
-            address: resource.address?.text || 
-                     [resource.address?.line?.join(', '), resource.address?.city, resource.address?.state]
-                       .filter(Boolean).join(', '),
-            phone: resource.telecom?.find(t => t.system === 'phone')?.value,
-            email: resource.telecom?.find(t => t.system === 'email')?.value,
-            position: resource.position,
-          };
-        })
-        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      // Check for next/previous links in the bundle
+      const nextLink = bundle.link?.find(link => link.relation === 'next');
+      const prevLink = bundle.link?.find(link => link.relation === 'previous');
+      
+      // Determine pagination state
+      const hasNext = !!nextLink || ((page * count) < total);
+      const hasPrevious = page > 1 || !!prevLink;
 
-      return locations;
+      return {
+        locations,
+        total,
+        hasNext,
+        hasPrevious,
+        currentPage: page,
+      };
     } catch (error) {
       console.error('Error fetching locations from FHIR:', error);
       throw error;
@@ -873,7 +943,7 @@ export const locationApi = {
       if (locationData.typeCode) {
         fhirLocation.type = [{
           coding: [{
-            system: 'http://terminology.hl7.org/CodeSystem/location-physical-type',
+            system: 'http://terminology.hl7.org/CodeSystem/v3-RoleCode',
             code: locationData.typeCode,
             display: locationData.type || locationData.typeCode,
           }],
@@ -983,7 +1053,7 @@ export const locationApi = {
       if (locationData.typeCode) {
         updatedLocation.type = [{
           coding: [{
-            system: 'http://terminology.hl7.org/CodeSystem/location-physical-type',
+            system: 'http://terminology.hl7.org/CodeSystem/v3-RoleCode',
             code: locationData.typeCode,
             display: locationData.type || locationData.typeCode,
           }],

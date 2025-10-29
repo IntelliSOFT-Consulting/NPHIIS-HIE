@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Location, LOCATION_TYPES } from '@/types/location';
 import { locationApi } from '@/lib/api';
 import { 
@@ -26,28 +26,44 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [nameSearch, setNameSearch] = useState('');
+  const [debouncedNameSearch, setDebouncedNameSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [deletingLocation, setDeletingLocation] = useState<Location | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalLocations, setTotalLocations] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
+  const itemsPerPage = 10;
 
+  // Debounce name search with 500ms delay
   useEffect(() => {
-    loadLocations();
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedNameSearch(nameSearch);
+      setCurrentPage(1); // Reset to first page when search changes
+    }, 500);
 
-  useEffect(() => {
-    if (refreshTrigger) {
-      loadLocations();
-    }
-  }, [refreshTrigger]);
+    return () => clearTimeout(timer);
+  }, [nameSearch]);
 
-  const loadLocations = async () => {
+  const loadLocations = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const locationData = await locationApi.getLocations();
-      setLocations(locationData);
+      const response = await locationApi.getLocations(
+        currentPage,
+        itemsPerPage,
+        filterType || undefined,
+        debouncedNameSearch || undefined
+      );
+      setLocations(response.locations);
+      setTotalLocations(response.total);
+      setHasNextPage(response.hasNext);
+      setHasPreviousPage(response.hasPrevious);
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to load locations. Please check your connection and try again.';
       setError(errorMessage);
@@ -55,19 +71,42 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
     } finally {
       setLoading(false);
     }
+  }, [currentPage, itemsPerPage, filterType, debouncedNameSearch]);
+
+  // Load locations when debounced search, filter, or page changes
+  useEffect(() => {
+    loadLocations();
+  }, [loadLocations]);
+
+  useEffect(() => {
+    if (refreshTrigger) {
+      setCurrentPage(1);
+      loadLocations();
+    }
+  }, [refreshTrigger, loadLocations]);
+
+  // Handle search input change (debouncing happens in useEffect)
+  const handleNameSearchChange = (value: string) => {
+    setNameSearch(value);
+    // Page reset is handled in the debounce useEffect
   };
 
-  const filteredLocations = locations.filter(location => {
-    const matchesSearch = 
-      (location.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (location.type?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (location.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (location.address?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-    
-    const matchesType = !filterType || location.typeCode === filterType;
-    
-    return matchesSearch && matchesType;
-  });
+  const handleTypeFilterChange = (value: string) => {
+    setFilterType(value);
+    setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  const handleNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (hasPreviousPage) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
 
   const handleConfirmDelete = async () => {
     if (!deletingLocation) return;
@@ -142,7 +181,17 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-500">
-              Total: {locations.length} locations
+              {locations.length > 0 ? (
+                <>
+                  {totalLocations > 0 ? (
+                    <>Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalLocations)} of {totalLocations} locations</>
+                  ) : (
+                    <>Showing {locations.length} location{locations.length !== 1 ? 's' : ''} on page {currentPage}</>
+                  )}
+                </>
+              ) : (
+                'No locations'
+              )}
             </div>
             <button
               onClick={onCreateLocation}
@@ -160,17 +209,22 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search locations by name, type, description, or address..."
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search locations by name..."
+              className="pl-10 pr-10 py-2 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={nameSearch}
+              onChange={(e) => handleNameSearchChange(e.target.value)}
             />
+            {nameSearch !== debouncedNameSearch && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              </div>
+            )}
           </div>
           <div className="relative">
             <FunnelIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <select
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              onChange={(e) => handleTypeFilterChange(e.target.value)}
               className="pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
             >
               <option value="">All Types</option>
@@ -205,12 +259,12 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
 
       {/* Locations Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        {filteredLocations.length === 0 ? (
+        {locations.length === 0 ? (
           <div className="text-center py-12">
             <MapPinIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No locations found</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchTerm || filterType ? 'Try adjusting your search or filters.' : 'Get started by creating a new location.'}
+              {nameSearch || filterType ? 'Try adjusting your search or filters.' : 'Get started by creating a new location.'}
             </p>
           </div>
         ) : (
@@ -236,7 +290,7 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredLocations.map((location) => (
+                {locations.map((location) => (
                   <tr key={location.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
@@ -323,6 +377,92 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        
+        {/* Pagination Controls */}
+        {(locations.length > 0 || hasNextPage || hasPreviousPage) && (
+          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button
+                onClick={handlePreviousPage}
+                disabled={!hasPreviousPage}
+                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                  hasPreviousPage
+                    ? 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNextPage}
+                disabled={!hasNextPage}
+                className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                  hasNextPage
+                    ? 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  {totalLocations > 0 ? (
+                    <>
+                      Showing <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
+                      <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalLocations)}</span> of{' '}
+                      <span className="font-medium">{totalLocations}</span> results
+                    </>
+                  ) : (
+                    <>
+                      Showing <span className="font-medium">{locations.length}</span> result{locations.length !== 1 ? 's' : ''} on page {currentPage}
+                    </>
+                  )}
+                </p>
+              </div>
+              <div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={handlePreviousPage}
+                    disabled={!hasPreviousPage}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 text-sm font-medium ${
+                      hasPreviousPage
+                        ? 'bg-white text-gray-500 hover:bg-gray-50'
+                        : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="sr-only">Previous</span>
+                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                  <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                    {totalLocations > 0 ? (
+                      <>Page {currentPage} of {Math.ceil(totalLocations / itemsPerPage)}</>
+                    ) : (
+                      <>Page {currentPage}</>
+                    )}
+                  </span>
+                  <button
+                    onClick={handleNextPage}
+                    disabled={!hasNextPage}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 text-sm font-medium ${
+                      hasNextPage
+                        ? 'bg-white text-gray-500 hover:bg-gray-50'
+                        : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="sr-only">Next</span>
+                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
           </div>
         )}
       </div>
