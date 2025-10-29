@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const FHIR_BASE_URL = process.env.FHIR_BASE_URL || 'http://hapi-fhir-jpa:8080/fhir';
+const FHIR_BASE_URL = process.env.FHIR_BASE_URL || process.env.NEXT_PUBLIC_FHIR_BASE_URL;
+if (!FHIR_BASE_URL) {
+  throw new Error('FHIR_BASE_URL is not set');
+}
+
+console.log('FHIR_BASE_URL:', FHIR_BASE_URL);
 
 export async function GET(
   request: NextRequest,

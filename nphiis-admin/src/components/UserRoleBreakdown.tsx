@@ -138,7 +138,7 @@ export default function UserRoleBreakdown() {
   }
 
   const totalUsers = users.length;
-  const activeUsers = users.filter(user => user.enabled).length;
+  const activeUsers = users.filter(user => user.active === true).length;
 
   return (
     <div className="space-y-6">
@@ -223,8 +223,8 @@ export default function UserRoleBreakdown() {
                           <Icon className="h-5 w-5 text-white" />
                         </div>
                         <div className="ml-3">
-                          <h4 className="text-sm font-medium text-gray-900">
-                            {stat.role}
+                          <h4 className="text-sm font-medium text-gray-900" title={stat.role}>
+                            {stat.role.slice(0, 15)}
                           </h4>
                           <p className="text-xs text-gray-500">
                             {stat.count} user{stat.count !== 1 ? 's' : ''}
@@ -275,8 +275,8 @@ export default function UserRoleBreakdown() {
                       <div className={`p-1.5 rounded ${stat.color} mr-3`}>
                         <Icon className="h-4 w-4 text-white" />
                       </div>
-                      <span className="text-sm font-medium text-gray-900 truncate">
-                        {stat.role}
+                      <span className="text-sm font-medium text-gray-900 truncate" title={stat.role}>
+                        {stat.role.slice(0, 15)}
                       </span>
                     </div>
                     <div className="flex-1 mx-4">

@@ -10,7 +10,7 @@
         "routes": [
           {
             "name": "Notification Service Route",
-            "host": "dsrf-mediators",
+            "host": "nphiis-mediators",
             "path": "/notifications",
             "port": "3000",
             "primary": true,
@@ -25,7 +25,7 @@
     "endpoints": [
       {
         "name": "Notification Service Endpoint",
-        "host": "dsrf-mediators",
+        "host": "nphiis-mediators",
         "path": "/notifications",
         "port": "3000",
         "primary": true,

@@ -7,6 +7,7 @@ dotenv.config() // Load environment variables
 //Import routes
 
 import ProcessEncounter from './routes/encounter-subscription';
+import ProcessObservation from './routes/observation-subscription';
 import Notifications from './routes/notifications';
 const app = express();
 const PORT = 3000;
@@ -25,7 +26,8 @@ app.use((req, res, next) => {
   }
 });
 
-app.use('/process-case-encounter', ProcessEncounter)
+app.use('/process-encounters', ProcessEncounter)
+app.use('/process-observations', ProcessObservation)
 app.use('/notifications', Notifications)
 
 app.listen(PORT, () => {

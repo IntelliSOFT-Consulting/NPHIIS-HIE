@@ -466,3 +466,27 @@ export const deleteKeycloakUser = async (username: string) => {
     return { success: false, error: "Internal server error" };
   }
 };
+
+export const getKeycloakUserById = async (id: string) => {
+  try {
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    const response = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    const user = await response.json();
+    if (!response.ok) {
+      console.error(`Keycloak API error: ${response.status} ${response.statusText}`);
+      return null;
+    }
+    return user;
+  } catch (error) {
+    console.error(`Error fetching Keycloak user by id ${id}:`, error);
+    return null;
+  }
+}
