@@ -2,7 +2,7 @@ import express from 'express';
 import { FhirApi, sendMediatorRequest } from '../lib/utils';
 import { v4 as uuid } from 'uuid';
 import fetch from 'node-fetch';
-import { FhirIdentifier } from '../lib/fhir';
+import { FhirIdentifier, processFollowUpObservations } from '../lib/fhir';
 import { generateCaseId } from '../lib/caseIdTracker';
 import { OperationOutcome } from '../lib/fhir';
 
@@ -36,6 +36,10 @@ router.put('/notifications/Encounter/:id', async (req, res) => {
     let { id } = req.params;
     console.log("🟢 Fetching encounter data...");
     let data = await (await FhirApi({ url: `/Encounter/${id}` })).data;
+
+    if(data.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID")) {
+      return res.status(200).json(OperationOutcome("Encounter already has an official id with the system http://hie.org/identifiers/EPID"));
+    }
 
     let response = await sendMediatorRequest("/process-encounters/assign-ids", data);
     console.log("🟢 sendMediatorRequest returned:", response);
@@ -89,7 +93,7 @@ router.post('/assign-ids', async (req, res) => {
 
     if(epidIdentifier?.use === "official") {
       console.log("Patient already has an official id with the system http://hie.org/identifiers/EPID");
-      return res.status(200).json(OperationOutcome("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
+      return res.status(400).json(OperationOutcome("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
     }
 
     if (epidIdentifier) {
@@ -104,35 +108,24 @@ router.post('/assign-ids', async (req, res) => {
     }
 
     let caseCondition = POSSIBLE_REASON_CODES?.[reasonCode as keyof typeof POSSIBLE_REASON_CODES] || reasonCode.toUpperCase().slice(0, 3);
-    if(caseCondition === "MPOX"){
+    
 
-      const subCountyCode = "a3-sub-county";
       const countyCode = "a4-county";
       const epidNoCode = "EPID";
       const onsetDateCode = "date_given";
-      const countryOfOriginCode = "country_of_origin";
     // fetch by code.....observations
-    }
 
-      // Find the tag with the correct system for encounter-managingLocation (not observation-managingLocation)
-      const locationMeta = data?.meta?.tag?.find((tag: any) => tag.system === "http://example.org/fhir/StructureDefinition/encounter-managingLocation");
-      const location = locationMeta?.code?.split("/")[1];
-      console.log("Location:", location);
-      const facility = await (await FhirApi({ url: `/Location/${location}` })).data;
-      const ward = await (await FhirApi({ url: `/Location/${facility?.partOf?.reference?.split("/")[1]}` })).data;
-      const subCounty = await (await FhirApi({ url: `/Location/${ward?.partOf?.reference?.split("/")[1]}` })).data;
+      const subCountyCode = "a3-sub-county";
+      const countryOfOriginCode = "country_of_origin";
+      // console.log("Location:", location);
+      const subCountyObservation = await (await FhirApi({ url: `/Observation?code=${subCountyCode}&encounter=${data?.id}` })).data?.entry?.[0]?.resource;
+      const subCounty = await (await FhirApi({ url: `/Location?name=${subCountyObservation?.valueString}` })).data?.entry?.[0]?.resource;
       const county = await (await FhirApi({ url: `/Location/${subCounty?.partOf?.reference?.split("/")[1]}` })).data;
-      const countryOfOrigin = await (await FhirApi({ url: `/Location/${county?.partOf?.reference?.split("/")[1]}` })).data;
+      const country = await (await FhirApi({ url: `/Location/${county?.partOf?.reference?.split("/")[1]}` })).data;
 
-      const countryName = countryOfOrigin?.name?.toUpperCase()?.trim();
-      const countyName = county?.name?.toUpperCase()?.trim();
       const subCountyName = subCounty?.name?.toUpperCase()?.trim();
-
-      console.log("Assigning EPID with:", { countryName, countyName, subCountyName, caseCondition, onsetDate });
-
-      if (!countryName || !countyName || !subCountyName) {
-        return res.status(400).json(OperationOutcome("Missing required location names for EPID generation (country, county, or sub-county)."));
-      }
+      const countyName = county?.name?.toUpperCase()?.trim();
+      const countryName = country?.name?.toUpperCase()?.trim(); 
 
       caseId = await generateCaseId(countryName, countyName, subCountyName, caseCondition);
 
@@ -163,24 +156,11 @@ router.post('/assign-ids', async (req, res) => {
       data: JSON.stringify({ ...data, identifier: [{ system: encounterCodeSystem, value: formattedId }] })
     })).data;
 
-    res.statusCode = 200;
-    res.json(updatedEncounter);
-    return;
+    processFollowUpObservations(data?.id);
+    return res.status(200).json(updatedEncounter);
   } catch (error) {
     console.error(error);
-    res.statusCode = 400;
-    res.json({
-      "resourceType": "OperationOutcome",
-      "id": "exception",
-      "issue": [{
-        "severity": "error",
-        "code": "exception",
-        "details": {
-          "text": `Failed to assign ids for encounter - ${JSON.stringify(error)}`
-        }
-      }]
-    });
-    return;
+    return res.status(400).json(OperationOutcome(error));
   }
 });
 

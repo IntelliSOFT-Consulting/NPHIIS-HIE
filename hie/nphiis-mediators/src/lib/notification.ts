@@ -212,3 +212,15 @@ export const sendDueNotifications = async () => {
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
+
+
+// process obs retrospectively
+// export const processObsRetrospectively = async () => {
+
+//     let obs = (await FhirApi({ url: `/Observation?code=502488184403&_count=1000` })).data;
+//     for (const observation of obs?.entry ?? []) {
+//         await processAfpObservation(obs);
+//     }
+
+    
+// }
