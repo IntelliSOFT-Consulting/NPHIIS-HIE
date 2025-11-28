@@ -75,9 +75,10 @@ export const findKeycloakUser = async (username: string) => {
 }
 
 
-export const validateResetCode = async (idNumber: string, resetCode: string) => {
+export const  validateResetCode = async (idNumber: string, resetCode: string) => {
   try {
     let userInfo = await findKeycloakUser(idNumber);
+    console.log(userInfo);
     let _resetCode = userInfo?.attributes?.resetCode;
     if(!_resetCode){
       return null;
@@ -141,7 +142,7 @@ export const updateUserProfile = async (
   phone: string | null,
   email: string | null,
   resetCode: string | null,
-  practitionerRole: string | null
+  userInfo: any | null
 ) => {
   try {
     let user = await findKeycloakUser(username);
@@ -164,28 +165,37 @@ export const updateUserProfile = async (
     }
     
     if (resetCode !== null) {
-      updatedAttributes.resetCode = [resetCode];
+      user.resetCode = resetCode;
     }
     
-    // Fix role update logic - only update if practitionerRole is provided
-    if (practitionerRole !== null) {
-      updatedAttributes.practitionerRole = [practitionerRole];
-    }
-    
+    // Start with the existing user data to avoid overriding fields
     const requestBody: any = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      enabled: user.enabled,
       attributes: updatedAttributes
     };
     
     // Only update email if provided
     if (email !== null) {
       requestBody.email = email;
+    } else if (user.email) {
+      // Preserve existing email if not updating
+      requestBody.email = user.email;
+    }
+    
+    // Merge any additional fields from userInfo if provided
+    if (userInfo) {
+      if (userInfo.firstName !== undefined) requestBody.firstName = userInfo.firstName;
+      if (userInfo.lastName !== undefined) requestBody.lastName = userInfo.lastName;
+      if (userInfo.enabled !== undefined) requestBody.enabled = userInfo.enabled;
     }
 
     console.log(`Updating user profile for ${username}:`, {
       phone: phone !== null ? phone : 'not updating',
       email: email !== null ? email : 'not updating', 
       resetCode: resetCode !== null ? 'updating' : 'not updating',
-      practitionerRole: practitionerRole !== null ? practitionerRole : 'not updating'
     });
 
     const response = await fetch(
@@ -490,3 +500,74 @@ export const getKeycloakUserById = async (id: string) => {
     return null;
   }
 }
+
+const USER_ROLES = process.env.USER_ROLES?.split(",") || [];
+
+// Create a role in Keycloak if it doesn't exist
+const addKeycloakRole = async (roleName: string) => {
+  try {
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    const response = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/roles`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          name: roleName.trim(),
+        }),
+      }
+    );
+    if (!response.ok) {
+      // 409 Conflict means role already exists, which is fine
+      if (response.status === 409) {
+        console.log(`Role ${roleName} already exists`);
+        return true;
+      }
+      const errorText = await response.text();
+      console.error(`Failed to create role ${roleName}: ${response.status} ${response.statusText} - ${errorText}`);
+      return false;
+    }
+    console.log(`Successfully created role: ${roleName}`);
+    return true;
+  } catch (error) {
+    console.error(`Error creating role ${roleName}:`, error);
+    return false;
+  }
+};
+
+// check if USERROLES exist in Keycloak if not add them
+export const checkUserRoles = async () => {
+  try {
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    for (let roleName of USER_ROLES) {
+      // Search for the specific role by name
+      const response = await fetch(
+        `${KC_BASE_URL}/admin/realms/${KC_REALM}/roles/${encodeURIComponent(roleName.trim())}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (!response.ok) {
+        console.error(`Role not found: ${roleName} - ${response.status} ${response.statusText}`);
+        await addKeycloakRole(roleName);
+        continue;
+      }
+      const role = await response.json();
+      if (!role || !role.id) {
+        console.error(`Role data invalid for: ${roleName}`);
+        continue;
+      }
+    }
+  } catch (error) {
+    console.error(`Error checking user roles:`, error);
+    return null;
+  }
+}
+
+checkUserRoles();
