@@ -144,12 +144,12 @@ if OIDC_AVAILABLE:
     # Default role for newly registered users (fallback if role mapping fails)
     AUTH_USER_REGISTRATION_ROLE = "VACCINATOR"
     
-    # Map HIE Auth Service roles to Superset roles (1-to-1 mapping)
-    # Each HIE role maps directly to a Superset role with the same name
+    # Map HIE Auth Service roles to Superset roles
+    # SUPERUSER and ADMINISTRATOR get Admin role for full Superset access
     AUTH_ROLES_MAPPING = {
-        # HIE Auth Service roles -> Superset roles (1-to-1)
-        'ADMINISTRATOR': ['Admin','ADMINISTRATOR'],
-        'SUPERUSER': ['SUPERUSER'],
+        # HIE Auth Service roles -> Superset roles
+        'ADMINISTRATOR': ['Admin', 'ADMINISTRATOR'],
+        'SUPERUSER': ['Admin', 'SUPERUSER'],
         'COUNTY_DISEASE_SURVEILLANCE_OFFICER': ['COUNTY_DISEASE_SURVEILLANCE_OFFICER'],
         'SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER': ['SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER'],
         'FACILITY_SURVEILLANCE_FOCAL_PERSON': ['FACILITY_SURVEILLANCE_FOCAL_PERSON'],
