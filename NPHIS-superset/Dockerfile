@@ -246,6 +246,11 @@ COPY requirements/*.txt requirements/
 # Install Python dependencies using docker/pip-install.sh
 RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
     /app/docker/pip-install.sh --requires-build-essential -r requirements/development.txt
+# Install Flask-OIDC and dependencies for Keycloak authentication
+RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
+    uv pip install flask_openid flask-oidc==2.2.0 flask-openid==1.3.0 "python-openid>=2.0.0,<=2.2.5" && \
+    FLASK_OPENID_PATH=$(python3 -c "import sys; import os; print(os.path.join(sys.prefix, 'lib', f'python{sys.version_info.major}.{sys.version_info.minor}', 'site-packages', 'flask_openid.py'))") && \
+    sed -i "s/from werkzeug.urls import url_quote/from urllib.parse import quote as url_quote/" "$FLASK_OPENID_PATH"
 # Install the superset package
 RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
     uv pip install .

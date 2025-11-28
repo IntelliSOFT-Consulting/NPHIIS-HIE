@@ -1,9 +1,5 @@
 import express from 'express';
 import { FhirApi, OperationOutcome, sendMediatorRequest } from '../lib/utils';
-import { v4 as uuid } from 'uuid';
-import fetch from 'node-fetch';
-import { FhirIdentifier } from '../lib/fhir';
-import { generateCaseId } from '../lib/caseIdTracker';
 import { processAfpObservation } from '../lib/notification';
 
 export const router = express.Router();

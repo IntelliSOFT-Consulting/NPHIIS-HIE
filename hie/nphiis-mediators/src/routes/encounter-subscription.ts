@@ -37,7 +37,7 @@ router.put('/notifications/Encounter/:id', async (req, res) => {
     console.log("🟢 Fetching encounter data...");
     let data = await (await FhirApi({ url: `/Encounter/${id}` })).data;
 
-    if(data.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID")) {
+    if (data.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID")) {
       return res.status(200).json(OperationOutcome("Encounter already has an official id with the system http://hie.org/identifiers/EPID"));
     }
 
@@ -60,15 +60,11 @@ router.post('/assign-ids', async (req, res) => {
     let data = req.body;
     let caseId;
 
-
     let encounterCodeSystem = "http://hie.org/identifiers/EPID";
-
-    
     let reasonCode = data?.reasonCode?.[0]?.coding?.[0]?.code;
 
     let patientId = data?.subject?.reference?.split("/")[1];
     let patient = await (await FhirApi({ url: `/Patient/${patientId}` })).data;
-
 
     let onsetDate = data?.identifier?.find((id: any) =>
       id.system === "system-creation" &&
@@ -84,15 +80,15 @@ router.post('/assign-ids', async (req, res) => {
       normalizedOnsetDate = onsetDate.split(" ")[0];
     }
 
-    
     let epidIdentifier = patient?.identifier?.find((id: any) =>
       id.type?.coding?.some((coding: any) =>
         coding.system === "http://hie.org/identifiers/EPID"
       )
     );
 
-    if(epidIdentifier?.use === "official") {
+    if (epidIdentifier?.use === "official") {
       console.log("Patient already has an official id with the system http://hie.org/identifiers/EPID");
+      processFollowUpObservations(data?.id);
       return res.status(400).json(OperationOutcome("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
     }
 
@@ -108,26 +104,26 @@ router.post('/assign-ids', async (req, res) => {
     }
 
     let caseCondition = POSSIBLE_REASON_CODES?.[reasonCode as keyof typeof POSSIBLE_REASON_CODES] || reasonCode.toUpperCase().slice(0, 3);
-    
 
-      const countyCode = "a4-county";
-      const epidNoCode = "EPID";
-      const onsetDateCode = "date_given";
+
+    const countyCode = "a4-county";
+    const epidNoCode = "EPID";
+    const onsetDateCode = "date_given";
     // fetch by code.....observations
 
-      const subCountyCode = "a3-sub-county";
-      const countryOfOriginCode = "country_of_origin";
-      // console.log("Location:", location);
-      const subCountyObservation = await (await FhirApi({ url: `/Observation?code=${subCountyCode}&encounter=${data?.id}` })).data?.entry?.[0]?.resource;
-      const subCounty = await (await FhirApi({ url: `/Location?name=${subCountyObservation?.valueString}` })).data?.entry?.[0]?.resource;
-      const county = await (await FhirApi({ url: `/Location/${subCounty?.partOf?.reference?.split("/")[1]}` })).data;
-      const country = await (await FhirApi({ url: `/Location/${county?.partOf?.reference?.split("/")[1]}` })).data;
+    const subCountyCode = "a3-sub-county";
+    const countryOfOriginCode = "country_of_origin";
+    // console.log("Location:", location);
+    const subCountyObservation = await (await FhirApi({ url: `/Observation?code=${subCountyCode}&encounter=${data?.id}` })).data?.entry?.[0]?.resource;
+    const subCounty = await (await FhirApi({ url: `/Location?name=${subCountyObservation?.valueString}` })).data?.entry?.[0]?.resource;
+    const county = await (await FhirApi({ url: `/Location/${subCounty?.partOf?.reference?.split("/")[1]}` })).data;
+    const country = await (await FhirApi({ url: `/Location/${county?.partOf?.reference?.split("/")[1]}` })).data;
 
-      const subCountyName = subCounty?.name?.toUpperCase()?.trim();
-      const countyName = county?.name?.toUpperCase()?.trim();
-      const countryName = country?.name?.toUpperCase()?.trim(); 
+    const subCountyName = subCounty?.name?.toUpperCase()?.trim();
+    const countyName = county?.name?.toUpperCase()?.trim();
+    const countryName = country?.name?.toUpperCase()?.trim();
 
-      caseId = await generateCaseId(countryName, countyName, subCountyName, caseCondition);
+    caseId = await generateCaseId(countryName, countyName, subCountyName, caseCondition);
 
     let formattedId = `${countryName.substring(0, 3)}-${countyName.substring(0, 3)}-${subCountyName.substring(0, 3)}-${new Date(normalizedOnsetDate).getFullYear()}-${caseCondition}-${toThreeDigits(caseId)}`;
 
@@ -143,8 +139,7 @@ router.post('/assign-ids', async (req, res) => {
         ]
       })
     })).data;
-    console.log("updatedPatient");
-    console.log(newId);
+    console.log("updatedPatient:", newId);
 
 
     // update the encounter with the new caseId

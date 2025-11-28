@@ -36,13 +36,6 @@ const getRolesFromEnv = (): UserRole[] => {
   if (!envRoles) {
     // Fallback to default roles if env var is not set
     return [
-      'ADMINISTRATOR',
-      'SUPERUSER',
-      'COUNTY_DISEASE_SURVEILLANCE_OFFICER',
-      'SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER',
-      'FACILITY_SURVEILLANCE_FOCAL_PERSON',
-      'SUPERVISORS',
-      'VACCINATOR'
     ];
   }
   
