@@ -26,6 +26,17 @@ import sys
 
 from celery.schedules import crontab
 from flask_caching.backends.filesystemcache import FileSystemCache
+from flask_appbuilder.security.manager import AUTH_OID
+
+# Import Keycloak OIDC Security Manager (only if flask-oidc is available)
+try:
+    from keycloak_security_manager import OIDCSecurityManager
+    OIDC_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Keycloak OIDC not available: {e}")
+    logger.warning("Please rebuild the Docker image to install flask-oidc dependency.")
+    OIDC_AVAILABLE = False
+    OIDCSecurityManager = None
 
 logger = logging.getLogger()
 
@@ -73,6 +84,88 @@ CACHE_CONFIG = {
 DATA_CACHE_CONFIG = CACHE_CONFIG
 THUMBNAIL_CACHE_CONFIG = CACHE_CONFIG
 DASHBOARD_RBAC = True
+
+# Enable proxy fix for proper URL construction when behind nginx/proxy
+# This ensures redirect_uri is constructed correctly with https:// and proper domain
+ENABLE_PROXY_FIX = True
+PROXY_FIX_CONFIG = {
+    "x_for": 1,
+    "x_proto": 1,
+    "x_host": 1,
+    "x_port": 1,
+    "x_prefix": 1
+}
+
+# Session cookie configuration for OAuth state management
+# These settings ensure cookies are properly set and preserved through the proxy
+SESSION_COOKIE_SECURE = True  # Required for HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Prevent XSS attacks
+SESSION_COOKIE_SAMESITE = "Lax"  # Allow cookies in OAuth redirects
+
+# Session protection to prevent redirect loops
+# Use "basic" instead of "strong" to avoid issues with proxy/load balancer setups
+SESSION_PROTECTION = "basic"
+
+# ----------------------------------------------------
+# Keycloak OIDC Authentication Configuration
+# ----------------------------------------------------
+# Only enable OIDC if flask-oidc is available (requires Docker image rebuild)
+if OIDC_AVAILABLE:
+    # Set authentication type to OpenID Connect
+    AUTH_TYPE = AUTH_OID
+
+    # Path to client_secret.json file (relative to this config file)
+    OIDC_CLIENT_SECRETS = os.path.join(os.path.dirname(__file__), 'client_secret.json')
+
+    # Keycloak realm (default: "master" - adjust if using a different realm)
+    OIDC_OPENID_REALM = os.getenv("KEYCLOAK_REALM", "master")
+
+    # Use secure cookies for HTTPS (set to False only for local development with HTTP)
+    OIDC_ID_TOKEN_COOKIE_SECURE = True
+
+    # Token introspection authentication method
+    OIDC_INTROSPECTION_AUTH_METHOD = 'client_secret_post'
+    
+    # Request email scope to ensure email claim is included in token
+    # Flask-OIDC will request these scopes during authentication
+    OIDC_SCOPES = ['openid', 'email', 'profile']
+    
+    # Override Flask-OIDC's default scope request
+    # This ensures email is always requested
+    OIDC_ID_TOKEN_COOKIE_NAME = 'oidc_id_token'
+    OIDC_USER_INFO_ENABLED = True
+
+    # Use custom security manager for Keycloak OIDC
+    CUSTOM_SECURITY_MANAGER = OIDCSecurityManager
+
+    # Enable user self-registration (users will be auto-created on first login)
+    AUTH_USER_REGISTRATION = True
+
+    # Default role for newly registered users (fallback if role mapping fails)
+    AUTH_USER_REGISTRATION_ROLE = "VACCINATOR"
+    
+    # Map HIE Auth Service roles to Superset roles (1-to-1 mapping)
+    # Each HIE role maps directly to a Superset role with the same name
+    AUTH_ROLES_MAPPING = {
+        # HIE Auth Service roles -> Superset roles (1-to-1)
+        'ADMINISTRATOR': ['Admin','ADMINISTRATOR'],
+        'SUPERUSER': ['SUPERUSER'],
+        'COUNTY_DISEASE_SURVEILLANCE_OFFICER': ['COUNTY_DISEASE_SURVEILLANCE_OFFICER'],
+        'SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER': ['SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER'],
+        'FACILITY_SURVEILLANCE_FOCAL_PERSON': ['FACILITY_SURVEILLANCE_FOCAL_PERSON'],
+        'SUPERVISORS': ['SUPERVISORS'],
+        'VACCINATOR': ['VACCINATOR'],
+        'LAB_TECHNICIAN': ['LAB_TECHNICIAN'],
+    }
+    
+    # Sync roles from Keycloak on every login (recommended for role changes)
+    AUTH_ROLES_SYNC_AT_LOGIN = True
+
+    AUTH_SERVICE_URL = "http://hie-auth:3000"
+else:
+    # Fall back to database authentication if OIDC is not available
+    logger.warning("Keycloak OIDC not available. Using default database authentication.")
+    logger.warning("To enable Keycloak OIDC, rebuild the Docker image with: docker compose build")
 
 class CeleryConfig:
     broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"

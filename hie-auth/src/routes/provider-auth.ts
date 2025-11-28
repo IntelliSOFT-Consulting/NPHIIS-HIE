@@ -23,18 +23,6 @@ const heirachy = [
 ]
 
 
-const roleToHeirachy = {
-    "ADMINISTRATOR": "COUNTRY",
-    "SUPERUSER": "COUNTRY",
-    "COUNTY_DISEASE_SURVEILLANCE_OFFICER": "COUNTY",
-    // "SUB_COUNTY_SYSTEM_ADMINISTRATOR": "SUB-COUNTY", 
-    "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER": "SUB-COUNTY",
-    // "FACILITY_SYSTEM_ADMINISTRATOR": "FACILITY",
-    "FACILITY_SURVEILLANCE_FOCAL_PERSON": "FACILITY",
-    "SUPERVISORS": "FACILITY",
-    "VACCINATORS": "FACILITY"
-}
-
 
 // Optimized password generation with cached character set
 const PASSWORD_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=';
@@ -598,8 +586,6 @@ router.get("/superset-token", authenticateUser, async (req: Request, res: Respon
         return;
     }
 });
-
-
 
 
 export default router

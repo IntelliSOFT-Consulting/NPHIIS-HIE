@@ -35,7 +35,9 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
             throw new Error('User not found');
         }
         
-        let resetCodeResp = updateUserProfile(idNumber, null, null, resetCode, null);
+        let resetCodeResp = await updateUserProfile(idNumber, userData.attributes?.phone?.[0], userData.email, resetCode, null);
+
+        
         let userInfo = await getKeycloakUserById(userData.id);
         console.log(userInfo);
         

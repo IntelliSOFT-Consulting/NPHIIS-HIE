@@ -29,9 +29,11 @@ export const processAfpObservation = async (observation: any) => {
     const encounter = (await FhirApi({ url: `/Encounter/${encounterId}` })).data;
 
     const caseId = encounter?.identifier?.find((id: any) => id.system === "http://hie.org/identifiers/EPID")?.value;
+    console.log("caseId:", caseId);
 
     let notification = null;
     // check if notification already exists
+    reminderMessage.replace('{}', caseId);
     notification = await prisma.notification.findFirst({
         where: {
             practitionerId,
@@ -44,7 +46,11 @@ export const processAfpObservation = async (observation: any) => {
                 id: notification.id,
             },
             data: {
+                body: reminderMessage,
                 dueDate: due.toISOString(),
+                title: messageTitle,
+                practitionerId,
+                encounterId,
                 investigationDate: investigation.toISOString(),
             }
         })
@@ -53,7 +59,7 @@ export const processAfpObservation = async (observation: any) => {
         notification = await prisma.notification.create({
             data: {
                 title: messageTitle,
-                body: reminderMessage.replace('{}', caseId ?? ""),
+                body: reminderMessage,
                 practitionerId,
                 encounterId,
                 investigationDate: investigation.toISOString(),
@@ -72,7 +78,7 @@ export const processAfpObservation = async (observation: any) => {
         return { status: "error", error: "User is missing notification token configuration" };
     }
 
-    return { status: "success", notificationId: notification.id, message: "Notification created successfully" };
+    return { status: "success", notificationId: notification.id, message: "Notification created and scheduled successfully" };
 }
 
 
