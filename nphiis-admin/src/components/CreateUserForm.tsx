@@ -17,6 +17,19 @@ import {
 interface CreateUserFormProps {
   onUserCreated: () => void;
 }
+// Load roles from environment variable
+const getRolesFromEnv = (): UserRole[] => {
+  const envRoles = process.env.NEXT_PUBLIC_USER_ROLES || process.env.USER_ROLES;
+  if (!envRoles) {
+    // Fallback to default roles if env var is not set
+    return [
+    ];
+  }
+  
+  return envRoles.split(',').map(role => role.trim()) as UserRole[];
+};
+
+const ROLES: UserRole[] = getRolesFromEnv();
 
 // Validation schema
 const createUserSchema = z.object({
@@ -30,39 +43,13 @@ const createUserSchema = z.object({
   subCountyId: z.string().optional(),
   wardId: z.string().optional(),
   facilityId: z.string().optional(),
-  role: z.enum([
-    'ADMINISTRATOR',
-    'SUPERUSER',
-    'COUNTY_DISEASE_SURVEILLANCE_OFFICER',
-    'SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER',
-    'FACILITY_SURVEILLANCE_FOCAL_PERSON',
-    'SUPERVISORS',
-    'VACCINATOR'
-  ] as const),
+  role: z.enum(ROLES as [string, ...string[]]),
 });
 
 type FormData = z.infer<typeof createUserSchema>;
 
-// Load roles from environment variable
-const getRolesFromEnv = (): UserRole[] => {
-  const envRoles = process.env.NEXT_PUBLIC_USER_ROLES || process.env.USER_ROLES;
-  if (!envRoles) {
-    // Fallback to default roles if env var is not set
-    return [
-      'ADMINISTRATOR',
-      'SUPERUSER',
-      'COUNTY_DISEASE_SURVEILLANCE_OFFICER',
-      'SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER',
-      'FACILITY_SURVEILLANCE_FOCAL_PERSON',
-      'SUPERVISORS',
-      'VACCINATOR'
-    ];
-  }
-  
-  return envRoles.split(',').map(role => role.trim()) as UserRole[];
-};
 
-const ROLES: UserRole[] = getRolesFromEnv();
+
 
 export default function CreateUserForm({ onUserCreated }: CreateUserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
