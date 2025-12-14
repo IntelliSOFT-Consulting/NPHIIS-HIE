@@ -374,13 +374,20 @@ router.get("/users", authenticateUser, async (req: Request, res: Response) => {
             return res.status(403).json({ error: "Insufficient permissions. Administrator access required.", status: "error" });
         }
 
-        // Fetch users with error handling
-        const users = await getKeycloakUsers();
-        if (!users) {
+        // Get pagination parameters from query string
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const first = (page - 1) * limit;
+        const max = limit;
+
+        // Fetch users with pagination
+        const keycloakResponse = await getKeycloakUsers(first, max);
+        if (!keycloakResponse || !keycloakResponse.users) {
             return res.status(500).json({ error: "Failed to retrieve users from Keycloak", status: "error" });
         }
+        
         const response = [];
-        for(let user of users){
+        for(let user of keycloakResponse.users){
             if(!user.id){
                 continue;
             }
@@ -391,9 +398,31 @@ router.get("/users", authenticateUser, async (req: Request, res: Response) => {
             response.push({...user, role});
         }
 
+        // Get total count - if not available from Keycloak, we need to fetch it separately
+        let total: number = keycloakResponse.total || 0;
+        if (total === 0 || total === null || total === undefined) {
+            // Fetch total count separately (without pagination)
+            const totalResponse = await getKeycloakUsers(0, 1);
+            if (totalResponse && totalResponse.total !== null && totalResponse.total !== undefined) {
+                total = totalResponse.total;
+            } else {
+                // Fallback: fetch all users to count (only if we don't have total)
+                const allUsersResponse = await getKeycloakUsers(0, 10000);
+                total = allUsersResponse?.users?.length || response.length;
+            }
+        }
+        
+        // Ensure total is never null/undefined
+        if (!total || total === 0) {
+            total = response.length;
+        }
+
         return res.status(200).json({
-            users,
-            total: users.length,
+            users: response,
+            total: total,
+            page: page,
+            limit: limit,
+            totalPages: Math.ceil(total / limit),
             status: "success"
         });
 
