@@ -35,9 +35,10 @@ export default function UserRoleBreakdown() {
         setError('No access token found. Please log in again.');
         return;
       }
-      const userData = await userApi.getUsers(accessToken);
-      setUsers(userData);
-      calculateRoleStats(userData);
+      // Fetch all users with a large page size for statistics
+      const response = await userApi.getUsers(accessToken, 1, 10000);
+      setUsers(response.users);
+      calculateRoleStats(response.users);
     } catch (err) {
       setError('Failed to load users data');
       console.error('Error loading users:', err);
