@@ -8,12 +8,12 @@ router.use(express.json());
 
 router.get("/users", async (req: Request, res: Response) => {
     try {
-        const users = await getKeycloakUsers();
+        const keycloakResponse = await getKeycloakUsers();
         const response = [];
-        if(!users){
+        if(!keycloakResponse || !keycloakResponse.users){
             return res.status(400).json({ error: "Failed to retrieve users from Keycloak", status: "error" });
         }
-        for(let user of users){
+        for(let user of keycloakResponse.users){
             if(!user.id){
                 continue;
             }

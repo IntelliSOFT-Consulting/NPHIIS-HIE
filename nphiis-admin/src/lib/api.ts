@@ -42,6 +42,10 @@ interface UserInfoResponse {
 
 interface UsersApiResponse {
   users: User[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
   status: 'success' | 'error';
   error?: string;
 }
@@ -49,14 +53,22 @@ interface UsersApiResponse {
 
 // User management API functions
 export const userApi = {
-  // Get all users from real API
-  getUsers: async (accessToken?: string): Promise<User[]> => {
+  // Get users from real API with pagination
+  getUsers: async (
+    accessToken?: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<UsersApiResponse> => {
     if (!accessToken) {
       throw new Error('Access token required');
     }
     
     try {
-      const response = await fetch(`${API_HOST}/provider/users`, {
+      const url = new URL(`${API_HOST}/provider/users`);
+      url.searchParams.set('page', page.toString());
+      url.searchParams.set('limit', limit.toString());
+      
+      const response = await fetch(url.toString(), {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -74,7 +86,7 @@ export const userApi = {
       const data: UsersApiResponse = await response.json();
       
       if (data.status === 'success') {
-        return data.users;
+        return data;
       } else {
         const error = new Error(data.error || 'Failed to fetch users');
         (error as any).response = { data, status: response.status };
