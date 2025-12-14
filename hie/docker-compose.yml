@@ -132,8 +132,6 @@ services:
             - cloudbuild
         env_file:
             - nphiis-mediators/.env
-        ports:
-            - "8888:3000"
             
 
     nphiis-mediators-postgres:
