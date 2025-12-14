@@ -1,0 +1,414 @@
+/* NPHIIS Custom Keycloak Theme
+ * Design inspired by nphiis-admin service
+ * Colors: Blue primary (#2563eb), gradient background
+ */
+
+/* Import Inter font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Global font and base styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+    min-height: 100vh;
+}
+
+/* Login page container */
+.login-pf {
+    background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+}
+
+.login-pf body {
+    background: transparent;
+}
+
+/* Card styling - white with shadow */
+#kc-container-wrapper,
+.card-pf {
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: none;
+    padding: 2rem;
+    max-width: 28rem;
+    margin: 2rem auto;
+}
+
+/* Header styling */
+#kc-header {
+    color: #111827;
+    padding-bottom: 1.5rem;
+    padding-top: 100px;
+}
+
+#kc-header-wrapper {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: #111827;
+    text-align: center;
+}
+
+/* Page title styling */
+#kc-page-title {
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Form styling */
+#kc-form {
+    padding: 0;
+}
+
+/* Labels */
+.control-label,
+label {
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+/* Input fields */
+.form-control,
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    font-family: 'Inter', sans-serif;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: #111827;
+    background-color: #ffffff;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-control::placeholder,
+input::placeholder {
+    color: #9ca3af;
+}
+
+/* Primary button - blue */
+.btn-primary,
+#kc-login,
+input[type="submit"],
+button[type="submit"] {
+    font-family: 'Inter', sans-serif;
+    background-color: #2563eb;
+    border: none;
+    border-radius: 0.375rem;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary:hover,
+#kc-login:hover,
+input[type="submit"]:hover,
+button[type="submit"]:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-primary:focus,
+#kc-login:focus,
+input[type="submit"]:focus,
+button[type="submit"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:active,
+#kc-login:active,
+input[type="submit"]:active,
+button[type="submit"]:active {
+    background-color: #1e40af;
+}
+
+/* Secondary/default button */
+.btn-default {
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.btn-default:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* Links */
+a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+/* Form groups spacing */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+/* Error messages */
+.alert-error,
+.kc-feedback-text,
+.pf-c-alert.pf-m-danger {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.375rem;
+    color: #b91c1c;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+/* Success messages */
+.alert-success,
+.pf-c-alert.pf-m-success {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.375rem;
+    color: #15803d;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+/* Info messages */
+.alert-info,
+.pf-c-alert.pf-m-info {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 0.375rem;
+    color: #1d4ed8;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+/* Warning messages */
+.alert-warning,
+.pf-c-alert.pf-m-warning {
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 0.375rem;
+    color: #b45309;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+/* Social buttons (if used) */
+#kc-social-providers {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+#kc-social-providers ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#kc-social-providers li {
+    margin-bottom: 0.5rem;
+}
+
+/* Footer links */
+#kc-info,
+#kc-info-wrapper {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 1.5rem;
+}
+
+#kc-info a,
+#kc-info-wrapper a {
+    color: #2563eb;
+    font-weight: 500;
+}
+
+/* Registration link */
+#kc-registration {
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+#kc-registration span {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* Forgot password link */
+#kc-form-options {
+    margin-top: 1rem;
+    text-align: right;
+}
+
+#kc-form-options a {
+    font-size: 0.875rem;
+    color: #2563eb;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+    accent-color: #2563eb;
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+/* Remember me section */
+#kc-form-options .checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+/* Logo area */
+.kc-logo-text {
+    display: none;
+}
+
+/* Logo container with MOH and NPHI logos */
+#kc-header-wrapper {
+    position: relative;
+}
+
+#kc-header-wrapper::before {
+    content: "";
+    display: block;
+    width: 80px;
+    height: 80px;
+    background-image: url('../img/moh.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: absolute;
+    left: 50%;
+    top: -90px;
+    transform: translateX(-120%);
+}
+
+#kc-header-wrapper::after {
+    content: "";
+    display: block;
+    width: 80px;
+    height: 80px;
+    background-image: url('../img/nphi.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: absolute;
+    right: 50%;
+    top: -90px;
+    transform: translateX(120%);
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    #kc-container-wrapper,
+    .card-pf {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    #kc-header-wrapper {
+        font-size: 1.5rem;
+    }
+    
+    #kc-header {
+        padding-top: 80px;
+    }
+    
+    #kc-header-wrapper::before,
+    #kc-header-wrapper::after {
+        width: 60px;
+        height: 60px;
+        top: -70px;
+    }
+    
+    #kc-header-wrapper::before {
+        transform: translateX(-110%);
+    }
+    
+    #kc-header-wrapper::after {
+        transform: translateX(110%);
+    }
+}
+
+/* Loading spinner (if applicable) */
+.pf-c-spinner {
+    --pf-c-spinner--Color: #2563eb;
+}
+
+/* Keycloak v26+ PatternFly overrides */
+.pf-v5-c-login,
+.pf-c-login {
+    background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+}
+
+.pf-v5-c-login__main,
+.pf-c-login__main {
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.pf-v5-c-button.pf-m-primary,
+.pf-c-button.pf-m-primary {
+    background-color: #2563eb;
+    border: none;
+}
+
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-c-button.pf-m-primary:hover {
+    background-color: #1d4ed8;
+}
+
+.pf-v5-c-form-control,
+.pf-c-form-control {
+    border-color: #d1d5db;
+    border-radius: 0.375rem;
+}
+
+.pf-v5-c-form-control:focus,
+.pf-c-form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
