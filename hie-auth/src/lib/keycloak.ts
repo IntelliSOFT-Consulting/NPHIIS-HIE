@@ -333,19 +333,21 @@ export const getCurrentUserInfo = async (accessToken: string) => {
   }
 }
 
-export const getKeycloakUsers = async () => {
+export const getKeycloakUsers = async (first: number = 0, max: number = 100) => {
   try {
     const accessToken = (await getKeycloakAdminToken()).access_token;
     
-    const response = await fetch(
-      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    // Build URL with pagination parameters
+    const url = new URL(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users`);
+    url.searchParams.set('first', first.toString());
+    url.searchParams.set('max', max.toString());
+    
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) {
       console.error(`Keycloak API error: ${response.status} ${response.statusText}`);
@@ -353,6 +355,10 @@ export const getKeycloakUsers = async () => {
     }
 
     const users = await response.json();
+    
+    // Get total count from response header if available
+    const totalCountHeader = response.headers.get('X-Total-Count');
+    const total = totalCountHeader ? parseInt(totalCountHeader, 10) : null;
     
     // Optimized transformation using proper map instead of map + push
     const responseData = users.map((user: any) => ({
@@ -367,7 +373,10 @@ export const getKeycloakUsers = async () => {
       createdTimestamp: user.createdTimestamp
     }));
 
-    return responseData;
+    return {
+      users: responseData,
+      total: total
+    };
   } catch (error) {
     console.error('Error fetching Keycloak users:', error);
     return null;   
@@ -377,8 +386,11 @@ export const getKeycloakUsers = async () => {
 
 
 const updateStuff = async () => {
-  let users =  await getKeycloakUsers();
-  users.map( async (i: any) => {
+  let keycloakResponse = await getKeycloakUsers();
+  if (!keycloakResponse || !keycloakResponse.users) {
+    return;
+  }
+  keycloakResponse.users.map( async (i: any) => {
     if(i?.attr?.practitionerRole?.[0]){
       // console.log(i);
       let practitionerId = i?.attr?.fhirPractitionerId?.[0]
