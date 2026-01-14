@@ -10,3 +10,7 @@ retry-tx.py
 
 data-dumps/
 data-dumps/*
+scripts/data.csv
+
+
+scripts/
