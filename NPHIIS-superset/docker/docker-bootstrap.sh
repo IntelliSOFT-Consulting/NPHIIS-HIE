@@ -18,6 +18,9 @@
 
 set -eo pipefail
 
+# Keycloak authentication now uses OAuth2 with Authlib (modern, maintained)
+# No python-openid compatibility fixes needed
+
 # Make python interactive
 if [ "$DEV_MODE" == "true" ]; then
     if [ "$(whoami)" = "root" ] && command -v uv > /dev/null 2>&1; then
