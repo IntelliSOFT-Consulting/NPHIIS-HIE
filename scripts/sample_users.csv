@@ -1,0 +1,6 @@
+Timestamp,Email Address,First Name,LastName,Email Address,Phone Number,ID Number,Role,County,County.,Sub County,County_,SubCounty,Ward,Health Facility,User Category
+2025-12-03 10:00:00,john.doe@example.com,John,Doe,john.doe@example.com,0712345678,12345678,Sub County Disease Surveillance Officer,Nairobi,Nairobi,Westlands,Nairobi,Westlands,Parklands,123,SubCounty DSO
+2025-12-03 10:05:00,jane.smith@example.com,Jane,Smith,jane.smith@example.com,0723456789,23456789,County Disease Surveillance Officer,Mombasa,Mombasa,Mvita,Mombasa,Mvita,Tononoka,456,County DSO
+2025-12-03 10:10:00,admin.user@example.com,Admin,User,admin.user@example.com,0734567890,34567890,National,,,,,,,,"National Level"
+2025-12-03 10:15:00,facility.focal@example.com,Mary,Johnson,facility.focal@example.com,0745678901,45678901,Facility Disease Surveillance Officer,Kisumu,Kisumu,Kisumu East,Kisumu,Kisumu East,Kolwa Central,789,Facility Focal Person
+
