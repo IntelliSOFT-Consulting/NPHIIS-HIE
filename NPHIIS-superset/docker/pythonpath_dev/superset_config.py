@@ -25,18 +25,19 @@ import os
 import sys
 
 from celery.schedules import crontab
+from flask import session
 from flask_caching.backends.filesystemcache import FileSystemCache
-from flask_appbuilder.security.manager import AUTH_OID
+from flask_appbuilder.security.manager import AUTH_OAUTH
+from functools import partial
 
-# Import Keycloak OIDC Security Manager (only if flask-oidc is available)
+# Import Keycloak OAuth2 Security Manager (uses Authlib - modern and maintained)
 try:
-    from keycloak_security_manager import OIDCSecurityManager
-    OIDC_AVAILABLE = True
+    from oauth2_security_manager import KeycloakOAuth2SecurityManager
+    OAUTH2_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"Keycloak OIDC not available: {e}")
-    logger.warning("Please rebuild the Docker image to install flask-oidc dependency.")
-    OIDC_AVAILABLE = False
-    OIDCSecurityManager = None
+    logger.warning(f"Keycloak OAuth2 not available: {e}")
+    OAUTH2_AVAILABLE = False
+    KeycloakOAuth2SecurityManager = None
 
 logger = logging.getLogger()
 
@@ -107,36 +108,39 @@ SESSION_COOKIE_SAMESITE = "Lax"  # Allow cookies in OAuth redirects
 SESSION_PROTECTION = "basic"
 
 # ----------------------------------------------------
-# Keycloak OIDC Authentication Configuration
+# Keycloak OAuth2 Authentication Configuration
 # ----------------------------------------------------
-# Only enable OIDC if flask-oidc is available (requires Docker image rebuild)
-if OIDC_AVAILABLE:
-    # Set authentication type to OpenID Connect
-    AUTH_TYPE = AUTH_OID
+# Using OAuth2 with Authlib (modern, maintained) instead of flask-oidc
+if OAUTH2_AVAILABLE:
+    # Set authentication type to OAuth2
+    AUTH_TYPE = AUTH_OAUTH
 
-    # Path to client_secret.json file (relative to this config file)
-    OIDC_CLIENT_SECRETS = os.path.join(os.path.dirname(__file__), 'client_secret.json')
+    # Keycloak configuration from environment variables
+    KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "https://dsrkeycloak.intellisoftkenya.com")
+    KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "master")
+    KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "chanjo-client-apis")
+    KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "lbOutYrbQFvcWWe0yKPZibcu6ibsEEPr")
 
-    # Keycloak realm (default: "master" - adjust if using a different realm)
-    OIDC_OPENID_REALM = os.getenv("KEYCLOAK_REALM", "master")
+    # OAuth2 provider configuration using Keycloak's OpenID Connect metadata
+    OAUTH_PROVIDERS = [
+        {
+            'name': 'NPHIIS Auth',
+            'token_key': 'access_token',
+            'icon': 'fa-key',
+            'remote_app': {
+                'client_id': KEYCLOAK_CLIENT_ID,
+                'client_secret': KEYCLOAK_CLIENT_SECRET,
+                'client_kwargs': {
+                    'scope': 'openid email profile'
+                },
+                # Use Keycloak's OpenID Connect discovery endpoint
+                'server_metadata_url': f'{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/.well-known/openid-configuration'
+            }
+        }
+    ]
 
-    # Use secure cookies for HTTPS (set to False only for local development with HTTP)
-    OIDC_ID_TOKEN_COOKIE_SECURE = True
-
-    # Token introspection authentication method
-    OIDC_INTROSPECTION_AUTH_METHOD = 'client_secret_post'
-    
-    # Request email scope to ensure email claim is included in token
-    # Flask-OIDC will request these scopes during authentication
-    OIDC_SCOPES = ['openid', 'email', 'profile']
-    
-    # Override Flask-OIDC's default scope request
-    # This ensures email is always requested
-    OIDC_ID_TOKEN_COOKIE_NAME = 'oidc_id_token'
-    OIDC_USER_INFO_ENABLED = True
-
-    # Use custom security manager for Keycloak OIDC
-    CUSTOM_SECURITY_MANAGER = OIDCSecurityManager
+    # Use custom security manager for Keycloak OAuth2
+    CUSTOM_SECURITY_MANAGER = KeycloakOAuth2SecurityManager
 
     # Enable user self-registration (users will be auto-created on first login)
     AUTH_USER_REGISTRATION = True
@@ -161,11 +165,32 @@ if OIDC_AVAILABLE:
     # Sync roles from Keycloak on every login (recommended for role changes)
     AUTH_ROLES_SYNC_AT_LOGIN = True
 
-    AUTH_SERVICE_URL = "http://hie-auth:3000"
+    AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://hie-auth:3000")
 else:
-    # Fall back to database authentication if OIDC is not available
-    logger.warning("Keycloak OIDC not available. Using default database authentication.")
-    logger.warning("To enable Keycloak OIDC, rebuild the Docker image with: docker compose build")
+    # Fall back to database authentication if OAuth2 is not available
+    logger.warning("Keycloak OAuth2 not available. Using default database authentication.")
+
+
+def get_user_location_info():
+    """
+    Get user location info from session for use in Jinja templates.
+    Returns a dictionary with location fields (county, subCounty, etc.)
+    or an empty dict if no location info is available.
+    """
+    from flask import has_request_context
+    if has_request_context():
+        try:
+            return session.get('user_location_info', {})
+        except Exception:
+            return {}
+    return {}
+
+
+# Add location info function to Jinja context for use in SQL templates and RLS filters
+# Note: Functions in JINJA_CONTEXT_ADDONS are called directly in templates
+JINJA_CONTEXT_ADDONS = {
+    'user_location_info': get_user_location_info,
+}
 
 class CeleryConfig:
     broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"
@@ -192,7 +217,11 @@ class CeleryConfig:
 
 CELERY_CONFIG = CeleryConfig
 
-FEATURE_FLAGS = {"ALERT_REPORTS": True, "DASHBOARD_RBAC": True}
+FEATURE_FLAGS = {
+    "ALERT_REPORTS": True,
+    "DASHBOARD_RBAC": True,
+    "ENABLE_TEMPLATE_PROCESSING": True,  # Enable Jinja template processing for SQL queries
+}
 ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
 WEBDRIVER_BASEURL = f"http://superset_app{os.environ.get('SUPERSET_APP_ROOT', '/')}/"  # When using docker compose baseurl should be http://superset_nginx{ENV{BASEPATH}}/  # noqa: E501
 # The base URL for the email report hyperlinks.
