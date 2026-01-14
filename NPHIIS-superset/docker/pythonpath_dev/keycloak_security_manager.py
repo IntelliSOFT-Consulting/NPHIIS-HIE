@@ -26,7 +26,9 @@ from urllib.parse import quote
 from flask_appbuilder.views import ModelView, SimpleFormView, expose
 from flask import (
     redirect,
-    request
+    request,
+    g,
+    session
 )
 import requests
 import logging
@@ -133,7 +135,7 @@ class AuthOIDCView(AuthOIDView):
                     username = info.get('preferred_username') or email.split('@')[0]
                     
                     # Get roles from HIE Auth Service (primary source) and Keycloak (fallback)
-                    auth_service_role = self._get_roles_from_auth_service(sm, oidc.get_access_token())
+                    auth_service_role, auth_service_data = self._get_roles_from_auth_service(sm, oidc.get_access_token())
                     keycloak_roles = self._extract_keycloak_roles(info)
                     
                     # Combine roles: auth service role takes priority
@@ -207,11 +209,19 @@ class AuthOIDCView(AuthOIDView):
                         return render_template_string(
                             '<h1>Authentication Error</h1><p>Failed to create user account. Please contact your administrator.</p>'
                         ), 400
+                    
+                    # Extract and store location info in Flask's g object and session
+                    if auth_service_data:
+                        location_info = self._extract_location_info(auth_service_data)
+                        if location_info:
+                            g.user_location_info = location_info
+                            session['user_location_info'] = location_info  # Store in session for RLS filters
+                            logger.info(f"Stored location info in g object and session for new user {user.username}: {location_info}")
                 
                 # Sync roles for existing users (from both auth service and Keycloak)
                 if user:
                     # Get roles from HIE Auth Service (primary source)
-                    auth_service_role = self._get_roles_from_auth_service(sm, oidc.get_access_token())
+                    auth_service_role, auth_service_data = self._get_roles_from_auth_service(sm, oidc.get_access_token())
                     keycloak_roles = self._extract_keycloak_roles(info)
                     
                     # Combine roles: auth service role takes priority
@@ -240,6 +250,14 @@ class AuthOIDCView(AuthOIDView):
                                 user.roles.append(role)
                         sm.get_session.commit()
                         logger.info(f"Updated roles for user {user.username}: {[r.name for r in user.roles]}")
+                    
+                    # Extract and store location info in Flask's g object and session
+                    if auth_service_data:
+                        location_info = self._extract_location_info(auth_service_data)
+                        if location_info:
+                            g.user_location_info = location_info
+                            session['user_location_info'] = location_info  # Store in session for RLS filters
+                            logger.info(f"Stored location info in g object and session for user {user.username}: {location_info}")
                 
                 # Ensure user is active before logging in
                 if hasattr(user, 'is_active') and not user.is_active:
@@ -288,6 +306,10 @@ class AuthOIDCView(AuthOIDView):
     
 
     def _get_roles_from_auth_service(self, sm, token: str):
+        """
+        Get role and full user data from auth service.
+        Returns tuple: (role, full_response_data) or (None, None) on error
+        """
         try:
             auth_service_url = sm.appbuilder.get_app.config.get('AUTH_SERVICE_URL')
             logger.info(f"Fetching roles from auth service: {auth_service_url}/provider/me")
@@ -302,17 +324,54 @@ class AuthOIDCView(AuthOIDView):
             
             if response.status_code != 200:
                 logger.warning(f"Auth service returned non-200 status: {response.status_code}, body: {response.text[:500]}")
-                return None
+                return None, None
             
             data = response.json()
             logger.info(f"Auth service response data: {data}")
             
             role = data.get('user', {}).get('role', None)
             logger.info(f"Extracted role from auth service: {role}")
-            return role
+            return role, data
         except Exception as e:
             logger.error(f"Error getting roles from auth service: {str(e)}")
-            return None
+            return None, None
+
+    def _extract_location_info(self, auth_service_data):
+        """
+        Extract location information from auth service response.
+        Returns a dictionary with location fields if present.
+        """
+        if not auth_service_data:
+            return {}
+        
+        user_data = auth_service_data.get('user', {})
+        location_info = user_data.get('locationInfo', {})
+        
+        if not location_info:
+            logger.debug("No locationInfo found in auth service response")
+            return {}
+        
+        # Extract only the fields we need, skipping missing ones
+        location_fields = {}
+        field_mapping = {
+            'subCounty': 'subCounty',
+            'subCountyName': 'subCountyName',
+            'county': 'county',
+            'countyName': 'countyName',
+            'country': 'country',
+            'countryName': 'countryName'
+        }
+        
+        for key, value in field_mapping.items():
+            if key in location_info and location_info[key] is not None:
+                location_fields[value] = location_info[key]
+        
+        if location_fields:
+            logger.info(f"Extracted location info: {location_fields}")
+        else:
+            logger.debug("No location fields found in locationInfo")
+        
+        return location_fields
 
     def _map_keycloak_roles_to_superset(self, sm, keycloak_roles):
         """Map Keycloak roles to Superset roles using AUTH_ROLES_MAPPING"""
@@ -391,4 +450,34 @@ class AuthOIDCView(AuthOIDView):
         logger.info(f"Keycloak logout URL: {logout_url}")
         
         return redirect(logout_url)
+
+    @expose('/debug/location-info/', methods=['GET'])
+    def debug_location_info(self):
+        """
+        Debug endpoint to verify location info is stored in Flask's g object and session.
+        Access this at: /login/debug/location-info/
+        Remove this endpoint after verification for security.
+        """
+        from flask import jsonify
+        
+        if not hasattr(g, 'user') or g.user is None:
+            return jsonify({
+                "error": "User not logged in",
+                "has_user": hasattr(g, 'user')
+            }), 401
+        
+        # Check both g object and session
+        location_info_g = getattr(g, 'user_location_info', None)
+        location_info_session = session.get('user_location_info', None)
+        
+        return jsonify({
+            "user": g.user.username,
+            "user_email": g.user.email if hasattr(g.user, 'email') else None,
+            "location_info_in_g": location_info_g,
+            "location_info_in_session": location_info_session,
+            "has_location_info_in_g": location_info_g is not None,
+            "has_location_info_in_session": location_info_session is not None,
+            "location_info_keys_g": list(location_info_g.keys()) if location_info_g else [],
+            "location_info_keys_session": list(location_info_session.keys()) if location_info_session else []
+        })
 
