@@ -1,0 +1,3272 @@
+[
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 1,
+    "email": "adelaide.lumula95@gmail.com",
+    "name": "ADELAIDE LUMULA",
+    "password": "uroWvJ0C@eBP"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 2,
+    "email": "ahmedshukri94@gmail.com",
+    "name": "Ahmed Shukri Mohamed",
+    "password": "&jv7^HFfCJ(m"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 3,
+    "email": "nduatialex29@gmail.com",
+    "name": "Alex Nduati Kamachu",
+    "password": "fnC)ePxU8(f8"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 4,
+    "email": "absagala70@gmail.com",
+    "name": "Alexander Chebet",
+    "password": "55N0%a55heLM"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 5,
+    "email": "alibadha@gmail.com",
+    "name": "Ali Jattani",
+    "password": "K90Uj%#7h0Xr"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 6,
+    "email": "alihass10@gmail.com",
+    "name": "Ali Hassan",
+    "password": "aqTC5IcLFR)R"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 7,
+    "email": "amwalakha@gmail.com",
+    "name": "AMOS Mwalakha",
+    "password": "Uw0o!P&n2Nt&"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 8,
+    "email": "amoskomen@gmail.com",
+    "name": "Amos Komen",
+    "password": "rCvS%crESDQf"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 10,
+    "email": "wanguachola30@gmail.com",
+    "name": "Anne Achola",
+    "password": "1#8jCB#0Aj2Q"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 12,
+    "email": "ennocentias13@gmail.com",
+    "name": "Anthony Kilonzo",
+    "password": "gYCy9hteDj5%"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 13,
+    "email": "bettyatieno.awendo7@gmail.com",
+    "name": "Beatrice Awendo",
+    "password": "pko*!YgYO7uh"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 14,
+    "email": "benkendagor@gmail.com",
+    "name": "Ben Kendagor",
+    "password": "rLsKNvx)ZRx&"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 15,
+    "email": "abondo2014@gmail.com",
+    "name": "Benard Abondo",
+    "password": "b(6clX%XMU&2"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 18,
+    "email": "bmkasolly@gmail.com",
+    "name": "Bonface Kasoli",
+    "password": ")W1Q4tLS0!l)"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 20,
+    "email": "bramwelw@gmail.com",
+    "name": "Bramwel Sifuna",
+    "password": "h7UwNDpR5Bgf"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 21,
+    "email": "murugic@gmail.com",
+    "name": "Catherine Ngatia",
+    "password": "Zm%Ob53@%oLx"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 22,
+    "email": "chrispogongo@gmail.com",
+    "name": "Chrispine Opiyo",
+    "password": "MUAuFXy!ktz0"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 23,
+    "email": "cmutembei05@gmail.com",
+    "name": "Christine Mutembei",
+    "password": "0RRh)d5LKaxu"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 24,
+    "email": "christophermbevi@gmail.com",
+    "name": "Christopher Mbole",
+    "password": "anExkI@maGab"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 28,
+    "email": "cindyawn25@gmail.com",
+    "name": "Cynthia Awino",
+    "password": "66E9pUOQspYT"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 32,
+    "email": "nyambuche39@gmail.com",
+    "name": "Danstan Keroro",
+    "password": "Vbp6baVJ9*S4"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 33,
+    "email": "davidgithuku92@gmail.com",
+    "name": "David Githuku",
+    "password": "(YFM^tr*Vt30"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 34,
+    "email": "donsongo23@gmail.com",
+    "name": "Dennis Mosoti",
+    "password": "Iykx!kp)Cx$n"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 35,
+    "email": "dennisogenche@gmail.com",
+    "name": "Dennis Ogenche",
+    "password": "dTS#qIvH4i9w"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 36,
+    "email": "doriceogweche@gmail.com",
+    "name": "DORICE OGWECHE",
+    "password": "pBeU7clIhbp%"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 37,
+    "email": "ogoladoris560@gmail.com",
+    "name": "Doris Ogola",
+    "password": "8mIq3d!2w@eO"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 38,
+    "email": "douglasmogiri@gmail.com",
+    "name": "Douglas Mogiri",
+    "password": "lN2NsF)xzeIb"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 39,
+    "email": "dougyator@gmail.com",
+    "name": "Douglas Yator",
+    "password": "MNn$jB*GqNCC"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 40,
+    "email": "echemalan61@gmail.com",
+    "name": "Edna Chemalan",
+    "password": "STP&3vr5pgG@"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 43,
+    "email": "eliud.nasinyama@yahoo.com",
+    "name": "Eliud Nasinyama",
+    "password": "XWsa@OX52ao5"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 44,
+    "email": "waeni1991@gmail.com",
+    "name": "Emmaculate Waeni",
+    "password": "BA&#ZapokSaV"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 45,
+    "email": "omwegae@gmail.com",
+    "name": "Erasto Omwega",
+    "password": "6ow#!xasppi^"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 47,
+    "email": "ekaranja385@gmail.com",
+    "name": "Esther Karanja",
+    "password": "Ala3H(K%pRfL"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 49,
+    "email": "fmmfaith@gmail.com",
+    "name": "Faith Mwaniki",
+    "password": "ADRUKOxsSo!i"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 50,
+    "email": "felixndanga17@gmail.com",
+    "name": "FELIX NDANG'A",
+    "password": "71FABxDkkaYM"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 53,
+    "email": "mogirefrancis@gmail.com",
+    "name": "Francis Mogire",
+    "password": "y#Ui)79(8EOn"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 54,
+    "email": "fywapale72@gmail.com",
+    "name": "FRANCIS LOPOYETUM",
+    "password": "BHf0AP7^WM8K"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 55,
+    "email": "opondofredrick019@gmail.com",
+    "name": "Fredrick Opondo",
+    "password": "GvD!F27d(v@J"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 57,
+    "email": "geomarubu@gmail.com",
+    "name": "George Marubu",
+    "password": "#Sn#zh5TTtn5"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 58,
+    "email": "jokeyo.go@gmail.com",
+    "name": "George Okeyo",
+    "password": "Ar0f^inI6$cl"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 59,
+    "email": "chebetgideon@gmail.com",
+    "name": "Gideon Chebet",
+    "password": "lZ2XTLSASO)W"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 60,
+    "email": "chebetgideon@gmail.com",
+    "name": "Gideon Chebet",
+    "password": "ImhE&E^Ie^L2"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 61,
+    "email": "gloriahndunge@gmail.com",
+    "name": "gloriah Kioko",
+    "password": "myt(4$bu2g$4"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 62,
+    "email": "godwins1987@gmail.com",
+    "name": "Godwins Mito",
+    "password": "Mn#I*n$onw8j"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 64,
+    "email": "gracekaaka075@gmail.com",
+    "name": "Grace wanjiru Kamau",
+    "password": "Gz*WIqa#fEGC"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 66,
+    "email": "husseinhassanwinner@gmail.com",
+    "name": "HASSAN WINNER",
+    "password": "GhcZt)p(HSE1"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 67,
+    "email": "sahahassan0@gmail.com",
+    "name": "Hassan Ndara",
+    "password": "DMdrkU)8$rgl"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 68,
+    "email": "hellenmwikali72@gmail.com",
+    "name": "Hellen Kituku",
+    "password": "e)l%wmRDHRSy"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 69,
+    "email": "bilalihussein6@gmail.com",
+    "name": "Hussein Bilal",
+    "password": "U2(3Uy3eW2v3"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 70,
+    "email": "innocentomwenga001@gmail.com",
+    "name": "Innocent Omwenga",
+    "password": "(l2buCbkrZ^t"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 72,
+    "email": "isoob533@gmail.com",
+    "name": "ISAAC BOIT",
+    "password": "rNQpeTI!f9!&"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 73,
+    "email": "jacob2014.j2@gmail.com",
+    "name": "JACOB CHERUTICH",
+    "password": "@&vjTwO^%Cz%"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 74,
+    "email": "githuambugua89@gmail.com",
+    "name": "James Githua Mbugua",
+    "password": "zn2BA)z4V1i#"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 76,
+    "email": "nyamweya.jn@gmail.com",
+    "name": "JAMES NYAMWEYA",
+    "password": "g@tPvnomuz(5"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 77,
+    "email": "angawaakech@gmail.com",
+    "name": "James Angawa",
+    "password": "JqAftrZaJvLy"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 78,
+    "email": "odingajane7@gmail.com",
+    "name": "Jane Odinga",
+    "password": "G*4MUZxgPfys"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 79,
+    "email": "chepkiruilagat@gmail.com",
+    "name": "Janeth Lagat",
+    "password": "rVN4vmKmcRyH"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 80,
+    "email": "joan.kangethe@gmail.com",
+    "name": "Joan Kang'ethe",
+    "password": "GzcYBz!1z%Z("
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 81,
+    "email": "joelkuto@gmail.com",
+    "name": "Joel Kutto",
+    "password": "Le5&g3AxU0d7"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 82,
+    "email": "johnombuna7@gmail.com",
+    "name": "John Ombuna",
+    "password": "Qr)%b(e#Rf!$"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 83,
+    "email": "muhandojohn@gmail.com",
+    "name": "John Muhando",
+    "password": "hak0uX65&FvH"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 85,
+    "email": "bowenjoseph61@gmail.com",
+    "name": "Joseph Bowen",
+    "password": "NQ8sRI(Y8C9K"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 86,
+    "email": "joshuamutuku45@gmail.com",
+    "name": "Joshua Mutuku",
+    "password": "GDHsTY6bKtCW"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 87,
+    "email": "jayjoash2019@gmail.com",
+    "name": "Joshua Muthoka",
+    "password": "^9u4v@tDpgBj"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 89,
+    "email": "jwmachanga@gmail.com",
+    "name": "Juliana Machang'a",
+    "password": "EF7Bx%GjbkQ@"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 90,
+    "email": "julietakalekye2015@gmail.com",
+    "name": "Julieta Musyoki",
+    "password": "hNs57os#sfIN"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 91,
+    "email": "thiurumuriungi@gmail.com",
+    "name": "Julius Muriungi",
+    "password": "7PpWDQ#YByFo"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 92,
+    "email": "kelvinkefa.tangara@gmail.com",
+    "name": "Kelvin Tangara",
+    "password": "Kg8cC*yccSuE"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 95,
+    "email": "kennethkesa@gmail.com",
+    "name": "Kenneth Kesa",
+    "password": "vAWmDHnT3jX3"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 96,
+    "email": "ifrahahmed890@gmail.com",
+    "name": "Khadija ahmed Aden",
+    "password": "CvN!No)gd2cZ"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 97,
+    "email": "ckosgey@gmail.com",
+    "name": "Kosgey Chelagat",
+    "password": "Xmdhm6*zqL6u"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 98,
+    "email": "ckosgey@gmail.com",
+    "name": "Kosgey Chelagat",
+    "password": "(g&icu3hp*O)"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 99,
+    "email": "lynmbae@gmail.com",
+    "name": "Linda Mbae",
+    "password": "pBAt@k&FQdpM"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 100,
+    "email": "lucie.wughash@gmail.com",
+    "name": "Luciannah Gichuru",
+    "password": "fHpB!tgsSbRE"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 102,
+    "email": "njokimacharia3@gmail.com",
+    "name": "Magdaline Njoki Gathigiu",
+    "password": "WK%umkreF3ek"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 103,
+    "email": "marceljunioregondi@gmail.com",
+    "name": "Marcel Egondi Junior",
+    "password": "YEkQRu#!QUYr"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 105,
+    "email": "njogumary48@gmail.com",
+    "name": "Mary Munene",
+    "password": "wcWfoIT7&cBI"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 106,
+    "email": "muindimathias@gmail.com",
+    "name": "Mathias Muindi",
+    "password": "jY6e2l6Xuwuy"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 108,
+    "email": "maureen.nyambok@gmail.com",
+    "name": "Maureen Nyambok",
+    "password": "*PJ3zQPZsq&B"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 109,
+    "email": "yatorjeli@gmail.com",
+    "name": "Medrine Yator",
+    "password": "khEa4VqAAz95"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 110,
+    "email": "vicahmercy@gmail.com",
+    "name": "Mercy Kivui",
+    "password": "8lmDQwPDOZHG"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 111,
+    "email": "michaelkaloki4@gmail.com",
+    "name": "michael kaloki",
+    "password": "1DVDRVf7d&2Y"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 113,
+    "email": "obieroonyango@gmail.com",
+    "name": "Moses Obiero",
+    "password": "8k&I&#7Oa#rD"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 114,
+    "email": "namekamau@gmail.com",
+    "name": "Moses Kamau",
+    "password": "JIBm05t2@iIq"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 115,
+    "email": "mwachuoteuzi@gmail.com",
+    "name": "Mwachuo Teuzi",
+    "password": "#!IPB)Hr4Le)"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 116,
+    "email": "mmikmazz@gmail.com",
+    "name": "Mwasame Michael",
+    "password": "Z0K3fqeR&K$8"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 118,
+    "email": "muriithin55@gmail.com",
+    "name": "NICHOLAS MURIITHI",
+    "password": "MSNJ&DKdi519"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 119,
+    "email": "nichokurgat@gmail.com",
+    "name": "Nicholas Kurgat",
+    "password": "h)Nuz0kmwv5x"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 121,
+    "email": "norahcc@gmail.com",
+    "name": "Norah Korir",
+    "password": "Od(6L(MGh!#o"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 122,
+    "email": "osmano283@gmail.com",
+    "name": "Osman Gonjobe",
+    "password": "11E!yndUnJc5"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 123,
+    "email": "osmano283@gmail.com",
+    "name": "Osman  Ibrahim Gonjobe",
+    "password": "pWyA8IDEg*T$"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 124,
+    "email": "abertmikwa@gmail.com",
+    "name": "Ouko Robert",
+    "password": "ZSxpO3fT4Ty("
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 125,
+    "email": "nyayieka2021@gmail.com",
+    "name": "Patrick Nyayieka",
+    "password": "8KplFfd0DAlO"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 127,
+    "email": "pishnyua@gmail.com",
+    "name": "Peter Kinyua",
+    "password": "Xm4UOw(Y*w52"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 129,
+    "email": "nzioki91@gmail.com",
+    "name": "Peter Nzioki",
+    "password": "WyEo0R)1H9fp"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 130,
+    "email": "kulechop24@gmail.com",
+    "name": "PETER KULECHO",
+    "password": "Xn7FVoAz!Gjh"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 131,
+    "email": "kulechop24@gmail.com",
+    "name": "PETER KULECHO",
+    "password": "FscEV8Te7rM^"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 132,
+    "email": "njengapj@gmail.com",
+    "name": "Peter Njenga",
+    "password": "6KgRRwk^g*yz"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 133,
+    "email": "phineasmutugi@gmail.com",
+    "name": "PHINEAS MUTUGI",
+    "password": "QhKzhUKSfjNR"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 135,
+    "email": "silaspkawira@gmail.com",
+    "name": "Purity Kawira",
+    "password": "A7sY3VC3u)TW"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 136,
+    "email": "rashidbwire940@gmail.com",
+    "name": "Rashid Bwire",
+    "password": "fcghql0sO)Nh"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 137,
+    "email": "robertmageto02@gmail.com",
+    "name": "Robert Bogita",
+    "password": "vT)U&5yVgq0q"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 138,
+    "email": "robkim.tarus@gmail.com",
+    "name": "Robert Tarus",
+    "password": "8unF#vLi8*S#"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 140,
+    "email": "sammyasugo@gmail.com",
+    "name": "Sammy Asugo",
+    "password": "vnOv#De#yU72"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 141,
+    "email": "samsontanui436@gmail.com",
+    "name": "Samson Tanui",
+    "password": "*zX6Esy&q9NB"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 142,
+    "email": "muturisg0999@gmail.com",
+    "name": "Samuel Muturi",
+    "password": "*CiuRUiKf)Fw"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 143,
+    "email": "shehegarisse@gmail.com",
+    "name": "Shehe Garisse",
+    "password": "j#$0kEk&frNj"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 144,
+    "email": "stanmalibs@gmail.com",
+    "name": "Stanley Macharia",
+    "password": "au@(0U1Y4^wJ"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 145,
+    "email": "stellaogega23@gmail.com",
+    "name": "STELLA OGEGA",
+    "password": "cFR(3U#Bfk@H"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 146,
+    "email": "sndungu638@gmail.com",
+    "name": "STEPHEN KABUE",
+    "password": "E8KPUQzTr1fq"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 147,
+    "email": "jepkemei11@gmail.com",
+    "name": "SUSAN JEPKEMEI",
+    "password": "@3Mgk2P#Kt%%"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 149,
+    "email": "terenjoroge@gmail.com",
+    "name": "Teresiah Njoroge",
+    "password": "OzUd%N84fQWn"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 150,
+    "email": "opiotom2012@gmail.com",
+    "name": "Thomas Opiyo",
+    "password": "kAY9nvVHKI&h"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 151,
+    "email": "orootitus36@gmail.com",
+    "name": "Titus Okoth",
+    "password": "sVwadzuOxVmf"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 152,
+    "email": "tom.emodia@gmail.com",
+    "name": "Tom Emodia",
+    "password": "$Ws2Nj1YYcoB"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 153,
+    "email": "vincentkipruto100@gmail.com",
+    "name": "Vincent Koech",
+    "password": "SaKlGO8PMKZZ"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 154,
+    "email": "vmuvai@gmail.com",
+    "name": "Virginia Syombua",
+    "password": "z07VOWdvp&UC"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 155,
+    "email": "vitalismariita@gmail.com",
+    "name": "Vitalis Mariita",
+    "password": "r*#hEYlcXAP9"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 157,
+    "email": "kiptaruswilson@gmail.com",
+    "name": "Wilson Tarus",
+    "password": "78oU7Nww7ZWe"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 158,
+    "email": "kagoritawilson@gmail.com",
+    "name": "Wilson Ndiba",
+    "password": "Z!pmYJR$60(E"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 159,
+    "email": "kagoritawilson@gmail.com",
+    "name": "Wilson Ndiba",
+    "password": "GTIh9mAu291M"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 160,
+    "email": "winnieowino74@gmail.com",
+    "name": "Winifred Owino",
+    "password": "&wgKj1cSUyC7"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 162,
+    "email": "ibramuhumed@gmail.com",
+    "name": "Ibrahim Madey",
+    "password": "q6SLzb8fbT3U"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 163,
+    "email": "ibramuhumed@gmail.com",
+    "name": "Ibrahim Madey",
+    "password": "m#&DtMbqA204"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 164,
+    "email": "emmanucheruh@gmail.com",
+    "name": "Emmanuel Cheruiyot",
+    "password": "1&irVF7Sz1)m"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 165,
+    "email": "langatwilborn@gmail.com",
+    "name": "Langat Wilborn",
+    "password": "(M&JalByl1Rk"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 166,
+    "email": "yusufajack@gmail.com",
+    "name": "Yusuf Ibrahim",
+    "password": "hFlNGO@G$9&!"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 167,
+    "email": "barasakennedy1@gmail.com",
+    "name": "KENNEDY BARASA",
+    "password": "#S#Q4cl1Gnh2"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 169,
+    "email": "filexlorema@gmail.com",
+    "name": "Filex Lorema",
+    "password": "i4XFuBlwH1TD"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 170,
+    "email": "wkmatini@gmail.com",
+    "name": "Wycliffe Matini",
+    "password": "H#oUP2PUfXl1"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 171,
+    "email": "euniceomenda2021@gmail.com",
+    "name": "Eunice Omenda",
+    "password": "Soh0ld4VdeyN"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 172,
+    "email": "githuambugua89@gmail.com",
+    "name": "James Githua Mbugua",
+    "password": "tQKJ7cR)IJ(A"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 173,
+    "email": "nyaikafrank@gmail.com",
+    "name": "Francis Muoka",
+    "password": "ENSTLfe$xSM0"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 174,
+    "email": "saraisuleiman85@gmail.com",
+    "name": "Suleiman Sarai",
+    "password": "UK4U#tzr&Rr!"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 175,
+    "email": "doriceogweche@gmail.com",
+    "name": "Dorice Ogweche",
+    "password": "bmUpY20b*pPY"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 176,
+    "email": "sammyasugo@gmail.com",
+    "name": "Sammy Asugo",
+    "password": "^zW6xktbK0*H"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 177,
+    "email": "khaingafan@gmail.com",
+    "name": "Fanuel Khainga",
+    "password": "xUzDtx@L7VVu"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 178,
+    "email": "tooredempta@gmail.com",
+    "name": "Redempta Too",
+    "password": "p@aY8MnRNbvt"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 179,
+    "email": "muhandojohn@gmail.com",
+    "name": "Muhando John",
+    "password": "OO6SgqFg)yP("
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 180,
+    "email": "felixndanga17@gmail.com",
+    "name": "FELIX NDANGA",
+    "password": "hRWb6(@^$4hT"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 181,
+    "email": "clementolenabori@gmail.com",
+    "name": "Clement Nabori",
+    "password": "cRH5d^Zgjvcc"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 182,
+    "email": "eliud.nasinyama@yahoo.com",
+    "name": "Eliud Nasinyama",
+    "password": "mSJ!Msc3@12r"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 183,
+    "email": "muindimathias@gmail.com",
+    "name": "Mathias Muindi",
+    "password": "A91c2!cYg!&m"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 185,
+    "email": "muindimathias@gmail.com",
+    "name": "Mathias Muindi",
+    "password": "Dm$pcOqWpRQH"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 186,
+    "email": "edwardgithae@gmail.com",
+    "name": "Edward Githae",
+    "password": "(BM2zbYPCFnb"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 187,
+    "email": "kizitomakachia@gmail.com",
+    "name": "Kizito Makachia",
+    "password": "oNRyzAOh@j*6"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 188,
+    "email": "omwegae@gmail.com",
+    "name": "Erasto Omwega",
+    "password": "z97u%20jrMLs"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 189,
+    "email": "muriungijohn01@gmail.com",
+    "name": "John Peter",
+    "password": "WjgBS2ViKuCU"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 190,
+    "email": "toshdv@gmail.com",
+    "name": "David Gitonga",
+    "password": "UprLFo@MioGa"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 191,
+    "email": "kadivane75@gmail.com",
+    "name": "Samuel Kadivane",
+    "password": "HMuUfEdM8z@$"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 192,
+    "email": "victaondago@gmail.com",
+    "name": "Victor Ondago",
+    "password": "izgaF*4JCt$u"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 193,
+    "email": "ababdi2030@gmail.com",
+    "name": "Abdirizack Mohamed",
+    "password": "cdQb$TjVJN1i"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 194,
+    "email": "odhiambofredrick2014@gmail.com",
+    "name": "Fredrick Odhiambo",
+    "password": "q%QNI$ZDpZ(G"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 195,
+    "email": "lizkiptoo@gmail.com",
+    "name": "Elizabeth Kiptoo",
+    "password": "z^xHTjTi#N9b"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 196,
+    "email": "odingajane7@gmail.com",
+    "name": "Jane Odinga",
+    "password": "VE@xPYx18pu7"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 198,
+    "email": "mutugiken1@gmail.com",
+    "name": "Mutugi Kenneth",
+    "password": "Ftk3S0lt$I(S"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 199,
+    "email": "nyokabigladys749@gmail.com",
+    "name": "GLADYS NYOKABI",
+    "password": "Is&wUs5S$PuB"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 200,
+    "email": "cindyawn25@gmail.com",
+    "name": "Cynthia Awino",
+    "password": "QiivJB1UZf$U"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 201,
+    "email": "omondimbaghof@gmail.com",
+    "name": "Omondi Mbagho",
+    "password": "I#JxEypIfrPq"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 202,
+    "email": "joan.kangethe@gmail.com",
+    "name": "Joan Kang'ethe",
+    "password": "&eQnVhjX$O^&"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 203,
+    "email": "labanalfred23@gmail.com",
+    "name": "Alfred Laban",
+    "password": "V9WdbGUGc4F6"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 204,
+    "email": "sndungu638@gmail.com",
+    "name": "STEPHEN KABUE",
+    "password": "bv9I%dFFd8mx"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 205,
+    "email": "ksomoni89@gmail.com",
+    "name": "Kelvin Meraba",
+    "password": "cy&2w)9h42&J"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 206,
+    "email": "orootitus36@gmail.com",
+    "name": "Titus Okoth",
+    "password": ")nH3arfu0ro5"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 207,
+    "email": "julietakalekye2015@gmail.com",
+    "name": "Julieta Musyoki",
+    "password": "zQJdyN4MkDpZ"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 208,
+    "email": "mogirefrancis@gmail.com",
+    "name": "Francis Mogire",
+    "password": "BVnfy97$3#iu"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 209,
+    "email": "piuskerio@gmail.com",
+    "name": "Pius Kerio",
+    "password": "q&SYJZyNNcFb"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 210,
+    "email": "pkibet2011@gmail.com",
+    "name": "Philip Kibet",
+    "password": "1grmRnItkvpp"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 211,
+    "email": "amabwai2015@gmail.com",
+    "name": "Alice Mabwai",
+    "password": "oS0w!PiV1rxO"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 213,
+    "email": "adelaide.lumula95@gmail.com",
+    "name": "Adelaide Lumula",
+    "password": "cdY7wXeW2lJO"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 214,
+    "email": "kinotijane09@gmail.com",
+    "name": "Jane Kinoti",
+    "password": "D*hlkdWO@g&P"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 217,
+    "email": "serahmthn@gmail.com",
+    "name": "Serah Muthoni Ng'ang'a",
+    "password": "ti&*B88(4KS1"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 218,
+    "email": "adelaide.lumula95@gmail.com",
+    "name": "Adelaide Lumula",
+    "password": "BQhYPE&((9sp"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 219,
+    "email": "azariadaddah@gmail.com",
+    "name": "Dennis Azaria",
+    "password": "tN&smqTQ!N3m"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 220,
+    "email": "ritamasalilah@gmail.com",
+    "name": "Rita Masalilah",
+    "password": "n6VBgI9Rc^&!"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 221,
+    "email": "issakmabdi@gmail.com",
+    "name": "Issak Abdi Mohamed",
+    "password": "AukmQTN29yOy"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 222,
+    "email": "stanmalibs@gmail.com",
+    "name": "Stanley Macharia",
+    "password": "iO3xm#6G%J3!"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 223,
+    "email": "norahcc@gmail.com",
+    "name": "Norah Korir",
+    "password": "opLvw@k2D@&7"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 224,
+    "email": "marimajoyce13@gmail.com",
+    "name": "Joyce Marima",
+    "password": "YLKY1CJyESL2"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 225,
+    "email": "amosndenge@gmail.com",
+    "name": "Amos Ndenge",
+    "password": "w(1CU3YQ%RnU"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 226,
+    "email": "petermurithi23@gmail.com",
+    "name": "Peter Murithi",
+    "password": "vOrQQJMW&qPZ"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 227,
+    "email": "johnmwagambo@gmail.com",
+    "name": "John Mwagambo",
+    "password": "1hB*c&Oj*Z9E"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 228,
+    "email": "petermurithi23@gmail.com",
+    "name": "Peter Murithi",
+    "password": "iR0iwGc7tbxM"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 229,
+    "email": "ramtumwinyihamisi@gmail.com",
+    "name": "Mwinyi Matano Ramtu",
+    "password": "%9Ruz&Vxo4y!"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 230,
+    "email": "otienojulius1987@gmail.com",
+    "name": "JULIUS OTIENO NYAKUTU",
+    "password": "T&ONfPg(Rtf)"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 231,
+    "email": "wanguachola30@gmail.com",
+    "name": "Anne Achola",
+    "password": "FQux$Wphw!5*"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 232,
+    "email": "olodarutankoi@gmail.com",
+    "name": "Edward Ole Tankoi",
+    "password": "Yw#!^6JaV6@R"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 233,
+    "email": "namwanyalu@gmail.com",
+    "name": "Nassoro Mwanyalu",
+    "password": "dn%vlGQvAfsu"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 234,
+    "email": "monicandegwa68@gmail.com",
+    "name": "Monica Ndegwa",
+    "password": "0viGfO!oBPVz"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 235,
+    "email": "okelloh.p@gmail.com",
+    "name": "Peter Okello",
+    "password": "o(fnZmLC8J37"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 236,
+    "email": "joshuamutuku45@gmail.com",
+    "name": "Joshua Mutuku",
+    "password": "desLW%rvvi9&"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 237,
+    "email": "sakuku240@gmail.com",
+    "name": "Samuel Otieno Akuku",
+    "password": "3OmU*G%10dCU"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 239,
+    "email": "abertmikwa@gmail.com",
+    "name": "Ouko Robert",
+    "password": "6EDJMAcmFJ^7"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 240,
+    "email": "issackabdi0721@gmail.com",
+    "name": "issack Gedi",
+    "password": "$kYfsE&nehdi"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 241,
+    "email": "sadaabdi7@gmail.com",
+    "name": "Sadam Maalim",
+    "password": "Qv*IUfJB8Ncz"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 242,
+    "email": "katesayo@gmail.com",
+    "name": "Catherine Sayo Kesesi",
+    "password": "!S%P3wftcTdF"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 243,
+    "email": "danielebongon@gmail.com",
+    "name": "Daniel Ebongon Lomukuny",
+    "password": "j$lX(iXESrEK"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 244,
+    "email": "dkipunei.dk@gmail.com",
+    "name": "Dennis Kipunei",
+    "password": "XMh7wV5cr3AX"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 245,
+    "email": "kipronosmith12@gmail.com",
+    "name": "Smith Rop",
+    "password": "o13xZuOk%iee"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 246,
+    "email": "chrissamww@gmail.com",
+    "name": "CHRISTOPHER WAMBUGU",
+    "password": "fSaUr84zDjCI"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 247,
+    "email": "andutanganga@gmail.com",
+    "name": "Ann Nganga",
+    "password": "NrgzlIt(LsLz"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 248,
+    "email": "bindiatsi@gmail.com",
+    "name": "BONFACE EMBENZI",
+    "password": "^C4m4pjPO)e%"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 249,
+    "email": "bowenjoseph61@gmail.com",
+    "name": "Joseph. Bowen",
+    "password": "u8oKabUuBL@("
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 250,
+    "email": "migodith20@gmail.com",
+    "name": "Judith Migosi",
+    "password": "B#DJZ$aUNwht"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 251,
+    "email": "jmuriithi6@gmail.com",
+    "name": "Joseph Muriithi",
+    "password": "d48vZvUeLN&e"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 252,
+    "email": "amoskomen@gmail.com",
+    "name": "Amos Komen",
+    "password": "UF18P$X(w$Ff"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 253,
+    "email": "alicegithinji40@gmail.com",
+    "name": "Alice Githinji",
+    "password": "OCRS0K3sb46a"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 254,
+    "email": "mbuthianaomi18@gmail.com",
+    "name": "Naomi Mbuthia",
+    "password": "KO5BGSlz4Vt^"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 256,
+    "email": "ematuto@gmail.com",
+    "name": "Erastus Matuto",
+    "password": "zX5YP0nyJsSL"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 257,
+    "email": "malenyasammy1@gmail.com",
+    "name": "Samuel Malenya",
+    "password": "Y)@h5M@O445!"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 258,
+    "email": "papaijohn69@gmail.com",
+    "name": "John Papai",
+    "password": "savXZZb!Nokm"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 259,
+    "email": "worldwide752@gmail.com",
+    "name": "Edward Amuyunzu",
+    "password": "MZf9EGNJR8Bp"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 260,
+    "email": "nyawiralucy9@gmail.com",
+    "name": "Lucy Nyawira Gikandi",
+    "password": "J$HTF7s^x7%)"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 261,
+    "email": "kenikipla@gmail.com",
+    "name": "Kiplangat Kennedy",
+    "password": "KWgjmBwsDnmQ"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 262,
+    "email": "obonyoesther15@gmail.com",
+    "name": "Esther Obonyo",
+    "password": ")bdVVqRZdwvQ"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 263,
+    "email": "nyayieka2021@gmail.com",
+    "name": "Patrick Nyayieka",
+    "password": "*^)^Itw9VFqf"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 264,
+    "email": "nyambuche39@gmail.com",
+    "name": "Danstan Nyambuche",
+    "password": "xQ5TQ*aie^M&"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 265,
+    "email": "soniastella2005@gmail.com",
+    "name": "STELLA KOECH",
+    "password": "FD0Ga$Ci&1C@"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 266,
+    "email": "abusharaff@gmail.com",
+    "name": "Hassan Hussein",
+    "password": "LyRh*G#R)s4k"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 267,
+    "email": "abusharaff@gmail.com",
+    "name": "Hassan Hussein",
+    "password": "V!HEkxG*206f"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 268,
+    "email": "mwachuoteuzi@gmail.com",
+    "name": "Mwachuo Teuzi",
+    "password": "X8KwHK2Q7T@9"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 269,
+    "email": "danmutinda97@gmail.com",
+    "name": "DANIEL Mutinda",
+    "password": "(&Sp^Cs(3urO"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 270,
+    "email": "dougdemase@gmail.com",
+    "name": "Douglas Nyaanga",
+    "password": "AWYQOp$jBwQ2"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 271,
+    "email": "yasbrumin@gmail.com",
+    "name": "Yasmin Sheywe",
+    "password": "WFo0af0Nbv$@"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 272,
+    "email": "abdelrutah@gmail.com",
+    "name": "Abdallah Rutah",
+    "password": "LSCiybcCh3X2"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 273,
+    "email": "jokeyo.go@gmail.com",
+    "name": "George Okeyo",
+    "password": "1A0ZTs5GqGha"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 274,
+    "email": "naominaula12@gmail.com",
+    "name": "Naomi Naula",
+    "password": "vi@X9p34hTNu"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 277,
+    "email": "skrotich06@gmail.com",
+    "name": "Samwel Rotich",
+    "password": "#V7%r3rHMT@#"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 278,
+    "email": "feiswal9@gmail.com",
+    "name": "Feiswal Ahmed Ali",
+    "password": "JxS!R1nQ2$0Y"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 279,
+    "email": "ivysiimoi0@gmail.com",
+    "name": "Ivy Siimoi",
+    "password": "W7OKK!(VblcV"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 281,
+    "email": "robkim.tarus@gmail.com",
+    "name": "Tarus Robert",
+    "password": "X2@mr%qURXrP"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 282,
+    "email": "chemwetichjames@gmail.com",
+    "name": "James Chemwetich",
+    "password": "2U9mUqMqQl8J"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 284,
+    "email": "dyulaokungu@gmail.com",
+    "name": "MOSES DULA",
+    "password": "eVDMK4k9xw0L"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 285,
+    "email": "jmwarimo8@gmail.com",
+    "name": "JUMA MWARIMO",
+    "password": "GV836L((n80h"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 286,
+    "email": "oltureishi2@gmail.com",
+    "name": "Peter Koi Oltureishi",
+    "password": "W34LHR3sQmCy"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 287,
+    "email": "edithyegon.ey@gmail.com",
+    "name": "EDITH YEGON",
+    "password": "VEHGfyvF%Alx"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 288,
+    "email": "scmccsoin@gmail.com",
+    "name": "Lydia Chelangat",
+    "password": "8$0LfVSWNRgx"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 289,
+    "email": "vitalismariita@gmail.com",
+    "name": "Vitalis Mariita",
+    "password": "qqHV9nUxYLGI"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 290,
+    "email": "emmanucheruh@gmail.com",
+    "name": "Emmanuel Cheruiyot",
+    "password": "2N^XcPXtX9wl"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 291,
+    "email": "sammykoech2017@gmail.com",
+    "name": "Sammy Koech",
+    "password": "^zhwv4a@hM&j"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 292,
+    "email": "langatwilborn@gmail.com",
+    "name": "Langat Wilborn",
+    "password": "ui!Oy!J$$cwT"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 293,
+    "email": "hassanabasi32@gmail.com",
+    "name": "Hassan Ahmed",
+    "password": "d1sRdfvqk@Iy"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 294,
+    "email": "peninamwakitoa@gmail.com",
+    "name": "PENINA OMAR MWAKITOA",
+    "password": "N$v!Tk*7O%d4"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 295,
+    "email": "ssaing90@gmail.com",
+    "name": "MWASI OMAR MWAKITOA",
+    "password": "AH7K$vGrDR^j"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 296,
+    "email": "jameskimatu2@gmail.com",
+    "name": "James Musyoka Kimatu",
+    "password": "mWUxjyVeWhhn"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 298,
+    "email": "douglasmogiri@gmail.com",
+    "name": "Douglas Mogiri",
+    "password": "Z&YdO@X4tckG"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 300,
+    "email": "shemlegilisho@gmail.com",
+    "name": "Shem Jacob",
+    "password": "(eQ#jUTFyLuk"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 301,
+    "email": "biwottp2008@gmail.com",
+    "name": "Patrick Biwott",
+    "password": "cLpUPX6*RmKc"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 302,
+    "email": "juliawachira55@gmail.com",
+    "name": "Julia Wachira",
+    "password": "!nOK43xv@GyI"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 303,
+    "email": "juliawachira55@gmail.com",
+    "name": "Julia Wachira",
+    "password": "opC(J!0@LaKo"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 304,
+    "email": "dorthville@gmail.com",
+    "name": "Dorothy Mwasagua",
+    "password": "^*BJCYtQeeFY"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 305,
+    "email": "mungathia69@gmail.com",
+    "name": "Nathan Mungathia",
+    "password": "luiY!CcG!Ztl"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 306,
+    "email": "nzavayelilian@gmail.com",
+    "name": "Lilian Isalanwa Miheso",
+    "password": "QTDRerm*j^2a"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 308,
+    "email": "isoob533@gmail.com",
+    "name": "Isaac Boit",
+    "password": "@motJ!2az*Uw"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 309,
+    "email": "sangjosephat@gmail.com",
+    "name": "JOSEPHAT SANG",
+    "password": "XYUXTkGepayT"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 310,
+    "email": "buretiscmcc@gmail.com",
+    "name": "Lenah Chesang",
+    "password": "T8vC@p^(6%!#"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 311,
+    "email": "kulechop24@gmail.com",
+    "name": "PETER KULECHO",
+    "password": "Plj^wt2*dl5d"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 312,
+    "email": "opondofredrick019@gmail.com",
+    "name": "Fredrick Opondo",
+    "password": "1jd1D@*BvDcB"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 313,
+    "email": "absagala70@gmail.com",
+    "name": "Alexander Chebet",
+    "password": "W#R9K(Ewi6ak"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 314,
+    "email": "phineasmutugi@gmail.com",
+    "name": "PHINEAS MUTUGI KABURU",
+    "password": "idRWadC2)Kqj"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 315,
+    "email": "cdscmks@gmail.com",
+    "name": "Isaac Matheka",
+    "password": "LQv@9QutTQaY"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 316,
+    "email": "ashipobe06@gmail.com",
+    "name": "EDWIN ASHIPOBE",
+    "password": "VQ7dabNfH$38"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 317,
+    "email": "kiptuiemily5@gmail.com",
+    "name": "Emily Kiptui",
+    "password": "5(H05DCxTDiT"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 318,
+    "email": "setiansophia@gmail.com",
+    "name": "Sophia Setia",
+    "password": "bTqXBYH0gU5*"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 319,
+    "email": "omugeelijah87@gmail.com",
+    "name": "Elijah Ibuloi",
+    "password": "E*$73DPmGa12"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 320,
+    "email": "benkendagor@gmail.com",
+    "name": "Ben Kendagor",
+    "password": "AL6qs0Ysrlld"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 321,
+    "email": "normanmathuva@gmail.com",
+    "name": "Norman Mathuva",
+    "password": "3tCjXQDSVnM4"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 322,
+    "email": "echemalan61@gmail.com",
+    "name": "Edna Chemalan",
+    "password": "^7!JNg)266Lh"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 323,
+    "email": "mbayaroberts@gmail.com",
+    "name": "Robert Mbaya",
+    "password": "QDon4cbP!djY"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 324,
+    "email": "juliets4002@gmail.com",
+    "name": "GRACE OLANDO",
+    "password": "VvUlxLqB0U!J"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 326,
+    "email": "kimrash35@gmail.com",
+    "name": "Abdihakim Abdille",
+    "password": "QMEk$VSulgcV"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 327,
+    "email": "nderituisaac40@gmail.com",
+    "name": "isaack nderitu",
+    "password": "*Lh@zN(M43)R"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 328,
+    "email": "ibrahim102910@gmail.com",
+    "name": "Ibrahim Maalim",
+    "password": "N0itGayR&C6Q"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 329,
+    "email": "kakaij03@gmail.com",
+    "name": "Joseph Kakai",
+    "password": "wjj2Mt*I@sSe"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 330,
+    "email": "charlesowiti143@gmail.com",
+    "name": "Charles Owiti",
+    "password": "E5t2m5Ky1@vT"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 331,
+    "email": "malenyasammy1@gmail.com",
+    "name": "Samuel Wafula",
+    "password": "BH^0RWxNyUQz"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 332,
+    "email": "ibramuhumed@gmail.com",
+    "name": "Ibrahim Madey",
+    "password": "lg&5GZHVyPFJ"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 333,
+    "email": "ibramuhumed@gmail.com",
+    "name": "Ibrahim Madey",
+    "password": "zmjmDCU0WJnn"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 334,
+    "email": "smlotieno@gmail.com",
+    "name": "Samuel Osure",
+    "password": "Y0CFCs#w6f*R"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 335,
+    "email": "duboiz2015@gmail.com",
+    "name": "HASSAN DUBOW",
+    "password": "ECrecD1GMHT3"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 336,
+    "email": "lucie.wughash@gmail.com",
+    "name": "Luciannah Gichuru",
+    "password": "D0oOvg3Adn!7"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 337,
+    "email": "japhetrutto114@gmail.com",
+    "name": "Japhet Rutto",
+    "password": "#QzRCzW1x)w7"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 338,
+    "email": "bmkasolly@gmail.com",
+    "name": "Bonface Kasoli",
+    "password": "IiR0h4OHQsEu"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 340,
+    "email": "thiurumuriungi@gmail.com",
+    "name": "Julius Muriungi",
+    "password": "X8^nMw1JNPR!"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 341,
+    "email": "muriithimaurice28@gmail.com",
+    "name": "Maurice Muriithi",
+    "password": "3KRM&)XjcQ$y"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 342,
+    "email": "jayjoash2019@gmail.com",
+    "name": "Joshua Muthoka",
+    "password": "9cjsAyo6d!ei"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 343,
+    "email": "wanjopa17@gmail.com",
+    "name": "PAUL WATHITHI",
+    "password": "ANRBIqaN4eAJ"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 344,
+    "email": "geomarubu@gmail.com",
+    "name": "George Marubu",
+    "password": "KtgUc9k#FiWs"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 345,
+    "email": "namasaka2010@gmail.com",
+    "name": "GILBERT NAMASAKA",
+    "password": "&(c%L$jqEpEa"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 346,
+    "email": "enyambura25@gmail.com",
+    "name": "Esther Obadiah",
+    "password": "j*kJeW5r9kUU"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 347,
+    "email": "zacks3554@gmail.com",
+    "name": "Abdirizak Abdirahman",
+    "password": "DYpuRDqTFCiV"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 348,
+    "email": "stellaogega23@gmail.com",
+    "name": "Stella Ogega",
+    "password": "1NsFYGJ8CV&s"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 349,
+    "email": "gicherujohn414@gmail.com",
+    "name": "John Thiong'o",
+    "password": "6)E)*cIsr7F2"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 350,
+    "email": "jkyegov2025@gmail.com",
+    "name": "Jeremiah Yego",
+    "password": "pnA7m80f7Kmj"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 351,
+    "email": "malukigrace@gmail.com",
+    "name": "Grace Maluki",
+    "password": "qkO5^fb3m7RZ"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 353,
+    "email": "petermurithi23@gmail.com",
+    "name": "Peter Murithi",
+    "password": ")HEzfBnEXTL2"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 354,
+    "email": "benedictmuma@gmail.com",
+    "name": "Benedict Muma",
+    "password": "aH$@zoOZXHQ7"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 356,
+    "email": "kiprutoronald@gmail.com",
+    "name": "Ronald Kiplangat",
+    "password": "F^wZsmV7aU7%"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 357,
+    "email": "patrickndungu05@gmail.com",
+    "name": "Patrick Ndung'u",
+    "password": "kwH&i^6uqod0"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 358,
+    "email": "charleswanjohi35@gmail.com",
+    "name": "Charles Wanjohi",
+    "password": "qqihT6S)jkW7"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 359,
+    "email": "charleswanjohi35@gmail.com",
+    "name": "Charles Wanjohi",
+    "password": "8#fyYNieH0&U"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 360,
+    "email": "sarahwn.sw@gmail.com",
+    "name": "Sarah Njuguna",
+    "password": "h#d2C*FfR66J"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 361,
+    "email": "nichokurgat@gmail.com",
+    "name": "Nicholas Kurgat",
+    "password": "GOvdBsTX5FTY"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 362,
+    "email": "miramboelphine@gmail.com",
+    "name": "Mirambo Elphine Moraa",
+    "password": "C#$#gIWQ4)%l"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 363,
+    "email": "hellenmwikali72@gmail.com",
+    "name": "Hellen Kituku",
+    "password": "q!ycisygiay&"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 364,
+    "email": "gatitujosephpho@gmail.com",
+    "name": "JOSEPH MUKUNDI",
+    "password": "$1zIGy5@vNcp"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 365,
+    "email": "robertjohn8707@gmail.com",
+    "name": "Robert John",
+    "password": "4U)ROmGW$%st"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 366,
+    "email": "timomutiso72@gmail.com",
+    "name": "Timothy Mutiso",
+    "password": "#P^O5G9N(e!y"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 367,
+    "email": "aruseitimothy@gmail.com",
+    "name": "Timothy Arusei",
+    "password": "FtEJIt9@W6GN"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 368,
+    "email": "christophermbevi@gmail.com",
+    "name": "Christopher Mbevi",
+    "password": "f^7glDsxAe2L"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 369,
+    "email": "bmvondie22@gmail.com",
+    "name": "boniface mvondi",
+    "password": "KBUoVLdnvH^e"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 370,
+    "email": "shikukusilvester2@gmail.com",
+    "name": "SILVESTER SHIKUKU",
+    "password": "WO(P2iGD5Ory"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 371,
+    "email": "peteronkoba@gmail.com",
+    "name": "Peter Anyona",
+    "password": "Va0PFNVU!Cd3"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 372,
+    "email": "vmuvai@gmail.com",
+    "name": "Virginia Muvai",
+    "password": "4fgPcULgg3y8"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 373,
+    "email": "lkgitonga9@gmail.com",
+    "name": "Lawrence Gitonga",
+    "password": "^%C7cdpS)Olk"
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 374,
+    "email": "edwardgithae@gmail.com",
+    "name": "Edward Githae",
+    "password": "wf0@333sSk!B"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 375,
+    "email": "robertnyandika17@gmail.com",
+    "name": "Robert Nyandika",
+    "password": "TP)%8(p2k!3M"
+  },
+  {
+    "success": true,
+    "data": {
+      "response": "User registered successfully",
+      "status": "success"
+    },
+    "status_code": 201,
+    "row": 376,
+    "email": "hasyarow3@gmail.com",
+    "name": "Hassan Yarrow",
+    "password": "k%NH$v3qOKT("
+  },
+  {
+    "success": false,
+    "error": "User exists with same email",
+    "status_code": 400,
+    "row": 377,
+    "email": "dougyator@gmail.com",
+    "name": "Douglas Yator",
+    "password": "g4VsXtzC25fx"
+  }
+]

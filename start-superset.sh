@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -n "$1" ]; then
-    docker compose -f NPHIS-superset/docker-compose-non-dev.yml $@
+    sudo docker compose -f NPHIIS-superset/docker-compose-non-dev.yml $@
 else
-    docker compose -f NPHIS-superset/docker-compose-non-dev.yml up -d --force-recreate
+    sudo docker compose -f NPHIIS-superset/docker-compose-non-dev.yml up -d --force-recreate
 fi

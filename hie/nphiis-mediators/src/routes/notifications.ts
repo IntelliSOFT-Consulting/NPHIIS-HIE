@@ -66,7 +66,7 @@ router.get('/', authenticateUser, async (req: AuthenticatedRequest, res: Respons
         console.log("🟢 User info:", userInfo);
         const notifications = await prisma.notification.findMany({
             where: {
-                practitionerId: userInfo?.user?.id
+                practitionerId: userInfo?.id
             }
         });
         return res.status(200).json({ 
