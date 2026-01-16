@@ -57,7 +57,8 @@ export const userApi = {
   getUsers: async (
     accessToken?: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
+    search?: string
   ): Promise<UsersApiResponse> => {
     if (!accessToken) {
       throw new Error('Access token required');
@@ -67,6 +68,9 @@ export const userApi = {
       const url = new URL(`${API_HOST}/provider/users`);
       url.searchParams.set('page', page.toString());
       url.searchParams.set('limit', limit.toString());
+      if (search && search.trim()) {
+        url.searchParams.set('search', search.trim());
+      }
       
       const response = await fetch(url.toString(), {
         method: 'GET',
