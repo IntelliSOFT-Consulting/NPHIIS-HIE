@@ -34,12 +34,12 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
       icon: MapPinIcon,
       current: activeTab === 'locations',
     },
-    {
-      name: 'Settings',
-      tab: 'settings' as const,
-      icon: CogIcon,
-      current: activeTab === 'settings',
-    },
+    // {
+    //   name: 'Settings',
+    //   tab: 'settings' as const,
+    //   icon: CogIcon,
+    //   current: activeTab === 'settings',
+    // },
   ];
 
   return (

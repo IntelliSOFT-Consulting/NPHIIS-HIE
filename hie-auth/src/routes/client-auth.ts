@@ -174,13 +174,14 @@ router.post('/reset-password', async (req: Request, res: Response) => {
             res.json({ error: "Failed to update new password. Try again", status:"error" });
             return;
         }
-        let resp = updateUserPassword(idNumber, password);
-        deleteResetCode(idNumber);
+        let resp = await updateUserPassword(idNumber, password);
         if(!resp){
             res.statusCode = 401;
             res.json({ error: "Failed to update new password. Try again", status:"error" });
             return;
         }
+        // Only delete reset code after successful password update
+        await deleteResetCode(idNumber);
         res.statusCode = 200;
         res.json({ response: "Password updated successfully", status:"success" });
         return;

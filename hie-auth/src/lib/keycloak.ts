@@ -164,8 +164,9 @@ export const updateUserProfile = async (
       updatedAttributes.phone = [phone];
     }
     
+    // Store resetCode in user attributes so it persists in Keycloak
     if (resetCode !== null) {
-      user.resetCode = resetCode;
+      updatedAttributes.resetCode = [resetCode];
     }
     
     // Start with the existing user data to avoid overriding fields
@@ -333,7 +334,7 @@ export const getCurrentUserInfo = async (accessToken: string) => {
   }
 }
 
-export const getKeycloakUsers = async (first: number = 0, max: number = 100) => {
+export const getKeycloakUsers = async (first: number = 0, max: number = 100, search?: string) => {
   try {
     const accessToken = (await getKeycloakAdminToken()).access_token;
     
@@ -341,6 +342,11 @@ export const getKeycloakUsers = async (first: number = 0, max: number = 100) => 
     const url = new URL(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users`);
     url.searchParams.set('first', first.toString());
     url.searchParams.set('max', max.toString());
+    
+    // Add search parameter if provided (Keycloak searches username, email, firstName, lastName)
+    if (search && search.trim()) {
+      url.searchParams.set('search', search.trim());
+    }
     
     const response = await fetch(url.toString(), {
       headers: {
