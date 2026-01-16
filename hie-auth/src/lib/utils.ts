@@ -9,6 +9,9 @@ const fetch = (url: RequestInfo, init?: RequestInit) =>
 export let apiHost = process.env.FHIR_BASE_URL
 console.log("HAPI FHIR: ", apiHost)
 
+export let notificationsHost = process.env.NOTIFICATIONS_BASE_URL || "http://nphiis-mediators:3000"
+console.log("Notifications Service: ", notificationsHost)
+
 
 // a fetch wrapper for HAPI FHIR server.
 export const FhirApi = async (params: any) => {
@@ -255,4 +258,45 @@ export const buildUserResponse = (userInfo: any, currentUser: any, locationInfo:
         }
     };
 };
+
+// a fetch wrapper for notifications service (nphiis-mediators).
+export const NotificationsApi = async (params: any) => {
+    let _defaultHeaders: any = { "Content-Type": 'application/json' }
+    
+    // Forward Authorization header if provided
+    if (params.headers && params.headers.Authorization) {
+        _defaultHeaders.Authorization = params.headers.Authorization;
+    }
+    
+    if (!params.method) {
+        params.method = 'GET';
+    }
+    
+    try {
+        let response = await fetch(String(`${notificationsHost}${params.url}`), {
+            headers: _defaultHeaders,
+            method: params.method ? String(params.method) : 'GET',
+            ...(params.method !== 'GET' && params.method !== 'DELETE') && { body: String(params.data) }
+        });
+        
+        let responseJSON = await response.json();
+        let res = {
+            status: response.ok ? "success" : "error",
+            statusText: response.statusText,
+            statusCode: response.status,
+            data: responseJSON
+        };
+        return res;
+    } catch (error) {
+        console.error(error);
+        let res = {
+            statusText: "NotificationsFetch: server error",
+            status: "error",
+            statusCode: 500,
+            data: error
+        };
+        console.error(error);
+        return res;
+    }
+}
 
