@@ -90,6 +90,16 @@ export const getUserInfoFromToken = async (token: string) => {
             }
         })
         const data = await response.json()
+        
+        // Extract the user object from the response
+        // The API returns { status: "success", user: { id: "...", ... } }
+        if (data && data.user) {
+            return data.user
+        }
+        
+        // Fallback: if response structure is different, return the data as-is
+        // This handles edge cases where the API might return the user object directly
+        console.warn('Unexpected response structure from /provider/me:', data)
         return data
     } catch (error) {
         console.error(error)

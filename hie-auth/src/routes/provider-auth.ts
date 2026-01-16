@@ -325,10 +325,11 @@ router.post('/reset-password', async (req: Request, res: Response) => {
             return res.status(401).json({ error: "Failed to update new password. Try again", status: "error" });
         }
         let resp = await updateUserPassword(idNumber, password);
-        deleteResetCode(idNumber);
         if (!resp) {
             return res.status(401).json({ error: "Failed to update new password. Try again", status: "error" });
         }
+        // Only delete reset code after successful password update
+        await deleteResetCode(idNumber);
         return res.status(200).json({ response: "Password updated successfully", status: "success" });
     } catch (error) {
         console.error(error);
@@ -379,9 +380,10 @@ router.get("/users", authenticateUser, async (req: Request, res: Response) => {
         const limit = parseInt(req.query.limit as string) || 10;
         const first = (page - 1) * limit;
         const max = limit;
+        const search = req.query.search as string | undefined;
 
-        // Fetch users with pagination
-        const keycloakResponse = await getKeycloakUsers(first, max);
+        // Fetch users with pagination and search
+        const keycloakResponse = await getKeycloakUsers(first, max, search);
         if (!keycloakResponse || !keycloakResponse.users) {
             return res.status(500).json({ error: "Failed to retrieve users from Keycloak", status: "error" });
         }
@@ -399,15 +401,17 @@ router.get("/users", authenticateUser, async (req: Request, res: Response) => {
         }
 
         // Get total count - if not available from Keycloak, we need to fetch it separately
+        // When searching, we need to get the total count of search results
         let total: number = keycloakResponse.total || 0;
         if (total === 0 || total === null || total === undefined) {
-            // Fetch total count separately (without pagination)
-            const totalResponse = await getKeycloakUsers(0, 1);
+            // Fetch total count separately (without pagination, but with same search if provided)
+            const totalResponse = await getKeycloakUsers(0, 1, search);
             if (totalResponse && totalResponse.total !== null && totalResponse.total !== undefined) {
                 total = totalResponse.total;
             } else {
                 // Fallback: fetch all users to count (only if we don't have total)
-                const allUsersResponse = await getKeycloakUsers(0, 10000);
+                // Use search parameter if provided
+                const allUsersResponse = await getKeycloakUsers(0, 10000, search);
                 total = allUsersResponse?.users?.length || response.length;
             }
         }

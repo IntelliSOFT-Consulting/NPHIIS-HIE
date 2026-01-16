@@ -36,6 +36,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [passwordResetUser, setPasswordResetUser] = useState<User | null>(null);
@@ -51,6 +52,16 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
   
   // const { notifications, showSuccess, showError, removeNotification } = useNotification();
 
+  // Debounce name search with 500ms delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setCurrentPage(1); // Reset to first page when search changes
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -60,7 +71,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
         setError('No access token found. Please log in again.');
         return;
       }
-      const response = await userApi.getUsers(accessToken, currentPage, pageSize);
+      const response = await userApi.getUsers(accessToken, currentPage, pageSize, debouncedSearchTerm || undefined);
       setUsers(response.users);
       setTotalUsers(response.total);
       setTotalPages(response.totalPages);
@@ -72,7 +83,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, debouncedSearchTerm]);
 
   useEffect(() => {
     loadUsers();
@@ -84,13 +95,8 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
     }
   }, [refreshTrigger, loadUsers]);
 
-  const filteredUsers = users.filter(user =>
-    (user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-    (user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-    (user.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.role?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
-  );
+  // Use users directly since API handles filtering
+  const filteredUsers = users;
 
   const handleConfirmDelete = async () => {
     if (!deletingUser) return;
