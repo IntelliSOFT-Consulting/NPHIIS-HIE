@@ -23,3 +23,4 @@
 !superset_config_local.example
 !keycloak_security_manager.py
 client_secret.json
+oauth2_security_manager.py
