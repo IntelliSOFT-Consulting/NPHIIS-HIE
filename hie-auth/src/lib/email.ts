@@ -37,6 +37,11 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
         
         let resetCodeResp = await updateUserProfile(idNumber, userData.attributes?.phone?.[0], userData.email, resetCode, null);
 
+        // Verify reset code was stored successfully before sending email
+        if (!resetCodeResp) {
+            console.error(`Failed to store reset code for user: ${idNumber}`);
+            throw new Error('Failed to store reset code');
+        }
         
         let userInfo = await getKeycloakUserById(userData.id);
         console.log(userInfo);
