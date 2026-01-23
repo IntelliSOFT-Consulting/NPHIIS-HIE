@@ -395,6 +395,39 @@ export const userApi = {
     }
   },
 
+  // Send welcome email with new credentials (admin only)
+  sendWelcomeEmail: async (username: string, accessToken: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API_HOST}/provider/welcome-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          'Cookie': 'frontend_lang=en_US'
+        },
+        body: JSON.stringify({ username })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        (error as any).response = { data: errorData, status: response.status };
+        throw error;
+      }
+
+      const data = await response.json();
+      
+      if (data.status !== 'success') {
+        const error = new Error(data.error || 'Failed to send welcome email');
+        (error as any).response = { data, status: response.status };
+        throw error;
+      }
+    } catch (error) {
+      console.error('Send welcome email error:', error);
+      throw error;
+    }
+  },
+
   // Enable/disable user - Note: This functionality is not directly available in provider-auth.ts
   // The API doesn't have a specific endpoint for toggling user status
   // This would need to be implemented in the backend or handled differently
