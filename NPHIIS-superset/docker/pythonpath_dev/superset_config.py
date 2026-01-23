@@ -30,6 +30,8 @@ from flask_caching.backends.filesystemcache import FileSystemCache
 from flask_appbuilder.security.manager import AUTH_OAUTH
 from functools import partial
 
+logger = logging.getLogger()
+
 # Import Keycloak OAuth2 Security Manager (uses Authlib - modern and maintained)
 try:
     from oauth2_security_manager import KeycloakOAuth2SecurityManager
@@ -38,8 +40,6 @@ except ImportError as e:
     logger.warning(f"Keycloak OAuth2 not available: {e}")
     OAUTH2_AVAILABLE = False
     KeycloakOAuth2SecurityManager = None
-
-logger = logging.getLogger()
 
 DATABASE_DIALECT = os.getenv("DATABASE_DIALECT")
 DATABASE_USER = os.getenv("DATABASE_USER")
@@ -116,7 +116,7 @@ if OAUTH2_AVAILABLE:
     AUTH_TYPE = AUTH_OAUTH
 
     # Keycloak configuration from environment variables
-    KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "https://dsrkeycloak.intellisoftkenya.com")
+    KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "https://api.nphiis.health.go.ke")
     KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "master")
     KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "chanjo-client-apis")
     KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "lbOutYrbQFvcWWe0yKPZibcu6ibsEEPr")
