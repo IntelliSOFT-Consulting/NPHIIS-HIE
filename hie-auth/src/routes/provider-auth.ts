@@ -365,6 +365,89 @@ router.get('/reset-password', async (req: Request, res: Response) => {
     }
 });
 
+router.post('/welcome-email', authenticateUser, async (req: Request, res: Response) => {
+    try {
+        const currentUser = (req as any).user;
+        const { username } = req.body;
+
+        // Validate username is provided
+        if (!username) {
+            return res.status(400).json({ status: "error", error: "Username is required" });
+        }
+
+        // Get current user info to check permissions
+        let currentUserInfo = await findKeycloakUser(currentUser.preferred_username);
+        if (!currentUserInfo?.id) {
+            return res.status(403).json({ error: "User not found", status: "error" });
+        }
+
+        const currentPractitioner = await (await FhirApi({ url: `/Practitioner/${currentUserInfo.id}` })).data;
+        const practitionerRole = currentPractitioner?.extension?.length > 0 
+            ? currentPractitioner.extension[1]?.valueString 
+            : "ADMINISTRATOR";
+
+        // Authorization check: Only administrators and superusers can send welcome emails
+        if (practitionerRole !== "ADMINISTRATOR" && practitionerRole !== "SUPERUSER") {
+            return res.status(403).json({ 
+                error: "Unauthorized. Only administrators can send welcome emails.", 
+                status: "error" 
+            });
+        }
+
+        // Get target user info
+        let targetUserInfo = await findKeycloakUser(username);
+        if (!targetUserInfo) {
+            return res.status(404).json({ error: "User not found", status: "error" });
+        }
+
+        // Validate user has email
+        if (!targetUserInfo.email) {
+            return res.status(400).json({ 
+                status: "error", 
+                error: "User does not have an email address configured" 
+            });
+        }
+
+        // Generate new password
+        const newPassword = generatePassword(12);
+
+        // Update user password
+        const passwordUpdateResult = await updateUserPassword(username, newPassword);
+        if (!passwordUpdateResult) {
+            return res.status(500).json({ 
+                status: "error", 
+                error: "Failed to update user password" 
+            });
+        }
+
+        // Send welcome email with new credentials
+        const emailSent = await sendRegistrationConfirmationEmail(
+            targetUserInfo.email, 
+            newPassword, 
+            username
+        );
+        
+        if (!emailSent) {
+            return res.status(500).json({ 
+                status: "error", 
+                error: "Password updated but failed to send email. Please try again." 
+            });
+        }
+
+        return res.status(200).json({ 
+            status: "success", 
+            message: "Welcome email sent successfully with new credentials" 
+        });
+
+    } catch (error) {
+        console.error('POST /welcome-email error:', error);
+        return res.status(500).json({ 
+            error: "Internal server error while sending welcome email", 
+            status: "error" 
+        });
+    }
+});
+
 router.get("/users", authenticateUser, async (req: Request, res: Response) => {
     try {
         const currentUser = (req as any).user;
