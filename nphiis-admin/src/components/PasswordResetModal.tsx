@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { User } from '@/types/user';
-import { userApi } from '@/lib/api';
+import { userApi, getAccessToken } from '@/lib/api';
 import { XMarkIcon, KeyIcon } from '@heroicons/react/24/outline';
 // import { useNotification } from './Notification';
 
@@ -35,6 +35,9 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
   const [sendCodeStatus, setSendCodeStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [sendCodeMessage, setSendCodeMessage] = useState('');
+  const [isSendingWelcomeEmail, setIsSendingWelcomeEmail] = useState(false);
+  const [welcomeEmailStatus, setWelcomeEmailStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [welcomeEmailMessage, setWelcomeEmailMessage] = useState('');
   // const { showSuccess, showError } = useNotification();
 
   const {
@@ -121,6 +124,41 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
     }
   };
 
+  const handleSendWelcomeEmail = async () => {
+    setIsSendingWelcomeEmail(true);
+    setWelcomeEmailStatus('idle');
+    setWelcomeEmailMessage('');
+
+    try {
+      if (!user.username) {
+        setWelcomeEmailMessage('Username is missing');
+        setWelcomeEmailStatus('error');
+        return;
+      }
+      
+      const accessToken = getAccessToken();
+      if (!accessToken) {
+        setWelcomeEmailMessage('Authentication required');
+        setWelcomeEmailStatus('error');
+        return;
+      }
+      
+      await userApi.sendWelcomeEmail(user.username, accessToken);
+      setWelcomeEmailStatus('success');
+      setWelcomeEmailMessage('Welcome email with new credentials sent successfully to ' + user.email);
+    } catch (error: any) {
+      setWelcomeEmailStatus('error');
+      setWelcomeEmailMessage(
+        error.response?.data?.error || 
+        error.message || 
+        'Failed to send welcome email. Please try again.'
+      );
+      console.error('Error sending welcome email:', error);
+    } finally {
+      setIsSendingWelcomeEmail(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -170,6 +208,33 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
             {sendCodeStatus === 'error' && (
               <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-800">
                 {sendCodeMessage}
+              </div>
+            )}
+          </div>
+
+          {/* Send Welcome Email Section */}
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-sm text-gray-700 mb-2">
+              Or, send a welcome email with new credentials:
+            </p>
+            <button
+              type="button"
+              onClick={handleSendWelcomeEmail}
+              disabled={isSendingWelcomeEmail}
+              className="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSendingWelcomeEmail ? 'Sending...' : 'Send Welcome Email with New Password'}
+            </button>
+            
+            {/* Welcome Email Status Messages */}
+            {welcomeEmailStatus === 'success' && (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                {welcomeEmailMessage}
+              </div>
+            )}
+            {welcomeEmailStatus === 'error' && (
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+                {welcomeEmailMessage}
               </div>
             )}
           </div>
