@@ -117,22 +117,60 @@ export const updateUserPassword = async (username: string, password: string) => 
 export const deleteResetCode = async (idNumber: string) => {
   try {
     let user = (await findKeycloakUser(idNumber));
-    const accessToken = (await getKeycloakAdminToken()).access_token;
-    delete user.attributes.resetCode;
-    const response = await (await fetch(
-      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`,
-      {headers: {Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', }, method: "PUT",
-      body: JSON.stringify({attributes: {...user.attributes}})}
-    ));
-    // let result = await response.json()
-    // console.log(response);
-    if(response.ok){
-      return true;
+    if (!user) {
+      console.error(`User not found: ${idNumber}`);
+      return null;
     }
-    // console.log(await response.json());
-    return null;
+    
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) {
+      console.error('Failed to get admin token');
+      return null;
+    }
+    
+    // Remove resetCode from attributes
+    let updatedAttributes = { ...user.attributes };
+    delete updatedAttributes.resetCode;
+    
+    // Build complete request body with all user fields to prevent clearing user information
+    const requestBody: any = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      enabled: user.enabled,
+      attributes: updatedAttributes
+    };
+    
+    // Preserve email if it exists
+    if (user.email) {
+      requestBody.email = user.email;
+    }
+    
+    const response = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        method: "PUT",
+        body: JSON.stringify(requestBody)
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Failed to delete reset code for ${idNumber}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      return null;
+    }
+    
+    return true;
   } catch (error) {
-    console.error(error);
+    console.error(`Error deleting reset code for ${idNumber}:`, error);
     return null;
   }
 }
@@ -307,7 +345,6 @@ export const getKeycloakUserToken = async (idNumber: string, password: string) =
 export const getCurrentUserInfo = async (accessToken: string) => {
   try {
     const userInfoEndpoint = `${KC_BASE_URL}/realms/${KC_REALM}/protocol/openid-connect/userinfo`;
-    // const accessToken = (await getKeycloakAdminToken()).access_token;
     // Make a request to Keycloak's userinfo endpoint with the access token
     const response = await fetch(userInfoEndpoint, {
       headers: {
@@ -315,21 +352,38 @@ export const getCurrentUserInfo = async (accessToken: string) => {
         "Content-Type":"application/json"
       },
     });
-    // console.log(response);
-    let result = await response.json();
-    // console.log(result);
-    // Handle response
-    if (response.ok) {
-      // const userInfo = await response.json();
-      // console.log(result);
+    
+    // Check if response is OK before parsing JSON
+    if (!response.ok) {
+      // Try to get error details if available
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          const errorData = await response.json();
+          console.error(`Keycloak userinfo error (${response.status}):`, errorData);
+        } catch (e) {
+          // Response might be empty or not valid JSON
+          const text = await response.text().catch(() => '');
+          console.error(`Keycloak userinfo error (${response.status}): ${text || 'Empty response'}`);
+        }
+      } else {
+        const text = await response.text().catch(() => '');
+        console.error(`Keycloak userinfo error (${response.status}): ${text || 'Empty response'}`);
+      }
+      return null;
+    }
+    
+    // Only parse JSON if response is OK
+    try {
+      const result = await response.json();
       return result;
-    } else {
-      // console.log(result);
+    } catch (error) {
+      console.error('Failed to parse userinfo response as JSON:', error);
       return null;
     }
   }
   catch (error) {
-    console.error(error)
+    console.error('Error fetching userinfo from Keycloak:', error)
     return null 
   }
 }
@@ -507,12 +561,35 @@ export const getKeycloakUserById = async (id: string) => {
         },
       }
     );
-    const user = await response.json();
+    
+    // Check if response is OK before parsing JSON
     if (!response.ok) {
-      console.error(`Keycloak API error: ${response.status} ${response.statusText}`);
+      // Try to get error details if available
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          const errorData = await response.json();
+          console.error(`Keycloak API error (${response.status}):`, errorData);
+        } catch (e) {
+          // Response might be empty or not valid JSON
+          const text = await response.text().catch(() => '');
+          console.error(`Keycloak API error (${response.status}): ${text || 'Empty response'}`);
+        }
+      } else {
+        const text = await response.text().catch(() => '');
+        console.error(`Keycloak API error (${response.status}): ${text || 'Empty response'}`);
+      }
       return null;
     }
-    return user;
+    
+    // Only parse JSON if response is OK
+    try {
+      const user = await response.json();
+      return user;
+    } catch (error) {
+      console.error(`Failed to parse Keycloak user response as JSON for id ${id}:`, error);
+      return null;
+    }
   } catch (error) {
     console.error(`Error fetching Keycloak user by id ${id}:`, error);
     return null;

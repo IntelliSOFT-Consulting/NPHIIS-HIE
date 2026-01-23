@@ -229,6 +229,14 @@ export const userApi = {
       const apiPayload: any = {};
       
       // Map the form data fields to API format
+      if (userData.firstName) {
+        apiPayload.firstName = userData.firstName;
+      }
+      
+      if (userData.lastName) {
+        apiPayload.lastName = userData.lastName;
+      }
+      
       if (userData.email) {
         apiPayload.email = userData.email;
       }

@@ -25,9 +25,25 @@ export const FhirApi = async (params: any) => {
             method: params.method ? String(params.method) : 'GET',
             ...(params.method !== 'GET' && params.method !== 'DELETE') && { body: String(params.data) }
         });
-        let responseJSON = await response.json();
+        
+        // Try to parse JSON response (FHIR typically returns JSON even for errors)
+        // Handle empty responses gracefully to prevent "Unexpected end of JSON input" errors
+        let responseJSON: any;
+        try {
+            responseJSON = await response.json();
+        } catch (parseError) {
+            // If JSON parsing fails (e.g., empty response body), try to get text
+            try {
+                const text = await response.text();
+                responseJSON = text ? { message: text } : {};
+            } catch (textError) {
+                // If all else fails, return empty object to maintain type compatibility
+                responseJSON = {};
+            }
+        }
+        
         let res = {
-            status: "success",
+            status: response.ok ? "success" : "error",
             statusText: response.statusText,
             data: responseJSON
         };
