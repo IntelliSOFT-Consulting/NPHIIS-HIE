@@ -29,6 +29,19 @@ function toThreeDigits(num: number): string {
   return padStart(num.toString(), 3, '0');
 }
 
+function getValidYear(dateString: string | undefined, fallbackDate: Date = new Date()): number {
+  if (!dateString) {
+    return fallbackDate.getFullYear();
+  }
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return fallbackDate.getFullYear();
+  }
+
+  return date.getFullYear();
+}
+
 //process FHIR beneficiary
 router.put('/notifications/Encounter/:id', async (req, res) => {
   console.log("🟢 Encounter subscription triggered for ID:", req.params.id);
@@ -37,7 +50,7 @@ router.put('/notifications/Encounter/:id', async (req, res) => {
     console.log("🟢 Fetching encounter data...");
     let data = await (await FhirApi({ url: `/Encounter/${id}` })).data;
 
-    if (data.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID")) {
+    if (data.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID" && id.use === "official")) {
       return res.status(200).json(OperationOutcome("Encounter already has an official id with the system http://hie.org/identifiers/EPID"));
     }
 
@@ -66,7 +79,7 @@ router.post('/assign-ids', async (req, res) => {
     let patientId = data?.subject?.reference?.split("/")[1];
     let patient = await (await FhirApi({ url: `/Patient/${patientId}` })).data;
 
-    let onsetDate = data?.identifier?.find((id: any) =>
+    let onsetDate = patient?.identifier?.find((id: any) =>
       id.system === "system-creation" &&
       id.type?.coding?.some((coding: any) =>
         coding.code === "system_creation"
@@ -78,6 +91,19 @@ router.post('/assign-ids', async (req, res) => {
     if (onsetDate && typeof onsetDate === "string") {
       // Extract only the date part before any space
       normalizedOnsetDate = onsetDate.split(" ")[0];
+    }
+
+    // Fallback to Patient birthDate if system-creation is missing
+    if (!normalizedOnsetDate && patient?.birthDate) {
+      normalizedOnsetDate = patient.birthDate;
+      console.log("Using Patient birthDate as fallback for EPID year");
+    }
+
+    // Validate and extract year (falls back to current year if invalid)
+    const yearForId = getValidYear(normalizedOnsetDate);
+
+    if (!onsetDate) {
+      console.warn(`Patient ${patientId} missing system-creation identifier. Using fallback for EPID year: ${yearForId}`);
     }
 
     let epidIdentifier = patient?.identifier?.find((id: any) =>
@@ -125,7 +151,7 @@ router.post('/assign-ids', async (req, res) => {
 
     caseId = await generateCaseId(countryName, countyName, subCountyName, caseCondition);
 
-    let formattedId = `${countryName.substring(0, 3)}-${countyName.substring(0, 3)}-${subCountyName.substring(0, 3)}-${new Date(normalizedOnsetDate).getFullYear()}-${caseCondition}-${toThreeDigits(caseId)}`;
+    let formattedId = `${countryName.substring(0, 3)}-${countyName.substring(0, 3)}-${subCountyName.substring(0, 3)}-${yearForId}-${caseCondition}-${toThreeDigits(caseId)}`;
 
     let newId = FhirIdentifier(encounterCodeSystem, "EPID", "Epidemiological ID", formattedId, true);
 

@@ -137,6 +137,7 @@ services:
         depends_on:
             - hapi-fhir-jpa
             - nphiis-mediators-postgres
+            - openhim-core
         container_name: nphiis-mediators
         build:
             context: nphiis-mediators
