@@ -35,6 +35,8 @@ services:
         image: hapiproject/hapi:v6.8.0
         container_name: hapi-fhir-jpa
         restart: unless-stopped
+        ports:
+            - "8787:8080"
         networks:
             - hapi-fhir
             - cloudbuild

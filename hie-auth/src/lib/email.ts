@@ -84,7 +84,7 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
         .header {
-            background: linear-gradient(135deg, #006600 0%, #28a745 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
             padding: 30px 20px;
             text-align: center;
             color: white;
@@ -110,8 +110,8 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
             line-height: 1.6;
         }
         .reset-code-box {
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-            border: 2px solid #28a745;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #3b82f6;
             border-radius: 12px;
             padding: 30px;
             text-align: center;
@@ -119,7 +119,7 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
         }
         .reset-code-label {
             margin: 0 0 10px;
-            color: #006600;
+            color: #2563eb;
             font-size: 14px;
             font-weight: 600;
             letter-spacing: 1px;
@@ -128,7 +128,7 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
             margin: 0;
             font-size: 48px;
             font-weight: bold;
-            color: #006600;
+            color: #2563eb;
             letter-spacing: 8px;
             font-family: 'Courier New', monospace;
         }
@@ -180,7 +180,7 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
             border-top: 1px solid #e0e0e0;
         }
         .footer-title {
-            color: #006600;
+            color: #2563eb;
             font-weight: 700;
             font-size: 16px;
             margin: 0 0 10px;
@@ -308,7 +308,7 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
         .header {
-            background: linear-gradient(135deg, #006600 0%, #28a745 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
             padding: 30px 20px;
             text-align: center;
             color: white;
@@ -332,7 +332,7 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
             margin-bottom: 30px;
         }
         .welcome-message h2 {
-            color: #006600;
+            color: #2563eb;
             font-size: 24px;
             margin: 0 0 10px;
         }
@@ -353,7 +353,7 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
         }
         .credentials-box {
             background: #f8f9fa;
-            border-left: 4px solid #006600;
+            border-left: 4px solid #2563eb;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
@@ -393,13 +393,13 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
         .download-btn {
             display: inline-block;
             padding: 16px 40px;
-            background: linear-gradient(135deg, #28a745 0%, #006600 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white !important;
             text-decoration: none;
             border-radius: 10px;
             font-weight: 600;
             font-size: 18px;
-            box-shadow: 0 4px 12px rgba(0, 102, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
             transition: transform 0.2s;
         }
         .download-btn:hover {
@@ -411,13 +411,13 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
             font-size: 14px;
         }
         .steps-section {
-            background: #e8f5e9;
+            background: #eff6ff;
             border-radius: 8px;
             padding: 25px;
             margin: 30px 0;
         }
         .steps-section h3 {
-            color: #006600;
+            color: #2563eb;
             margin: 0 0 15px;
             font-size: 18px;
             font-weight: 600;
@@ -477,7 +477,7 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
             border-top: 1px solid #e0e0e0;
         }
         .footer-title {
-            color: #006600;
+            color: #2563eb;
             font-weight: 700;
             font-size: 16px;
             margin: 0 0 10px;

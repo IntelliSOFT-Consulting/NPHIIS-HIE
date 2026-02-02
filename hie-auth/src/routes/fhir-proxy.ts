@@ -7,7 +7,7 @@ router.use(express.json());
 const FHIR_BASE_URL = process.env.FHIR_BASE_URL;
 
 // Proxy all FHIR requests to HAPI FHIR server
-router.all("/*", authenticateUser, async (req: Request, res: Response) => {
+router.all("*", authenticateUser, async (req: Request, res: Response) => {
     try {
         console.log(`[FHIR Proxy] Authenticated request from user: ${(req as any).user?.preferred_username || 'unknown'}`);
         

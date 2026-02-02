@@ -24,8 +24,8 @@ const heirachy = [
 
 
 
-// Optimized password generation with cached character set
-const PASSWORD_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=';
+// Optimized password generation with cached character set (alphanumeric only)
+const PASSWORD_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const generatePassword = (length: number): string => {
     const result = new Array(length);
     for (let i = 0; i < length; i++) {
