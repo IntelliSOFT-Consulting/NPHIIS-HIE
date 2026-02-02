@@ -28,7 +28,7 @@ hapi:
     openapi_enabled: true
     ### This is the FHIR version. Choose between, DSTU2, DSTU3, R4 or R5
     fhir_version: R4
-    server_address: http://dsrfhir.intellisoftkenya.com/hapi/fhir
+    server_address: https://auth.nphiis.health.go.ke/fhir
     bulk_export_enabled: true
     default_pretty_print: true
     cql_enabled: true
