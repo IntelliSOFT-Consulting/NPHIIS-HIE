@@ -90,7 +90,18 @@ export const userApi = {
       const data: UsersApiResponse = await response.json();
       
       if (data.status === 'success') {
-        return data;
+        // Normalize users array to ensure each user has 'active' field
+        // Backend returns 'enabled' from Keycloak, map it to 'active' for UI consistency
+        const normalizedUsers = data.users.map(user => ({
+          ...user,
+          active: user.active ?? user.enabled ?? true, // Map enabled to active if active is not present
+          enabled: user.enabled ?? user.active ?? true // Ensure enabled is also set
+        }));
+        
+        return {
+          ...data,
+          users: normalizedUsers
+        };
       } else {
         const error = new Error(data.error || 'Failed to fetch users');
         (error as any).response = { data, status: response.status };
@@ -128,6 +139,8 @@ export const userApi = {
       
       if (data.status === 'success') {
         // Map the API response to our User interface with full location details
+        // Backend returns 'status' from Practitioner.active, map it to 'active'
+        const isActive = data.user.status ?? data.user.enabled ?? true;
         return {
           id: data.user.id,
           username: data.user.idNumber,
@@ -137,7 +150,8 @@ export const userApi = {
           phone: data.user.phone,
           locationId: data.user.locationInfo?.facility || '',
           role: data.user.role || data.user.practitionerRole,
-          enabled: true, // Default to enabled since API doesn't provide this
+          enabled: data.user.enabled ?? isActive, // Use enabled if provided, otherwise derive from status
+          active: isActive, // Map status/enabled to active for UI display
           createdTimestamp: Date.now(), // Default timestamp
           fhirPractitionerId: data.user.fhirPractitionerId,
           practitionerRole: data.user.practitionerRole,
@@ -201,6 +215,7 @@ export const userApi = {
       const data = await response.json();
       
       // Return a User object that matches our interface
+      // Newly created users are active by default (can log in successfully)
       return {
         id: data.id || Date.now().toString(),
         username: userData.idNumber, // Map idNumber to username for display
@@ -210,6 +225,7 @@ export const userApi = {
         phone: userData.phone,
         role: userData.role,
         enabled: true,
+        active: true, // Newly created users are active
         createdTimestamp: Date.now(),
       };
     } catch (error) {
@@ -277,6 +293,8 @@ export const userApi = {
       
       if (data.status === 'success') {
         // Map the API response to our User interface
+        // Backend may return 'status' from Practitioner.active, map it to 'active'
+        const isActive = data.user.status ?? data.user.enabled ?? true;
         return {
           id: data.user.id,
           username: data.user.idNumber,
@@ -286,7 +304,8 @@ export const userApi = {
           phone: data.user.phone,
           locationId: data.user.locationInfo?.facility || '',
           role: data.user.role || data.user.practitionerRole,
-          enabled: true, // Default to enabled since API doesn't provide this
+          enabled: data.user.enabled ?? isActive, // Use enabled if provided, otherwise derive from status
+          active: isActive, // Map status/enabled to active for UI display
           createdTimestamp: Date.now() // Default timestamp
         };
       } else {

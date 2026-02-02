@@ -2,7 +2,7 @@
 FROM alpine:latest
 
 # Install Bash
-RUN apk --no-cache add bash curl
+RUN apk --no-cache add bash curl jq
 
 COPY . .
 

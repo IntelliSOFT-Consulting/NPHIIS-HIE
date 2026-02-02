@@ -16,15 +16,29 @@ const AUTH_SERVICE_URL = process.env['AUTH_SERVICE_URL'] || "http://hie-auth:300
 const reminderMessage = `Follow up for AFP case {} is due. Please complete and submit the follow-up investigation form.`;
 const messageTitle = "60-day AFP Follow Up Reminder";
 const processAfpObservation = (observation) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
-    const date = (_c = (_b = (_a = observation === null || observation === void 0 ? void 0 : observation.code) === null || _a === void 0 ? void 0 : _a.coding) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.text;
-    const parsedDate = new Date(date);
-    const practitionerId = (_f = (_e = (_d = observation === null || observation === void 0 ? void 0 : observation.performer) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.reference) === null || _f === void 0 ? void 0 : _f.split('/')[1];
-    const encounterId = (_h = (_g = observation === null || observation === void 0 ? void 0 : observation.encounter) === null || _g === void 0 ? void 0 : _g.reference) === null || _h === void 0 ? void 0 : _h.split('/')[1];
+    var _a, _b, _c, _d, _e, _f, _g;
+    // Derive investigation date from the Observation with multiple fallbacks
+    const candidateDates = [
+        observation === null || observation === void 0 ? void 0 : observation.valueDateTime,
+        observation === null || observation === void 0 ? void 0 : observation.valueDate,
+        observation === null || observation === void 0 ? void 0 : observation.valueString,
+    ];
+    const dateStr = candidateDates.find(Boolean);
+    const investigation = dateStr ? new Date(dateStr) : new Date(0);
+    if (isNaN(investigation.getTime())) {
+        return { status: "error", error: "Invalid or missing investigation date in Observation" };
+    }
+    // 60-day follow up due date
+    const due = new Date(investigation);
+    due.setDate(due.getDate() + 60);
+    const practitionerId = (_c = (_b = (_a = observation === null || observation === void 0 ? void 0 : observation.performer) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.reference) === null || _c === void 0 ? void 0 : _c.split('/')[1];
+    const encounterId = (_e = (_d = observation === null || observation === void 0 ? void 0 : observation.encounter) === null || _d === void 0 ? void 0 : _d.reference) === null || _e === void 0 ? void 0 : _e.split('/')[1];
     const encounter = (yield (0, utils_1.FhirApi)({ url: `/Encounter/${encounterId}` })).data;
-    const caseId = (_k = (_j = encounter === null || encounter === void 0 ? void 0 : encounter.identifier) === null || _j === void 0 ? void 0 : _j.find((id) => id.system === "http://hie.org/identifiers/EPID")) === null || _k === void 0 ? void 0 : _k.value;
+    const caseId = (_g = (_f = encounter === null || encounter === void 0 ? void 0 : encounter.identifier) === null || _f === void 0 ? void 0 : _f.find((id) => id.system === "http://hie.org/identifiers/EPID")) === null || _g === void 0 ? void 0 : _g.value;
+    console.log("caseId:", caseId);
     let notification = null;
     // check if notification already exists
+    reminderMessage.replace('{}', caseId);
     notification = yield prisma_1.prisma.notification.findFirst({
         where: {
             practitionerId,
@@ -37,7 +51,12 @@ const processAfpObservation = (observation) => __awaiter(void 0, void 0, void 0,
                 id: notification.id,
             },
             data: {
-                dueDate: parsedDate.toISOString(),
+                body: reminderMessage,
+                dueDate: due.toISOString(),
+                title: messageTitle,
+                practitionerId,
+                encounterId,
+                investigationDate: investigation.toISOString(),
             }
         });
     }
@@ -45,11 +64,11 @@ const processAfpObservation = (observation) => __awaiter(void 0, void 0, void 0,
         notification = yield prisma_1.prisma.notification.create({
             data: {
                 title: messageTitle,
-                body: reminderMessage.replace('{}', caseId),
+                body: reminderMessage,
                 practitionerId,
                 encounterId,
-                investigationDate: new Date(date).toISOString(),
-                dueDate: parsedDate.toISOString(),
+                investigationDate: investigation.toISOString(),
+                dueDate: due.toISOString(),
             }
         });
     }
@@ -59,9 +78,9 @@ const processAfpObservation = (observation) => __awaiter(void 0, void 0, void 0,
         }
     });
     if (!config) {
-        return { status: "error", error: "User is missing notication token configuration" };
+        return { status: "error", error: "User is missing notification token configuration" };
     }
-    return { status: "success", notificationId: notification.id, message: "Notification created successfully" };
+    return { status: "success", notificationId: notification.id, message: "Notification created and scheduled successfully" };
 });
 exports.processAfpObservation = processAfpObservation;
 const getUserInfoFromToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
@@ -72,6 +91,14 @@ const getUserInfoFromToken = (token) => __awaiter(void 0, void 0, void 0, functi
             }
         });
         const data = yield response.json();
+        // Extract the user object from the response
+        // The API returns { status: "success", user: { id: "...", ... } }
+        if (data && data.user) {
+            return data.user;
+        }
+        // Fallback: if response structure is different, return the data as-is
+        // This handles edge cases where the API might return the user object directly
+        console.warn('Unexpected response structure from /provider/me:', data);
         return data;
     }
     catch (error) {
@@ -189,3 +216,10 @@ const sendDueNotifications = () => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.sendDueNotifications = sendDueNotifications;
+// process obs retrospectively
+// export const processObsRetrospectively = async () => {
+//     let obs = (await FhirApi({ url: `/Observation?code=502488184403&_count=1000` })).data;
+//     for (const observation of obs?.entry ?? []) {
+//         await processAfpObservation(obs);
+//     }
+// }

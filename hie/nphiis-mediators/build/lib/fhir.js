@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFHIRSubscription = exports.createEpidFHIRSubscription = exports.FhirIdentifier = exports.OperationOutcome = void 0;
+exports.processFollowUpObservations = exports.FhirIdentifier = exports.OperationOutcome = void 0;
 const utils_1 = require("./utils");
 let reasonCode = "mpox-register";
 let OperationOutcome = (error) => {
@@ -20,65 +20,34 @@ let OperationOutcome = (error) => {
     };
 };
 exports.OperationOutcome = OperationOutcome;
-const FhirIdentifier = (system, code, display, value) => {
-    return { type: { coding: [{ system, code, display }] }, value };
+const FhirIdentifier = (system, code, display, value, official = false) => {
+    return { type: { coding: [{ system, code, display }] }, value, use: official ? "official" : "usual" };
 };
 exports.FhirIdentifier = FhirIdentifier;
-/**
- * General function to create a FHIR Subscription
- * @param subscriptionId - The ID for the subscription
- * @param callbackUrl - The endpoint URL to receive notifications
- * @param criteria - The FHIR search criteria for the subscription
- */
-const createSubscription = (subscriptionId, callbackUrl, criteria) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        let response = yield (yield (0, utils_1.FhirApi)({
-            url: `/Subscription/${subscriptionId}`,
-            method: "PUT",
-            data: JSON.stringify({
-                resourceType: 'Subscription',
-                id: subscriptionId,
-                status: "active",
-                criteria: criteria,
-                channel: {
-                    type: 'rest-hook',
-                    endpoint: callbackUrl,
-                    payload: 'application/json'
-                }
-            })
-        })).data;
-        if (response.resourceType != "OperationOutcome") {
-            console.log(`FHIR Subscription ID: ${subscriptionId}`);
-            return;
+const processFollowUpObservations = (encounterId) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    let response = yield (yield (0, utils_1.FhirApi)({
+        url: `/Observation?code=502488184403&encounter=${encounterId}`,
+        method: "GET"
+    })).data;
+    // send observation to the follow up service
+    if ((response === null || response === void 0 ? void 0 : response.total) > 0) {
+        const followUpResponse = yield (0, utils_1.sendMediatorRequest)("/process-observations/afp-follow-up", (_b = (_a = response === null || response === void 0 ? void 0 : response.entry) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.resource);
+        if ((followUpResponse === null || followUpResponse === void 0 ? void 0 : followUpResponse.status) === "success") {
+            return {
+                status: "success",
+                message: "Follow up observations created successfully"
+            };
         }
-        console.log(`Failed to create FHIR Subscription: \n${JSON.stringify(response)}`);
+        return {
+            status: "error",
+            message: "Failed to create follow up observations"
+        };
     }
-    catch (error) {
-        console.log(error);
-    }
+    console.log("No follow up observations found");
+    return {
+        status: "success",
+        message: "No follow up observations found"
+    };
 });
-let createEpidFHIRSubscription = () => __awaiter(void 0, void 0, void 0, function* () {
-    let FHIR_EPID_SUBSCRIPTION_ID = process.env['FHIR_EPID_SUBSCRIPTION_ID'];
-    let FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL = process.env['FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL'];
-    if (!FHIR_EPID_SUBSCRIPTION_ID || !FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL) {
-        console.log('Missing environment variables for Epid subscription');
-        return;
-    }
-    yield createSubscription(FHIR_EPID_SUBSCRIPTION_ID, FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL, `Encounter?`);
-});
-exports.createEpidFHIRSubscription = createEpidFHIRSubscription;
-const createFollowUpFHIRSubscription = () => __awaiter(void 0, void 0, void 0, function* () {
-    let FHIR_AFP_FOLLOW_UP_SUBSCRIPTION_ID = process.env['FHIR_AFP_FOLLOW_UP_SUBSCRIPTION_ID'];
-    let FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL = process.env['FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL'];
-    if (!FHIR_AFP_FOLLOW_UP_SUBSCRIPTION_ID || !FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL) {
-        console.log('Missing environment variables for Follow-up subscription');
-        return;
-    }
-    yield createSubscription(FHIR_AFP_FOLLOW_UP_SUBSCRIPTION_ID, FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL, `Observation?code=502488184403`);
-});
-let createFHIRSubscription = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, exports.createEpidFHIRSubscription)();
-    yield createFollowUpFHIRSubscription();
-});
-exports.createFHIRSubscription = createFHIRSubscription;
-// createFHIRSubscription();
+exports.processFollowUpObservations = processFollowUpObservations;

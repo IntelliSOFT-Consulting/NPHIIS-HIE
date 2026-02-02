@@ -35,7 +35,7 @@ exports.router.put('/notifications/Observation/:id', (req, res) => __awaiter(voi
         console.log("🟢 Fetching observation data...");
         let data = yield (yield (0, utils_1.FhirApi)({ url: `/Observation/${id}` })).data;
         console.log("🟢 About to call sendMediatorRequest...");
-        let response = yield (0, utils_1.sendMediatorRequest)("/process-observations/create-notification", data);
+        let response = yield (0, utils_1.sendMediatorRequest)("/process-observations/afp-follow-up", data);
         console.log("🟢 sendMediatorRequest returned:", response);
         res.statusCode = 200;
         return res.json((0, utils_1.OperationOutcome)('AFP Follow Up processed successfully', 'information'));
@@ -46,7 +46,7 @@ exports.router.put('/notifications/Observation/:id', (req, res) => __awaiter(voi
     }
 }));
 //process FHIR beneficiary
-exports.router.post('/create-notification', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.router.post('/afp-follow-up', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         let data = req.body;

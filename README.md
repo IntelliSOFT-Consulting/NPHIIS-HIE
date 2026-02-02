@@ -1,6 +1,6 @@
-## ChanjoKE
+## NPHIIS HIE
 
-This repository contains the code and artefacts for the ChanjoKE HIE
+This repository contains the code and artefacts for the NPHIIS HIE
 
 
 #### Components
@@ -24,18 +24,13 @@ Pre-requisites
 
 1. Clone the repository
 
-```git clone https://github.com/IntelliSOFT-Consulting/chanjoke-hie```
+```git clone https://github.com/IntelliSOFT-Consulting/NPHIIS-HIE```
 
 2. cd into the repository folder
 
-```cd chanjoke-hie```
+```cd NPHIIS-HIE```
 
 3. Use docker compose to start containers
 
 ```docker compose up -d```
 
-
-
-#### FHIR Gateway Configuration
-
-1. In the `fhir-gateway/docker/.env`

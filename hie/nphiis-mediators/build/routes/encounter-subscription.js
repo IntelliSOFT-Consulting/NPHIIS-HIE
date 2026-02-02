@@ -34,13 +34,27 @@ function padStart(str, targetLength, padChar = '0') {
 function toThreeDigits(num) {
     return padStart(num.toString(), 3, '0');
 }
+function getValidYear(dateString, fallbackDate = new Date()) {
+    if (!dateString) {
+        return fallbackDate.getFullYear();
+    }
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        return fallbackDate.getFullYear();
+    }
+    return date.getFullYear();
+}
 //process FHIR beneficiary
 exports.router.put('/notifications/Encounter/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     console.log("🟢 Encounter subscription triggered for ID:", req.params.id);
     try {
         let { id } = req.params;
         console.log("🟢 Fetching encounter data...");
         let data = yield (yield (0, utils_1.FhirApi)({ url: `/Encounter/${id}` })).data;
+        if ((_a = data.identifier) === null || _a === void 0 ? void 0 : _a.some((id) => id.system === "http://hie.org/identifiers/EPID" && id.use === "official")) {
+            return res.status(200).json((0, fhir_2.OperationOutcome)("Encounter already has an official id with the system http://hie.org/identifiers/EPID"));
+        }
         let response = yield (0, utils_1.sendMediatorRequest)("/process-encounters/assign-ids", data);
         console.log("🟢 sendMediatorRequest returned:", response);
         res.statusCode = response.code || 200;
@@ -56,18 +70,19 @@ exports.router.put('/notifications/Encounter/:id', (req, res) => __awaiter(void 
 }));
 //process FHIR beneficiary
 exports.router.post('/assign-ids', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
     try {
         let data = req.body;
         let caseId;
         let encounterCodeSystem = "http://hie.org/identifiers/EPID";
         let reasonCode = (_d = (_c = (_b = (_a = data === null || data === void 0 ? void 0 : data.reasonCode) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.coding) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.code;
-        let onsetDate = (_f = (_e = data.identifier) === null || _e === void 0 ? void 0 : _e.find((id) => {
+        let patientId = (_f = (_e = data === null || data === void 0 ? void 0 : data.subject) === null || _e === void 0 ? void 0 : _e.reference) === null || _f === void 0 ? void 0 : _f.split("/")[1];
+        let patient = yield (yield (0, utils_1.FhirApi)({ url: `/Patient/${patientId}` })).data;
+        let onsetDate = (_h = (_g = patient === null || patient === void 0 ? void 0 : patient.identifier) === null || _g === void 0 ? void 0 : _g.find((id) => {
             var _a, _b;
             return id.system === "system-creation" &&
-                ((_b = (_a = id.type) === null || _a === void 0 ? void 0 : _a.coding) === null || _b === void 0 ? void 0 : _b.some((coding) => coding.system === "system-creation" &&
-                    coding.code === "system_creation"));
-        })) === null || _f === void 0 ? void 0 : _f.value;
+                ((_b = (_a = id.type) === null || _a === void 0 ? void 0 : _a.coding) === null || _b === void 0 ? void 0 : _b.some((coding) => coding.code === "system_creation"));
+        })) === null || _h === void 0 ? void 0 : _h.value;
         // Convert onsetDate to a normal date format (YYYY-MM-DD)
         // onsetDate is expected to be in the format "YYYY-MM-DD HH:mm:ss"
         let normalizedOnsetDate = onsetDate;
@@ -75,36 +90,51 @@ exports.router.post('/assign-ids', (req, res) => __awaiter(void 0, void 0, void 
             // Extract only the date part before any space
             normalizedOnsetDate = onsetDate.split(" ")[0];
         }
-        let patientId = (_h = (_g = data === null || data === void 0 ? void 0 : data.subject) === null || _g === void 0 ? void 0 : _g.reference) === null || _h === void 0 ? void 0 : _h.split("/")[1];
-        let patient = yield (yield (0, utils_1.FhirApi)({ url: `/Patient/${patientId}` })).data;
-        let epidIdentifier = (_j = patient === null || patient === void 0 ? void 0 : patient.identifier) === null || _j === void 0 ? void 0 : _j.find((id) => id.system === encounterCodeSystem);
+        // Fallback to Patient birthDate if system-creation is missing
+        if (!normalizedOnsetDate && (patient === null || patient === void 0 ? void 0 : patient.birthDate)) {
+            normalizedOnsetDate = patient.birthDate;
+            console.log("Using Patient birthDate as fallback for EPID year");
+        }
+        // Validate and extract year (falls back to current year if invalid)
+        const yearForId = getValidYear(normalizedOnsetDate);
+        if (!onsetDate) {
+            console.warn(`Patient ${patientId} missing system-creation identifier. Using fallback for EPID year: ${yearForId}`);
+        }
+        let epidIdentifier = (_j = patient === null || patient === void 0 ? void 0 : patient.identifier) === null || _j === void 0 ? void 0 : _j.find((id) => {
+            var _a, _b;
+            return (_b = (_a = id.type) === null || _a === void 0 ? void 0 : _a.coding) === null || _b === void 0 ? void 0 : _b.some((coding) => coding.system === "http://hie.org/identifiers/EPID");
+        });
         if ((epidIdentifier === null || epidIdentifier === void 0 ? void 0 : epidIdentifier.use) === "official") {
             console.log("Patient already has an official id with the system http://hie.org/identifiers/EPID");
-            return res.status(200).json((0, fhir_2.OperationOutcome)("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
+            (0, fhir_1.processFollowUpObservations)(data === null || data === void 0 ? void 0 : data.id);
+            return res.status(400).json((0, fhir_2.OperationOutcome)("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
         }
         if (epidIdentifier) {
             // remove the patient identifier with the system http://hie.org/identifiers/EPID
-            patient.identifier = patient.identifier.filter((id) => id.system !== encounterCodeSystem);
+            patient.identifier = patient.identifier.filter((id) => {
+                var _a;
+                return !(Array.isArray((_a = id === null || id === void 0 ? void 0 : id.type) === null || _a === void 0 ? void 0 : _a.coding) &&
+                    id.type.coding.some((coding) => coding.system === "http://hie.org/identifiers/EPID"));
+            });
         }
         let caseCondition = (POSSIBLE_REASON_CODES === null || POSSIBLE_REASON_CODES === void 0 ? void 0 : POSSIBLE_REASON_CODES[reasonCode]) || reasonCode.toUpperCase().slice(0, 3);
-        if (caseCondition === "MPOX") {
-            const subCountyCode = "a3-sub-county";
-            const countyCode = "a4-county";
-            const epidNoCode = "EPID";
-            const onsetDateCode = "date_given";
-            const countryOfOriginCode = "country_of_origin";
-            // fetch by code.....observations
-        }
-        const locationMeta = (_l = (_k = data === null || data === void 0 ? void 0 : data.meta) === null || _k === void 0 ? void 0 : _k.tag) === null || _l === void 0 ? void 0 : _l.find((tag) => tag.system === "http://example.org/fhir/StructureDefinition/observation-managingLocation");
-        const location = (_m = locationMeta === null || locationMeta === void 0 ? void 0 : locationMeta.code) === null || _m === void 0 ? void 0 : _m.split("/")[1];
-        const facility = yield (yield (0, utils_1.FhirApi)({ url: `/Location/${location}` })).data;
-        const ward = yield (yield (0, utils_1.FhirApi)({ url: `/Location/${(_p = (_o = facility === null || facility === void 0 ? void 0 : facility.partOf) === null || _o === void 0 ? void 0 : _o.reference) === null || _p === void 0 ? void 0 : _p.split("/")[1]}` })).data;
-        const subCounty = yield (yield (0, utils_1.FhirApi)({ url: `/Location/${(_r = (_q = ward === null || ward === void 0 ? void 0 : ward.partOf) === null || _q === void 0 ? void 0 : _q.reference) === null || _r === void 0 ? void 0 : _r.split("/")[1]}` })).data;
-        const county = yield (yield (0, utils_1.FhirApi)({ url: `/Location/${(_t = (_s = subCounty === null || subCounty === void 0 ? void 0 : subCounty.partOf) === null || _s === void 0 ? void 0 : _s.reference) === null || _t === void 0 ? void 0 : _t.split("/")[1]}` })).data;
-        const countryOfOrigin = yield (yield (0, utils_1.FhirApi)({ url: `/Location/${(_v = (_u = county === null || county === void 0 ? void 0 : county.partOf) === null || _u === void 0 ? void 0 : _u.reference) === null || _v === void 0 ? void 0 : _v.split("/")[1]}` })).data;
-        caseId = yield (0, caseIdTracker_1.generateCaseId)((_w = countryOfOrigin === null || countryOfOrigin === void 0 ? void 0 : countryOfOrigin.name) === null || _w === void 0 ? void 0 : _w.toUpperCase(), (_x = county === null || county === void 0 ? void 0 : county.name) === null || _x === void 0 ? void 0 : _x.toUpperCase(), (_y = subCounty === null || subCounty === void 0 ? void 0 : subCounty.name) === null || _y === void 0 ? void 0 : _y.toUpperCase(), caseCondition);
-        let formattedId = `${countryOfOrigin === null || countryOfOrigin === void 0 ? void 0 : countryOfOrigin.substring(0, 3).toUpperCase()}-${county === null || county === void 0 ? void 0 : county.substring(0, 3).toUpperCase()}-${subCounty === null || subCounty === void 0 ? void 0 : subCounty.substring(0, 3).toUpperCase()}-${new Date(onsetDate).getFullYear()}-${caseCondition}-${toThreeDigits(caseId)}`;
-        let newId = (0, fhir_1.FhirIdentifier)(encounterCodeSystem, "EPID", "Epidemiological ID", formattedId);
+        const countyCode = "a4-county";
+        const epidNoCode = "EPID";
+        const onsetDateCode = "date_given";
+        // fetch by code.....observations
+        const subCountyCode = "a3-sub-county";
+        const countryOfOriginCode = "country_of_origin";
+        // console.log("Location:", location);
+        const subCountyObservation = yield ((_m = (_l = (_k = (yield (0, utils_1.FhirApi)({ url: `/Observation?code=${subCountyCode}&encounter=${data === null || data === void 0 ? void 0 : data.id}` })).data) === null || _k === void 0 ? void 0 : _k.entry) === null || _l === void 0 ? void 0 : _l[0]) === null || _m === void 0 ? void 0 : _m.resource);
+        const subCounty = yield ((_q = (_p = (_o = (yield (0, utils_1.FhirApi)({ url: `/Location?name=${subCountyObservation === null || subCountyObservation === void 0 ? void 0 : subCountyObservation.valueString}` })).data) === null || _o === void 0 ? void 0 : _o.entry) === null || _p === void 0 ? void 0 : _p[0]) === null || _q === void 0 ? void 0 : _q.resource);
+        const county = yield (yield (0, utils_1.FhirApi)({ url: `/Location/${(_s = (_r = subCounty === null || subCounty === void 0 ? void 0 : subCounty.partOf) === null || _r === void 0 ? void 0 : _r.reference) === null || _s === void 0 ? void 0 : _s.split("/")[1]}` })).data;
+        const country = yield (yield (0, utils_1.FhirApi)({ url: `/Location/${(_u = (_t = county === null || county === void 0 ? void 0 : county.partOf) === null || _t === void 0 ? void 0 : _t.reference) === null || _u === void 0 ? void 0 : _u.split("/")[1]}` })).data;
+        const subCountyName = (_w = (_v = subCounty === null || subCounty === void 0 ? void 0 : subCounty.name) === null || _v === void 0 ? void 0 : _v.toUpperCase()) === null || _w === void 0 ? void 0 : _w.trim();
+        const countyName = (_y = (_x = county === null || county === void 0 ? void 0 : county.name) === null || _x === void 0 ? void 0 : _x.toUpperCase()) === null || _y === void 0 ? void 0 : _y.trim();
+        const countryName = (_0 = (_z = country === null || country === void 0 ? void 0 : country.name) === null || _z === void 0 ? void 0 : _z.toUpperCase()) === null || _0 === void 0 ? void 0 : _0.trim();
+        caseId = yield (0, caseIdTracker_1.generateCaseId)(countryName, countyName, subCountyName, caseCondition);
+        let formattedId = `${countryName.substring(0, 3)}-${countyName.substring(0, 3)}-${subCountyName.substring(0, 3)}-${yearForId}-${caseCondition}-${toThreeDigits(caseId)}`;
+        let newId = (0, fhir_1.FhirIdentifier)(encounterCodeSystem, "EPID", "Epidemiological ID", formattedId, true);
         let updatedPatient = yield (yield (0, utils_1.FhirApi)({
             url: `/Patient/${patientId}`, method: "PUT",
             data: JSON.stringify(Object.assign(Object.assign({}, patient), { identifier: [
@@ -112,7 +142,7 @@ exports.router.post('/assign-ids', (req, res) => __awaiter(void 0, void 0, void 
                     newId
                 ] }))
         })).data;
-        console.log(updatedPatient);
+        console.log("updatedPatient:", newId);
         // update the encounter with the new caseId
         // remove the encounter identifier with the system http://hie.org/identifiers/EPID
         data.identifier = data.identifier.filter((id) => id.system !== encounterCodeSystem);
@@ -121,25 +151,12 @@ exports.router.post('/assign-ids', (req, res) => __awaiter(void 0, void 0, void 
             url: `/Encounter/${data === null || data === void 0 ? void 0 : data.id}`, method: "PUT",
             data: JSON.stringify(Object.assign(Object.assign({}, data), { identifier: [{ system: encounterCodeSystem, value: formattedId }] }))
         })).data;
-        res.statusCode = 200;
-        res.json(updatedEncounter);
-        return;
+        (0, fhir_1.processFollowUpObservations)(data === null || data === void 0 ? void 0 : data.id);
+        return res.status(200).json(updatedEncounter);
     }
     catch (error) {
         console.error(error);
-        res.statusCode = 400;
-        res.json({
-            "resourceType": "OperationOutcome",
-            "id": "exception",
-            "issue": [{
-                    "severity": "error",
-                    "code": "exception",
-                    "details": {
-                        "text": `Failed to assign ids for encounter - ${JSON.stringify(error)}`
-                    }
-                }]
-        });
-        return;
+        return res.status(400).json((0, fhir_2.OperationOutcome)(error));
     }
 }));
 exports.default = exports.router;
