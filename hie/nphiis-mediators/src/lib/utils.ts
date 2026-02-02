@@ -9,7 +9,7 @@ import * as crypto from 'crypto';
 
 // ✅ Do this if using TYPESCRIPT
 import { RequestInfo, RequestInit } from 'node-fetch';
-import { createFHIRSubscription } from './fhir';
+import { createFHIRSubscription } from './fhir-subscriptions';
 
 // mediators to be registered
 const mediators = [
