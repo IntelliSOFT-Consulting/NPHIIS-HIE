@@ -38,11 +38,18 @@ exports.router.post('/config', auth_1.authenticateUser, (req, res) => __awaiter(
     try {
         let data = req.body;
         const userInfo = req.userInfo;
+        // Ensure userInfo and userInfo.id exist
+        if (!userInfo || !userInfo.id) {
+            return res.status(401).json({
+                status: "error",
+                error: "User information not available"
+            });
+        }
         // create or update the user's notification settings
         const notificationRecipient = yield prisma_1.prisma.notificationRecipient.create({
             data: {
                 token: data === null || data === void 0 ? void 0 : data.token,
-                practitionerId: userInfo === null || userInfo === void 0 ? void 0 : userInfo.id,
+                practitionerId: userInfo.id,
             }
         });
         const practitioner = (yield (0, utils_1.FhirApi)({ url: `/Practitioner/${userInfo.id}` })).data;
@@ -68,6 +75,14 @@ exports.router.post('/config', auth_1.authenticateUser, (req, res) => __awaiter(
 exports.router.get('/', auth_1.authenticateUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userInfo = req.userInfo;
+        console.log("🟢 User info:", userInfo);
+        // Ensure userInfo and userInfo.id exist before querying
+        if (!userInfo || !userInfo.id) {
+            return res.status(401).json({
+                status: "error",
+                error: "User information not available"
+            });
+        }
         const notifications = yield prisma_1.prisma.notification.findMany({
             where: {
                 practitionerId: userInfo.id

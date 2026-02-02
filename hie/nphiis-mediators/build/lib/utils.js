@@ -52,7 +52,7 @@ const notificationService_json_1 = __importDefault(require("../config/notificati
 const openhim_mediator_utils_1 = __importDefault(require("openhim-mediator-utils"));
 const https_1 = require("https");
 const crypto = __importStar(require("crypto"));
-const fhir_1 = require("./fhir");
+const fhir_subscriptions_1 = require("./fhir-subscriptions");
 // mediators to be registered
 const mediators = [
     idAssignmentPassThrough_json_1.default,
@@ -121,7 +121,7 @@ openhim_mediator_utils_1.default.authenticate(openhimConfig, (e) => {
     console.log(e ? e : "✅ OpenHIM authenticated successfully");
     (0, exports.importMediators)();
     (0, exports.installChannels)();
-    (0, fhir_1.createFHIRSubscription)();
+    (0, fhir_subscriptions_1.createFHIRSubscription)();
 });
 // createClient(process.env['OPENHIM_CLIENT_ID'] || '', process.env['OPENHIM_CLIENT_PASSWORD'] || '');
 const importMediators = () => {
