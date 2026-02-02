@@ -97,5 +97,5 @@ const createFollowUpFHIRSubscription = async () => {
 export let createFHIRSubscription = async () => {
     await deleteAllSubscriptions();
     await createEpidFHIRSubscription();
-    // await createFollowUpFHIRSubscription();
+    await createFollowUpFHIRSubscription();
 }
