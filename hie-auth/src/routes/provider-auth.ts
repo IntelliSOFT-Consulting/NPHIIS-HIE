@@ -24,8 +24,8 @@ const heirachy = [
 
 
 
-// Optimized password generation with cached character set
-const PASSWORD_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=';
+// Optimized password generation with cached character set (alphanumeric only)
+const PASSWORD_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const generatePassword = (length: number): string => {
     const result = new Array(length);
     for (let i = 0; i < length; i++) {
@@ -322,7 +322,7 @@ router.post('/reset-password', async (req: Request, res: Response) => {
         let { idNumber, password, resetCode } = req.body;
         let resetResp = await validateResetCode(idNumber, resetCode)
         if (!resetResp) {
-            return res.status(401).json({ error: "Failed to update new password. Try again", status: "error" });
+            return res.status(401).json({ error: "Failed to update new password. Try again - Invalid reset code", status: "error" });
         }
         let resp = await updateUserPassword(idNumber, password);
         if (!resp) {
@@ -536,7 +536,7 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
     try {
         const currentUser = (req as any).user;
         const { username } = req.params;
-        let { phone, email, facilityCode, county, subCounty, role } = req.body;
+        let { phone, email, facilityCode, county, subCounty, role, firstName, lastName } = req.body;
 
        
         let currentUserInfo = await findKeycloakUser(currentUser.preferred_username);
@@ -574,8 +574,16 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
             }
         }
 
-        // Update user profile
-        await updateUserProfile(username, phone, email, null, normalizedRole);
+        // Build userInfo object with firstName/lastName if provided
+        let userInfo: any = null;
+        if (firstName !== undefined || lastName !== undefined) {
+            userInfo = {};
+            if (firstName !== undefined) userInfo.firstName = firstName;
+            if (lastName !== undefined) userInfo.lastName = lastName;
+        }
+
+        // Update user profile in Keycloak
+        await updateUserProfile(username, phone, email, null, userInfo);
 
         // Get updated user info
         let updatedUserInfo = await findKeycloakUser(username);
@@ -591,6 +599,33 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
             // Update practitioner location
             practitioner = await updatePractitionerLocation(updatedUserInfo, practitioner, fhirLocation);
             locationInfo = await buildLocationInfo(fhirLocation, heirachy);
+        }
+
+        // Handle practitioner name updates if firstName/lastName were provided
+        if (updatedUserInfo?.attributes?.fhirPractitionerId?.[0] && (firstName !== undefined || lastName !== undefined)) {
+            try {
+                let practitioner = await (await FhirApi({ url: `/Practitioner/${updatedUserInfo.attributes.fhirPractitionerId[0]}` })).data;
+                
+                // Update practitioner name while preserving all other fields
+                const updatedName = {
+                    "use": "official",
+                    "family": lastName !== undefined ? lastName : practitioner.name[0].family,
+                    "given": [firstName !== undefined ? firstName : practitioner.name[0].given[0]]
+                };
+
+                // Update practitioner with new name, preserving extension, meta, and all other fields
+                await (await FhirApi({
+                    url: `/Practitioner/${updatedUserInfo.attributes.fhirPractitionerId[0]}`,
+                    method: "PUT",
+                    data: JSON.stringify({
+                        ...practitioner,
+                        name: [updatedName]
+                    })
+                })).data;
+            } catch (error) {
+                console.error(`Failed to update FHIR Practitioner name for ${username}:`, error);
+                // Don't fail the entire request if FHIR update fails
+            }
         }
 
         // Build response based on whether it's provider or client user

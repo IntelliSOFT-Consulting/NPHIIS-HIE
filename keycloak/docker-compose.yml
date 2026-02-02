@@ -1,9 +1,5 @@
-version: '3'
-
 volumes:
   keycloak-postgres:
-      external: true
-      name: keycloak_keycloak-postgres
 
 networks:
   cloudbuild:
@@ -37,6 +33,6 @@ services:
         - keycloak-postgres
       command: start-dev
       ports:
-        - 8889:8080
+        - 8888:8080
       volumes:
         - ../keycloak/themes:/opt/keycloak/themes

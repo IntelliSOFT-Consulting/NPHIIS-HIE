@@ -83,7 +83,8 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
   };
 
   const generateRandomPassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    // Must stay in sync with backend generator in provider-auth.ts (alphanumeric, length 12)
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let password = '';
     for (let i = 0; i < 12; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -161,8 +162,8 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
+      <div className="relative top-20 mx-auto p-6 border w-[500px] shadow-lg rounded-md bg-white">
+        <div className="mt-1">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <KeyIcon className="h-6 w-6 text-blue-600 mr-2" />
@@ -176,8 +177,8 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
             </button>
           </div>
 
-          <div className="mb-4 p-3 bg-gray-50 rounded-md">
-            <p className="text-sm text-gray-600">
+          <div className="mb-5 p-4 bg-gray-50 rounded-md">
+            <p className="text-sm text-gray-600 mb-1">
               <strong>User:</strong> {user.firstName} {user.lastName}
             </p>
             <p className="text-sm text-gray-600">
@@ -186,7 +187,7 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
           </div>
 
           {/* Send Reset Code Section */}
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <p className="text-sm text-gray-700 mb-2">
               First, send a reset code to the user&apos;s email:
             </p>
@@ -213,7 +214,7 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
           </div>
 
           {/* Send Welcome Email Section */}
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+          <div className="mb-5 p-4 bg-green-50 border border-green-200 rounded-md">
             <p className="text-sm text-gray-700 mb-2">
               Or, send a welcome email with new credentials:
             </p>
@@ -239,7 +240,7 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
             )}
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Reset Code */}
             <div>
               <label htmlFor="resetCode" className="block text-sm font-medium text-gray-700">
@@ -375,18 +376,18 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
             )}
 
             {/* Form Actions */}
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <div className="flex flex-nowrap justify-end gap-3 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="flex-shrink-0 whitespace-nowrap px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-shrink-0 whitespace-nowrap px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Resetting...' : 'Reset Password'}
               </button>

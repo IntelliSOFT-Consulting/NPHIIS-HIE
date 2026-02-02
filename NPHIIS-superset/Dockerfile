@@ -246,8 +246,8 @@ COPY requirements/*.txt requirements/
 # Install Python dependencies using docker/pip-install.sh
 RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
     /app/docker/pip-install.sh --requires-build-essential -r requirements/development.txt
-# Keycloak authentication is now handled via OAuth2 with Authlib (already included in Superset dependencies)
-# No additional packages or compatibility fixes needed
+# Keycloak OAuth2 authentication requires Authlib (install into venv with uv)
+RUN uv pip install authlib
 
 # Install the superset package
 RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
