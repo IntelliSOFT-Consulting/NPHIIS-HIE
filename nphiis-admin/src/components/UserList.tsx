@@ -167,6 +167,11 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
     }
   };
 
+  // Helper function to compute active status robustly
+  const getIsActive = (user: User): boolean => {
+    return user.active ?? user.enabled ?? true;
+  };
+
   const getRoleBadgeColor = (role: string) => {
     const colors: Record<string, string> = {
       'System Administrator': 'bg-red-100 text-red-800',
@@ -346,16 +351,21 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                           <KeyIcon className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => user.id && handleToggleUserStatus(user.id, user.active ?? true)}
+                          onClick={() => {
+                            if (user.id) {
+                              const isActive = getIsActive(user);
+                              handleToggleUserStatus(user.id, isActive);
+                            }
+                          }}
                           disabled={actionLoading === user.id}
                           className={`p-1 rounded ${
-                            user.active 
+                            getIsActive(user)
                               ? 'text-orange-600 hover:text-orange-900 hover:bg-orange-50' 
                               : 'text-green-600 hover:text-green-900 hover:bg-green-50'
                           } ${actionLoading === user.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          title={user.active ? 'Disable user' : 'Enable user'}
+                          title={getIsActive(user) ? 'Disable user' : 'Enable user'}
                         >
-                          {user.active ? (
+                          {getIsActive(user) ? (
                             <XCircleIcon className="h-4 w-4" />
                           ) : (
                             <CheckCircleIcon className="h-4 w-4" />
@@ -543,11 +553,16 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
-                      selectedUser.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {selectedUser.active ? 'Active' : 'Inactive'}
-                    </span>
+                    {(() => {
+                      const isActive = getIsActive(selectedUser);
+                      return (
+                        <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
+                          isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      );
+                    })()}
                     <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role || 'Unknown')}`}>
                       {selectedUser.role || 'Unknown'}
                     </span>
@@ -634,11 +649,16 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                       <CheckCircleIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                       <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700">Account Status</label>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          selectedUser.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {selectedUser.active ? 'Active' : 'Inactive'}
-                        </span>
+                        {(() => {
+                          const isActive = getIsActive(selectedUser);
+                          return (
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
@@ -759,7 +779,8 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                   <button
                     onClick={() => {
                       if (selectedUser.id) {
-                        handleToggleUserStatus(selectedUser.id, selectedUser.active ?? true);
+                        const isActive = getIsActive(selectedUser);
+                        handleToggleUserStatus(selectedUser.id, isActive);
                         setSelectedUser(null);
                       }
                     }}
@@ -768,12 +789,19 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                     }`}
                     disabled={actionLoading === selectedUser.id}
                   >
-                    {selectedUser.active ? (
-                      <XCircleIcon className="h-4 w-4 mr-2" />
-                    ) : (
-                      <CheckCircleIcon className="h-4 w-4 mr-2" />
-                    )}
-                    {selectedUser.active ? 'Disable User' : 'Enable User'}
+                    {(() => {
+                      const isActive = getIsActive(selectedUser);
+                      return (
+                        <>
+                          {isActive ? (
+                            <XCircleIcon className="h-4 w-4 mr-2" />
+                          ) : (
+                            <CheckCircleIcon className="h-4 w-4 mr-2" />
+                          )}
+                          {isActive ? 'Disable User' : 'Enable User'}
+                        </>
+                      );
+                    })()}
                   </button>
                 </div>
               </div>
