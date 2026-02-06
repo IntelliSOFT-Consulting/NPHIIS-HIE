@@ -50,9 +50,13 @@ router.put('/notifications/Encounter/:id', async (req, res) => {
     console.log("🟢 Fetching encounter data...");
     let data = await (await FhirApi({ url: `/Encounter/${id}` })).data;
 
-    if (data.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID" && id.use === "official")) {
-      return res.status(200).json(OperationOutcome("Encounter already has an official id with the system http://hie.org/identifiers/EPID"));
+
+    let patient = await (await FhirApi({ url: `/Patient/${data?.subject?.reference?.split("/")[1]}` })).data;
+
+    if (patient?.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID" && id.use === "official")) {
+      return res.status(200).json(OperationOutcome("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
     }
+
 
     let response = await sendMediatorRequest("/process-encounters/assign-ids", data);
     console.log("🟢 sendMediatorRequest returned:", response);
