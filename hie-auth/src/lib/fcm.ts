@@ -43,11 +43,6 @@ export interface FCMResponse {
 class FCMService {
   private initialized: boolean = false;
 
-  /**
-   * Initialize Firebase Admin SDK
-   * @param serviceAccount - Service account object or path to Firebase service account JSON file
-   * @param databaseURL - Firebase Realtime Database URL (optional)
-   */
   initialize(serviceAccount?: string | admin.ServiceAccount, databaseURL?: string): void {
     try {
       if (this.initialized) {
@@ -59,15 +54,12 @@ class FCMService {
 
       if (serviceAccount) {
         if (typeof serviceAccount === 'string') {
-          // It's a file path, require it
           const serviceAccountData = require(serviceAccount);
           config.credential = admin.credential.cert(serviceAccountData);
         } else {
-          // It's already a service account object
           config.credential = admin.credential.cert(serviceAccount);
         }
       } else {
-        // Use default credentials from environment
         config.credential = admin.credential.applicationDefault();
       }
 
@@ -84,13 +76,6 @@ class FCMService {
     }
   }
 
-  /**
-   * Send notification to a single device
-   * @param token - FCM device token
-   * @param notification - Notification payload
-   * @param data - Optional data payload
-   * @returns FCMResponse
-   */
   async sendToDevice(
     token: string,
     notification: NotificationPayload,
@@ -126,13 +111,6 @@ class FCMService {
     }
   }
 
-  /**
-   * Send notification to multiple devices
-   * @param tokens - Array of FCM device tokens
-   * @param notification - Notification payload
-   * @param data - Optional data payload
-   * @returns FCMResponse
-   */
   async sendToMultipleDevices(
     tokens: string[],
     notification: NotificationPayload,
@@ -147,7 +125,6 @@ class FCMService {
         throw new Error('No device tokens provided');
       }
 
-      // Send to each device individually and collect results
       const promises = tokens.map((token) =>
         this.sendToDevice(token, notification, data)
       );
@@ -170,13 +147,6 @@ class FCMService {
     }
   }
 
-  /**
-   * Send notification to a topic
-   * @param topic - FCM topic name
-   * @param notification - Notification payload
-   * @param data - Optional data payload
-   * @returns FCMResponse
-   */
   async sendToTopic(
     topic: string,
     notification: NotificationPayload,
@@ -212,18 +182,12 @@ class FCMService {
     }
   }
 
-  /**
-   * Send a custom FCM message with advanced options
-   * @param message - Custom FCM message configuration
-   * @returns FCMResponse
-   */
   async sendCustomMessage(message: FCMMessage): Promise<FCMResponse> {
     try {
       if (!this.initialized) {
         throw new Error('FCM Service not initialized. Call initialize() first.');
       }
 
-      // Build the base message properties
       const baseMessage: any = {
         notification: message.notification ? {
           title: message.notification.title,
@@ -236,7 +200,6 @@ class FCMService {
         webpush: message.webpush,
       };
 
-      // Add target (token, topic, or condition)
       let fcmMessage: admin.messaging.Message;
       if (message.token) {
         fcmMessage = { ...baseMessage, token: message.token };
@@ -263,12 +226,6 @@ class FCMService {
     }
   }
 
-  /**
-   * Subscribe devices to a topic
-   * @param tokens - Array of device tokens
-   * @param topic - Topic name
-   * @returns Success status
-   */
   async subscribeToTopic(tokens: string[], topic: string): Promise<FCMResponse> {
     try {
       if (!this.initialized) {
@@ -291,12 +248,6 @@ class FCMService {
     }
   }
 
-  /**
-   * Unsubscribe devices from a topic
-   * @param tokens - Array of device tokens
-   * @param topic - Topic name
-   * @returns Success status
-   */
   async unsubscribeFromTopic(tokens: string[], topic: string): Promise<FCMResponse> {
     try {
       if (!this.initialized) {
@@ -319,12 +270,6 @@ class FCMService {
     }
   }
 
-  /**
-   * Send data-only message (no notification)
-   * @param token - FCM device token
-   * @param data - Data payload
-   * @returns FCMResponse
-   */
   async sendDataMessage(token: string, data: DataPayload): Promise<FCMResponse> {
     try {
       if (!this.initialized) {
@@ -351,16 +296,11 @@ class FCMService {
     }
   }
 
-  /**
-   * Check if the service is initialized
-   * @returns boolean
-   */
   isInitialized(): boolean {
     return this.initialized;
   }
 }
 
-// Export singleton instance
 const fcmService = new FCMService();
 fcmService.initialize(serviceAccountKey as admin.ServiceAccount);
 
