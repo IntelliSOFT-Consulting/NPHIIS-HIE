@@ -62,6 +62,19 @@ else
   echo "Skipping local overrides"
 fi
 
+# CVE-2023-27524: in non-dev mode, refuse to start with default or weak SECRET_KEY
+if [ "${DEV_MODE}" != "true" ]; then
+  key="${SUPERSET_SECRET_KEY:-}"
+  if [ -z "${key}" ] || \
+     [ "${key}" = "TEST_NON_DEV_SECRET" ] || \
+     [ "${key}" = "CHANGE_ME_TO_A_COMPLEX_RANDOM_SECRET" ]; then
+    echo "ERROR: SUPERSET_SECRET_KEY must be set to a strong random value in production (CVE-2023-27524)."
+    echo "Generate one with: openssl rand -base64 42"
+    echo "Set it in docker/.env-local or in the environment. Do not use the default or TEST_NON_DEV_SECRET."
+    exit 1
+  fi
+fi
+
 case "${1}" in
   worker)
     echo "Starting Celery worker..."

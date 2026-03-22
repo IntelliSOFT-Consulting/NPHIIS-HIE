@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 interface AdminLoginProps {
@@ -147,6 +148,11 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
           <div className="px-8 py-4 bg-gray-50 border-t border-gray-100">
             <p className="text-center text-xs text-gray-500">
               NPHIIS Health Information Exchange
+            </p>
+            <p className="text-center text-xs text-gray-500 mt-2">
+              <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-800 hover:underline">
+                Privacy Policy
+              </Link>
             </p>
           </div>
         </div>

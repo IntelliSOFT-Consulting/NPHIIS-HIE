@@ -966,6 +966,37 @@ export const locationApi = {
     }
   },
 
+  // Get an accurate count of child locations using FHIR _summary=count
+  getLocationChildrenCount: async (parentId: string): Promise<number> => {
+    try {
+      if (!parentId) {
+        return 0;
+      }
+
+      const url = `${FHIR_BASE_URL}/Location?_summary=count&partof=Location/${parentId}`;
+      console.log('Fetching child location count from:', url);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/fhir+json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => '');
+        console.error('FHIR child count API Error:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const bundle: LocationBundle = await response.json();
+      return bundle.total || 0;
+    } catch (error) {
+      console.error('Error fetching child location count from FHIR:', error);
+      throw error;
+    }
+  },
+
   // Get a single location by ID
   getLocationById: async (locationId: string): Promise<Location> => {
     try {

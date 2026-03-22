@@ -13,6 +13,7 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   FunnelIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import EditLocationForm from './EditLocationForm';
 import DeleteLocationModal from './DeleteLocationModal';
@@ -32,6 +33,20 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [deletingLocation, setDeletingLocation] = useState<Location | null>(null);
+  const [childLocations, setChildLocations] = useState<Location[]>([]);
+  const [childLoading, setChildLoading] = useState(false);
+  const [childError, setChildError] = useState<string | null>(null);
+  const [childHasMore, setChildHasMore] = useState(false);
+  const [childHasPrevious, setChildHasPrevious] = useState(false);
+  const [childPage, setChildPage] = useState(1);
+  const [childTotal, setChildTotal] = useState(0);
+  const childPageSize = 10;
+  const [childTotalExact, setChildTotalExact] = useState<number | null>(null);
+  const [childTotalExactLoading, setChildTotalExactLoading] = useState(false);
+  const [childTotalExactError, setChildTotalExactError] = useState<string | null>(null);
+  const [ancestorLocations, setAncestorLocations] = useState<Location[]>([]);
+  const [ancestorLoading, setAncestorLoading] = useState(false);
+  const [ancestorError, setAncestorError] = useState<string | null>(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +54,10 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const itemsPerPage = 10;
+
+  // Child locations range helpers
+  const childStart = childTotal > 0 ? ((childPage - 1) * childPageSize) + 1 : 0;
+  const childEnd = childTotal > 0 ? Math.min(childPage * childPageSize, childTotal) : 0;
 
   // Debounce name search with 500ms delay
   useEffect(() => {
@@ -84,6 +103,126 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
       loadLocations();
     }
   }, [refreshTrigger, loadLocations]);
+
+  // Reset child page when selected location changes
+  useEffect(() => {
+    if (selectedLocation) setChildPage(1);
+    else {
+      setChildLocations([]);
+      setChildError(null);
+      setChildHasMore(false);
+      setChildHasPrevious(false);
+      setChildTotal(0);
+    }
+  }, [selectedLocation?.id]);
+
+  // Load one page of child locations when selected location or child page changes
+  useEffect(() => {
+    if (!selectedLocation) return;
+
+    const loadChildLocations = async () => {
+      try {
+        setChildLoading(true);
+        setChildError(null);
+        const response = await locationApi.getLocations(
+          childPage,
+          childPageSize,
+          undefined,
+          undefined,
+          selectedLocation.id
+        );
+        setChildLocations(response.locations);
+        setChildHasMore(response.hasNext);
+        setChildHasPrevious(response.hasPrevious);
+        setChildTotal(response.total);
+      } catch (err: any) {
+        const errorMessage =
+          err?.message || 'Failed to load child locations. Please try again.';
+        setChildError(errorMessage);
+        console.error('Error loading child locations:', err);
+      } finally {
+        setChildLoading(false);
+      }
+    };
+
+    loadChildLocations();
+  }, [selectedLocation?.id, childPage]);
+
+  // Load ancestor chain for breadcrumb when selected location changes
+  useEffect(() => {
+    if (!selectedLocation) {
+      setAncestorLocations([]);
+      setAncestorError(null);
+      return;
+    }
+
+    const loadAncestors = async () => {
+      setAncestorLoading(true);
+      setAncestorError(null);
+      const maxDepth = 10;
+      const visited = new Set<string>();
+      let currentParentId: string | undefined = selectedLocation.parentId;
+      const collected: Location[] = [];
+
+      try {
+        while (currentParentId && collected.length < maxDepth) {
+          if (visited.has(currentParentId)) break;
+          visited.add(currentParentId);
+          const loc = await locationApi.getLocationById(currentParentId);
+          collected.push(loc);
+          currentParentId = loc.parentId;
+        }
+        setAncestorLocations(collected.reverse());
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Unable to load full hierarchy path';
+        setAncestorError(msg);
+        console.error('Error loading ancestor chain:', err);
+      } finally {
+        setAncestorLoading(false);
+      }
+    };
+
+    loadAncestors();
+  }, [selectedLocation]);
+
+  // Load exact total count of child locations using FHIR _summary=count
+  useEffect(() => {
+    if (!selectedLocation) {
+      setChildTotalExact(null);
+      setChildTotalExactLoading(false);
+      setChildTotalExactError(null);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const fetchExactCount = async () => {
+      setChildTotalExactLoading(true);
+      setChildTotalExactError(null);
+      try {
+        const total = await locationApi.getLocationChildrenCount(selectedLocation.id);
+        if (!isCancelled) {
+          setChildTotalExact(total);
+        }
+      } catch (err: any) {
+        if (!isCancelled) {
+          const message = err?.message || 'Unable to load total child locations';
+          setChildTotalExactError(message);
+          setChildTotalExact(null);
+        }
+      } finally {
+        if (!isCancelled) {
+          setChildTotalExactLoading(false);
+        }
+      }
+    };
+
+    fetchExactCount();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedLocation?.id]);
 
   // Handle search input change (debouncing happens in useEffect)
   const handleNameSearchChange = (value: string) => {
@@ -206,9 +345,13 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
         {/* Search and Filter */}
         <div className="mt-4 flex gap-4">
           <div className="flex-1 relative">
+            <label htmlFor="location-search" className="sr-only">
+              Search locations
+            </label>
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
+              id="location-search"
               placeholder="Search locations by name..."
               className="pl-10 pr-10 py-2 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={nameSearch}
@@ -221,8 +364,12 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
             )}
           </div>
           <div className="relative">
+            <label htmlFor="location-type-filter" className="sr-only">
+              Filter by type
+            </label>
             <FunnelIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <select
+              id="location-type-filter"
               value={filterType}
               onChange={(e) => handleTypeFilterChange(e.target.value)}
               className="pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
@@ -495,6 +642,38 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
                 </button>
               </div>
 
+              {/* Location hierarchy breadcrumb */}
+              <nav aria-label="Location hierarchy" className="mb-4">
+                {ancestorLoading && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <div className="animate-spin h-3.5 w-3.5 border-2 border-blue-500 border-t-transparent rounded-full" />
+                    <span>Loading location path…</span>
+                  </div>
+                )}
+                {!ancestorLoading && ancestorError && (
+                  <p className="text-sm text-amber-700">Unable to load full hierarchy path.</p>
+                )}
+                {!ancestorLoading && !ancestorError && (
+                  <ol className="flex flex-wrap items-center gap-1 text-sm text-gray-600">
+                    {ancestorLocations.map((ancestor) => (
+                      <li key={ancestor.id} className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLocation(ancestor)}
+                          className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded px-0.5"
+                        >
+                          {ancestor.name}
+                        </button>
+                        <ChevronRightIcon className="h-4 w-4 text-gray-400 flex-shrink-0" aria-hidden />
+                      </li>
+                    ))}
+                    <li className="font-medium text-gray-900" aria-current="location">
+                      {selectedLocation.name}
+                    </li>
+                  </ol>
+                )}
+              </nav>
+
               {/* Status and Type Banner */}
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center justify-between">
@@ -577,6 +756,151 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
                     )}
                   </div>
                 </div>
+              </div>
+
+              {/* Child Locations - compact, paginated */}
+              <div className="mt-4 bg-white border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <MapPinIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                    <h4 className="text-sm font-medium text-gray-900 truncate">
+                      Child Locations (direct descendants)
+                    </h4>
+                  </div>
+                  {!childLoading && !childError && childTotal > 0 && (
+                    <span className="text-xs text-gray-500 flex-shrink-0">
+                      {((childPage - 1) * childPageSize) + 1}–{Math.min(childPage * childPageSize, childTotal)} of {childTotal}
+                    </span>
+                  )}
+                </div>
+
+                {(childTotalExactLoading || childTotalExactError || childTotalExact !== null) && (
+                  <div className="mb-2">
+                    <p className="text-xs text-gray-500">
+                      {childTotalExactLoading && 'Calculating total child locations…'}
+                      {!childTotalExactLoading && childTotalExactError && (
+                        <span className="text-amber-700">{childTotalExactError}</span>
+                      )}
+                      {!childTotalExactLoading && !childTotalExactError && childTotalExact !== null && (
+                        <>Total child locations: {childTotalExact}</>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {childLoading && (
+                  <div className="flex items-center space-x-2 py-3 text-xs text-gray-500">
+                    <div className="animate-spin h-3.5 w-3.5 border-2 border-blue-500 border-t-transparent rounded-full" />
+                    <span>Loading…</span>
+                  </div>
+                )}
+
+                {!childLoading && childError && (
+                  <div className="py-2 bg-red-50 border border-red-200 rounded-md px-2">
+                    <p className="text-xs text-red-700">{childError}</p>
+                  </div>
+                )}
+
+                {!childLoading && !childError && (
+                  <>
+                    {childLocations.length > 0 ? (
+                      <>
+                        <div className="overflow-x-auto -mx-1">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Name
+                                </th>
+                                <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Type
+                                </th>
+                                <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Status
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {childLocations.map((child) => (
+                                <tr
+                                  key={child.id}
+                                  className="hover:bg-gray-50 cursor-pointer"
+                                  onClick={() => setSelectedLocation(child)}
+                                >
+                                  <td className="px-2 py-1.5 text-xs text-gray-900 font-medium truncate max-w-[12rem]" title={child.name}>
+                                    {child.name}
+                                  </td>
+                                  <td className="px-2 py-1.5 whitespace-nowrap">
+                                    {child.type && (
+                                      <span
+                                        className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded ${getTypeBadgeColor(
+                                          child.typeCode
+                                        )}`}
+                                      >
+                                        {child.type}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-1.5 whitespace-nowrap">
+                                    <span
+                                      className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded ${getStatusBadgeColor(
+                                        child.status
+                                      )}`}
+                                    >
+                                      {child.status || 'active'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        {(childTotal > 0 || childLocations.length > 0 || childHasPrevious || childHasMore) && (
+                          <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-2">
+                            <p className="text-xs text-gray-500">
+                              {childTotal > 0 ? (
+                                <>
+                                  Showing {childStart}–{childEnd} of {childTotal}{' '}
+                                  child location{childTotal === 1 ? '' : 's'}
+                                </>
+                              ) : childLocations.length > 0 ? (
+                                <>
+                                  Showing {childLocations.length}{' '}
+                                  child location{childLocations.length === 1 ? '' : 's'}
+                                </>
+                              ) : (
+                                <>No child locations</>
+                              )}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setChildPage((p) => Math.max(1, p - 1))}
+                                disabled={!childHasPrevious || childLoading}
+                                className="text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded px-2 py-1.5 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Previous
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setChildPage((p) => p + 1)}
+                                disabled={!childHasMore || childLoading}
+                                className="text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded px-2 py-1.5 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Next
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="py-2 flex items-center gap-2 text-xs text-gray-500">
+                        <MapPinIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        <span>No direct child locations.</span>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* Quick Actions */}

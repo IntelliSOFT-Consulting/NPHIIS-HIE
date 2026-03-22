@@ -1,8 +1,5 @@
 import { FhirApi } from "./utils";
 
-/**
- * Delete all existing FHIR subscriptions before creating new ones
- */
 const deleteAllSubscriptions = async () => {
     try {
         let response = await FhirApi({
@@ -28,12 +25,6 @@ const deleteAllSubscriptions = async () => {
     }
 };
 
-/**
- * General function to create a FHIR Subscription
- * @param subscriptionId - The ID for the subscription
- * @param callbackUrl - The endpoint URL to receive notifications
- * @param criteria - The FHIR search criteria for the subscription
- */
 const createSubscription = async (subscriptionId: string, callbackUrl: string, criteria: string) => {
     try {
         let response = await (await FhirApi({ 

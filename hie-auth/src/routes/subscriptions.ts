@@ -1,22 +1,17 @@
-import express from 'express';
-import { FhirApi, sendMediatorRequest } from '../lib/utils';
-import { v4 as uuid } from 'uuid';
-import fetch from 'node-fetch';
-import { FhirIdentifier, processFollowUpObservations } from '../lib/fhir';
+import express, { Request, Response } from 'express';
+import { FhirApi, OperationOutcome, FhirIdentifier } from '../lib/utils';
+import { processFollowUpObservations } from '../lib/fhir';
 import { generateCaseId } from '../lib/caseIdTracker';
-import { OperationOutcome } from '../lib/fhir';
+import { processAfpObservation } from '../lib/notification';
 
-export const router = express.Router();
-
+const router = express.Router();
 router.use(express.json() as any);
 
-const POSSIBLE_REASON_CODES = {
+const POSSIBLE_REASON_CODES: Record<string, string> = {
   "Measles Case Information": "MEA",
   "MOH 505 Reporting Form": "MOH505",
   "AFP Case Information": "AFP"
 }
-
-
 
 function padStart(str: string, targetLength: number, padChar: string = '0'): string {
   while (str.length < targetLength) {
@@ -42,37 +37,7 @@ function getValidYear(dateString: string | undefined, fallbackDate: Date = new D
   return date.getFullYear();
 }
 
-//process FHIR beneficiary
-router.put('/notifications/Encounter/:id', async (req, res) => {
-  console.log("🟢 Encounter subscription triggered for ID:", req.params.id);
-  try {
-    let { id } = req.params;
-    console.log("🟢 Fetching encounter data...");
-    let data = await (await FhirApi({ url: `/Encounter/${id}` })).data;
-
-
-    let patient = await (await FhirApi({ url: `/Patient/${data?.subject?.reference?.split("/")[1]}` })).data;
-
-    if (patient?.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID" && id.use === "official")) {
-      return res.status(200).json(OperationOutcome("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
-    }
-
-
-    let response = await sendMediatorRequest("/process-encounters/assign-ids", data);
-    console.log("🟢 sendMediatorRequest returned:", response);
-    res.statusCode = response.code || 200;
-    res.json(response.data || response);
-    return;
-  } catch (error) {
-    console.error("🔴 Error in Encounter subscription:", error);
-    res.statusCode = 400;
-    res.json(OperationOutcome(error));
-    return;
-  }
-});
-
-//process FHIR beneficiary
-router.post('/assign-ids', async (req, res) => {
+async function assignIdsHandler(req: Request, res: Response) {
   try {
     let data = req.body;
     let caseId;
@@ -89,21 +54,16 @@ router.post('/assign-ids', async (req, res) => {
         coding.code === "system_creation"
       )
     )?.value;
-    // Convert onsetDate to a normal date format (YYYY-MM-DD)
-    // onsetDate is expected to be in the format "YYYY-MM-DD HH:mm:ss"
     let normalizedOnsetDate = onsetDate;
     if (onsetDate && typeof onsetDate === "string") {
-      // Extract only the date part before any space
       normalizedOnsetDate = onsetDate.split(" ")[0];
     }
 
-    // Fallback to Patient birthDate if system-creation is missing
     if (!normalizedOnsetDate && patient?.birthDate) {
       normalizedOnsetDate = patient.birthDate;
       console.log("Using Patient birthDate as fallback for EPID year");
     }
 
-    // Validate and extract year (falls back to current year if invalid)
     const yearForId = getValidYear(normalizedOnsetDate);
 
     if (!onsetDate) {
@@ -123,7 +83,6 @@ router.post('/assign-ids', async (req, res) => {
     }
 
     if (epidIdentifier) {
-      // remove the patient identifier with the system http://hie.org/identifiers/EPID
       patient.identifier = patient.identifier.filter((id: any) => !(
         Array.isArray(id?.type?.coding) &&
         id.type.coding.some(
@@ -133,17 +92,10 @@ router.post('/assign-ids', async (req, res) => {
       ));
     }
 
-    let caseCondition = POSSIBLE_REASON_CODES?.[reasonCode as keyof typeof POSSIBLE_REASON_CODES] || reasonCode.toUpperCase().slice(0, 3);
-
-
-    const countyCode = "a4-county";
-    const epidNoCode = "EPID";
-    const onsetDateCode = "date_given";
-    // fetch by code.....observations
+    const rc = reasonCode ? String(reasonCode) : "";
+    let caseCondition = POSSIBLE_REASON_CODES[rc] || (rc ? rc.toUpperCase().slice(0, 3) : "UNK");
 
     const subCountyCode = "a3-sub-county";
-    const countryOfOriginCode = "country_of_origin";
-    // console.log("Location:", location);
     const subCountyObservation = await (await FhirApi({ url: `/Observation?code=${subCountyCode}&encounter=${data?.id}` })).data?.entry?.[0]?.resource;
     const subCounty = await (await FhirApi({ url: `/Location?name=${subCountyObservation?.valueString}` })).data?.entry?.[0]?.resource;
     const county = await (await FhirApi({ url: `/Location/${subCounty?.partOf?.reference?.split("/")[1]}` })).data;
@@ -159,7 +111,7 @@ router.post('/assign-ids', async (req, res) => {
 
     let newId = FhirIdentifier(encounterCodeSystem, "EPID", "Epidemiological ID", formattedId, true);
 
-    let updatedPatient = await (await FhirApi({
+    await (await FhirApi({
       url: `/Patient/${patientId}`, method: "PUT",
       data: JSON.stringify({
         ...patient,
@@ -171,9 +123,6 @@ router.post('/assign-ids', async (req, res) => {
     })).data;
     console.log("updatedPatient:", newId);
 
-
-    // update the encounter with the new caseId
-    // remove the encounter identifier with the system http://hie.org/identifiers/EPID
     data.identifier = data.identifier.filter((id: any) => id.system !== encounterCodeSystem);
     data.identifier.push(newId)
     let updatedEncounter = await (await FhirApi({
@@ -186,6 +135,61 @@ router.post('/assign-ids', async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(400).json(OperationOutcome(error));
+  }
+}
+
+router.put('/encounters/notifications/Encounter/:id', async (req, res) => {
+  console.log("Encounter subscription triggered for ID:", req.params.id);
+  try {
+    let { id } = req.params;
+    let data = await (await FhirApi({ url: `/Encounter/${id}` })).data;
+
+    let patient = await (await FhirApi({ url: `/Patient/${data?.subject?.reference?.split("/")[1]}` })).data;
+
+    if (patient?.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID" && id.use === "official")) {
+      return res.status(200).json(OperationOutcome("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
+    }
+
+    (req as any).body = data;
+    return assignIdsHandler(req, res);
+  } catch (error) {
+    console.error("Error in Encounter subscription:", error);
+    res.statusCode = 400;
+    res.json(OperationOutcome(error));
+    return;
+  }
+});
+
+router.post('/encounters/assign-ids', assignIdsHandler);
+
+router.put('/observations/notifications/Observation/:id', async (req, res) => {
+  console.log("Observation subscription triggered for ID:", req.params.id);
+  try {
+    let { id } = req.params;
+    let data = await (await FhirApi({ url: `/Observation/${id}` })).data;
+    const response = await processAfpObservation(data);
+    if (response?.status === "success") {
+      return res.status(200).json(OperationOutcome('AFP Follow Up processed successfully', 'information'));
+    }
+    return res.status(400).json(OperationOutcome(response?.error ?? 'Failed to process AFP Follow Up', 'error'));
+  } catch (error) {
+    console.error("Error in Observation subscription:", error);
+    return res.status(400).json(OperationOutcome('Failed to process AFP Follow Up', 'error'));
+  }
+});
+
+router.post('/observations/afp-follow-up', async (req, res) => {
+  try {
+    let data = req.body;
+    const response = await processAfpObservation(data);
+    if(response?.status === "success"){
+      return res.status(200).json(OperationOutcome('Notification created successfully', 'information'));
+    }
+    return res.status(400).json(OperationOutcome(response?.error ?? 'Failed to create notification', 'error'));
+
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json(OperationOutcome('Failed to create notification', 'error'));
   }
 });
 
