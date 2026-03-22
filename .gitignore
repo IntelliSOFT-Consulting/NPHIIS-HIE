@@ -14,3 +14,6 @@ scripts/data.csv
 
 
 scripts/
+.DS_Store
+.cursor/
+.vscode/

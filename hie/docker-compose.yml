@@ -7,15 +7,6 @@ networks:
 
 
 services:
-    mongo:
-        container_name: openhim-mongo
-        image: mongo:4.0
-        networks:
-            - openhim
-            - cloudbuild
-        volumes:
-            - mongodb-data:/data/db
-        restart: unless-stopped
 
     hapi-fhir-postgres:
         container_name: hapi-fhir-postgres
@@ -47,51 +38,6 @@ services:
         environment:
             SPRING_CONFIG_LOCATION: /hapi/application.yaml
             TZ: Africa/Nairobi
-
-    openhim-core:
-        container_name: openhim-core
-        restart: unless-stopped
-        image: jembi/openhim-core:latest
-        env_file:
-            - .env
-        ports:
-            - "8087:8080"
-            # - "5000:5000"
-            - "5001:5001"
-            # - "5050:5050"
-            # - "5051:5051"
-            # - "5052:5052"
-            # - "7788:7788"
-        depends_on:
-            - mongo
-            - openhim-console
-        networks:
-            - openhim
-            - hapi-fhir
-            - cloudbuild
-        healthcheck:
-            test: "curl -sSk https://openhim-core:8080/heartbeat || exit 1"
-            interval: 30s
-            timeout: 30s
-            retries: 3
-
-    openhim-console:
-        container_name: openhim-console
-        image: jembi/openhim-console:latest
-        restart: unless-stopped
-        ports:
-            - "9000:80"
-        networks:
-            - openhim
-            - cloudbuild
-        healthcheck:
-            test: "curl -sS http://openhim-console || exit 1"
-            interval: 30s
-            timeout: 30s
-            retries: 3
-        volumes:
-            - ./default.json:/usr/share/nginx/html/config/default.json:ro
-            - /etc/ssl/crt:/etc/nginx/certs
     
     hie-auth:
         container_name: hie-auth
@@ -99,9 +45,12 @@ services:
             context: ../hie-auth
             dockerfile: Dockerfile
         restart: unless-stopped
+        depends_on:
+            - nphiis-postgres
         networks:
             - cloudbuild
             - hapi-fhir
+            - openhim
         env_file:
             - ../hie-auth/.env
         ports:
@@ -117,28 +66,8 @@ services:
             context: ../hapi-fhir-config
             dockerfile: Dockerfile
 
-    nphiis-mediators:
-        depends_on:
-            - hapi-fhir-jpa
-            - nphiis-mediators-postgres
-            - openhim-core
-        container_name: nphiis-mediators
-        build:
-            context: nphiis-mediators
-            dockerfile: Dockerfile
-        restart: unless-stopped
-        ports:
-            - "5555:5555"
-        networks:
-            - openhim
-            - hapi-fhir
-            - cloudbuild
-        env_file:
-            - nphiis-mediators/.env
-            
-
-    nphiis-mediators-postgres:
-        container_name: nphiis-mediators-postgres
+    nphiis-postgres:
+        container_name: nphiis-postgres
         image: postgres:14-alpine
         restart: always
         networks:
@@ -151,7 +80,7 @@ services:
         # ports:
             # - "5432:5432"
         volumes:
-            - 'nphiis-mediators-postgres:/var/lib/postgresql/data'
+            - 'nphiis-postgres:/var/lib/postgresql/data'
 
     nphiis-admin:
         container_name: nphiis-admin
@@ -168,8 +97,6 @@ services:
             - "8080:3000"
         depends_on:
             - hapi-fhir-jpa
-            - openhim-core
-            - openhim-console
             - hie-auth
             - hapi-fhir-config
     fhir-gateway:
@@ -192,7 +119,6 @@ services:
 
 
 volumes:
-    mongodb-data:
     hapi-fhir-postgres:
     hapi:
-    nphiis-mediators-postgres:
+    nphiis-postgres:

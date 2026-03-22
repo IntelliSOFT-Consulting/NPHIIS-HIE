@@ -96,6 +96,7 @@ services:
     hie-auth:
         depends_on:
             - hapi-fhir-jpa
+            - nphiis-postgres
         container_name: hie-auth
         build:
             context: ../hie-auth
@@ -104,36 +105,16 @@ services:
         networks:
             - cloudbuild
             - hapi-fhir
+            - openhim
         env_file:
             - ../hie-auth/.env
         volumes:
             - ../hie-auth:/usr/hie-auth
         ports:
             - "8088:3000"
-    
-    nphiis-mediators:
-        depends_on:
-            - hapi-fhir-jpa
-            - nphiis-mediators-postgres
-        container_name: nphiis-mediators
-        build:
-            context: nphiis-mediators
-            dockerfile: Dockerfile.dev
-        restart: unless-stopped
-        volumes:
-            - ./nphiis-mediators:/usr/app
-        networks:
-            - openhim
-            - hapi-fhir
-            - cloudbuild
-        ports:
-            - "8082:3000"
-        env_file:
-            - ./nphiis-mediators/.env
-            
 
-    nphiis-mediators-postgres:
-        container_name: nphiis-mediators-postgres
+    nphiis-postgres:
+        container_name: nphiis-postgres
         image: postgres:14-alpine
         restart: always
         networks:
@@ -146,7 +127,7 @@ services:
         # ports:
             # - "5432:5432"
         volumes:
-            - 'nphiis-mediators-postgres:/var/lib/postgresql/data'
+            - 'nphiis-postgres:/var/lib/postgresql/data'
 
     nphiis-admin:
         container_name: nphiis-admin
@@ -198,5 +179,5 @@ volumes:
     chanjo-mongodb-data:
     hapi-fhir-postgres:
     hapi:
-    nphiis-mediators-postgres:
+    nphiis-postgres:
 

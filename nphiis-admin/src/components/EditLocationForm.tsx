@@ -8,7 +8,9 @@ import { Location, CreateLocationRequest, LOCATION_TYPES } from '@/types/locatio
 import { locationApi } from '@/lib/api';
 import { 
   CheckCircleIcon,
-  XCircleIcon 
+  XCircleIcon,
+  ChevronDownIcon,
+  ChevronRightIcon, 
 } from '@heroicons/react/24/outline';
 
 interface EditLocationFormProps {
@@ -61,6 +63,11 @@ export default function EditLocationForm({ location, onLocationUpdated, onClose,
     subCountyId?: string;
     wardId?: string;
   }>({});
+
+  // Collapsible section state
+  const [isAddressOpen, setIsAddressOpen] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isGeoOpen, setIsGeoOpen] = useState(false);
 
   // Parse address fields
   const parseAddress = (address?: string) => {
@@ -646,174 +653,219 @@ export default function EditLocationForm({ location, onLocationUpdated, onClose,
               </div>
 
               {/* Address Information */}
-              <div>
-                <h3 className="text-base font-medium text-gray-900 mb-3">Address Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label htmlFor="addressLine" className="block text-sm font-medium text-gray-700">
-                      Street Address
-                    </label>
-                    <input
-                      {...register('addressLine')}
-                      type="text"
-                      id="addressLine"
-                      autoComplete="off"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
-                      placeholder="Enter street address"
-                    />
-                    {errors.addressLine && (
-                      <p className="mt-1 text-sm text-red-600">{errors.addressLine.message}</p>
-                    )}
-                  </div>
+              <div className="border border-gray-200 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => setIsAddressOpen((prev) => !prev)}
+                  className="w-full flex items-center justify-between px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-t-md"
+                >
+                  <h3 className="text-base font-medium text-gray-900">Address Information</h3>
+                  {isAddressOpen ? (
+                    <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                  ) : (
+                    <ChevronRightIcon className="h-5 w-5 text-gray-500" />
+                  )}
+                </button>
+                {isAddressOpen && (
+                  <div className="px-4 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="md:col-span-2">
+                        <label htmlFor="addressLine" className="block text-sm font-medium text-gray-700">
+                          Street Address
+                        </label>
+                        <input
+                          {...register('addressLine')}
+                          type="text"
+                          id="addressLine"
+                          autoComplete="off"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
+                          placeholder="Enter street address"
+                        />
+                        {errors.addressLine && (
+                          <p className="mt-1 text-sm text-red-600">{errors.addressLine.message}</p>
+                        )}
+                      </div>
 
-                  <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                      City/Town
-                    </label>
-                    <input
-                      {...register('city')}
-                      type="text"
-                      id="city"
-                      autoComplete="off"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
-                      placeholder="Enter city"
-                    />
-                    {errors.city && (
-                      <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
-                    )}
-                  </div>
+                      <div>
+                        <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                          City/Town
+                        </label>
+                        <input
+                          {...register('city')}
+                          type="text"
+                          id="city"
+                          autoComplete="off"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
+                          placeholder="Enter city"
+                        />
+                        {errors.city && (
+                          <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
+                        )}
+                      </div>
 
-                  <div>
-                    <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                      State/County
-                    </label>
-                    <input
-                      {...register('state')}
-                      type="text"
-                      id="state"
-                      autoComplete="off"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
-                      placeholder="Enter state/county"
-                    />
-                    {errors.state && (
-                      <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>
-                    )}
-                  </div>
+                      <div>
+                        <label htmlFor="state" className="block text-sm font-medium text-gray-700">
+                          State/County
+                        </label>
+                        <input
+                          {...register('state')}
+                          type="text"
+                          id="state"
+                          autoComplete="off"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
+                          placeholder="Enter state/county"
+                        />
+                        {errors.state && (
+                          <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>
+                        )}
+                      </div>
 
-                  <div>
-                    <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
-                      Postal Code
-                    </label>
-                    <input
-                      {...register('postalCode')}
-                      type="text"
-                      id="postalCode"
-                      autoComplete="off"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
-                      placeholder="Enter postal code"
-                    />
-                    {errors.postalCode && (
-                      <p className="mt-1 text-sm text-red-600">{errors.postalCode.message}</p>
-                    )}
-                  </div>
+                      <div>
+                        <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
+                          Postal Code
+                        </label>
+                        <input
+                          {...register('postalCode')}
+                          type="text"
+                          id="postalCode"
+                          autoComplete="off"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
+                          placeholder="Enter postal code"
+                        />
+                        {errors.postalCode && (
+                          <p className="mt-1 text-sm text-red-600">{errors.postalCode.message}</p>
+                        )}
+                      </div>
 
-                  <div>
-                    <label htmlFor="country" className="block text-sm font-medium text-gray-700">
-                      Country
-                    </label>
-                    <input
-                      {...register('country')}
-                      type="text"
-                      id="country"
-                      autoComplete="off"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
-                      placeholder="Enter country"
-                    />
-                    {errors.country && (
-                      <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
-                    )}
+                      <div>
+                        <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+                          Country
+                        </label>
+                        <input
+                          {...register('country')}
+                          type="text"
+                          id="country"
+                          autoComplete="off"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
+                          placeholder="Enter country"
+                        />
+                        {errors.country && (
+                          <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Contact Information */}
-              <div>
-                <h3 className="text-base font-medium text-gray-900 mb-3">Contact Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                      Phone Number
-                    </label>
-                    <input
-                      {...register('phone')}
-                      type="tel"
-                      id="phone"
-                      autoComplete="off"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
-                      placeholder="Enter phone number"
-                    />
-                    {errors.phone && (
-                      <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-                    )}
-                  </div>
+              <div className="border border-gray-200 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => setIsContactOpen((prev) => !prev)}
+                  className="w-full flex items-center justify-between px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-t-md"
+                >
+                  <h3 className="text-base font-medium text-gray-900">Contact Information</h3>
+                  {isContactOpen ? (
+                    <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                  ) : (
+                    <ChevronRightIcon className="h-5 w-5 text-gray-500" />
+                  )}
+                </button>
+                {isContactOpen && (
+                  <div className="px-4 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                          Phone Number
+                        </label>
+                        <input
+                          {...register('phone')}
+                          type="tel"
+                          id="phone"
+                          autoComplete="off"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
+                          placeholder="Enter phone number"
+                        />
+                        {errors.phone && (
+                          <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                        )}
+                      </div>
 
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                      Email Address
-                    </label>
-                    <input
-                      {...register('email')}
-                      type="email"
-                      id="email"
-                      autoComplete="off"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
-                      placeholder="Enter email address"
-                    />
-                    {errors.email && (
-                      <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-                    )}
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                          Email Address
+                        </label>
+                        <input
+                          {...register('email')}
+                          type="email"
+                          id="email"
+                          autoComplete="off"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
+                          placeholder="Enter email address"
+                        />
+                        {errors.email && (
+                          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Geographic Coordinates */}
-              <div>
-                <h3 className="text-base font-medium text-gray-900 mb-3">Geographic Coordinates (Optional)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="latitude" className="block text-sm font-medium text-gray-700">
-                      Latitude
-                    </label>
-                    <input
-                      {...register('latitude')}
-                      type="text"
-                      id="latitude"
-                      autoComplete="off"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
-                      placeholder="e.g., -1.2921"
-                    />
-                    {errors.latitude && (
-                      <p className="mt-1 text-sm text-red-600">{errors.latitude.message}</p>
-                    )}
-                  </div>
+              <div className="border border-gray-200 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => setIsGeoOpen((prev) => !prev)}
+                  className="w-full flex items-center justify-between px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-t-md"
+                >
+                  <h3 className="text-base font-medium text-gray-900">Geographic Coordinates (Optional)</h3>
+                  {isGeoOpen ? (
+                    <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                  ) : (
+                    <ChevronRightIcon className="h-5 w-5 text-gray-500" />
+                  )}
+                </button>
+                {isGeoOpen && (
+                  <div className="px-4 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="latitude" className="block text-sm font-medium text-gray-700">
+                          Latitude
+                        </label>
+                        <input
+                          {...register('latitude')}
+                          type="text"
+                          id="latitude"
+                          autoComplete="off"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
+                          placeholder="e.g., -1.2921"
+                        />
+                        {errors.latitude && (
+                          <p className="mt-1 text-sm text-red-600">{errors.latitude.message}</p>
+                        )}
+                      </div>
 
-                  <div>
-                    <label htmlFor="longitude" className="block text-sm font-medium text-gray-700">
-                      Longitude
-                    </label>
-                    <input
-                      {...register('longitude')}
-                      type="text"
-                      id="longitude"
-                      autoComplete="off"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
-                      placeholder="e.g., 36.8219"
-                    />
-                    {errors.longitude && (
-                      <p className="mt-1 text-sm text-red-600">{errors.longitude.message}</p>
-                    )}
+                      <div>
+                        <label htmlFor="longitude" className="block text-sm font-medium text-gray-700">
+                          Longitude
+                        </label>
+                        <input
+                          {...register('longitude')}
+                          type="text"
+                          id="longitude"
+                          autoComplete="off"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900"
+                          placeholder="e.g., 36.8219"
+                        />
+                        {errors.longitude && (
+                          <p className="mt-1 text-sm text-red-600">{errors.longitude.message}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Submit Button */}

@@ -28,6 +28,8 @@ Docker is an easy way to get started with Superset.
 
 ## Configuration
 
+If you do not have a `docker/.env` file yet, copy [`./docker/.env.example`](./.env.example) to `docker/.env` and adjust as needed. Do not commit `docker/.env` with real secrets.
+
 The `/app/pythonpath` folder is mounted from [`./docker/pythonpath_dev`](./pythonpath_dev)
 which contains a base configuration [`./docker/pythonpath_dev/superset_config.py`](./pythonpath_dev/superset_config.py)
 intended for use with local development.
@@ -69,6 +71,24 @@ Don't forget to reload the page to take the new frontend into account though.
 ## Production
 
 It is possible to run Superset in non-development mode by using [`docker-compose-non-dev.yml`](../docker-compose-non-dev.yml). This file excludes the volumes needed for development.
+
+### Production SECRET_KEY (CVE-2023-27524)
+
+To mitigate the session validation vulnerability [CVE-2023-27524](https://superset.apache.org/docs/security/), **never** use the default or a weak `SUPERSET_SECRET_KEY` in production.
+
+1. Generate a strong, random value, e.g.:
+   ```bash
+   openssl rand -base64 42
+   ```
+2. Set it for the Superset containers via one of:
+   - **Recommended:** Create or edit `docker/.env-local` (do not commit this file) and add:
+     ```bash
+     SUPERSET_SECRET_KEY=<your-generated-value>
+     ```
+   - Or set the `SUPERSET_SECRET_KEY` environment variable in your deployment (e.g. secrets manager).  
+   Compose loads `docker/.env` and then `docker/.env-local` (optional), so `docker/.env-local` overrides any value from `docker/.env`.
+3. Ensure the running Superset version on production hosts is **≥ 2.1.0** (check the Superset UI "About" or the image tag). If it is older, upgrade before relying on the above.
+4. After changing `SUPERSET_SECRET_KEY`, restart all Superset containers; existing user sessions will be invalidated.
 
 ## Resource Constraints
 

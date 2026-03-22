@@ -1,82 +1,99 @@
 import express, { Request, Response } from 'express';
-import { NotificationsApi } from '../lib/utils';
+import { FhirApi } from '../lib/utils';
+import { fcmService } from '../lib/fcm';
 import { authenticateUser } from '../lib/middleware';
+import { prisma } from '../lib/prisma';
 
 const router = express.Router();
 router.use(express.json());
 
-/**
- * POST /notifications/send
- * Proxy to nphiis-mediators /notifications/send
- * No authentication required (matches nphiis-mediators behavior)
- */
+/** Practitioner id for FHIR + DB: prefer FHIR Practitioner id from Keycloak attributes */
+function practitionerIdForUser(req: Request): string | undefined {
+    const u = (req as any).user;
+    return u?.attributes?.fhirPractitionerId?.[0] ?? u?.id ?? u?.sub;
+}
+
 router.post('/send', async (req: Request, res: Response) => {
     try {
-        const response = await NotificationsApi({
-            url: '/notifications/send',
-            method: 'POST',
-            data: JSON.stringify(req.body)
-        });
-
-        return res.status(response.statusCode || 200).json(response.data);
+        let { token, title, body } = req.body;
+        let response = await fcmService.sendToDevice(token, { title, body });
+        return res.status(200).json({ ...response, status: "success" });
     } catch (error) {
-        console.error('Error proxying notification send:', error);
+        console.error(error);
         return res.status(500).json({
             status: "error",
-            error: `Failed to proxy notification send request - ${JSON.stringify(error)}`
+            error: `Failed to send notification - ${JSON.stringify(error)}`
         });
     }
 });
 
-/**
- * POST /notifications/config
- * Proxy to nphiis-mediators /notifications/config
- * Requires authentication - validates token in hie-auth, then forwards to nphiis-mediators
- */
 router.post('/config', authenticateUser, async (req: Request, res: Response) => {
     try {
-        const accessToken = (req as any).accessToken;
-        const response = await NotificationsApi({
-            url: '/notifications/config',
-            method: 'POST',
-            data: JSON.stringify(req.body),
-            headers: {
-                Authorization: `Bearer ${accessToken}`
+        let data = req.body;
+        const practitionerId = practitionerIdForUser(req);
+        
+        if (!practitionerId) {
+            return res.status(401).json({
+                status: "error",
+                error: "User information not available"
+            });
+        }
+        
+        const notificationRecipient = await prisma.notificationRecipient.create({
+            data: {
+                token: data?.token,
+                practitionerId,
             }
         });
-
-        return res.status(response.statusCode || 200).json(response.data);
+        const practitioner = (await FhirApi({ url: `/Practitioner/${practitionerId}` })).data;
+        return res.status(200).json({
+            status: "success",
+            practitioner: {
+                ...practitioner, 
+                extension: [...(practitioner.extension || []), {
+                    url: "http://example.org/fhir/StructureDefinition/notification-recipient",
+                    valueReference: {
+                        reference: `NotificationRecipient/${notificationRecipient.id}`,
+                        display: notificationRecipient.token
+                    }
+                }]
+            }
+        });
     } catch (error) {
-        console.error('Error proxying notification config:', error);
+        console.error(error);
         return res.status(500).json({
             status: "error",
-            error: `Failed to proxy notification config request - ${JSON.stringify(error)}`
+            error: `Failed to configure notification - ${JSON.stringify(error)}`
         });
     }
 });
 
-/**
- * GET /notifications/
- * Proxy to nphiis-mediators /notifications/
- * Requires authentication - validates token in hie-auth, then forwards to nphiis-mediators
- */
 router.get('/', authenticateUser, async (req: Request, res: Response) => {
     try {
-        const accessToken = (req as any).accessToken;
-        const response = await NotificationsApi({
-            url: '/notifications/',
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${accessToken}`
+        const practitionerId = practitionerIdForUser(req);
+        
+        if (!practitionerId) {
+            return res.status(401).json({ 
+                status: "error", 
+                error: "User information not available" 
+            });
+        }
+        
+        const notifications = await prisma.notification.findMany({
+            where: {
+                practitionerId
             }
         });
-
-        return res.status(response.statusCode || 200).json(response.data);
+        return res.status(200).json({ 
+            status: "success", 
+            notifications,
+            total: notifications.length 
+        });
     } catch (error) {
-        console.error('Error proxying notifications list:', error);
-        return res.status(500).json({
-            status: "error",
-            error: `Failed to proxy notifications list request - ${JSON.stringify(error)}`
+        console.error(error);
+        return res.status(500).json({ 
+            status: "error", 
+            error: "Failed to get notifications" 
         });
     }
 });
