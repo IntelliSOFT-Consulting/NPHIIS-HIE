@@ -17,7 +17,11 @@ import ClientAuth from './routes/client-auth'
 import ProviderAuth from './routes/provider-auth'
 import Reports from './routes/reports'
 import Notifications from './routes/notifications'
+import Subscriptions from './routes/subscriptions'
 import FHIRProxy from './routes/fhir-proxy'
+import { createFHIRSubscription } from './lib/fhir-subscriptions'
+
+import './lib/schedule'
 
 const app = express();
 const PORT = 3000;
@@ -41,8 +45,10 @@ app.use('/client', ClientAuth)
 app.use('/provider', ProviderAuth)
 app.use('/reports', Reports)
 app.use('/notifications', Notifications)
+app.use('/subscriptions', Subscriptions)
 app.use('/fhir', FHIRProxy)
 
 app.listen(PORT, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
+  createFHIRSubscription().catch((e) => console.error('FHIR subscription setup failed:', e));
 });

@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { authenticateUser } from "../lib/middleware";
 
 const router = express.Router();
-router.use(express.json());
+router.use(express.json({ type: ['application/json', 'application/fhir+json'] }));
 
 const FHIR_BASE_URL = process.env.FHIR_BASE_URL;
 
@@ -18,23 +18,27 @@ router.all("*", authenticateUser, async (req: Request, res: Response) => {
             });
         }
 
-        // Build the target URL
-        const targetPath = req.params[0] || "";
-        const queryString = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
-        const targetUrl = `${FHIR_BASE_URL}/${targetPath}${queryString}`;
+        // Build the target URL (preserve full path and query as received under /fhir)
+        const baseUrl = FHIR_BASE_URL.replace(/\/$/, '');
+        const pathAndQuery = req.url && req.url.startsWith('?') ? '/' + req.url : (req.url || '/');
+        const targetUrl = baseUrl + pathAndQuery;
 
         // Prepare headers for HAPI FHIR server
         const reqContentType = req.headers['content-type'];
         const reqAccept = req.headers['accept'];
-        
+        const acceptStr = reqAccept ? (Array.isArray(reqAccept) ? reqAccept[0] : reqAccept) : '';
+        const contentTypeStr = reqContentType ? (Array.isArray(reqContentType) ? reqContentType[0] : reqContentType) : '';
+
         const headers: HeadersInit = {
-            'Content-Type': reqContentType 
-                ? (Array.isArray(reqContentType) ? reqContentType[0] : reqContentType)
-                : 'application/fhir+json',
-            'Accept': reqAccept
-                ? (Array.isArray(reqAccept) ? reqAccept[0] : reqAccept)
-                : 'application/fhir+json',
+            'Accept': (acceptStr && acceptStr !== '*/*')
+                ? acceptStr
+                : 'application/fhir+json, application/json;q=0.9',
         };
+        if (contentTypeStr) {
+            headers['Content-Type'] = contentTypeStr;
+        } else if (['POST', 'PUT', 'PATCH'].indexOf(req.method) > -1) {
+            headers['Content-Type'] = 'application/fhir+json';
+        }
 
         // Forward authorization header if present
         if (req.headers.authorization) {
@@ -82,12 +86,17 @@ router.all("*", authenticateUser, async (req: Request, res: Response) => {
         console.log(`Proxying ${req.method} request to HAPI FHIR: ${targetUrl}`);
         const response = await fetch(targetUrl, fetchOptions);
         
-        // Get response body
+        // Get response body (treat any JSON-like content-type as JSON, including application/fhir+json)
         const contentType = response.headers.get('content-type');
-        let data;
-        
-        if (contentType && contentType.includes('application/json')) {
-            data = await response.json();
+        let data: string | object;
+        const isJsonResponse = contentType && contentType.includes('json');
+        if (isJsonResponse) {
+            const text = await response.text();
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch {
+                data = text;
+            }
         } else {
             data = await response.text();
         }

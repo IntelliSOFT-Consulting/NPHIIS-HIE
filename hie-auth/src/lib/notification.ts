@@ -1,14 +1,12 @@
 import { prisma } from "./prisma";
-import { FhirApi, sendMediatorRequest } from "./utils";
+import { FhirApi } from "./utils";
+import { fcmService } from "./fcm";
 
-const AUTH_SERVICE_URL = process.env['AUTH_SERVICE_URL'] || "http://hie-auth:3000"
-
-const reminderMessage = `Follow up for AFP case {} is due. Please complete and submit the follow-up investigation form.`
+const reminderMessageTemplate = `Follow up for AFP case {} is due. Please complete and submit the follow-up investigation form.`
 const messageTitle = "60-day AFP Follow Up Reminder"
 
 
 export const processAfpObservation = async (observation: any) => {
-    // Derive investigation date from the Observation with multiple fallbacks
     const candidateDates: Array<string | undefined> = [
         observation?.valueDateTime,
         observation?.valueDate,
@@ -21,7 +19,6 @@ export const processAfpObservation = async (observation: any) => {
         return { status: "error", error: "Invalid or missing investigation date in Observation" };
     }
 
-    // 60-day follow up due date
     const due = new Date(investigation);
     due.setDate(due.getDate() + 60);
     const practitionerId = observation?.performer?.[0]?.reference?.split('/')[1];
@@ -31,10 +28,9 @@ export const processAfpObservation = async (observation: any) => {
     const caseId = encounter?.identifier?.find((id: any) => id.system === "http://hie.org/identifiers/EPID")?.value;
     console.log("caseId:", caseId);
 
-    let notification = null;
-    // check if notification already exists
-    reminderMessage.replace('{}', caseId);
-    notification = await prisma.notification.findFirst({
+    const bodyText = reminderMessageTemplate.replace('{}', caseId ?? '');
+
+    let notification = await prisma.notification.findFirst({
         where: {
             practitionerId,
             encounterId,
@@ -46,12 +42,12 @@ export const processAfpObservation = async (observation: any) => {
                 id: notification.id,
             },
             data: {
-                body: reminderMessage,
-                dueDate: due.toISOString(),
+                body: bodyText,
+                dueDate: due,
                 title: messageTitle,
                 practitionerId,
                 encounterId,
-                investigationDate: investigation.toISOString(),
+                investigationDate: investigation,
             }
         })
     }
@@ -59,11 +55,11 @@ export const processAfpObservation = async (observation: any) => {
         notification = await prisma.notification.create({
             data: {
                 title: messageTitle,
-                body: reminderMessage,
+                body: bodyText,
                 practitionerId,
                 encounterId,
-                investigationDate: investigation.toISOString(),
-                dueDate: due.toISOString(),
+                investigationDate: investigation,
+                dueDate: due,
             }
         })
     }
@@ -82,32 +78,6 @@ export const processAfpObservation = async (observation: any) => {
 }
 
 
-export const getUserInfoFromToken = async (token: string) => {
-    try {
-        const response = await fetch(`${AUTH_SERVICE_URL}/provider/me`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            }
-        })
-        const data = await response.json()
-        
-        // Extract the user object from the response
-        // The API returns { status: "success", user: { id: "...", ... } }
-        if (data && data.user) {
-            return data.user
-        }
-        
-        // Fallback: if response structure is different, return the data as-is
-        // This handles edge cases where the API might return the user object directly
-        console.warn('Unexpected response structure from /provider/me:', data)
-        return data
-    } catch (error) {
-        console.error(error)
-        return null
-    }
-}
-
-
 /**
  * Send notifications that are due today or earlier
  * Retries FAILED notifications if their due date is within the last 2 days
@@ -116,23 +86,19 @@ export const sendDueNotifications = async () => {
     try {
         console.log('[Notification Cron] Starting to process due notifications...');
         
-        // Get current date in EAT timezone (Africa/Nairobi)
         const now = new Date();
-        const eatOffset = 3 * 60; // EAT is UTC+3 (in minutes)
+        const eatOffset = 3 * 60;
         const utcOffset = now.getTimezoneOffset();
         const eatTime = new Date(now.getTime() + (eatOffset + utcOffset) * 60 * 1000);
         
-        // Set to start of day (00:00:00) for comparison
         const todayEAT = new Date(eatTime.getFullYear(), eatTime.getMonth(), eatTime.getDate());
         
-        // Calculate 2 days ago for retry window
         const twoDaysAgo = new Date(todayEAT);
         twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
         
         console.log(`[Notification Cron] Current EAT date: ${todayEAT.toISOString()}`);
         console.log(`[Notification Cron] Retry window starts: ${twoDaysAgo.toISOString()}`);
         
-        // Query for PENDING notifications where dueDate is today or earlier
         const pendingNotifications = await prisma.notification.findMany({
             where: {
                 status: 'PENDING',
@@ -142,7 +108,6 @@ export const sendDueNotifications = async () => {
             }
         });
         
-        // Query for FAILED notifications within the last 2 days (for retry)
         const failedNotifications = await prisma.notification.findMany({
             where: {
                 status: 'FAILED',
@@ -165,10 +130,8 @@ export const sendDueNotifications = async () => {
         let sentCount = 0;
         let failedCount = 0;
         
-        // Process each notification
         for (const notification of allNotifications) {
             try {
-                // Get the FCM token for this practitioner
                 const recipient = await prisma.notificationRecipient.findFirst({
                     where: {
                         practitionerId: notification.practitionerId
@@ -177,19 +140,15 @@ export const sendDueNotifications = async () => {
                 
                 if (!recipient || !recipient.token) {
                     console.warn(`[Notification Cron] No FCM token found for practitioner ${notification.practitionerId}, skipping notification ${notification.id}`);
-                    // Don't mark as failed, just skip - token might be added later
                     continue;
                 }
                 
-                // Send notification via mediator endpoint
-                const fcmResponse = await sendMediatorRequest("/notifications/send", {
-                    token: recipient.token,
+                const fcmResponse = await fcmService.sendToDevice(recipient.token, {
                     title: notification.title,
                     body: notification.body
                 });
                 
                 if (fcmResponse && fcmResponse.success) {
-                    // Update notification status to SENT
                     await prisma.notification.update({
                         where: { id: notification.id },
                         data: { status: 'SENT' }
@@ -197,7 +156,6 @@ export const sendDueNotifications = async () => {
                     sentCount++;
                     console.log(`[Notification Cron] Successfully sent notification ${notification.id}`);
                 } else {
-                    // Update notification status to FAILED
                     await prisma.notification.update({
                         where: { id: notification.id },
                         data: { status: 'FAILED' }
@@ -207,7 +165,6 @@ export const sendDueNotifications = async () => {
                 }
             } catch (error) {
                 console.error(`[Notification Cron] Error processing notification ${notification.id}:`, error);
-                // Mark as failed
                 try {
                     await prisma.notification.update({
                         where: { id: notification.id },
@@ -228,15 +185,3 @@ export const sendDueNotifications = async () => {
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
-
-
-// process obs retrospectively
-// export const processObsRetrospectively = async () => {
-
-//     let obs = (await FhirApi({ url: `/Observation?code=502488184403&_count=1000` })).data;
-//     for (const observation of obs?.entry ?? []) {
-//         await processAfpObservation(obs);
-//     }
-
-    
-// }
