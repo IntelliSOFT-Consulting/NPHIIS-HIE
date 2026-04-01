@@ -2,7 +2,14 @@ import express, { Request, Response } from "express";
 import { authenticateUser } from "../lib/middleware";
 
 const router = express.Router();
-router.use(express.json({ type: ['application/json', 'application/fhir+json'] }));
+/** Default 2mb; override with FHIR_PROXY_JSON_BODY_LIMIT (e.g. `5mb`). */
+const FHIR_PROXY_JSON_BODY_LIMIT = process.env.FHIR_PROXY_JSON_BODY_LIMIT ?? "2mb";
+router.use(
+  express.json({
+    type: ["application/json", "application/fhir+json"],
+    limit: FHIR_PROXY_JSON_BODY_LIMIT,
+  })
+);
 
 const FHIR_BASE_URL = process.env.FHIR_BASE_URL;
 
