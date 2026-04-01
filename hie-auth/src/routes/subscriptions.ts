@@ -1,194 +1,274 @@
-import express, { Request, Response } from 'express';
-import { FhirApi, OperationOutcome, FhirIdentifier } from '../lib/utils';
-import { processFollowUpObservations } from '../lib/fhir';
-import { generateCaseId } from '../lib/caseIdTracker';
+import express, { Request, Response, NextFunction } from 'express';
+import { FhirApi, OperationOutcome } from '../lib/utils';
 import { processAfpObservation } from '../lib/notification';
+import { assignEpidForEncounter } from '../lib/epid-assignment';
+import { attachSubscriptionAuditLog } from '../lib/subscription-audit';
+import { requireInternalApiKey } from '../middleware/internal-api-key';
+import { orderEncounterIdsByV1 } from '../lib/fhir-resource-history';
+import { runEncounterBackfillJob } from '../lib/encounter-backfill-job';
 
 const router = express.Router();
 router.use(express.json() as any);
 
-const POSSIBLE_REASON_CODES: Record<string, string> = {
-  "Measles Case Information": "MEA",
-  "MOH 505 Reporting Form": "MOH505",
-  "AFP Case Information": "AFP"
-}
+const MAX_BATCH_RETRY = 50;
 
-function padStart(str: string, targetLength: number, padChar: string = '0'): string {
-  while (str.length < targetLength) {
-    str = padChar + str;
-  }
-  return str;
-}
+type AlreadyEpidResponseMode = '400' | '200skipped';
 
-function toThreeDigits(num: number): string {
-  return padStart(num.toString(), 3, '0');
-}
-
-function getValidYear(dateString: string | undefined, fallbackDate: Date = new Date()): number {
-  if (!dateString) {
-    return fallbackDate.getFullYear();
-  }
-
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) {
-    return fallbackDate.getFullYear();
-  }
-
-  return date.getFullYear();
-}
-
-async function assignIdsHandler(req: Request, res: Response) {
+async function assignIdsHandler(
+  req: Request,
+  res: Response,
+  options?: { alreadyEpidResponse?: AlreadyEpidResponseMode }
+): Promise<void | Response> {
   try {
-    let data = req.body;
-    let caseId;
+    const data = req.body;
+    const result = await assignEpidForEncounter(data);
 
-    let encounterCodeSystem = "http://hie.org/identifiers/EPID";
-    let reasonCode = data?.reasonCode?.[0]?.coding?.[0]?.code;
-
-    let patientId = data?.subject?.reference?.split("/")[1];
-    let patient = await (await FhirApi({ url: `/Patient/${patientId}` })).data;
-
-    let onsetDate = patient?.identifier?.find((id: any) =>
-      id.system === "system-creation" &&
-      id.type?.coding?.some((coding: any) =>
-        coding.code === "system_creation"
-      )
-    )?.value;
-    let normalizedOnsetDate = onsetDate;
-    if (onsetDate && typeof onsetDate === "string") {
-      normalizedOnsetDate = onsetDate.split(" ")[0];
+    if (result.kind === 'already_official_epid') {
+      if (options?.alreadyEpidResponse === '200skipped') {
+        res.locals.subscriptionOutcome = 'skipped';
+        return res.status(200).json(
+          OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID', 'information')
+        );
+      }
+      res.locals.subscriptionOutcome = 'error';
+      return res.status(400).json(
+        OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID')
+      );
     }
 
-    if (!normalizedOnsetDate && patient?.birthDate) {
-      normalizedOnsetDate = patient.birthDate;
-      console.log("Using Patient birthDate as fallback for EPID year");
+    if (result.kind === 'error') {
+      console.error(result.error);
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = String(result.error);
+      return res.status(400).json(OperationOutcome(result.error));
     }
 
-    const yearForId = getValidYear(normalizedOnsetDate);
-
-    if (!onsetDate) {
-      console.warn(`Patient ${patientId} missing system-creation identifier. Using fallback for EPID year: ${yearForId}`);
-    }
-
-    let epidIdentifier = patient?.identifier?.find((id: any) =>
-      id.type?.coding?.some((coding: any) =>
-        coding.system === "http://hie.org/identifiers/EPID"
-      )
-    );
-
-    if (epidIdentifier?.use === "official") {
-      console.log("Patient already has an official id with the system http://hie.org/identifiers/EPID");
-      processFollowUpObservations(data?.id);
-      return res.status(400).json(OperationOutcome("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
-    }
-
-    if (epidIdentifier) {
-      patient.identifier = patient.identifier.filter((id: any) => !(
-        Array.isArray(id?.type?.coding) &&
-        id.type.coding.some(
-          (coding: any) =>
-            coding.system === "http://hie.org/identifiers/EPID"
-        )
-      ));
-    }
-
-    const rc = reasonCode ? String(reasonCode) : "";
-    let caseCondition = POSSIBLE_REASON_CODES[rc] || (rc ? rc.toUpperCase().slice(0, 3) : "UNK");
-
-    const subCountyCode = "a3-sub-county";
-    const subCountyObservation = await (await FhirApi({ url: `/Observation?code=${subCountyCode}&encounter=${data?.id}` })).data?.entry?.[0]?.resource;
-    const subCounty = await (await FhirApi({ url: `/Location?name=${subCountyObservation?.valueString}` })).data?.entry?.[0]?.resource;
-    const county = await (await FhirApi({ url: `/Location/${subCounty?.partOf?.reference?.split("/")[1]}` })).data;
-    const country = await (await FhirApi({ url: `/Location/${county?.partOf?.reference?.split("/")[1]}` })).data;
-
-    const subCountyName = subCounty?.name?.toUpperCase()?.trim();
-    const countyName = county?.name?.toUpperCase()?.trim();
-    const countryName = country?.name?.toUpperCase()?.trim();
-
-    caseId = await generateCaseId(countryName, countyName, subCountyName, caseCondition);
-
-    let formattedId = `${countryName.substring(0, 3)}-${countyName.substring(0, 3)}-${subCountyName.substring(0, 3)}-${yearForId}-${caseCondition}-${toThreeDigits(caseId)}`;
-
-    let newId = FhirIdentifier(encounterCodeSystem, "EPID", "Epidemiological ID", formattedId, true);
-
-    await (await FhirApi({
-      url: `/Patient/${patientId}`, method: "PUT",
-      data: JSON.stringify({
-        ...patient,
-        identifier: [
-          ...patient?.identifier,
-          newId
-        ]
-      })
-    })).data;
-    console.log("updatedPatient:", newId);
-
-    data.identifier = data.identifier.filter((id: any) => id.system !== encounterCodeSystem);
-    data.identifier.push(newId)
-    let updatedEncounter = await (await FhirApi({
-      url: `/Encounter/${data?.id}`, method: "PUT",
-      data: JSON.stringify({ ...data, identifier: [{ system: encounterCodeSystem, value: formattedId }] })
-    })).data;
-
-    processFollowUpObservations(data?.id);
-    return res.status(200).json(updatedEncounter);
+    res.locals.subscriptionOutcome = 'success';
+    return res.status(200).json(result.encounter);
   } catch (error) {
     console.error(error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
     return res.status(400).json(OperationOutcome(error));
   }
 }
 
-router.put('/encounters/notifications/Encounter/:id', async (req, res) => {
-  console.log("Encounter subscription triggered for ID:", req.params.id);
+router.put('/encounters/notifications/Encounter/:id', async (req: Request, res: Response) => {
+  console.log('Encounter subscription triggered for ID:', req.params.id);
+  const start = Date.now();
+  attachSubscriptionAuditLog(
+    res,
+    { route: 'encounter-notification', resourceType: 'Encounter', resourceId: req.params.id },
+    start
+  );
+
   try {
-    let { id } = req.params;
-    let data = await (await FhirApi({ url: `/Encounter/${id}` })).data;
+    const { id } = req.params;
+    const data = (await FhirApi({ url: `/Encounter/${id}` })).data;
 
-    let patient = await (await FhirApi({ url: `/Patient/${data?.subject?.reference?.split("/")[1]}` })).data;
+    const patient = (await FhirApi({ url: `/Patient/${data?.subject?.reference?.split('/')[1]}` })).data;
 
-    if (patient?.identifier?.some((id: any) => id.system === "http://hie.org/identifiers/EPID" && id.use === "official")) {
-      return res.status(200).json(OperationOutcome("Patient already has an official id with the system http://hie.org/identifiers/EPID"));
+    if (patient?.identifier?.some((idEnt: any) => idEnt.system === 'http://hie.org/identifiers/EPID' && idEnt.use === 'official')) {
+      res.locals.subscriptionOutcome = 'skipped';
+      return res.status(200).json(
+        OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID', 'information')
+      );
     }
 
     (req as any).body = data;
-    return assignIdsHandler(req, res);
+    return assignIdsHandler(req, res, { alreadyEpidResponse: '200skipped' });
   } catch (error) {
-    console.error("Error in Encounter subscription:", error);
+    console.error('Error in Encounter subscription:', error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
     res.statusCode = 400;
     res.json(OperationOutcome(error));
     return;
   }
 });
 
-router.post('/encounters/assign-ids', assignIdsHandler);
-
-router.put('/observations/notifications/Observation/:id', async (req, res) => {
-  console.log("Observation subscription triggered for ID:", req.params.id);
+/**
+ * Manual trigger for full Encounter backfill (EPID + AFP follow-up), same logic as the optional cron.
+ * Requires X-Internal-Api-Key. Returns 409 if a run is already in progress.
+ */
+router.post('/encounters/backfill-run', requireInternalApiKey, async (req: Request, res: Response) => {
+  const start = Date.now();
+  attachSubscriptionAuditLog(
+    res,
+    { route: 'backfill-run', resourceType: 'Encounter', resourceId: 'all' },
+    start
+  );
   try {
-    let { id } = req.params;
-    let data = await (await FhirApi({ url: `/Observation/${id}` })).data;
+    const stats = await runEncounterBackfillJob();
+    if (stats.skippedBecauseAlreadyRunning) {
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = 'Encounter backfill already running';
+      return res.status(409).json(OperationOutcome('Encounter backfill is already running', 'error'));
+    }
+    res.locals.subscriptionOutcome = 'success';
+    return res.status(200).json({ status: 'completed', stats });
+  } catch (error) {
+    console.error('backfill-run:', error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
+    return res.status(500).json(OperationOutcome(error));
+  }
+});
+
+router.post('/encounters/assign-ids', async (req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  attachSubscriptionAuditLog(res, { route: 'assign-ids', resourceType: 'Encounter', resourceId: req.body?.id }, start);
+  try {
+    await assignIdsHandler(req, res, { alreadyEpidResponse: '400' });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/encounters/retry-epid', requireInternalApiKey, async (req: Request, res: Response) => {
+  const start = Date.now();
+  attachSubscriptionAuditLog(res, { route: 'retry-epid', resourceType: 'Encounter', resourceId: req.body?.encounterId }, start);
+
+  try {
+    const encounterId = req.body?.encounterId as string | undefined;
+    const encounterIds = req.body?.encounterIds as string[] | undefined;
+
+    if (encounterIds !== undefined && Array.isArray(encounterIds)) {
+      if (encounterIds.length === 0) {
+        res.locals.subscriptionOutcome = 'error';
+        res.locals.subscriptionErrorMessage = 'encounterIds must be non-empty';
+        return res.status(400).json(OperationOutcome('encounterIds must be a non-empty array'));
+      }
+      if (encounterIds.length > MAX_BATCH_RETRY) {
+        res.locals.subscriptionOutcome = 'error';
+        res.locals.subscriptionErrorMessage = `At most ${MAX_BATCH_RETRY} encounters per request`;
+        return res.status(400).json(OperationOutcome(`At most ${MAX_BATCH_RETRY} encounters per request`));
+      }
+
+      const normalizedIds = [...new Set(encounterIds.map((x) => String(x).trim()).filter(Boolean))];
+      const orderedEncounterIds = await orderEncounterIdsByV1(normalizedIds);
+
+      const results: { encounterId: string; ok: boolean; error?: string }[] = [];
+      for (const eid of orderedEncounterIds) {
+        const enc = (await FhirApi({ url: `/Encounter/${eid}` })).data;
+        if (!enc?.id || enc.resourceType !== 'Encounter') {
+          results.push({ encounterId: eid, ok: false, error: 'Encounter not found' });
+          continue;
+        }
+        const patient = (await FhirApi({ url: `/Patient/${enc?.subject?.reference?.split('/')[1]}` })).data;
+        if (patient?.identifier?.some((x: any) => x.system === 'http://hie.org/identifiers/EPID' && x.use === 'official')) {
+          results.push({ encounterId: eid, ok: true });
+          continue;
+        }
+        const r = await assignEpidForEncounter(enc);
+        if (r.kind === 'success') {
+          results.push({ encounterId: eid, ok: true });
+        } else if (r.kind === 'already_official_epid') {
+          results.push({ encounterId: eid, ok: true });
+        } else {
+          results.push({ encounterId: eid, ok: false, error: String(r.error) });
+        }
+      }
+
+      const anyFailed = results.some((r) => !r.ok);
+      res.locals.subscriptionOutcome = anyFailed ? 'error' : 'success';
+      if (anyFailed) {
+        res.locals.subscriptionDetail = { results, orderedEncounterIds };
+        res.locals.subscriptionErrorMessage = 'One or more encounters failed';
+      }
+      return res.status(200).json({ results, orderedEncounterIds });
+    }
+
+    if (!encounterId || typeof encounterId !== 'string') {
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = 'encounterId or encounterIds required';
+      return res.status(400).json(OperationOutcome('Provide encounterId (string) or encounterIds (string array)'));
+    }
+
+    const data = (await FhirApi({ url: `/Encounter/${encounterId}` })).data;
+    if (!data?.id || data.resourceType !== 'Encounter') {
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = 'Encounter not found';
+      return res.status(404).json(OperationOutcome('Encounter not found'));
+    }
+
+    const patient = (await FhirApi({ url: `/Patient/${data?.subject?.reference?.split('/')[1]}` })).data;
+    if (patient?.identifier?.some((x: any) => x.system === 'http://hie.org/identifiers/EPID' && x.use === 'official')) {
+      res.locals.subscriptionOutcome = 'skipped';
+      return res.status(200).json(
+        OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID', 'information')
+      );
+    }
+
+    const result = await assignEpidForEncounter(data);
+    if (result.kind === 'already_official_epid') {
+      res.locals.subscriptionOutcome = 'skipped';
+      return res.status(200).json(
+        OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID', 'information')
+      );
+    }
+    if (result.kind === 'error') {
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = String(result.error);
+      return res.status(400).json(OperationOutcome(result.error));
+    }
+
+    res.locals.subscriptionOutcome = 'success';
+    return res.status(200).json(result.encounter);
+  } catch (error) {
+    console.error(error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
+    return res.status(400).json(OperationOutcome(error));
+  }
+});
+
+router.put('/observations/notifications/Observation/:id', async (req: Request, res: Response) => {
+  console.log('Observation subscription triggered for ID:', req.params.id);
+  const start = Date.now();
+  attachSubscriptionAuditLog(
+    res,
+    { route: 'observation-notification', resourceType: 'Observation', resourceId: req.params.id },
+    start
+  );
+
+  try {
+    const { id } = req.params;
+    const data = (await FhirApi({ url: `/Observation/${id}` })).data;
     const response = await processAfpObservation(data);
-    if (response?.status === "success") {
+    if (response?.status === 'success') {
+      res.locals.subscriptionOutcome = 'success';
       return res.status(200).json(OperationOutcome('AFP Follow Up processed successfully', 'information'));
     }
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = response?.error ?? 'Failed to process AFP Follow Up';
     return res.status(400).json(OperationOutcome(response?.error ?? 'Failed to process AFP Follow Up', 'error'));
   } catch (error) {
-    console.error("Error in Observation subscription:", error);
+    console.error('Error in Observation subscription:', error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
     return res.status(400).json(OperationOutcome('Failed to process AFP Follow Up', 'error'));
   }
 });
 
-router.post('/observations/afp-follow-up', async (req, res) => {
+router.post('/observations/afp-follow-up', async (req: Request, res: Response) => {
+  const start = Date.now();
+  attachSubscriptionAuditLog(res, { route: 'afp-follow-up', resourceType: 'Observation', resourceId: req.body?.id }, start);
+
   try {
-    let data = req.body;
+    const data = req.body;
     const response = await processAfpObservation(data);
-    if(response?.status === "success"){
+    if (response?.status === 'success') {
+      res.locals.subscriptionOutcome = 'success';
       return res.status(200).json(OperationOutcome('Notification created successfully', 'information'));
     }
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = response?.error ?? 'Failed to create notification';
     return res.status(400).json(OperationOutcome(response?.error ?? 'Failed to create notification', 'error'));
-
   } catch (error) {
     console.error(error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
     return res.status(400).json(OperationOutcome('Failed to create notification', 'error'));
   }
 });
