@@ -12,7 +12,7 @@ console.log("HAPI FHIR: ", apiHost)
 
 // a fetch wrapper for HAPI FHIR server.
 export const FhirApi = async (params: any) => {
-    let _defaultHeaders = { "Content-Type": 'application/json' }
+    let _defaultHeaders = { "Content-Type": 'application/json', ...(params.headers || {}) }
     if (!params.method) {
         params.method = 'GET';
     }
