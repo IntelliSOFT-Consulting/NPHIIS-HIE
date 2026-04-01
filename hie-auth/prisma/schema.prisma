@@ -48,3 +48,23 @@ enum NotificationStatus {
   SENT
   FAILED
 }
+
+enum SubscriptionCallbackOutcome {
+  success
+  error
+  skipped
+}
+
+/// Inbound REST-hook callbacks from HAPI FHIR to hie-auth (subscription notifications, manual EPID retry).
+model FhirSubscriptionCallbackLog {
+  id           String                     @id @default(uuid())
+  createdAt    DateTime                   @default(now())
+  route        String
+  resourceType String
+  resourceId   String?
+  httpStatus   Int
+  outcome      SubscriptionCallbackOutcome
+  errorMessage String?
+  detail       Json?
+  durationMs   Int?
+}

@@ -1,4 +1,6 @@
+### EPID assignment
 
+See [docs/EPID.md](docs/EPID.md) for when epidemiological IDs are generated (subscriptions, cron, manual endpoints) and when they are skipped.
 
 #### Development Mode
 
