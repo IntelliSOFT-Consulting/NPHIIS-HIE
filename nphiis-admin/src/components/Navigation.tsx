@@ -1,71 +1,59 @@
 'use client';
 
-import { 
-  UsersIcon, 
-  UserPlusIcon, 
-  CogIcon,
-  HomeIcon,
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  UsersIcon,
   ChartBarIcon,
-  MapPinIcon
+  MapPinIcon,
+  BeakerIcon,
 } from '@heroicons/react/24/outline';
+import { useAuth } from '@/lib/auth-context';
 
-interface NavigationProps {
-  activeTab: 'dashboard' | 'users' | 'locations' | 'settings';
-  onTabChange: (tab: 'dashboard' | 'users' | 'locations' | 'settings') => void;
+interface NavItem {
+  name: string;
+  href: string;
+  icon: typeof UsersIcon;
+  visible: boolean;
 }
 
-export default function Navigation({ activeTab, onTabChange }: NavigationProps) {
-  const navigation = [
-    {
-      name: 'Dashboard',
-      tab: 'dashboard' as const,
-      icon: ChartBarIcon,
-      current: activeTab === 'dashboard',
-    },
-    {
-      name: 'Users',
-      tab: 'users' as const,
-      icon: UsersIcon,
-      current: activeTab === 'users',
-    },
-    {
-      name: 'Locations',
-      tab: 'locations' as const,
-      icon: MapPinIcon,
-      current: activeTab === 'locations',
-    },
-    // {
-    //   name: 'Settings',
-    //   tab: 'settings' as const,
-    //   icon: CogIcon,
-    //   current: activeTab === 'settings',
-    // },
+export default function Navigation() {
+  const { can } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname() ?? '';
+
+  const navigation: NavItem[] = [
+    { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon, visible: true },
+    { name: 'Users', href: '/users', icon: UsersIcon, visible: can('USERS_MANAGE') },
+    { name: 'Locations', href: '/locations', icon: MapPinIcon, visible: true },
+    { name: 'Lab', href: '/lab', icon: BeakerIcon, visible: can('LAB_ACCESS') },
   ];
 
   return (
-    <nav className="space-y-1">
-      {navigation.map((item) => {
-        const Icon = item.icon;
-        return (
-          <button
-            key={item.name}
-            onClick={() => onTabChange(item.tab)}
-            className={`${
-              item.current
-                ? 'bg-blue-50 border-blue-500 text-blue-700'
-                : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            } group flex items-center pl-2 py-2 text-sm font-medium border-l-4 transition duration-150 ease-in-out w-full text-left`}
-          >
-            <Icon
-              className={`${
-                item.current ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
-              } mr-3 flex-shrink-0 h-5 w-5 transition duration-150 ease-in-out`}
-              aria-hidden="true"
-            />
-            {item.name}
-          </button>
-        );
-      })}
+    <nav className="space-y-1.5">
+      {navigation
+        .filter((item) => item.visible)
+        .map((item) => {
+          const Icon = item.icon;
+          const current = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          return (
+            <button
+              key={item.name}
+              onClick={() => router.push(item.href)}
+              className={`group flex items-center w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                current
+                  ? 'bg-nphi-gradient text-white shadow-sm'
+                  : 'text-nphi-900/70 hover:bg-nphi-50 hover:text-nphi-800'
+              }`}
+            >
+              <Icon
+                className={`mr-3 h-5 w-5 flex-shrink-0 ${
+                  current ? 'text-white' : 'text-nphi-700/70 group-hover:text-nphi-700'
+                }`}
+              />
+              {item.name}
+            </button>
+          );
+        })}
     </nav>
   );
 }

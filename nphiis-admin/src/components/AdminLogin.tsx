@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { Eye, EyeOff } from '@untitled-ui/icons-react';
+import { Field, TextInput } from './ui/Field';
+import { Alert } from './ui/Alert';
 
 interface AdminLoginProps {
   onLogin: (idNumber: string, password: string) => Promise<boolean>;
@@ -21,11 +23,11 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
     setError('');
 
     const success = await onLogin(idNumber, password);
-    
+
     if (!success) {
       setError('Invalid ID number or password');
     }
-    
+
     setIsLoading(false);
   };
 
@@ -66,81 +68,60 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
 
           {/* Form section */}
           <div className="px-8 py-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
+            <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
+              {error && <Alert variant="error">{error}</Alert>}
 
-              <div>
-                <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700">
-                  ID Number
-                </label>
-                <input
+              <Field label="ID Number" htmlFor="idNumber" required>
+                <TextInput
                   id="idNumber"
                   type="text"
                   required
                   value={idNumber}
                   onChange={(e) => setIdNumber(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900"
                   placeholder="Enter your ID number"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="mt-1 relative">
-                  <input
+              <Field label="Password" htmlFor="password" required>
+                <div className="relative">
+                  <TextInput
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900"
                     placeholder="Enter your password"
+                    className="pr-10"
                   />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
-                      <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                     ) : (
-                      <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                     )}
                   </button>
                 </div>
-              </div>
+              </Field>
 
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Signing in...
-                    </div>
-                  ) : (
-                    'Sign in'
-                  )}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="btn-primary w-full"
+              >
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Signing in…
+                  </div>
+                ) : (
+                  'Sign in'
+                )}
+              </button>
             </form>
           </div>
 

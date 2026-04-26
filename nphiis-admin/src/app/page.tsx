@@ -1,87 +1,63 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AdminLogin from '@/components/AdminLogin';
-import AdminDashboard from '@/components/AdminDashboard';
 import { authApi } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 export default function Home() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoading, signIn } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    // Check if user is already logged in (from localStorage)
-    // Only run on client side to prevent hydration mismatch
-    if (typeof window !== 'undefined') {
-      const savedAuth = localStorage.getItem('nphiis-admin-auth');
-      if (savedAuth) {
-        const authData = JSON.parse(savedAuth);
-        setAuthenticated(true);
-        setUserInfo(authData.userInfo);
-      }
+    if (!isLoading && isAuthenticated) {
+      router.replace('/dashboard');
     }
-    setIsLoading(false);
-  }, []);
+  }, [isAuthenticated, isLoading, router]);
 
   const handleLogin = async (idNumber: string, password: string) => {
     try {
-      // Use the real authentication API
       const result = await authApi.isAdministrator(idNumber, password);
-      
-      if (result.success && result.userInfo && result.accessToken) {
-        const authData = {
-          userInfo: {
-            preferred_username: result.userInfo.idNumber,
-            name: result.userInfo.fullNames,
-            email: result.userInfo.email,
-            firstName: result.userInfo.firstName,
-            lastName: result.userInfo.lastName,
-            role: result.userInfo.role,
-            id: result.userInfo.id
-          },
-          accessToken: result.accessToken,
-          timestamp: Date.now()
-        };
-        
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('nphiis-admin-auth', JSON.stringify(authData));
-        }
-        setAuthenticated(true);
-        setUserInfo(authData.userInfo);
-        return true;
-      } else {
+      if (!result.success || !result.userInfo || !result.accessToken) {
         console.error('Authentication failed:', result.error);
         return false;
       }
+
+      signIn({
+        userInfo: {
+          id: result.userInfo.id,
+          username: result.userInfo.idNumber,
+          preferred_username: result.userInfo.idNumber,
+          name: result.userInfo.fullNames,
+          email: result.userInfo.email,
+          firstName: result.userInfo.firstName,
+          lastName: result.userInfo.lastName,
+          role: result.userInfo.role,
+          fhirPractitionerId: result.userInfo.fhirPractitionerId,
+          locationInfo: result.userInfo.locationInfo,
+        },
+        accessToken: result.accessToken,
+        timestamp: Date.now(),
+      });
+      router.replace('/dashboard');
+      return true;
     } catch (error) {
       console.error('Login error:', error);
       return false;
     }
   };
 
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('nphiis-admin-auth');
-    }
-    setAuthenticated(false);
-    setUserInfo(null);
-  };
-
-  if (isLoading) {
+  if (isLoading || isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-surface">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="h-12 w-12 mx-auto rounded-full border-4 border-nphi-200 border-t-nphi-700 animate-spin" />
+          <p className="mt-4 text-sm text-gray-600">Loading…</p>
         </div>
       </div>
     );
   }
 
-  if (!authenticated) {
-    return <AdminLogin onLogin={handleLogin} />;
-  }
-
-  return <AdminDashboard userInfo={userInfo} onLogout={handleLogout} />;
+  return <AdminLogin onLogin={handleLogin} />;
 }
