@@ -3,30 +3,70 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --foreground: #0f172a;
+  --background: #f4f6fb;
+  --surface: #ffffff;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
+html,
 body {
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Subtle scrollbar that matches the green theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #dbeafe;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #bfdbfe;
+  background-clip: padding-box;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-nphi-100/60;
+  }
+  .card-lg {
+    @apply bg-white rounded-3xl shadow-card-lg border border-nphi-100/60;
+  }
+  /* Buttons — Untitled UI style: rounded-lg, shadow-xs, soft 4px focus ring. */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-nphi-600 hover:bg-nphi-700 shadow-sm focus:outline-none focus:ring-4 focus:ring-nphi-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-gray-100 disabled:opacity-50 transition-colors;
+  }
+  /* Form controls — match the Field/TextInput/Select primitives in
+     src/components/ui/Field.tsx so any legacy callers using these utility
+     classes get the same look automatically. */
+  .input-text {
+    @apply block w-full px-3.5 py-2.5 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-nphi-100 focus:border-nphi-600 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition-shadow;
+  }
+  .select-styled {
+    @apply block w-full px-3.5 py-2.5 pr-10 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-4 focus:ring-nphi-100 focus:border-nphi-600 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition-shadow;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    background-size: 1.125rem;
+  }
+  .chip {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
 }
