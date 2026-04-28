@@ -78,14 +78,14 @@ export const userApi = {
     }
     
     try {
-      const url = new URL(`${API_HOST}/provider/users`);
-      url.searchParams.set('page', page.toString());
-      url.searchParams.set('limit', limit.toString());
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
       if (search && search.trim()) {
-        url.searchParams.set('search', search.trim());
+        params.set('search', search.trim());
       }
-      
-      const response = await fetch(url.toString(), {
+      const response = await fetch(`/api/provider/users?${params}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -133,7 +133,7 @@ export const userApi = {
     }
     
     try {
-      const response = await fetch(`${API_HOST}/provider/user/${userId}`, {
+      const response = await fetch(`/api/provider/user/${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -200,7 +200,7 @@ export const userApi = {
     }
     
     try {
-      const response = await fetch(`${API_HOST}/provider/register`, {
+      const response = await fetch(`/api/provider/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -283,7 +283,7 @@ export const userApi = {
       }
       
       // Use the PUT /users/{username} endpoint with username (idNumber)
-      const response = await fetch(`${API_HOST}/provider/users/${username}`, {
+      const response = await fetch(`/api/provider/users/${username}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -340,7 +340,7 @@ export const userApi = {
     }
     
     try {
-      const response = await fetch(`${API_HOST}/provider/users/${userId}`, {
+      const response = await fetch(`/api/provider/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -372,7 +372,7 @@ export const userApi = {
   // Send password reset code to user's email
   sendPasswordResetCode: async (idNumber: string, email: string): Promise<void> => {
     try {
-      const response = await fetch(`${API_HOST}/provider/reset-password?idNumber=${encodeURIComponent(idNumber)}&email=${encodeURIComponent(email)}`, {
+      const response = await fetch(`/api/provider/reset-password?idNumber=${encodeURIComponent(idNumber)}&email=${encodeURIComponent(email)}`, {
         method: 'GET',
         headers: {
           'Cookie': 'frontend_lang=en_US'
@@ -402,7 +402,7 @@ export const userApi = {
   // Reset user password using real API
   resetPassword: async (userId: string, newPassword: string, resetCode: string): Promise<void> => {
     try {
-      const response = await fetch(`${API_HOST}/provider/reset-password`, {
+      const response = await fetch(`/api/provider/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -438,7 +438,7 @@ export const userApi = {
   // Send welcome email with new credentials (admin only)
   sendWelcomeEmail: async (username: string, accessToken: string): Promise<void> => {
     try {
-      const response = await fetch(`${API_HOST}/provider/welcome-email`, {
+      const response = await fetch(`/api/provider/welcome-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -513,7 +513,7 @@ export const authApi = {
   // Login with ID number and password
   login: async (idNumber: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await fetch(`${API_HOST}/provider/login`, {
+      const response = await fetch(`/api/provider/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -546,7 +546,7 @@ export const authApi = {
   // Get user info using access token
   getUserInfo: async (accessToken: string): Promise<UserInfoResponse> => {
     try {
-      const response = await fetch(`${API_HOST}/provider/me`, {
+      const response = await fetch(`/api/provider/me`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
