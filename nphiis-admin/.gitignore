@@ -4,3 +4,10 @@
 node_modules
 
 build
+
+# Local-only env files (never commit secrets)
+.env.local
+.env.*.local
+
+# TypeScript incremental build artifact
+tsconfig.tsbuildinfo

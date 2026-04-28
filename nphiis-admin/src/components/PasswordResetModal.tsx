@@ -240,7 +240,7 @@ export default function PasswordResetModal({ user, onPasswordReset, onClose }: P
             )}
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" autoComplete="off">
             {/* Reset Code */}
             <div>
               <label htmlFor="resetCode" className="block text-sm font-medium text-gray-700">

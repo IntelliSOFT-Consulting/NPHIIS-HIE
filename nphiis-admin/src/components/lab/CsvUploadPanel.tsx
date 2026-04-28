@@ -1,0 +1,268 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Papa from "papaparse";
+import { Download02, UploadCloud02 } from "@untitled-ui/icons-react";
+import { useAuth } from "@/lib/auth-context";
+import { hasAnyRole } from "@/lib/roles";
+import {
+  LAB_FORMS,
+  csvTemplateForForm,
+  getLabForm,
+} from "@/lib/questionnaires";
+import Spinner from "../ui/Spinner";
+import { Alert } from "../ui/Alert";
+import { Field, Select } from "../ui/Field";
+
+interface RowResult {
+  row: number;
+  epid: string;
+  status: "accepted" | "rejected";
+  reason?: string;
+}
+
+interface UploadResponse {
+  accepted: number;
+  rejected: RowResult[];
+  results: RowResult[];
+}
+
+export default function CsvUploadPanel() {
+  const { roles, accessToken } = useAuth();
+  const availableForms = useMemo(
+    () => LAB_FORMS.filter((f) => hasAnyRole(roles, f.allowedRoles)),
+    [roles],
+  );
+
+  const [formId, setFormId] = useState(availableForms[0]?.id ?? "");
+  const [rows, setRows] = useState<Array<Record<string, string>>>([]);
+  const [fileName, setFileName] = useState("");
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [response, setResponse] = useState<UploadResponse | null>(null);
+
+  const form = formId ? getLabForm(formId) : undefined;
+
+  const downloadTemplate = () => {
+    if (!form) return;
+    const blob = new Blob([csvTemplateForForm(form)], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${form.id}-template.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleFile = (file: File) => {
+    setFileName(file.name);
+    setResponse(null);
+    setParseError(null);
+    Papa.parse<Record<string, string>>(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (result) => {
+        if (result.errors.length) {
+          setParseError(result.errors[0].message);
+          setRows([]);
+          return;
+        }
+        setRows(result.data);
+      },
+      error: (err) => setParseError(err.message),
+    });
+  };
+
+  const submit = async () => {
+    if (!form || rows.length === 0 || !accessToken) return;
+    setSubmitting(true);
+    setResponse(null);
+    try {
+      const res = await fetch("/api/lab/bulk-upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ formId: form.id, rows }),
+      });
+      const data = (await res.json()) as UploadResponse | { error: string };
+      if (!res.ok) {
+        setParseError("error" in data ? data.error : "Upload failed");
+        return;
+      }
+      setResponse(data as UploadResponse);
+    } catch (err) {
+      setParseError((err as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const downloadFailures = () => {
+    if (!response?.rejected.length) return;
+    const csv = Papa.unparse(
+      response.rejected.map((r) => ({
+        row: r.row,
+        epid: r.epid,
+        reason: r.reason,
+      })),
+    );
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${form?.id ?? "lab"}-failures.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (availableForms.length === 0) {
+    return (
+      <div className="card p-6">
+        <Alert variant="warning" title="No access">
+          Your role does not have permission to upload lab results.
+        </Alert>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card p-6 space-y-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+        <div className="md:col-span-2">
+          <Field label="Lab form" htmlFor="csv-form-select">
+            <Select
+              id="csv-form-select"
+              value={formId}
+              onChange={(v) => {
+                setFormId(v);
+                setRows([]);
+                setResponse(null);
+                setFileName("");
+              }}
+              options={availableForms.map((f) => ({
+                value: f.id,
+                label: f.title,
+              }))}
+            />
+          </Field>
+        </div>
+        <button
+          onClick={downloadTemplate}
+          disabled={!form}
+          className="btn-secondary"
+        >
+          <Download02 className="h-4 w-4 mr-1.5" /> Download template
+        </button>
+      </div>
+
+      <label className="block border-2 border-dashed border-nphi-200 rounded-2xl p-8 text-center cursor-pointer hover:bg-nphi-50/60 transition-colors">
+        <UploadCloud02 className="h-9 w-9 mx-auto text-nphi-600" />
+        <div className="mt-3 text-sm font-medium text-gray-700">
+          {fileName || "Click to upload or drag and drop"}
+        </div>
+        <div className="text-xs text-gray-500 mt-0.5">CSV files only</div>
+        <input
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFile(file);
+          }}
+        />
+      </label>
+
+      {parseError && <Alert variant="error">{parseError}</Alert>}
+
+      {rows.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-sm text-gray-600">
+            {rows.length} row{rows.length === 1 ? "" : "s"} loaded.
+          </div>
+          <div className="overflow-x-auto border border-nphi-100 rounded-xl">
+            <table className="min-w-full text-xs">
+              <thead className="bg-nphi-50/60">
+                <tr>
+                  {Object.keys(rows[0]).map((h) => (
+                    <th
+                      key={h}
+                      className="px-2 py-1 text-left text-gray-700 font-medium"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.slice(0, 5).map((r, i) => (
+                  <tr key={i} className="border-t border-gray-100">
+                    {Object.keys(rows[0]).map((h) => (
+                      <td key={h} className="px-2 py-1 text-gray-700">
+                        {r[h]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {rows.length > 5 && (
+              <div className="px-2 py-1 text-xs text-gray-500">
+                Showing first 5 of {rows.length}.
+              </div>
+            )}
+          </div>
+          <button
+            onClick={submit}
+            disabled={submitting}
+            className="btn-primary"
+          >
+            {submitting ? (
+              <Spinner size="sm" className="text-white" label="Submitting…" />
+            ) : (
+              `Submit ${rows.length} rows`
+            )}
+          </button>
+        </div>
+      )}
+
+      {response && (
+        <div className="border border-nphi-100 rounded-xl p-4 text-sm space-y-2 bg-nphi-50/40">
+          <div>
+            <span className="font-semibold text-nphi-800">
+              {response.accepted}
+            </span>{" "}
+            accepted
+            {response.rejected.length > 0 && (
+              <>
+                {" · "}
+                <span className="font-semibold text-accent-700">
+                  {response.rejected.length}
+                </span>{" "}
+                rejected
+              </>
+            )}
+          </div>
+          {response.rejected.length > 0 && (
+            <>
+              <ul className="text-xs text-accent-700 max-h-40 overflow-y-auto">
+                {response.rejected.slice(0, 20).map((r) => (
+                  <li key={r.row}>
+                    Row {r.row} (EPID {r.epid || "-"}): {r.reason}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={downloadFailures}
+                className="text-xs underline text-nphi-700 hover:text-nphi-800"
+              >
+                Download failures as CSV
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

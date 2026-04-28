@@ -1,0 +1,97 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import { useAuth } from '@/lib/auth-context';
+import SupersetDashboard from './SupersetDashboard';
+
+interface ReportTab {
+  id: 'moh505' | 'moh502_measles' | 'moh502_afp';
+  label: string;
+  dashboardId?: string;
+  feature: 'REPORTS_VIEW_502' | 'REPORTS_VIEW_505';
+}
+
+const SUPERSET_URL = process.env.NEXT_PUBLIC_SUPERSET_URL ?? '';
+
+export default function ReportsView() {
+  const { can } = useAuth();
+
+  const tabs = useMemo<ReportTab[]>(
+    () => [
+      {
+        id: 'moh505',
+        label: 'MOH 505 Line List',
+        dashboardId: process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_505,
+        feature: 'REPORTS_VIEW_505',
+      },
+      {
+        id: 'moh502_measles',
+        label: 'MOH 502 Measles CIF',
+        dashboardId: process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_502_MEASLES,
+        feature: 'REPORTS_VIEW_502',
+      },
+      {
+        id: 'moh502_afp',
+        label: 'MOH 502 AFP CIF',
+        dashboardId: process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_502_AFP,
+        feature: 'REPORTS_VIEW_502',
+      },
+    ],
+    [],
+  );
+
+  const visible = tabs.filter((t) => can(t.feature) && t.dashboardId);
+  const [active, setActive] = useState<string | null>(visible[0]?.id ?? null);
+
+  if (!SUPERSET_URL) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 text-sm text-yellow-800">
+        Superset URL is not configured. Set <code>NEXT_PUBLIC_SUPERSET_URL</code> and the
+        per-dashboard env vars to enable embedded reports.
+      </div>
+    );
+  }
+
+  if (visible.length === 0) {
+    return (
+      <div className="bg-white shadow rounded-lg p-6">
+        <p className="text-gray-600">
+          No reports are available for your role yet. Contact an administrator if you
+          believe this is incorrect.
+        </p>
+      </div>
+    );
+  }
+
+  const activeTab = visible.find((t) => t.id === active) ?? visible[0];
+
+  return (
+    <div className="space-y-4">
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-6" aria-label="Reports">
+          {visible.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActive(tab.id)}
+              className={`whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium ${
+                tab.id === activeTab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <div className="bg-white shadow rounded-lg p-2">
+        <SupersetDashboard
+          key={activeTab.id}
+          dashboardId={activeTab.dashboardId!}
+          supersetUrl={SUPERSET_URL}
+        />
+      </div>
+    </div>
+  );
+}
