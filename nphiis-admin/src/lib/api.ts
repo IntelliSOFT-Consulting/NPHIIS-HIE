@@ -1,9 +1,20 @@
-import { User, CreateUserRequest } from '@/types/user';
+import { User, CreateUserRequest, LocationInfo } from '@/types/user';
 
 // API host configurations
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST;
 console.log("API HOST: ", API_HOST)
 const FHIR_BASE_URL = '/api/fhir';
+
+// Wraps fetch() to inject the current bearer token for /api/fhir calls. The
+// Next.js proxy verifies the token before forwarding to HAPI, so every FHIR
+// request from the browser must carry one.
+export async function fhirFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const token = getAccessToken();
+  const headers = new Headers(init.headers);
+  if (!headers.has('Accept')) headers.set('Accept', 'application/fhir+json');
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  return fetch(input, { ...init, headers });
+}
 
 // Authentication types
 interface LoginRequest {
@@ -32,6 +43,8 @@ interface UserInfo {
   fullNames: string;
   phone: string | null;
   email: string;
+  fhirPractitionerId?: string;
+  locationInfo?: LocationInfo;
 }
 
 interface UserInfoResponse {
@@ -579,19 +592,13 @@ export const authApi = {
         };
       }
 
-      // Check if user role is ADMINISTRATOR
-      if (userInfoResponse.user.role === 'ADMINISTRATOR') {
-        return {
-          success: true,
-          userInfo: userInfoResponse.user,
-          accessToken: loginResponse.access_token
-        };
-      } else {
-        return {
-          success: false,
-          error: 'Access denied. Administrator role required.'
-        };
-      }
+      // RBAC happens client-side via Navigation/feature checks. Any role with
+      // a session is allowed in; the UI hides tabs they can't access.
+      return {
+        success: true,
+        userInfo: userInfoResponse.user,
+        accessToken: loginResponse.access_token,
+      };
     } catch (error) {
       console.error('Administrator check error:', error);
       return {
@@ -668,12 +675,45 @@ interface FhirBundle {
   }>;
 }
 
+// Pull every descendant Location under `rootId` in a single FHIR bundle using
+// `_revinclude:iterate=Location:partof`. HAPI walks the partof chain
+// recursively, so one round trip replaces the old fan-out (1 call per ward).
+// Filters client-side to FACILITY resources.
+export async function getDescendantFacilities(rootId: string): Promise<Location[]> {
+  const url = `${FHIR_BASE_URL}/Location?_id=${encodeURIComponent(
+    rootId,
+  )}&_revinclude:iterate=Location:partof&_count=5000`;
+  const response = await fhirFetch(url, { method: 'GET' });
+  if (!response.ok) {
+    throw new Error(`Failed to load descendants (${response.status})`);
+  }
+  const bundle = (await response.json()) as LocationBundle;
+  const out: Location[] = [];
+  for (const entry of bundle.entry ?? []) {
+    const r = entry.resource;
+    if (!r) continue;
+    if (r.type?.[0]?.coding?.[0]?.code !== 'FACILITY') continue;
+    out.push({
+      id: r.id || '',
+      name: r.name || '',
+      type: r.type?.[0]?.coding?.[0]?.display,
+      typeCode: r.type?.[0]?.coding?.[0]?.code,
+      status: r.status || 'active',
+      description: r.description,
+      parentId: r.partOf?.reference?.replace('Location/', ''),
+      parentName: r.partOf?.display,
+      position: r.position,
+    });
+  }
+  return out;
+}
+
 // FHIR API functions
 export const fhirApi = {
   // Get all counties from FHIR server
   getCounties: async (): Promise<FhirCounty[]> => {
     try {
-      const response = await fetch(`${FHIR_BASE_URL}/Location?type:code=COUNTY&_count=100`, {
+      const response = await fhirFetch(`${FHIR_BASE_URL}/Location?type:code=COUNTY&_count=100`, {
         method: 'GET',
         headers: {
           'Accept': 'application/fhir+json',
@@ -710,7 +750,7 @@ export const fhirApi = {
   // Get sub-counties for a specific county
   getSubCounties: async (countyId: string): Promise<FhirSubCounty[]> => {
     try {
-      const response = await fetch(`${FHIR_BASE_URL}/Location?partof=Location/${countyId}&_count=100`, {
+      const response = await fhirFetch(`${FHIR_BASE_URL}/Location?partof=Location/${countyId}&_count=100`, {
         method: 'GET',
         headers: {
           'Accept': 'application/fhir+json',
@@ -748,7 +788,7 @@ export const fhirApi = {
   // Get wards for a specific sub-county
   getWards: async (subCountyId: string): Promise<FhirWard[]> => {
     try {
-      const response = await fetch(`${FHIR_BASE_URL}/Location?partof=Location/${subCountyId}&_count=100`, {
+      const response = await fhirFetch(`${FHIR_BASE_URL}/Location?partof=Location/${subCountyId}&_count=100`, {
         method: 'GET',
         headers: {
           'Accept': 'application/fhir+json',
@@ -786,7 +826,7 @@ export const fhirApi = {
   // Get facilities for a specific ward
   getFacilities: async (wardId: string): Promise<FhirFacility[]> => {
     try {
-      const response = await fetch(`${FHIR_BASE_URL}/Location?partof=Location/${wardId}&_count=100`, {
+      const response = await fhirFetch(`${FHIR_BASE_URL}/Location?partof=Location/${wardId}&_count=100`, {
         method: 'GET',
         headers: {
           'Accept': 'application/fhir+json',
@@ -900,13 +940,8 @@ export const locationApi = {
       }
       
       console.log('Fetching locations from:', url); // Debug log
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/fhir+json',
-        }
-      });
+
+      const response = await fhirFetch(url, { method: 'GET' });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -976,12 +1011,7 @@ export const locationApi = {
       const url = `${FHIR_BASE_URL}/Location?_summary=count&partof=Location/${parentId}`;
       console.log('Fetching child location count from:', url);
 
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/fhir+json',
-        }
-      });
+      const response = await fhirFetch(url, { method: 'GET' });
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => '');
@@ -1000,7 +1030,7 @@ export const locationApi = {
   // Get a single location by ID
   getLocationById: async (locationId: string): Promise<Location> => {
     try {
-      const response = await fetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
+      const response = await fhirFetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/fhir+json',
@@ -1095,7 +1125,7 @@ export const locationApi = {
         fhirLocation.position = locationData.position;
       }
 
-      const response = await fetch(`${FHIR_BASE_URL}/Location`, {
+      const response = await fhirFetch(`${FHIR_BASE_URL}/Location`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/fhir+json',
@@ -1135,7 +1165,7 @@ export const locationApi = {
   updateLocation: async (locationId: string, locationData: Partial<CreateLocationRequest>): Promise<Location> => {
     try {
       // First, get the existing location
-      const existingResponse = await fetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
+      const existingResponse = await fhirFetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/fhir+json',
@@ -1209,7 +1239,7 @@ export const locationApi = {
         updatedLocation.position = locationData.position;
       }
 
-      const response = await fetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
+      const response = await fhirFetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/fhir+json',
@@ -1248,7 +1278,7 @@ export const locationApi = {
   // Delete a location
   deleteLocation: async (locationId: string): Promise<void> => {
     try {
-      const response = await fetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
+      const response = await fhirFetch(`${FHIR_BASE_URL}/Location/${locationId}`, {
         method: 'DELETE',
         headers: {
           'Accept': 'application/fhir+json',
