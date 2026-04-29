@@ -81,6 +81,11 @@ export async function POST(req: NextRequest) {
         Authorization: `Bearer ${access}`,
         'X-CSRFToken': csrf,
         Cookie: cookie,
+        // Superset's CSRF middleware rejects the request with
+        // `400 Bad Request: The referrer header is missing.` when no
+        // Referer is sent. Server-to-server fetch() doesn't add one
+        // automatically, so we set it explicitly to the Superset origin.
+        Referer: `${SUPERSET_URL}/`,
       },
       body: JSON.stringify({
         user: {
