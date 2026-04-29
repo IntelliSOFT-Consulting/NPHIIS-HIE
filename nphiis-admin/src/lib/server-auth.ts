@@ -44,6 +44,11 @@ function bearer(req: NextRequest): string | null {
   return m?.[1] ?? null;
 }
 
+function isPayloadExpired(payload: { exp?: unknown }): boolean {
+  if (typeof payload.exp !== "number") return false;
+  return payload.exp <= Math.floor(Date.now() / 1000);
+}
+
 export async function verifyToken(
   req: NextRequest,
 ): Promise<VerifiedToken | null> {
@@ -52,13 +57,20 @@ export async function verifyToken(
 
   const ks = getJwks();
   if (!ks) {
-    // No Keycloak configured - fall back to unverified decode so dev still works.
-    // The proxy will still forward the bearer; HAPI/upstream remains the auth boundary.
+    // No Keycloak configured — fall back to unverified decode so dev still
+    // works. We still enforce the `exp` claim ourselves; otherwise an
+    // expired JWT slips through and the route ends up returning 403
+    // "Lab access required" because /provider/me 401s and our role lookup
+    // returns empty.
     try {
       const [, payload] = token.split(".");
       const json = JSON.parse(
         Buffer.from(payload, "base64url").toString("utf8"),
       );
+      if (isPayloadExpired(json)) {
+        console.warn("[auth] verifyToken: token expired (unverified path)");
+        return null;
+      }
       return wrap(token, json);
     } catch {
       return null;
