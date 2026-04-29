@@ -21,9 +21,12 @@ export default function DashboardHome() {
 
   if (hasRole(ADMIN_ROLES)) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-4">
         <UserRoleBreakdown />
-        <ReportsSection subtitle="MOH 502 and MOH 505 dashboards across all counties" />
+        <ReportsSection
+          subtitle="IDSR Case-Based Surveillance and MOH 502 / 505 dashboards across all counties"
+          height="82vh"
+        />
       </div>
     );
   }
