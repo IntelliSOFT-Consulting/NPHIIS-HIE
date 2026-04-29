@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Papa from "papaparse";
 import { Download02, UploadCloud02 } from "@untitled-ui/icons-react";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth, useAuthedFetch } from "@/lib/auth-context";
 import { hasAnyRole } from "@/lib/roles";
 import {
   LAB_FORMS,
@@ -29,6 +29,7 @@ interface UploadResponse {
 
 export default function CsvUploadPanel() {
   const { roles, accessToken } = useAuth();
+  const authedFetch = useAuthedFetch();
   const availableForms = useMemo(
     () => LAB_FORMS.filter((f) => hasAnyRole(roles, f.allowedRoles)),
     [roles],
@@ -78,12 +79,9 @@ export default function CsvUploadPanel() {
     setSubmitting(true);
     setResponse(null);
     try {
-      const res = await fetch("/api/lab/bulk-upload", {
+      const res = await authedFetch("/api/lab/bulk-upload", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ formId: form.id, rows }),
       });
       const data = (await res.json()) as UploadResponse | { error: string };
@@ -127,8 +125,65 @@ export default function CsvUploadPanel() {
     );
   }
 
+  // Sticky-style summary card rendered above everything else after a submit
+  // so users don't have to scroll past a long row preview to find their
+  // results.
+  const ResultsSummary = () =>
+    response ? (
+      <div
+        className={`rounded-xl border p-4 text-sm space-y-2 ${
+          response.rejected.length === 0
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+            : 'bg-amber-50 border-amber-200 text-amber-900'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <span className="font-semibold">{response.accepted}</span> accepted
+            {response.rejected.length > 0 && (
+              <>
+                {' · '}
+                <span className="font-semibold text-accent-700">
+                  {response.rejected.length}
+                </span>{' '}
+                rejected
+              </>
+            )}
+            <span className="text-xs text-gray-500 ml-2">
+              of {response.results.length} row
+              {response.results.length === 1 ? '' : 's'}
+            </span>
+          </div>
+          {response.rejected.length > 0 && (
+            <button
+              onClick={downloadFailures}
+              className="text-xs underline text-nphi-700 hover:text-nphi-800"
+            >
+              Download failures as CSV
+            </button>
+          )}
+        </div>
+        {response.rejected.length > 0 && (
+          <ul className="text-xs text-accent-800 max-h-40 overflow-y-auto pl-4 list-disc">
+            {response.rejected.slice(0, 50).map((r) => (
+              <li key={r.row}>
+                Row {r.row} (EPID {r.epid || '-'}): {r.reason}
+              </li>
+            ))}
+            {response.rejected.length > 50 && (
+              <li className="list-none italic text-gray-500">
+                …and {response.rejected.length - 50} more (download CSV for the
+                full list).
+              </li>
+            )}
+          </ul>
+        )}
+      </div>
+    ) : null;
+
   return (
     <div className="card p-6 space-y-5">
+      <ResultsSummary />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
         <div className="md:col-span-2">
           <Field label="Lab form" htmlFor="csv-form-select">
@@ -227,42 +282,6 @@ export default function CsvUploadPanel() {
         </div>
       )}
 
-      {response && (
-        <div className="border border-nphi-100 rounded-xl p-4 text-sm space-y-2 bg-nphi-50/40">
-          <div>
-            <span className="font-semibold text-nphi-800">
-              {response.accepted}
-            </span>{" "}
-            accepted
-            {response.rejected.length > 0 && (
-              <>
-                {" · "}
-                <span className="font-semibold text-accent-700">
-                  {response.rejected.length}
-                </span>{" "}
-                rejected
-              </>
-            )}
-          </div>
-          {response.rejected.length > 0 && (
-            <>
-              <ul className="text-xs text-accent-700 max-h-40 overflow-y-auto">
-                {response.rejected.slice(0, 20).map((r) => (
-                  <li key={r.row}>
-                    Row {r.row} (EPID {r.epid || "-"}): {r.reason}
-                  </li>
-                ))}
-              </ul>
-              <button
-                onClick={downloadFailures}
-                className="text-xs underline text-nphi-700 hover:text-nphi-800"
-              >
-                Download failures as CSV
-              </button>
-            </>
-          )}
-        </div>
-      )}
     </div>
   );
 }

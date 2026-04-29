@@ -167,4 +167,32 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
+/**
+ * fetch() wrapper that injects the Bearer token and signs the user out the
+ * moment the server returns 401. Without this, an expired token leaves the
+ * UI in a confusing half-state where API calls keep failing but the form
+ * still looks logged in. Use it for any authenticated client-side call.
+ */
+export function useAuthedFetch() {
+  const { accessToken, signOut } = useAuth();
+  return useCallback(
+    async (input: RequestInfo | URL, init: RequestInit = {}) => {
+      const headers = new Headers(init.headers);
+      if (accessToken && !headers.has("Authorization")) {
+        headers.set("Authorization", `Bearer ${accessToken}`);
+      }
+      const res = await fetch(input, { ...init, headers });
+      if (res.status === 401) {
+        // Token rejected — wipe the session so the UI bounces to /login.
+        signOut();
+        if (typeof window !== "undefined" && window.location.pathname !== "/") {
+          window.location.assign("/");
+        }
+      }
+      return res;
+    },
+    [accessToken, signOut],
+  );
+}
+
 export { ROLES };
