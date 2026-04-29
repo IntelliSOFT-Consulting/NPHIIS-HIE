@@ -303,6 +303,22 @@ TALISMAN_CONFIG = {
     },
     "content_security_policy_nonce_in": ["script-src"],
 }
+
+# Superset's initialization picks TALISMAN_DEV_CONFIG when FLASK_DEBUG=true
+# (see superset/initialization/__init__.py — the dev/prod selector uses
+# `self.superset_app.debug or self.config["DEBUG"]`). Our staging deploy
+# runs with FLASK_DEBUG=true, so without this override the dev defaults
+# are used and the embed-friendly settings above are silently ignored.
+# Mirror the prod config here, with the only deviation being a permissive
+# `script-src` to satisfy React's dev-mode `eval` requirement.
+TALISMAN_DEV_CONFIG = {
+    **TALISMAN_CONFIG,
+    "content_security_policy": {
+        **TALISMAN_CONFIG["content_security_policy"],
+        "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+    },
+}
+
 # `X-Frame-Options: SAMEORIGIN` would still block iframes from other hosts
 # even with frame-ancestors set, so unset it here.
 HTTP_HEADERS = {}
