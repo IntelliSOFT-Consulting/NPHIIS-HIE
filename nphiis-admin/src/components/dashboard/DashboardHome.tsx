@@ -24,8 +24,9 @@ export default function DashboardHome() {
       <div className="space-y-4">
         <UserRoleBreakdown />
         <ReportsSection
-          subtitle="IDSR Case-Based Surveillance and MOH 502 / 505 dashboards across all counties"
-          height="82vh"
+          title=""
+          subtitle=""
+          height="calc(100vh - 16rem)"
         />
       </div>
     );

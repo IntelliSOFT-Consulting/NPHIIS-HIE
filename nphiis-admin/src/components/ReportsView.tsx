@@ -85,11 +85,12 @@ export default function ReportsView() {
         </div>
       )}
 
-      <div className="bg-white shadow rounded-lg p-2">
+      <div className="bg-white shadow rounded-lg overflow-hidden">
         <SupersetDashboard
           key={activeTab.id}
           dashboardId={activeTab.dashboardId}
           supersetUrl={SUPERSET_URL}
+          height="calc(100vh - 9rem)"
         />
       </div>
     </div>
