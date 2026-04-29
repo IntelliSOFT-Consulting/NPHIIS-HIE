@@ -57,11 +57,7 @@ export async function POST(req: NextRequest) {
   if (!session) return unauthorized();
   const roles = await resolveUserRoles(session);
 
-  if (
-    !canAccess(roles, 'REPORTS_VIEW_502') &&
-    !canAccess(roles, 'REPORTS_VIEW_505') &&
-    !canAccess(roles, 'REPORTS_VIEW_IDSR')
-  ) {
+  if (!canAccess(roles, 'REPORTS_VIEW_IDSR')) {
     return forbidden('Reports access not permitted');
   }
 
