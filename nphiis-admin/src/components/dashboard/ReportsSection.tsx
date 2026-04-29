@@ -5,10 +5,10 @@ import { useAuth } from '@/lib/auth-context';
 import SupersetDashboard from '../SupersetDashboard';
 
 interface ReportTab {
-  id: 'idsr_cbs' | 'moh505' | 'moh502_measles' | 'moh502_afp';
+  id: 'idsr_cbs';
   label: string;
-  dashboardId?: string;
-  feature: 'REPORTS_VIEW_502' | 'REPORTS_VIEW_505' | 'REPORTS_VIEW_IDSR';
+  dashboardId: string;
+  feature: 'REPORTS_VIEW_IDSR';
 }
 
 const SUPERSET_URL = process.env.NEXT_PUBLIC_SUPERSET_URL ?? '';
@@ -23,12 +23,14 @@ interface ReportsSectionProps {
   height?: string;
 }
 
-// Reusable reports block for dashboards. Filters dashboards by the user's
-// REPORTS_VIEW_502 / REPORTS_VIEW_505 feature flags. Renders nothing when the
-// user has no report access, so panels can drop it in unconditionally.
+// Reusable reports block for dashboards. The IDSR Case-Based Surveillance
+// dashboard already contains MOH 503 / MOH 502 (AFP, Measles) tabs
+// internally, so we only render that single embedded entry here. Renders
+// nothing when the user has no report access, so panels can drop it in
+// unconditionally.
 export default function ReportsSection({
   title = 'Reports',
-  subtitle = 'MOH 502 / MOH 505 dashboards scoped to your role',
+  subtitle = 'IDSR Case-Based Surveillance — MOH 503 and MOH 502 forms',
   height = '70vh',
 }: ReportsSectionProps) {
   const { can } = useAuth();
@@ -40,24 +42,6 @@ export default function ReportsSection({
         label: 'IDSR Case-Based Surveillance',
         dashboardId: IDSR_CBS_DASHBOARD_ID,
         feature: 'REPORTS_VIEW_IDSR',
-      },
-      {
-        id: 'moh505',
-        label: 'MOH 505 Line List',
-        dashboardId: process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_505,
-        feature: 'REPORTS_VIEW_505',
-      },
-      {
-        id: 'moh502_measles',
-        label: 'MOH 502 Measles CIF',
-        dashboardId: process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_502_MEASLES,
-        feature: 'REPORTS_VIEW_502',
-      },
-      {
-        id: 'moh502_afp',
-        label: 'MOH 502 AFP CIF',
-        dashboardId: process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_502_AFP,
-        feature: 'REPORTS_VIEW_502',
       },
     ],
     [],
@@ -71,8 +55,8 @@ export default function ReportsSection({
   if (!SUPERSET_URL) {
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-        Superset URL is not configured. Set <code>NEXT_PUBLIC_SUPERSET_URL</code> and
-        the per-dashboard env vars to enable embedded reports.
+        Superset URL is not configured. Set <code>NEXT_PUBLIC_SUPERSET_URL</code> to
+        enable embedded reports.
       </div>
     );
   }
@@ -111,7 +95,7 @@ export default function ReportsSection({
       <div className="card p-2">
         <SupersetDashboard
           key={activeTab.id}
-          dashboardId={activeTab.dashboardId!}
+          dashboardId={activeTab.dashboardId}
           supersetUrl={SUPERSET_URL}
           height={height}
         />
