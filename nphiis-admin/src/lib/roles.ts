@@ -36,26 +36,10 @@ export const LAB_ROLES: Role[] = [
 export const FEATURES = {
   USERS_MANAGE: [ROLES.ADMINISTRATOR, ROLES.SUPERUSER],
   LOCATIONS_MANAGE: [ROLES.ADMINISTRATOR, ROLES.SUPERUSER],
-  REPORTS_VIEW_502: [
-    ROLES.ADMINISTRATOR,
-    ROLES.SUPERUSER,
-    ROLES.NATIONAL_FOCAL_PERSON,
-    ROLES.COUNTY_DISEASE_SURVEILLANCE_OFFICER,
-    ROLES.SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER,
-    ROLES.FACILITY_SURVEILLANCE_FOCAL_PERSON,
-  ],
-  REPORTS_VIEW_505: [
-    ROLES.ADMINISTRATOR,
-    ROLES.SUPERUSER,
-    ROLES.NATIONAL_FOCAL_PERSON,
-    ROLES.NATIONAL_VIEWER,
-    ROLES.COUNTY_DISEASE_SURVEILLANCE_OFFICER,
-    ROLES.SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER,
-    ROLES.FACILITY_SURVEILLANCE_FOCAL_PERSON,
-  ],
-  // IDSR Case-Based Surveillance dashboard. Open to anyone with a
-  // surveillance role plus admins/superusers; lab-only and vaccinator
-  // roles stay scoped to their own data.
+  // IDSR Case-Based Surveillance dashboard (covers MOH 503 + MOH 502
+  // forms internally). Open to anyone with a surveillance role plus
+  // admins/superusers; lab-only and vaccinator roles stay scoped to
+  // their own data.
   REPORTS_VIEW_IDSR: [
     ROLES.ADMINISTRATOR,
     ROLES.SUPERUSER,
