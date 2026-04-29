@@ -221,7 +221,89 @@ FEATURE_FLAGS = {
     "ALERT_REPORTS": True,
     "DASHBOARD_RBAC": True,
     "ENABLE_TEMPLATE_PROCESSING": True,  # Enable Jinja template processing for SQL queries
+    # Lets the Next.js admin portal call /api/v1/security/guest_token/ and
+    # mount dashboards via @superset-ui/embedded-sdk.
+    "EMBEDDED_SUPERSET": True,
 }
+
+# ---------------------------------------------------------------------------
+# Embedded dashboards / charts
+# ---------------------------------------------------------------------------
+# Origins allowed to call Superset from the browser (CORS) and to embed it in
+# an <iframe> (frame-ancestors). Comma-separated env var so each environment
+# can list its own admin host(s) without code changes; falls back to a sane
+# dev-friendly default that includes localhost.
+_DEFAULT_EMBED_ORIGINS = (
+    "http://localhost:3000,"
+    "http://localhost:3001,"
+    "https://dsradmin.intellisoftkenya.com,"
+    "https://dsrfhir.intellisoftkenya.com"
+)
+EMBEDDED_ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("EMBEDDED_ALLOWED_ORIGINS", _DEFAULT_EMBED_ORIGINS).split(
+        ","
+    )
+    if o.strip()
+]
+
+# Guest token (used by /api/v1/security/guest_token/). Falls back to the app
+# SECRET_KEY when GUEST_TOKEN_JWT_SECRET isn't explicitly set.
+GUEST_ROLE_NAME = os.environ.get("GUEST_ROLE_NAME", "Public")
+GUEST_TOKEN_JWT_SECRET = os.environ.get(
+    "GUEST_TOKEN_JWT_SECRET", os.environ.get("SUPERSET_SECRET_KEY", "change-me")
+)
+GUEST_TOKEN_JWT_ALGO = "HS256"
+GUEST_TOKEN_JWT_EXP_SECONDS = int(
+    os.environ.get("GUEST_TOKEN_JWT_EXP_SECONDS", "300")
+)
+
+# Browser → Superset CORS for the embedded SDK and for the admin's
+# guest-token bootstrap fetch.
+ENABLE_CORS = True
+CORS_OPTIONS = {
+    "supports_credentials": True,
+    "allow_headers": [
+        "X-CSRFToken",
+        "Content-Type",
+        "Origin",
+        "X-Requested-With",
+        "Accept",
+        "Authorization",
+    ],
+    "resources": ["/api/*", "/superset/*", "/embedded/*"],
+    "origins": EMBEDDED_ALLOWED_ORIGINS,
+}
+
+# Talisman ships a Content Security Policy that disallows iframing by
+# default. Loosen `frame-ancestors` (and a couple of related directives) so
+# the configured origins can embed dashboards/charts. Everything else stays
+# at Superset's secure defaults.
+TALISMAN_ENABLED = True
+TALISMAN_CONFIG = {
+    "force_https": False,
+    "force_https_permanent": False,
+    "frame_options": None,  # rely on CSP frame-ancestors instead of X-Frame-Options
+    "content_security_policy": {
+        "default-src": ["'self'"],
+        "img-src": ["'self'", "data:", "blob:", "https:"],
+        "worker-src": ["'self'", "blob:"],
+        "connect-src": [
+            "'self'",
+            "https://api.mapbox.com",
+            "https://events.mapbox.com",
+            *EMBEDDED_ALLOWED_ORIGINS,
+        ],
+        "object-src": "'none'",
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "script-src": ["'self'", "'strict-dynamic'"],
+        "frame-ancestors": ["'self'", *EMBEDDED_ALLOWED_ORIGINS],
+    },
+    "content_security_policy_nonce_in": ["script-src"],
+}
+# `X-Frame-Options: SAMEORIGIN` would still block iframes from other hosts
+# even with frame-ancestors set, so unset it here.
+HTTP_HEADERS = {}
 ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
 WEBDRIVER_BASEURL = f"http://superset_app{os.environ.get('SUPERSET_APP_ROOT', '/')}/"  # When using docker compose baseurl should be http://superset_nginx{ENV{BASEPATH}}/  # noqa: E501
 # The base URL for the email report hyperlinks.
