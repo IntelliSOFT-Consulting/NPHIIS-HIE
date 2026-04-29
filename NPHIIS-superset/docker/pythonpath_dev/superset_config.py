@@ -236,6 +236,8 @@ FEATURE_FLAGS = {
 _DEFAULT_EMBED_ORIGINS = (
     "http://localhost:3000,"
     "http://localhost:3001,"
+    "http://dsrfhir.intellisoftkenya.com:8080,"
+    "https://dsrfhir.intellisoftkenya.com:8080,"
     "https://dsradmin.intellisoftkenya.com,"
     "https://dsrfhir.intellisoftkenya.com"
 )
