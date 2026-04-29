@@ -65,12 +65,16 @@ export default function ReportsSection({
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-base font-semibold text-nphi-900">{title}</h3>
-          <p className="text-xs text-gray-500">{subtitle}</p>
+      {(title || subtitle) && (
+        <div className="flex items-center justify-between">
+          <div>
+            {title && (
+              <h3 className="text-base font-semibold text-nphi-900">{title}</h3>
+            )}
+            {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+          </div>
         </div>
-      </div>
+      )}
 
       {visible.length > 1 && (
         <div className="border-b border-nphi-100/60">
@@ -92,7 +96,7 @@ export default function ReportsSection({
         </div>
       )}
 
-      <div className="card p-2">
+      <div className="card overflow-hidden">
         <SupersetDashboard
           key={activeTab.id}
           dashboardId={activeTab.dashboardId}
