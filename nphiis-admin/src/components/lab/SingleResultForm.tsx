@@ -6,7 +6,7 @@ import {
   Edit01,
   User01,
 } from '@untitled-ui/icons-react';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth, useAuthedFetch } from '@/lib/auth-context';
 import { hasAnyRole } from '@/lib/roles';
 import {
   LAB_FORMS,
@@ -120,6 +120,7 @@ function validateItem(
 
 export default function SingleResultForm() {
   const { roles, accessToken } = useAuth();
+  const authedFetch = useAuthedFetch();
   const availableForms = useMemo(
     () => LAB_FORMS.filter((f) => hasAnyRole(roles, f.allowedRoles)),
     [roles],
@@ -200,12 +201,9 @@ export default function SingleResultForm() {
     setTopError(null);
     setSuccess(null);
     try {
-      const res = await fetch('/api/lab/verify-epid', {
+      const res = await authedFetch('/api/lab/verify-epid', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ epid }),
       });
       const data = (await res.json()) as VerifiedCase | { error: string };
@@ -272,12 +270,9 @@ export default function SingleResultForm() {
         const v = answers[it.linkId];
         if (v !== undefined && v !== '') row[it.linkId] = v;
       }
-      const res = await fetch('/api/lab/bulk-upload', {
+      const res = await authedFetch('/api/lab/bulk-upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ formId: form.id, rows: [row] }),
       });
       const data = (await res.json()) as UploadResponse | { error: string };
