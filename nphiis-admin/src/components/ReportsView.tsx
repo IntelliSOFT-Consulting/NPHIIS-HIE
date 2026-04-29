@@ -5,19 +5,32 @@ import { useAuth } from '@/lib/auth-context';
 import SupersetDashboard from './SupersetDashboard';
 
 interface ReportTab {
-  id: 'moh505' | 'moh502_measles' | 'moh502_afp';
+  id: 'idsr_cbs' | 'moh505' | 'moh502_measles' | 'moh502_afp';
   label: string;
   dashboardId?: string;
-  feature: 'REPORTS_VIEW_502' | 'REPORTS_VIEW_505';
+  feature: 'REPORTS_VIEW_502' | 'REPORTS_VIEW_505' | 'REPORTS_VIEW_IDSR';
 }
 
 const SUPERSET_URL = process.env.NEXT_PUBLIC_SUPERSET_URL ?? '';
+
+// Embedded dashboard UUIDs (Superset → Settings → Embed dashboard). The env
+// var lets each environment override; the literal default keeps the
+// out-of-the-box deploy working.
+const IDSR_CBS_DASHBOARD_ID =
+  process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_IDSR_CBS ??
+  '363e13a5-bfd4-4ca9-b76e-ba284d5b6404';
 
 export default function ReportsView() {
   const { can } = useAuth();
 
   const tabs = useMemo<ReportTab[]>(
     () => [
+      {
+        id: 'idsr_cbs',
+        label: 'IDSR Case-Based Surveillance',
+        dashboardId: IDSR_CBS_DASHBOARD_ID,
+        feature: 'REPORTS_VIEW_IDSR',
+      },
       {
         id: 'moh505',
         label: 'MOH 505 Line List',
