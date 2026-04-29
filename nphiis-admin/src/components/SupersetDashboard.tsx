@@ -23,8 +23,6 @@ export default function SupersetDashboard({
   useEffect(() => {
     if (!mountRef.current || !accessToken || !supersetUrl) return;
 
-    // Capture once for the cleanup closure so we don't read a stale ref.
-    const node = mountRef.current;
     setLoading(true);
     let cancelled = false;
 
@@ -45,34 +43,17 @@ export default function SupersetDashboard({
     embedDashboard({
       id: dashboardId,
       supersetDomain: supersetUrl,
-      mountPoint: node,
+      mountPoint: mountRef.current,
       fetchGuestToken,
       dashboardUiConfig: {
-        // Page already has its own heading; hide the in-iframe title.
         hideTitle: true,
-        // Show the dashboard's internal tab strip (503 / 502 forms).
         hideTab: false,
-        // Don't expose chart-export / drilldown menus to embedded viewers.
-        hideChartControls: true,
-        // Collapsed by default — the open filter sidebar squeezed all the
-        // chart real-estate when first loaded. Users can expand it manually.
-        filters: { expanded: false },
+        hideChartControls: false,
+        filters: { expanded: true },
       },
     })
       .then(() => {
-        if (!cancelled) {
-          setLoading(false);
-          // The Superset SDK injects an <iframe> as the only child of the
-          // mount node. Make it fill the container so the dashboard isn't
-          // pinned to ~300×200 by default styles.
-          const iframe = node.querySelector('iframe');
-          if (iframe) {
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-            iframe.style.border = '0';
-            iframe.style.display = 'block';
-          }
-        }
+        if (!cancelled) setLoading(false);
       })
       .catch((err) => {
         if (!cancelled) {
@@ -83,21 +64,18 @@ export default function SupersetDashboard({
 
     return () => {
       cancelled = true;
-      node.innerHTML = '';
+      if (mountRef.current) mountRef.current.innerHTML = '';
     };
   }, [dashboardId, supersetUrl, accessToken]);
 
   return (
-    <div
-      className="relative w-full overflow-hidden rounded-xl bg-white"
-      style={{ height }}
-    >
+    <div className="relative" style={{ height, width: '100%' }}>
       {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 rounded-xl">
           <Spinner size="lg" label="Loading dashboard…" />
         </div>
       )}
-      <div ref={mountRef} className="superset-embed h-full w-full" />
+      <div ref={mountRef} style={{ height, width: '100%' }} className="superset-embed" />
     </div>
   );
 }
