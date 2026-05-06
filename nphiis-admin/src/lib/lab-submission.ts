@@ -351,6 +351,13 @@ export interface SubmissionContext {
     string,
     { code: string; display: string; force?: boolean }
   >;
+  /**
+   * Optional fully-formed Patient resource to PUT alongside the lab data
+   * so the patient's `meta.lastUpdated` bumps. Caller (bulk-upload route)
+   * is responsible for fetching the current Patient, mutating it via
+   * `applyPatientUpdates`, and passing the result here.
+   */
+  patientUpdate?: Record<string, unknown>;
 }
 
 interface Reference {
@@ -401,7 +408,7 @@ function uuid(): string {
 export interface BundleEntry {
   fullUrl: string;
   resource: Record<string, unknown>;
-  request: { method: "POST"; url: string };
+  request: { method: "POST" | "PUT"; url: string };
 }
 
 export interface TransactionBundle {
@@ -570,28 +577,49 @@ export function buildLabSubmissionBundle(
       ];
     }
     return {
-      fullUrl: `urn:uuid:${id}`,
+      fullUrl: `Observation/${id}`,
       resource: obs,
-      request: { method: "POST", url: "Observation" },
+      request: { method: "PUT", url: `Observation/${id}` },
     };
   });
+
+  // PUT with client-assigned IDs (rather than POST + server-assigned IDs)
+  // so the IDs we generate are the IDs HAPI stores under. Without this,
+  // HAPI ignores the `id` we set on each resource on POST and assigns its
+  // own — meaning the `Encounter/<id>` references this builder writes
+  // into QR/Observations point at non-existent resources, and any later
+  // GET against those references 404s. Mirrors what the mobile FHIR
+  // engine sync does and is what the meeting-notes "QR relation" rules
+  // expected.
+  const entries: BundleEntry[] = [
+    {
+      fullUrl: `Encounter/${encounterId}`,
+      resource: encounter,
+      request: { method: "PUT", url: `Encounter/${encounterId}` },
+    },
+    {
+      fullUrl: `QuestionnaireResponse/${qrId}`,
+      resource: qr,
+      request: { method: "PUT", url: `QuestionnaireResponse/${qrId}` },
+    },
+    ...observations,
+  ];
+
+  // Optional Patient touch — bumps Patient.meta.lastUpdated so reporting
+  // pipelines see the patient as recently active. Caller controls whether
+  // to include this and what fields to mutate (see lib/patient-update.ts).
+  if (ctx.patientUpdate && typeof ctx.patientUpdate.id === "string") {
+    entries.push({
+      fullUrl: `Patient/${ctx.patientUpdate.id}`,
+      resource: ctx.patientUpdate,
+      request: { method: "PUT", url: `Patient/${ctx.patientUpdate.id}` },
+    });
+  }
 
   return {
     resourceType: "Bundle",
     type: "transaction",
-    entry: [
-      {
-        fullUrl: `urn:uuid:${encounterId}`,
-        resource: encounter,
-        request: { method: "POST", url: "Encounter" },
-      },
-      {
-        fullUrl: `urn:uuid:${qrId}`,
-        resource: qr,
-        request: { method: "POST", url: "QuestionnaireResponse" },
-      },
-      ...observations,
-    ],
+    entry: entries,
   };
 }
 
