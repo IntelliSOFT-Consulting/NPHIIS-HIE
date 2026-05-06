@@ -14,9 +14,11 @@ import {
   buildLabSubmissionBundle,
 } from '@/lib/lab-submission';
 import {
+  fetchFullPatient,
   getPatientRecordType,
   lookupPatientByEpid,
 } from '@/lib/fhir-patient';
+import { applyPatientUpdates } from '@/lib/patient-update';
 
 const FHIR_BASE_URL = process.env.FHIR_BASE_URL || process.env.NEXT_PUBLIC_FHIR_BASE_URL;
 if (!FHIR_BASE_URL) {
@@ -223,6 +225,30 @@ export async function POST(req: NextRequest) {
         );
         if (fc) derivedAnswers['final-classification'] = fc;
       }
+
+      // Touch the Patient alongside the lab data so downstream reports
+      // see this patient as recently active. Best-effort — if the GET
+      // fails we still post the lab Bundle.
+      let patientUpdate: Record<string, unknown> | undefined;
+      try {
+        const fullPatient = await fetchFullPatient(
+          lookup.patient.id,
+          session.raw,
+        );
+        if (fullPatient) {
+          const { resource, changed } = applyPatientUpdates(
+            fullPatient,
+            new Date().toISOString(),
+          );
+          if (changed) patientUpdate = resource;
+        }
+      } catch (err) {
+        console.warn(
+          '[lab/bulk-upload] patient touch skipped:',
+          (err as Error).message,
+        );
+      }
+
       const bundle = buildLabSubmissionBundle({
         form,
         row,
@@ -234,6 +260,7 @@ export async function POST(req: NextRequest) {
         derivedAnswers: Object.keys(derivedAnswers).length
           ? derivedAnswers
           : undefined,
+        patientUpdate,
       });
       await postBundle(bundle, session.raw);
       results.push({ row: rowNumber, epid, status: 'accepted' });
