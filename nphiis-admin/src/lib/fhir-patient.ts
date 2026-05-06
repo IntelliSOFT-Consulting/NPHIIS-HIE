@@ -128,6 +128,25 @@ async function fetchPatientById(
 }
 
 /**
+ * GET the full FHIR Patient resource (typed as `unknown` so the caller can
+ * treat it as the canonical FHIR shape and round-trip it back via PUT
+ * without our partial PatientResource type stripping unknown fields).
+ */
+export async function fetchFullPatient(
+  id: string,
+  token: string,
+): Promise<Record<string, unknown> | null> {
+  const res = await fetch(`${FHIR_BASE_URL}/Patient/${encodeURIComponent(id)}`, {
+    headers: {
+      Accept: "application/fhir+json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) return null;
+  return (await res.json()) as Record<string, unknown>;
+}
+
+/**
  * Search the EPID-tagged Observation. Mobile writes the Observation with
  * code.coding = { system: http://snomed.info/sct, code: EPID } and the value
  * as `valueString` (QuestionnaireHelper.kt:37-44).
