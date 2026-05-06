@@ -577,22 +577,30 @@ export function buildLabSubmissionBundle(
       ];
     }
     return {
-      fullUrl: `urn:uuid:${id}`,
+      fullUrl: `Observation/${id}`,
       resource: obs,
-      request: { method: "POST", url: "Observation" },
+      request: { method: "PUT", url: `Observation/${id}` },
     };
   });
 
+  // PUT with client-assigned IDs (rather than POST + server-assigned IDs)
+  // so the IDs we generate are the IDs HAPI stores under. Without this,
+  // HAPI ignores the `id` we set on each resource on POST and assigns its
+  // own — meaning the `Encounter/<id>` references this builder writes
+  // into QR/Observations point at non-existent resources, and any later
+  // GET against those references 404s. Mirrors what the mobile FHIR
+  // engine sync does and is what the meeting-notes "QR relation" rules
+  // expected.
   const entries: BundleEntry[] = [
     {
-      fullUrl: `urn:uuid:${encounterId}`,
+      fullUrl: `Encounter/${encounterId}`,
       resource: encounter,
-      request: { method: "POST", url: "Encounter" },
+      request: { method: "PUT", url: `Encounter/${encounterId}` },
     },
     {
-      fullUrl: `urn:uuid:${qrId}`,
+      fullUrl: `QuestionnaireResponse/${qrId}`,
       resource: qr,
-      request: { method: "POST", url: "QuestionnaireResponse" },
+      request: { method: "PUT", url: `QuestionnaireResponse/${qrId}` },
     },
     ...observations,
   ];
