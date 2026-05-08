@@ -476,9 +476,7 @@ export function buildLabSubmissionBundle(
     id: encounterId,
     status: "finished",
     subject: patientRef,
-    reasonCode: [
-      { coding: [{ code: form.id, display: form.title }], text: form.title },
-    ],
+    reasonCode: [{ coding: [{ code: form.encounterReason }] }],
     identifier: [
       {
         system: "system-creation",
@@ -539,14 +537,12 @@ export function buildLabSubmissionBundle(
     ];
   }
 
-  /* Observations */
+  /* Observations — one per answered item, keyed on the questionnaire's
+   * own linkId so downstream consumers can join on the same identifier
+   * the questionnaire defines (mirrors the mobile FHIR engine output). */
   const observations: BundleEntry[] = answered.map(({ item, answer }) => {
     const id = uuid();
-    // Use the report-facing code when one is declared so the Superset SQL
-    // reports can find this data; fall back to the mobile linkId otherwise.
-    const mapped = form.reportCodeMap?.[item.linkId];
-    const obsCode = mapped?.code ?? item.linkId;
-    const obsDisplay = mapped?.display ?? labelFor(item);
+    const obsDisplay = labelFor(item);
     const obs: Record<string, unknown> = {
       resourceType: "Observation",
       id,
@@ -555,7 +551,7 @@ export function buildLabSubmissionBundle(
         coding: [
           {
             system: "http://snomed.info/sct",
-            code: obsCode,
+            code: item.linkId,
             display: obsDisplay,
           },
         ],
