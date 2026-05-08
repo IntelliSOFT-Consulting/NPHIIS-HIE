@@ -101,13 +101,11 @@ export interface LabFormDefinition {
   allowedRoles: string[];
   questionnaire: FhirQuestionnaire;
   /**
-   * Maps mobile questionnaire linkIds to the Observation code the Superset
-   * reports join against (see the nphiis/reports/*.sql files in the mobile
-   * repo). When an item isn't in this map we fall through to using the
-   * linkId itself — that's correct for AFP questionnaires, whose numeric
-   * linkIds the reports reference directly.
+   * Short human-readable label used as Encounter.reasonCode when this form
+   * is submitted, e.g. "Measles Lab Information" / "AFP Lab Information".
+   * Reports group lab encounters by this string.
    */
-  reportCodeMap?: Record<string, { code: string; display?: string }>;
+  encounterReason: string;
 }
 
 /**
@@ -126,6 +124,7 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
   {
     id: "measles-lab-results",
     title: "Measles - Lab Information",
+    encounterReason: "Measles Lab Information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/measles-lab-results",
     allowedRoles: [
@@ -135,42 +134,11 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
       "SUPERUSER",
     ],
     questionnaire: measlesLabResults as unknown as FhirQuestionnaire,
-    // Mobile linkIds → codes used by measles-cif-502.sql.
-    reportCodeMap: {
-      "date-specimen-received": {
-        code: "specimenReceivedDate",
-        display: "Date specimen received in lab",
-      },
-      "specimen-condition": {
-        code: "specimenCondition",
-        display: "Specimen Condition",
-      },
-      "measles-igm": {
-        code: "measlesIgM",
-        display: "Measles IgM results",
-      },
-      "rubella-igm": {
-        code: "rubellaIgM",
-        display: "Rubella IgM results",
-      },
-      "date-lab-sent-results": {
-        code: "resultsToEPI",
-        display: "Date lab sent out results to EPI Surv Unit",
-      },
-      "655865451155": {
-        code: "sentToRegional",
-        display:
-          "Date Serum specimen was sent to regional lab for IgM confirmation",
-      },
-      "final-classification": {
-        code: "finalClassification",
-        display: "Final Classification",
-      },
-    },
   },
   {
     id: "measles-lab-reg-results",
     title: "Measles - Regional Lab Information",
+    encounterReason: "Measles Regional Lab Information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/measles-lab-reg-results",
     allowedRoles: ["NATIONAL_LAB", "ADMINISTRATOR", "SUPERUSER"],
@@ -179,6 +147,7 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
   {
     id: "afp-stool-lab-results",
     title: "AFP - Stool Specimen Lab Results",
+    encounterReason: "AFP Lab Information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/afp-case-stool-lab-results",
     allowedRoles: [
@@ -188,15 +157,11 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
       "SUPERUSER",
     ],
     questionnaire: afpStoolLabResults as unknown as FhirQuestionnaire,
-    // afp-cif-502.sql expects a text `labId` code; everything else in the
-    // AFP form is a numeric linkId that the report joins against directly.
-    reportCodeMap: {
-      "8732404074721": { code: "labId", display: "Lab ID No" },
-    },
   },
   {
     id: "afp-itd-lab",
     title: "AFP - ITD Lab Information",
+    encounterReason: "AFP ITD Lab Information",
     questionnaireUrl: "http://nphiis.health.go.ke/Questionnaire/afp-itd-lab",
     allowedRoles: ["NATIONAL_LAB", "ADMINISTRATOR", "SUPERUSER"],
     questionnaire: afpItdLab as unknown as FhirQuestionnaire,
@@ -204,6 +169,7 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
   {
     id: "afp-final-lab-results",
     title: "AFP - Final Laboratory Result",
+    encounterReason: "AFP Final Lab Information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/afp-final-lab-results",
     allowedRoles: ["NATIONAL_LAB", "ADMINISTRATOR", "SUPERUSER"],
@@ -212,6 +178,7 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
   {
     id: "vl-case-lab-information",
     title: "VL - Case Lab Information",
+    encounterReason: "VL Lab Information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/vl-case-lab-information",
     allowedRoles: [
