@@ -295,6 +295,7 @@ export const registerKeycloakUser = async (username: string, email: string | nul
               attributes: {
                 fhirPatientId,
                 phone,
+                firstLogin: ["true"],
               },
             }),
           })
@@ -596,6 +597,62 @@ export const getKeycloakUserById = async (id: string) => {
   }
 }
 
+export const setFirstLoginComplete = async (username: string) => {
+  try {
+    const user = await findKeycloakUser(username);
+    if (!user) return null;
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) return null;
+
+    const requestBody: any = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      enabled: user.enabled,
+      attributes: { ...user.attributes, firstLogin: ["false"] },
+    };
+    if (user.email) requestBody.email = user.email;
+
+    const response = await fetch(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`, {
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      method: "PUT",
+      body: JSON.stringify(requestBody),
+    });
+    return response.ok ? true : null;
+  } catch (error) {
+    console.error(`Error marking firstLogin complete for ${username}:`, error);
+    return null;
+  }
+};
+
+export const setFirstLoginPending = async (username: string) => {
+  try {
+    const user = await findKeycloakUser(username);
+    if (!user) return null;
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) return null;
+
+    const requestBody: any = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      enabled: user.enabled,
+      attributes: { ...user.attributes, firstLogin: ["true"] },
+    };
+    if (user.email) requestBody.email = user.email;
+
+    const response = await fetch(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${user.id}`, {
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      method: "PUT",
+      body: JSON.stringify(requestBody),
+    });
+    return response.ok ? true : null;
+  } catch (error) {
+    console.error(`Error marking firstLogin pending for ${username}:`, error);
+    return null;
+  }
+};
+
 const USER_ROLES = process.env.USER_ROLES?.split(",") || [];
 
 // Create a role in Keycloak if it doesn't exist
@@ -665,4 +722,66 @@ export const checkUserRoles = async () => {
   }
 }
 
+const REQUIRED_USER_ATTRIBUTES: { name: string; displayName: string }[] = [
+  { name: "phone",         displayName: "Phone Number" },
+  { name: "resetCode",     displayName: "Password Reset Code" },
+  { name: "firstLogin",    displayName: "First Login" },
+  { name: "fhirPatientId", displayName: "FHIR Patient ID" },
+];
+
+export const checkUserProfileAttributes = async () => {
+  try {
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) {
+      console.error("checkUserProfileAttributes: failed to obtain admin token");
+      return;
+    }
+
+    const profileResponse = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/profile`,
+      { headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' } }
+    );
+    if (!profileResponse.ok) {
+      console.error(`Failed to fetch user profile schema: ${profileResponse.status}`);
+      return;
+    }
+
+    const profile = await profileResponse.json();
+    const existingNames: Set<string> = new Set((profile.attributes ?? []).map((a: any) => a.name));
+
+    const missing = REQUIRED_USER_ATTRIBUTES.filter(a => !existingNames.has(a.name));
+    if (missing.length === 0) {
+      console.log("Keycloak user profile attributes: all required attributes present");
+      return;
+    }
+
+    for (const attr of missing) {
+      profile.attributes.push({
+        name: attr.name,
+        displayName: attr.displayName,
+        permissions: { view: ["admin"], edit: ["admin"] },
+        multivalued: false,
+      });
+      console.log(`Adding missing Keycloak attribute: ${attr.name}`);
+    }
+
+    const putResponse = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/profile`,
+      {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile),
+      }
+    );
+    if (putResponse.ok) {
+      console.log(`Keycloak user profile attributes: added [${missing.map(a => a.name).join(", ")}]`);
+    } else {
+      console.error(`Failed to update user profile schema: ${putResponse.status} ${putResponse.statusText}`);
+    }
+  } catch (error) {
+    console.error("Error checking user profile attributes:", error);
+  }
+};
+
+checkUserProfileAttributes();
 checkUserRoles();

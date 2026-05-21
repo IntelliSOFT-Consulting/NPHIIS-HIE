@@ -4,6 +4,9 @@ import { processAfpObservation } from '../lib/notification';
 import { assignEpidForEncounter } from '../lib/epid-assignment';
 import { attachSubscriptionAuditLog } from '../lib/subscription-audit';
 import { requireInternalApiKey } from '../middleware/internal-api-key';
+import { authenticateUser } from '../lib/middleware';
+import { findKeycloakUser } from '../lib/keycloak';
+import { prisma } from '../lib/prisma';
 import { orderEncounterIdsByV1 } from '../lib/fhir-resource-history';
 import { runEncounterBackfillJob } from '../lib/encounter-backfill-job';
 
@@ -270,6 +273,78 @@ router.post('/observations/afp-follow-up', async (req: Request, res: Response) =
     res.locals.subscriptionOutcome = 'error';
     res.locals.subscriptionErrorMessage = String(error);
     return res.status(400).json(OperationOutcome('Failed to create notification', 'error'));
+  }
+});
+
+const VALID_OUTCOMES = ['success', 'error', 'skipped'] as const;
+
+router.get('/callback-logs', authenticateUser, async (req: Request, res: Response) => {
+  try {
+    const currentUser = (req as any).user;
+    const kcUser = await findKeycloakUser(currentUser.preferred_username);
+    if (!kcUser?.id) {
+      return res.status(403).json({ status: 'error', error: 'User not found' });
+    }
+    const practitioner = (await FhirApi({ url: `/Practitioner/${kcUser.id}` })).data;
+    if (!practitioner) {
+      return res.status(404).json({ status: 'error', error: 'Practitioner not found' });
+    }
+    const practitionerRole =
+      practitioner?.extension?.length > 0
+        ? practitioner.extension[1]?.valueString
+        : 'ADMINISTRATOR';
+
+    if (practitionerRole !== 'ADMINISTRATOR' && practitionerRole !== 'SUPERUSER') {
+      return res.status(403).json({ status: 'error', error: 'Administrator access required' });
+    }
+
+    const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string, 10) || 25));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    const outcome = req.query.outcome as string | undefined;
+    if (outcome && VALID_OUTCOMES.includes(outcome as (typeof VALID_OUTCOMES)[number])) {
+      where.outcome = outcome;
+    }
+
+    const routeFilter = req.query.route as string | undefined;
+    if (routeFilter && routeFilter.trim()) {
+      where.route = routeFilter.trim();
+    }
+
+    const resourceType = req.query.resourceType as string | undefined;
+    if (resourceType && resourceType.trim()) {
+      where.resourceType = resourceType.trim();
+    }
+
+    const search = req.query.search as string | undefined;
+    if (search && search.trim()) {
+      where.resourceId = { contains: search.trim(), mode: 'insensitive' };
+    }
+
+    const [logs, total] = await Promise.all([
+      prisma.fhirSubscriptionCallbackLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.fhirSubscriptionCallbackLog.count({ where }),
+    ]);
+
+    return res.status(200).json({
+      status: 'success',
+      logs,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 0,
+    });
+  } catch (error) {
+    console.error('Error fetching callback logs:', error);
+    return res.status(500).json(OperationOutcome('Failed to fetch callback logs'));
   }
 });
 
