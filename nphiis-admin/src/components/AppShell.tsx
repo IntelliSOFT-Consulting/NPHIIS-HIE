@@ -20,6 +20,10 @@ export const PAGE_META: Record<
   },
   '/lab': { title: 'Lab', subtitle: 'Submit results and manage bulk uploads' },
   '/settings': { title: 'Settings', subtitle: 'System configuration' },
+  '/subscription-logs': {
+    title: 'Subscription logs',
+    subtitle: 'FHIR subscription webhook audit trail (EPID, AFP follow-up, backfill)',
+  },
 };
 
 export default function AppShell({ children }: { children: ReactNode }) {

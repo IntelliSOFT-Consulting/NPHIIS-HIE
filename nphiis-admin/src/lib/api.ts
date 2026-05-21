@@ -1,4 +1,5 @@
 import { User, CreateUserRequest, LocationInfo } from '@/types/user';
+import type { CallbackLogsApiResponse } from '@/types/callback-log';
 
 // API host configurations
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST;
@@ -1293,5 +1294,51 @@ export const locationApi = {
       console.error('Error deleting location:', error);
       throw error;
     }
+  },
+};
+
+export const callbackLogsApi = {
+  getLogs: async (
+    accessToken: string,
+    params: {
+      page?: number;
+      limit?: number;
+      outcome?: string;
+      route?: string;
+      resourceType?: string;
+      search?: string;
+    } = {},
+  ): Promise<CallbackLogsApiResponse> => {
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+    const qs = new URLSearchParams();
+    if (params.page) qs.set('page', String(params.page));
+    if (params.limit) qs.set('limit', String(params.limit));
+    if (params.outcome) qs.set('outcome', params.outcome);
+    if (params.route) qs.set('route', params.route);
+    if (params.resourceType) qs.set('resourceType', params.resourceType);
+    const s = params.search?.trim();
+    if (s) qs.set('search', s);
+    const suffix = qs.toString();
+    const url = `/api/subscriptions/callback-logs${suffix ? `?${suffix}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Cookie: 'frontend_lang=en_US',
+      },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const err = new Error(
+        (data as any).error ??
+          (data as any).issue?.[0]?.diagnostics ??
+          `HTTP error! status: ${response.status}`,
+      );
+      (err as any).response = { data, status: response.status };
+      throw err;
+    }
+    return data as CallbackLogsApiResponse;
   },
 };

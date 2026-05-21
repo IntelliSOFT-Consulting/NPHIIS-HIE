@@ -55,6 +55,7 @@ export const FEATURES = {
     ROLES.ADMINISTRATOR,
     ROLES.SUPERUSER,
   ],
+  SUBSCRIPTION_LOGS_VIEW: [ROLES.ADMINISTRATOR, ROLES.SUPERUSER],
 } as const;
 
 export type Feature = keyof typeof FEATURES;
