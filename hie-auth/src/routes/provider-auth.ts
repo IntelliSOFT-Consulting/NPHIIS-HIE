@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
-import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken, deleteKeycloakUser } from './../lib/keycloak'
+import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken, deleteKeycloakUser, setFirstLoginComplete, setFirstLoginPending } from './../lib/keycloak'
 import { authenticateUser } from "../lib/middleware";
 import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../lib/email";
 import { getSupersetGuestToken } from "../lib/superset";
@@ -180,7 +180,9 @@ router.post("/login", async (req: Request, res: Response) => {
             return res.status(401).json({ status: "error", error: "User not found or not active" });
         }
 
-        return res.status(200).json({ ...token, status: "success" });
+        const isFirstLogin = userInfo.attributes?.firstLogin?.[0] === "true";
+
+        return res.status(200).json({ ...token, firstLogin: isFirstLogin, status: "success" });
     }
     catch (error) {
         console.log(error);
@@ -319,17 +321,36 @@ router.get("/user/:username", authenticateUser, async (req: Request, res: Respon
 
 router.post('/reset-password', async (req: Request, res: Response) => {
     try {
-        let { idNumber, password, resetCode } = req.body;
-        let resetResp = await validateResetCode(idNumber, resetCode)
-        if (!resetResp) {
-            return res.status(401).json({ error: "Failed to update new password. Try again - Invalid reset code", status: "error" });
+        let { idNumber, password, resetCode, temporaryPassword } = req.body;
+
+        if (resetCode) {
+            // Email reset-code flow
+            let resetResp = await validateResetCode(idNumber, resetCode);
+            if (!resetResp) {
+                return res.status(401).json({ error: "Failed to update new password. Try again - Invalid reset code", status: "error" });
+            }
+            let resp = await updateUserPassword(idNumber, password);
+            if (!resp) {
+                return res.status(401).json({ error: "Failed to update new password. Try again", status: "error" });
+            }
+            await deleteResetCode(idNumber);
+        } else if (temporaryPassword) {
+            // First-login flow: verify current temporary password then set new one
+            const tokenResp = await getKeycloakUserToken(idNumber, temporaryPassword);
+            if (!tokenResp || tokenResp.error) {
+                return res.status(401).json({ error: "Invalid temporary password provided", status: "error" });
+            }
+            let resp = await updateUserPassword(idNumber, password);
+            if (!resp) {
+                return res.status(401).json({ error: "Failed to update new password. Try again", status: "error" });
+            }
+        } else {
+            return res.status(400).json({ error: "Either resetCode or temporaryPassword is required", status: "error" });
         }
-        let resp = await updateUserPassword(idNumber, password);
-        if (!resp) {
-            return res.status(401).json({ error: "Failed to update new password. Try again", status: "error" });
-        }
-        // Only delete reset code after successful password update
-        await deleteResetCode(idNumber);
+
+        setImmediate(() => setFirstLoginComplete(idNumber).catch(err => {
+            console.error('Failed to mark firstLogin complete after password reset:', err);
+        }));
         return res.status(200).json({ response: "Password updated successfully", status: "success" });
     } catch (error) {
         console.error(error);
@@ -414,11 +435,14 @@ router.post('/welcome-email', authenticateUser, async (req: Request, res: Respon
         // Update user password
         const passwordUpdateResult = await updateUserPassword(username, newPassword);
         if (!passwordUpdateResult) {
-            return res.status(500).json({ 
-                status: "error", 
-                error: "Failed to update user password" 
+            return res.status(500).json({
+                status: "error",
+                error: "Failed to update user password"
             });
         }
+        setImmediate(() => setFirstLoginPending(username).catch(err => {
+            console.error('Failed to reset firstLogin pending after welcome email:', err);
+        }));
 
         // Send welcome email with new credentials
         const emailSent = await sendRegistrationConfirmationEmail(
