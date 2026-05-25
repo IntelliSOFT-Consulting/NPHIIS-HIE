@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   nphiis-admin:
     build:
@@ -7,6 +5,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:3000"
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
       - PORT=3000
@@ -20,10 +20,16 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    # Join the same Docker network(s) as hie/docker-compose.yml so the server-side
+    # proxy can resolve `hapi-fhir-jpa` when using FHIR_BASE_URL=http://hapi-fhir-jpa:8080/fhir
+    # (standalone `docker compose up` previously used only nphiis-network, which isolated admin from HAPI).
     networks:
       - nphiis-network
+      - cloudbuild
 
 networks:
   nphiis-network:
     driver: bridge
+  cloudbuild:
+    external: true
 

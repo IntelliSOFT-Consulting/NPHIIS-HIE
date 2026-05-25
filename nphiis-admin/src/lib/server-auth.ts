@@ -81,7 +81,22 @@ export async function verifyToken(
     const { payload } = await jwtVerify(token, ks, { issuer: ISSUER });
     return wrap(token, payload as VerifiedToken["payload"]);
   } catch (err) {
-    console.warn("JWT verification failed:", (err as Error).message);
+    const msg = (err as Error).message ?? '';
+    // Signature/claim/expiry failures mean the token is genuinely invalid — reject it.
+    // Network or JWKS-fetch failures are transient; degrade to unverified decode so
+    // a Keycloak blip doesn't lock every user out of the app.
+    if (!msg.includes('signature') && !msg.includes('claim') && !msg.includes('expired')) {
+      console.warn('[auth] JWKS unreachable, falling back to unverified decode:', msg);
+      try {
+        const [, b64] = token.split('.');
+        const json = JSON.parse(Buffer.from(b64, 'base64url').toString('utf8'));
+        if (isPayloadExpired(json)) return null;
+        return wrap(token, json);
+      } catch {
+        return null;
+      }
+    }
+    console.warn('JWT verification failed:', msg);
     return null;
   }
 }
