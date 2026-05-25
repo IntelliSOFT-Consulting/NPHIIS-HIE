@@ -9,6 +9,7 @@ import { findKeycloakUser } from '../lib/keycloak';
 import { prisma } from '../lib/prisma';
 import { orderEncounterIdsByV1 } from '../lib/fhir-resource-history';
 import { runEncounterBackfillJob } from '../lib/encounter-backfill-job';
+import { patientHasOfficialEpid } from '../lib/epid-utils';
 
 const router = express.Router();
 router.use(express.json() as any);
@@ -20,11 +21,13 @@ type AlreadyEpidResponseMode = '400' | '200skipped';
 async function assignIdsHandler(
   req: Request,
   res: Response,
-  options?: { alreadyEpidResponse?: AlreadyEpidResponseMode }
+  options?: { alreadyEpidResponse?: AlreadyEpidResponseMode; notify?: boolean },
 ): Promise<void | Response> {
   try {
     const data = req.body;
-    const result = await assignEpidForEncounter(data);
+    const result = await assignEpidForEncounter(data, {
+      notify: options?.notify === true,
+    });
 
     if (result.kind === 'already_official_epid') {
       if (options?.alreadyEpidResponse === '200skipped') {
@@ -71,7 +74,8 @@ router.put('/encounters/notifications/Encounter/:id', async (req: Request, res: 
 
     const patient = (await FhirApi({ url: `/Patient/${data?.subject?.reference?.split('/')[1]}` })).data;
 
-    if (patient?.identifier?.some((idEnt: any) => idEnt.system === 'http://hie.org/identifiers/EPID' && idEnt.use === 'official')) {
+    /** Official EPIDs may be typed-only (Identifier.type.coding) — do not rely on Identifier.system alone. */
+    if (patientHasOfficialEpid(patient)) {
       res.locals.subscriptionOutcome = 'skipped';
       return res.status(200).json(
         OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID', 'information')
@@ -79,7 +83,7 @@ router.put('/encounters/notifications/Encounter/:id', async (req: Request, res: 
     }
 
     (req as any).body = data;
-    return assignIdsHandler(req, res, { alreadyEpidResponse: '200skipped' });
+    return assignIdsHandler(req, res, { alreadyEpidResponse: '200skipped', notify: true });
   } catch (error) {
     console.error('Error in Encounter subscription:', error);
     res.locals.subscriptionOutcome = 'error';
@@ -159,7 +163,7 @@ router.post('/encounters/retry-epid', requireInternalApiKey, async (req: Request
           continue;
         }
         const patient = (await FhirApi({ url: `/Patient/${enc?.subject?.reference?.split('/')[1]}` })).data;
-        if (patient?.identifier?.some((x: any) => x.system === 'http://hie.org/identifiers/EPID' && x.use === 'official')) {
+        if (patientHasOfficialEpid(patient)) {
           results.push({ encounterId: eid, ok: true });
           continue;
         }
@@ -196,7 +200,7 @@ router.post('/encounters/retry-epid', requireInternalApiKey, async (req: Request
     }
 
     const patient = (await FhirApi({ url: `/Patient/${data?.subject?.reference?.split('/')[1]}` })).data;
-    if (patient?.identifier?.some((x: any) => x.system === 'http://hie.org/identifiers/EPID' && x.use === 'official')) {
+    if (patientHasOfficialEpid(patient)) {
       res.locals.subscriptionOutcome = 'skipped';
       return res.status(200).json(
         OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID', 'information')

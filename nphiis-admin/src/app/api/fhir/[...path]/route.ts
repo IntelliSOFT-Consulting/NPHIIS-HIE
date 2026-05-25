@@ -6,6 +6,8 @@ if (!FHIR_BASE_URL) {
   throw new Error('FHIR_BASE_URL is not set');
 }
 
+const base = FHIR_BASE_URL.replace(/\/$/, '');
+
 async function proxy(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> },
@@ -14,10 +16,11 @@ async function proxy(
   const session = await verifyToken(request);
   if (!session) return unauthorized();
 
+  let upstreamUrl = '';
   try {
     const { path } = await context.params;
     const search = request.nextUrl.searchParams.toString();
-    const url = `${FHIR_BASE_URL}/${path.join('/')}${search ? `?${search}` : ''}`;
+    upstreamUrl = `${base}/${path.join('/')}${search ? `?${search}` : ''}`;
 
     const init: RequestInit = {
       method,
@@ -35,12 +38,38 @@ async function proxy(
       init.body = await request.text();
     }
 
-    const response = await fetch(url, init);
+    const response = await fetch(upstreamUrl, init);
     const text = await response.text();
-    const data = text ? JSON.parse(text) : null;
-    return NextResponse.json(data, { status: response.status });
+
+    if (text) {
+      try {
+        const data = JSON.parse(text);
+        return NextResponse.json(data, { status: response.status });
+      } catch (parseErr) {
+        console.error(
+          `[fhir-proxy] Upstream returned non-JSON (status=${response.status})`,
+          { upstreamUrl, bodyPreview: text.slice(0, 500), parseErr },
+        );
+        return NextResponse.json(
+          {
+            error: 'Upstream FHIR returned a non-JSON response',
+            resourceType: 'OperationOutcome',
+            issue: [{ severity: 'error', diagnostics: 'Expected application/fhir+json from FHIR server' }],
+          },
+          { status: 502 },
+        );
+      }
+    }
+
+    return new NextResponse(null, { status: response.status });
   } catch (error) {
-    console.error(`Error proxying ${method} to FHIR server:`, error);
+    const err = error as Error & { cause?: unknown };
+    const causeMsg =
+      err?.cause instanceof Error ? err.cause.message : err?.cause != null ? String(err.cause) : '';
+    console.error(`Error proxying ${method} to FHIR server:`, error, {
+      upstreamUrl,
+      cause: causeMsg || undefined,
+    });
     return NextResponse.json({ error: 'Failed to connect to FHIR server' }, { status: 500 });
   }
 }

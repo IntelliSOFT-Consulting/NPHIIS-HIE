@@ -23,16 +23,22 @@ model CaseIdTracker {
 }
 
 model Notification {
-  id String @id @default(uuid())
-  practitionerId String
-  encounterId String @unique
-  investigationDate DateTime
-  dueDate DateTime
-  title String
-  body String
-  status NotificationStatus @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String               @id @default(uuid())
+  practitionerId      String
+  encounterId         String
+  /** AFP follow-up reminders vs immediate casesubmission alerts — separate rows per recipient (see @@unique). */
+  type                NotificationType     @default(AFP_FOLLOW_UP)
+  investigationDate   DateTime?
+  dueDate             DateTime
+  title               String
+  body                String
+  status              NotificationStatus   @default(PENDING)
+  /** Set when case-submission SMTP succeeded; prevents duplicate email on FCM retry (`type = CASE_SUBMISSION` only). */
+  caseSubmissionEmailSentAt DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@unique([practitionerId, encounterId, type])
 }
 
 model NotificationRecipient {
@@ -47,6 +53,11 @@ enum NotificationStatus {
   PENDING
   SENT
   FAILED
+}
+
+enum NotificationType {
+  AFP_FOLLOW_UP
+  CASE_SUBMISSION
 }
 
 enum SubscriptionCallbackOutcome {

@@ -430,6 +430,8 @@ export const getKeycloakUsers = async (first: number = 0, max: number = 100, sea
       email: user.email, 
       phone: user?.attributes?.phone?.[0] || null,
       role: user?.attributes?.practitionerRole?.[0] || null,
+      /** FHIR Practitioner id when set on the Keycloak user (see provider registration). */
+      fhirPractitionerId: user?.attributes?.fhirPractitionerId?.[0] || null,
       active: user.enabled,
       createdTimestamp: user.createdTimestamp
     }));
@@ -723,10 +725,12 @@ export const checkUserRoles = async () => {
 }
 
 const REQUIRED_USER_ATTRIBUTES: { name: string; displayName: string }[] = [
-  { name: "phone",         displayName: "Phone Number" },
-  { name: "resetCode",     displayName: "Password Reset Code" },
-  { name: "firstLogin",    displayName: "First Login" },
-  { name: "fhirPatientId", displayName: "FHIR Patient ID" },
+  { name: "phone",           displayName: "Phone Number" },
+  { name: "resetCode",       displayName: "Password Reset Code" },
+  { name: "firstLogin",      displayName: "First Login" },
+  { name: "fhirPatientId",   displayName: "FHIR Patient ID" },
+  { name: "nphiis_role",     displayName: "NPHIIS Role" },
+  { name: "nphiis_location", displayName: "NPHIIS Location" },
 ];
 
 export const checkUserProfileAttributes = async () => {
@@ -783,5 +787,100 @@ export const checkUserProfileAttributes = async () => {
   }
 };
 
+const REQUIRED_PROTOCOL_MAPPERS = [
+  {
+    name: "nphiis_role",
+    protocolMapper: "oidc-usermodel-attribute-mapper",
+    config: {
+      "user.attribute": "nphiis_role",
+      "claim.name": "nphiis_role",
+      "jsonType.label": "String",
+      "id.token.claim": "true",
+      "access.token.claim": "true",
+      "userinfo.token.claim": "true",
+      "multivalued": "false",
+    },
+  },
+  {
+    name: "nphiis_location",
+    protocolMapper: "oidc-usermodel-attribute-mapper",
+    config: {
+      "user.attribute": "nphiis_location",
+      "claim.name": "nphiis_location",
+      "jsonType.label": "JSON",
+      "id.token.claim": "true",
+      "access.token.claim": "true",
+      "userinfo.token.claim": "true",
+      "multivalued": "false",
+    },
+  },
+];
+
+export const checkClientProtocolMappers = async () => {
+  try {
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) {
+      console.error("checkClientProtocolMappers: failed to obtain admin token");
+      return;
+    }
+
+    const clientsRes = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/clients?clientId=${encodeURIComponent(KC_CLIENT_ID)}`,
+      { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
+    );
+    if (!clientsRes.ok) {
+      console.error(`checkClientProtocolMappers: failed to list clients: ${clientsRes.status}`);
+      return;
+    }
+    const clients = await clientsRes.json();
+    if (!clients.length) {
+      console.error(`checkClientProtocolMappers: client '${KC_CLIENT_ID}' not found`);
+      return;
+    }
+    const clientUuid: string = clients[0].id;
+
+    const mappersRes = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/clients/${clientUuid}/protocol-mappers/models`,
+      { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
+    );
+    if (!mappersRes.ok) {
+      console.error(`checkClientProtocolMappers: failed to fetch mappers: ${mappersRes.status}`);
+      return;
+    }
+    const existingMappers = await mappersRes.json();
+    const existingNames = new Set<string>(existingMappers.map((m: any) => m.name));
+
+    for (const mapper of REQUIRED_PROTOCOL_MAPPERS) {
+      if (existingNames.has(mapper.name)) {
+        console.log(`Protocol mapper '${mapper.name}' already exists on ${KC_CLIENT_ID}`);
+        continue;
+      }
+      const addRes = await fetch(
+        `${KC_BASE_URL}/admin/realms/${KC_REALM}/clients/${clientUuid}/protocol-mappers/models`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: mapper.name,
+            protocol: "openid-connect",
+            protocolMapper: mapper.protocolMapper,
+            consentRequired: false,
+            config: mapper.config,
+          }),
+        }
+      );
+      if (addRes.status === 201) {
+        console.log(`Added protocol mapper '${mapper.name}' to client ${KC_CLIENT_ID}`);
+      } else {
+        const text = await addRes.text().catch(() => "");
+        console.error(`Failed to add protocol mapper '${mapper.name}': ${addRes.status} ${text}`);
+      }
+    }
+  } catch (error) {
+    console.error("Error checking protocol mappers:", error);
+  }
+};
+
 checkUserProfileAttributes();
 checkUserRoles();
+checkClientProtocolMappers();

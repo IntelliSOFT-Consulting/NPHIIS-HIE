@@ -106,7 +106,8 @@ export async function POST(req: NextRequest) {
     const { token } = (await guestRes.json()) as GuestTokenResponse;
     return NextResponse.json({ token, dashboardId });
   } catch (error) {
-    console.error('Guest token route error:', error);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Guest token route error:', msg);
+    return NextResponse.json({ error: `Internal error: ${msg}` }, { status: 500 });
   }
 }
