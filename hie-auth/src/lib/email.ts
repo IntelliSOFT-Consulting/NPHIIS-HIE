@@ -605,3 +605,135 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
         return null
     }
 }
+function escapeHtml(s: string): string {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/** Optional link target for admins (set ADMIN_PORTAL_URL in hie-auth env). */
+export type CaseSubmissionEmailInput = {
+    epid: string;
+    diseaseCondition: string;
+    countyName: string;
+    subCountyName: string;
+    submittedAt: Date;
+    portalUrl?: string | null;
+    recipientRole?: string | null;
+};
+
+function formatEat(iso: Date): string {
+    try {
+        return new Intl.DateTimeFormat("en-GB", {
+            timeZone: "Africa/Nairobi",
+            dateStyle: "medium",
+            timeStyle: "short",
+        }).format(iso);
+    } catch {
+        return iso.toISOString();
+    }
+}
+
+/**
+ * Operational alert email when a new case receives an EPID (national / lab cohort).
+ */
+export const sendCaseSubmissionEmail = async (
+    to: string,
+    ctx: CaseSubmissionEmailInput,
+): Promise<boolean> => {
+    if (!SMTP_HOST || !SMTP_USERNAME) {
+        console.warn("[Email] SMTP not configured; skipping case submission email.");
+        return false;
+    }
+
+    try {
+        const safeEpid = escapeHtml(ctx.epid);
+        const safeDis = escapeHtml(ctx.diseaseCondition);
+        const safeCounty = escapeHtml(ctx.countyName);
+        const safeSub = escapeHtml(ctx.subCountyName);
+        const when = escapeHtml(formatEat(ctx.submittedAt));
+        const portal = ctx.portalUrl?.trim();
+        const ctaHtml = portal
+            ? `
+                <div style="text-align:center;margin:28px 0;">
+                  <a href="${escapeHtml(portal)}" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">
+                    Open NPHIIS admin portal
+                  </a>
+                </div>`
+            : "";
+
+        const roleNorm = ctx.recipientRole?.trim()?.toUpperCase() ?? "";
+        const hintCopy =
+            roleNorm === "LAB_TECHNICIAN"
+                ? "Please verify and enter lab results using this EPID in the admin portal."
+                : "Please review this case in the surveillance dashboards or admin portal as appropriate.";
+
+        const mailOptions = {
+            from: '"NPHIIS" apps@intellisoftkenya.com',
+            to,
+            subject: `New case submitted — ${ctx.epid}`,
+            text: [
+                `NPHIIS — New case submitted`,
+                ``,
+                `EPID: ${ctx.epid}`,
+                `Disease: ${ctx.diseaseCondition}`,
+                `Location: ${ctx.countyName}, ${ctx.subCountyName}`,
+                `Submitted: ${formatEat(ctx.submittedAt)}`,
+                ...(portal ? [`Portal: ${portal}`] : []),
+                "",
+                hintCopy,
+                "",
+                "© NPHIIS — automated message",
+            ].join("\n"),
+            html: `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>New case submitted</title></head>
+<body style="margin:0;background:#f4f7f9;font-family:'Segoe UI',Tahoma,Geneva,sans-serif;">
+  <div style="padding:24px 0;background:#f4f7f9;">
+    <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+      <div style="background:linear-gradient(135deg,#2563eb 0%,#3b82f6 100%);padding:26px;text-align:center;color:#fff;">
+        <h1 style="margin:0;font-size:26px;">KENYA NPHIIS</h1>
+        <p style="margin:10px 0 0;font-size:13px;opacity:.95;">National Public Health Information &amp; Surveillance System</p>
+      </div>
+      <div style="padding:32px;">
+        <h2 style="color:#2563eb;margin:0 0 12px;text-align:center;">New case submitted</h2>
+        <p style="color:#666;font-size:16px;line-height:1.6;text-align:center;margin:0;">
+          A new surveillance case has been recorded and is ready for review.
+        </p>
+        <div style="background:#f8f9fa;border-left:4px solid #2563eb;padding:20px;border-radius:8px;margin:24px 0;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:.5px;width:140px;">EPID</td>
+                <td style="padding:8px 0;font-size:17px;font-weight:700;font-family:'Courier New',monospace;word-break:break-all;">${safeEpid}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Disease</td>
+                <td style="padding:8px 0;font-size:16px;">${safeDis}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">County</td>
+                <td style="padding:8px 0;font-size:16px;">${safeCounty}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Sub-county</td>
+                <td style="padding:8px 0;font-size:16px;">${safeSub}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Submitted</td>
+                <td style="padding:8px 0;font-size:15px;color:#444;">${when} EAT</td></tr>
+          </table>
+        </div>
+        ${ctaHtml}
+        <p style="color:#555;font-size:14px;line-height:1.6;text-align:center;">${hintCopy}</p>
+      </div>
+      <div style="background:#f8f9fa;padding:22px;text-align:center;border-top:1px solid #e5e7eb;">
+        <p style="margin:0;color:#2563eb;font-weight:700;font-size:15px;">Ministry of Health, Kenya</p>
+        <p style="margin:8px 0 0;color:#666;font-size:13px;">Tel: +254 718 777 000 | Email: dev@intellisoftkenya.com</p>
+        <p style="margin:14px 0 0;color:#999;font-size:11px;">
+          © 2026 National Public Health Information &amp; Surveillance System<br>This is an automated message. Please do not reply.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`,
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Case submission email:", info.response);
+        return true;
+    } catch (e) {
+        console.error("[Email] Failed to send case submission email:", e);
+        return false;
+    }
+};
