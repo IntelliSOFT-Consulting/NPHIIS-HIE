@@ -2,6 +2,7 @@ import { FhirApi } from "./utils";
 import { assignEpidForEncounter } from "./epid-assignment";
 import { processFollowUpObservations } from "./fhir";
 import { fetchAllEncounterIds, orderEncounterIdsByV1 } from "./fhir-resource-history";
+import { patientHasOfficialEpid } from "./epid-utils";
 
 export type EncounterBackfillStats = {
   totalEncounters: number;
@@ -54,9 +55,7 @@ export async function runEncounterBackfillJob(): Promise<EncounterBackfillStats>
         }
 
         const patient = (await FhirApi({ url: `/Patient/${enc?.subject?.reference?.split("/")[1]}` })).data;
-        const hasOfficialEpid = patient?.identifier?.some(
-          (x: any) => x.system === "http://hie.org/identifiers/EPID" && x.use === "official"
-        );
+        const hasOfficialEpid = patientHasOfficialEpid(patient);
 
         if (hasOfficialEpid) {
           epidAssignedOrPresent++;

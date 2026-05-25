@@ -17,10 +17,20 @@
 #
 set -e
 
+# Superset CLI lives in the image venv; ensure it resolves even if PATH is minimal
+# (e.g. after volume mounts or editable reinstalls in docker-bootstrap.sh).
+export PATH="/app/.venv/bin:${PATH}"
+SUPERSET_CLI="/app/.venv/bin/superset"
+
 #
 # Always install local overrides first
 #
 /app/docker/docker-bootstrap.sh
+
+if [ ! -x "$SUPERSET_CLI" ]; then
+  echo "ERROR: Superset CLI not found at $SUPERSET_CLI (check image build and venv)"
+  exit 127
+fi
 
 if [ "$SUPERSET_LOAD_EXAMPLES" = "yes" ]; then
     STEP_CNT=4
@@ -45,15 +55,15 @@ if [ "$CYPRESS_CONFIG" == "true" ]; then
 fi
 # Initialize the database
 echo_step "1" "Starting" "Applying DB migrations"
-superset db upgrade
+"$SUPERSET_CLI" db upgrade
 echo_step "1" "Complete" "Applying DB migrations"
 
 # Create an admin user
 echo_step "2" "Starting" "Setting up admin user ( admin / $ADMIN_PASSWORD )"
 if [ "$CYPRESS_CONFIG" == "true" ]; then
-    superset load_test_users
+    "$SUPERSET_CLI" load_test_users
 else
-    superset fab create-admin \
+    "$SUPERSET_CLI" fab create-admin \
         --username admin \
         --email admin@superset.com \
         --password "$ADMIN_PASSWORD" \
@@ -63,7 +73,7 @@ fi
 echo_step "2" "Complete" "Setting up admin user"
 # Create default roles and permissions
 echo_step "3" "Starting" "Setting up roles and perms"
-superset init
+"$SUPERSET_CLI" init
 echo_step "3" "Complete" "Setting up roles and perms"
 
 # if [ "$SUPERSET_LOAD_EXAMPLES" = "yes" ]; then

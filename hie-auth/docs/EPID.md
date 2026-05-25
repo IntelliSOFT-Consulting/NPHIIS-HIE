@@ -10,7 +10,7 @@ EPID is **not** created implicitly by saving a Patient or Encounter in FHIR. It 
    On startup, [`src/index.ts`](../src/index.ts) calls `createFHIRSubscription()`, which registers a HAPI `Subscription` for `Encounter?` if both env vars are set: `FHIR_EPID_SUBSCRIPTION_ID` and `FHIR_ENCOUNTERS_SUBSCRIPTION_CALLBACK_URL` ([`src/lib/fhir-subscriptions.ts`](../src/lib/fhir-subscriptions.ts)). If either is missing, EPID subscription setup logs and skips—no automatic EPID path from subscriptions.
 
 2. **Handler**  
-   `PUT /subscriptions/encounters/notifications/Encounter/:id` ([`src/routes/subscriptions.ts`](../src/routes/subscriptions.ts)) loads the Encounter + Patient, skips if the Patient already has an **official** EPID (`system === http://hie.org/identifiers/EPID` and `use === 'official'`), otherwise calls `assignEpidForEncounter`.
+   `PUT /subscriptions/encounters/notifications/Encounter/:id` ([`src/routes/subscriptions.ts`](../src/routes/subscriptions.ts)) loads the Encounter + Patient, skips if the Patient already has an **official** EPID (simple `Identifier.system`, or typed `Identifier.type.coding` with `system === http://hie.org/identifiers/EPID`, with `use === 'official'` — [`src/lib/epid-utils.ts`](../src/lib/epid-utils.ts)), otherwise calls `assignEpidForEncounter`.
 
 3. **What `assignEpidForEncounter` does** ([`src/lib/epid-assignment.ts`](../src/lib/epid-assignment.ts))  
    - **Skip**: Patient already has official EPID → no new ID.  
