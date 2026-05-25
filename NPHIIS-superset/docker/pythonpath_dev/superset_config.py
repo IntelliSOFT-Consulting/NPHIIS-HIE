@@ -119,7 +119,12 @@ if OAUTH2_AVAILABLE:
     KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "https://api.nphiis.health.go.ke")
     KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", "master")
     KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "chanjo-client-apis")
-    KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "lbOutYrbQFvcWWe0yKPZibcu6ibsEEPr")
+    KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET")
+    if not KEYCLOAK_CLIENT_SECRET:
+        logger.warning(
+            "KEYCLOAK_CLIENT_SECRET not set; OAuth2 login will fail until configured "
+            "(e.g. NPHIIS-superset/docker/.env from docker/.env.example).",
+        )
 
     # OAuth2 provider configuration using Keycloak's OpenID Connect metadata
     OAUTH_PROVIDERS = [
@@ -239,7 +244,9 @@ _DEFAULT_EMBED_ORIGINS = (
     "http://dsrfhir.intellisoftkenya.com:8080,"
     "https://dsrfhir.intellisoftkenya.com:8080,"
     "https://dsradmin.intellisoftkenya.com,"
-    "https://dsrfhir.intellisoftkenya.com"
+    "https://dsrfhir.intellisoftkenya.com,"
+    "https://analytics-nphiis.health.go.ke,"
+    "https://nphiis.health.go.ke"
 )
 EMBEDDED_ALLOWED_ORIGINS = [
     o.strip()
