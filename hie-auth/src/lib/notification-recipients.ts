@@ -16,7 +16,7 @@ function norm(s: string | null | undefined): string {
 export function getCaseSubmissionNotifyRolesFromEnv(): string[] {
   const raw = process.env.CASE_SUBMISSION_NOTIFY_ROLES;
   if (!raw?.trim()) {
-    return ["ADMINISTRATOR", "SUPERUSER", "LAB_TECHNICIAN"];
+    return ["NATIONAL_FOCAL_PERSON", "NATIONAL_VIEWER", "NATIONAL_LAB", "LAB_TECHNICIAN"];
   }
   return raw
     .split(",")
