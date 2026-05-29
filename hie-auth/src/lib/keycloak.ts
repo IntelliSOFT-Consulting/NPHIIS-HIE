@@ -1,6 +1,5 @@
 import fetch from "cross-fetch";
 import { createHash, randomBytes } from 'crypto';
-import { FhirApi } from "./utils";
 
 
 let KC_BASE_URL = String(process.env.KC_BASE_URL);
@@ -389,39 +388,102 @@ export const getCurrentUserInfo = async (accessToken: string) => {
   }
 }
 
-export const getKeycloakUsers = async (first: number = 0, max: number = 100, search?: string) => {
+/** Paginated Keycloak users with full `attributes` (for backfill / admin tooling). */
+export const listKeycloakUsersRaw = async (
+  first: number = 0,
+  max: number = 100,
+  search?: string,
+): Promise<{ users: any[]; total: number | null } | null> => {
   try {
     const accessToken = (await getKeycloakAdminToken()).access_token;
-    
-    // Build URL with pagination parameters
     const url = new URL(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users`);
-    url.searchParams.set('first', first.toString());
-    url.searchParams.set('max', max.toString());
-    
-    // Add search parameter if provided (Keycloak searches username, email, firstName, lastName)
-    if (search && search.trim()) {
-      url.searchParams.set('search', search.trim());
+    url.searchParams.set("first", first.toString());
+    url.searchParams.set("max", max.toString());
+    if (search?.trim()) {
+      url.searchParams.set("search", search.trim());
     }
-    
     const response = await fetch(url.toString(), {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
-
     if (!response.ok) {
       console.error(`Keycloak API error: ${response.status} ${response.statusText}`);
       return null;
     }
-
     const users = await response.json();
-    
-    // Get total count from response header if available
-    const totalCountHeader = response.headers.get('X-Total-Count');
-    const total = totalCountHeader ? parseInt(totalCountHeader, 10) : null;
-    
-    // Optimized transformation using proper map instead of map + push
+    const totalHeader = response.headers.get("X-Total-Count");
+    const total = totalHeader ? parseInt(totalHeader, 10) : null;
+    return { users, total };
+  } catch (error) {
+    console.error("Error listing Keycloak users:", error);
+    return null;
+  }
+};
+
+/**
+ * Merge Keycloak user attributes (preserves existing attribute keys).
+ */
+export const setKeycloakUserAttributes = async (
+  userId: string,
+  attrs: Record<string, string[]>,
+): Promise<boolean> => {
+  try {
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) return false;
+
+    const getRes = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (!getRes.ok) {
+      console.error(`setKeycloakUserAttributes: user ${userId} not found`);
+      return false;
+    }
+    const user = await getRes.json();
+    const updatedAttributes = { ...(user.attributes ?? {}), ...attrs };
+    const putRes = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users/${userId}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
+          enabled: user.enabled,
+          email: user.email,
+          attributes: updatedAttributes,
+        }),
+      },
+    );
+    if (!putRes.ok) {
+      const err = await putRes.json().catch(() => ({}));
+      console.error(`setKeycloakUserAttributes failed for ${userId}:`, err);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error(`setKeycloakUserAttributes error for ${userId}:`, error);
+    return false;
+  }
+};
+
+export const getKeycloakUsers = async (first: number = 0, max: number = 100, search?: string) => {
+  try {
+    const page = await listKeycloakUsersRaw(first, max, search);
+    if (!page) return null;
+    const { users, total } = page;
+
     const responseData = users.map((user: any) => ({
       id: user.id,
       username: user.username, 
@@ -438,42 +500,13 @@ export const getKeycloakUsers = async (first: number = 0, max: number = 100, sea
 
     return {
       users: responseData,
-      total: total
+      total,
     };
   } catch (error) {
     console.error('Error fetching Keycloak users:', error);
     return null;   
   }
 }
-
-
-
-const updateStuff = async () => {
-  let keycloakResponse = await getKeycloakUsers();
-  if (!keycloakResponse || !keycloakResponse.users) {
-    return;
-  }
-  keycloakResponse.users.map( async (i: any) => {
-    if(i?.attr?.practitionerRole?.[0]){
-      // console.log(i);
-      let practitionerId = i?.attr?.fhirPractitionerId?.[0]
-      let fhirPractitioner = await (await FhirApi({url: `/Practitioner/${practitionerId}`})).data;
-      // let extension = fhirPractitioner.extension;
-      let facilityId = fhirPractitioner.extension[0].valueReference.reference;
-      let facility = await (await FhirApi({ url: `/${facilityId}` })).data;
-      fhirPractitioner = await (await FhirApi({url: `/Practitioner/${practitionerId}`, method:"PUT", data: JSON.stringify({
-        ...fhirPractitioner, extension: [
-          { "url": "http://example.org/location", "valueReference": { "reference": `Location/${facility.id}`, "display": facility.name } },
-          { "url": "http://example.org/fhir/StructureDefinition/role-group", "valueString": i?.attr?.practitionerRole[0]}
-        ]}
-      )})).data;
-      console.log(fhirPractitioner);
-
-    }
-  })
-}
-
-// updateStuff()
 
 export const sendPasswordResetLink = async (idNumber: string) => {
   try {
@@ -725,12 +758,14 @@ export const checkUserRoles = async () => {
 }
 
 const REQUIRED_USER_ATTRIBUTES: { name: string; displayName: string }[] = [
-  { name: "phone",           displayName: "Phone Number" },
-  { name: "resetCode",       displayName: "Password Reset Code" },
-  { name: "firstLogin",      displayName: "First Login" },
-  { name: "fhirPatientId",   displayName: "FHIR Patient ID" },
-  { name: "nphiis_role",     displayName: "NPHIIS Role" },
-  { name: "nphiis_location", displayName: "NPHIIS Location" },
+  { name: "phone",               displayName: "Phone Number" },
+  { name: "resetCode",           displayName: "Password Reset Code" },
+  { name: "firstLogin",          displayName: "First Login" },
+  { name: "fhirPatientId",       displayName: "FHIR Patient ID" },
+  { name: "fhirPractitionerId",  displayName: "FHIR Practitioner ID" },
+  { name: "practitionerRole",    displayName: "Practitioner Role" },
+  { name: "nphiis_role",         displayName: "NPHIIS Role" },
+  { name: "nphiis_location",     displayName: "NPHIIS Location" },
 ];
 
 export const checkUserProfileAttributes = async () => {
