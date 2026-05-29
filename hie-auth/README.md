@@ -26,6 +26,13 @@ After a successful **new EPID generation** from the HAPI Encounter subscription,
 |----------|---------|
 | `CASE_SUBMISSION_NOTIFY_ROLES` | Comma-separated `practitionerRole` codes. Default: `ADMINISTRATOR,SUPERUSER,LAB_TECHNICIAN`. |
 | `ADMIN_PORTAL_URL` | Optional HTTPS URL for an “Open NPHIIS admin portal” button in emails. |
+| `PRACTITIONER_ROLE_BACKFILL_DELAY_MS` | Optional throttle (ms) between users when running practitioner-role backfill. |
+
+Recipient lookup uses Keycloak `practitionerRole` (not FHIR alone). After upgrading, run a one-time sync from FHIR Practitioner `role-group` extensions:
+
+`POST /provider/users/backfill-practitioner-roles` — requires **ADMINISTRATOR** or **SUPERUSER** Bearer token, or `X-Internal-Api-Key` matching `INTERNAL_SUBSCRIPTION_API_KEY`.
+
+New provider registrations set `practitionerRole`, `nphiis_role`, and `fhirPractitionerId` on Keycloak automatically.
 
 Case-submission retries distinguish **FCM** (`status`) from **email**: when SMTP succeeds, `caseSubmissionEmailSentAt` is set so a later retry (e.g. FCM still failing) does not send duplicate mail.
 

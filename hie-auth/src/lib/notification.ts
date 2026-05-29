@@ -141,7 +141,8 @@ export async function notifyCaseSubmissionIfEnabled(
   const users = await getUsersByRoles(roles);
   if (users.length === 0) {
     console.warn(
-      `[CaseSubmissionNotify] No recipients for roles ${roles.join(", ")}; skipping`,
+      `[CaseSubmissionNotify] No recipients for roles ${roles.join(", ")}; skipping. ` +
+        "Ensure Keycloak users have practitionerRole set (POST /provider/users/backfill-practitioner-roles).",
     );
     return { recipients: 0 };
   }
