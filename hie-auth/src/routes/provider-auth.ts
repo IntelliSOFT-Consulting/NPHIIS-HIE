@@ -1,9 +1,11 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
-import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken, deleteKeycloakUser, setFirstLoginComplete, setFirstLoginPending } from './../lib/keycloak'
+import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken, deleteKeycloakUser, setFirstLoginComplete, setFirstLoginPending, setKeycloakUserAttributes, validateBearerToken, validateUserAuthentication } from './../lib/keycloak'
 import { authenticateUser } from "../lib/middleware";
 import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../lib/email";
 import { getSupersetGuestToken } from "../lib/superset";
+import { getRoleFromPractitioner, providerRoleKeycloakAttributes } from "../lib/practitioner-role";
+import { runPractitionerRoleBackfillJob } from "../lib/practitioner-role-backfill";
 
 const router = express.Router();
 router.use(express.json());
@@ -143,6 +145,11 @@ router.post("/register", async (req: Request, res: Response) => {
         if (practitioner?.resourceType === "OperationOutcome") {
             return res.status(400).json({ status: "error", error: practitioner.issue[0].diagnostics });
         }
+
+        await setKeycloakUserAttributes(
+            practitionerId,
+            providerRoleKeycloakAttributes(practitionerId, role),
+        );
 
         // Send confirmation email asynchronously (don't wait for it)
         setImmediate(() => {
@@ -471,6 +478,63 @@ router.post('/welcome-email', authenticateUser, async (req: Request, res: Respon
         });
     }
 });
+
+function internalApiKeyMatches(req: Request): boolean {
+    const expected = process.env.INTERNAL_SUBSCRIPTION_API_KEY;
+    if (!expected?.trim()) return false;
+    const provided = req.headers["x-internal-api-key"];
+    const key = Array.isArray(provided) ? provided[0] : provided;
+    return key === expected;
+}
+
+async function requireAdminOrInternalApiKey(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void | Response> {
+    if (internalApiKeyMatches(req)) {
+        return next();
+    }
+    const token = validateBearerToken(req);
+    if (!token) {
+        return res.status(401).json({ status: "error", error: "Bearer token is required" });
+    }
+    const currentUser = await validateUserAuthentication(token);
+    if (!currentUser) {
+        return res.status(401).json({ status: "error", error: "Invalid Bearer token" });
+    }
+    (req as any).user = currentUser;
+    const userInfo = await findKeycloakUser(currentUser.preferred_username);
+    if (!userInfo?.id) {
+        return res.status(403).json({ status: "error", error: "User not found" });
+    }
+    const practitioner = (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
+    const role = getRoleFromPractitioner(practitioner) ?? "ADMINISTRATOR";
+    if (role !== "ADMINISTRATOR" && role !== "SUPERUSER") {
+        return res.status(403).json({ status: "error", error: "Administrator access required" });
+    }
+    next();
+}
+
+router.post(
+    "/users/backfill-practitioner-roles",
+    requireAdminOrInternalApiKey,
+    async (req: Request, res: Response) => {
+        try {
+            const stats = await runPractitionerRoleBackfillJob();
+            if (stats.skippedBecauseAlreadyRunning) {
+                return res.status(409).json({
+                    status: "error",
+                    error: "Practitioner role backfill is already running",
+                });
+            }
+            return res.status(200).json({ status: "completed", stats });
+        } catch (error) {
+            console.error("backfill-practitioner-roles:", error);
+            return res.status(500).json({ status: "error", error: String(error) });
+        }
+    },
+);
 
 router.get("/users", authenticateUser, async (req: Request, res: Response) => {
     try {
