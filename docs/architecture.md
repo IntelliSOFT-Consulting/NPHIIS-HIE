@@ -257,7 +257,7 @@ The IG is a **design-time artifact**, not a running service. Its role across the
 
 - **HAPI FHIR Server** — Resources submitted to HAPI are expected to conform to the IG profiles. The server's CQL engine can evaluate IG-defined logic against stored resources.
 - **Mobile App** — Questionnaire JSON compiled from the IG is loaded into the Android FHIR SDK to drive data capture forms.
-- **Web App** — Questionnaire resources stored in HAPI (seeded from the IG) are rendered in the browser for web-based case reporting.
+- **Web App** — Lab-results Questionnaire JSON is bundled in `nphiis-admin/src/questionnaires` (copied from mobile app assets) and rendered in the browser for web-based lab result entry.
 - **`hapi-fhir-config`** — The one-shot init container seeds Location resources that match the `LocationProfile` hierarchy defined in the IG.
 - **hie-auth EPID engine** — EPID generation uses `EncounterProfile.reasonCode` codes (`AFP`, `MEA`, `MOH505`) that are defined in the IG.
 
