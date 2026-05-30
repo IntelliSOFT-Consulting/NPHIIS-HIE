@@ -213,7 +213,7 @@ This is idempotent; re-running on an existing network is safe.
 
 ### Step 2 — Start the core HIE stack
 
-This single command brings up HAPI FHIR, hie-auth, fhir-gateway, Keycloak, and the location seeder (`hapi-fhir-config`):
+This single command brings up HAPI FHIR, hie-auth, fhir-gateway, Keycloak, Nginx, `nphiis-admin`, and the location seeder (`hapi-fhir-config`):
 
 ```bash
 ./start-hie.sh
