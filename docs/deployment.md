@@ -231,8 +231,8 @@ What it launches (in dependency order as resolved by Compose):
 | `hapi-fhir-config` | Built from `hapi-fhir-config/` |
 | `hie-auth` | Built from `hie-auth/` |
 | `fhir-gateway` | Built from `fhir-gateway/` |
+| `nphiis-admin` | Built from `nphiis-admin/` |
 | `nginx` | `nginx:alpine` |
-
 > **Note:** `hapi-fhir-config` is a one-shot init container. It seeds Kenya administrative boundaries (47 counties → sub-counties → wards → facilities → community units) on first start and exits. It will re-run on every `./start-hie.sh` call but is idempotent.
 
 Wait for HAPI FHIR to be ready before proceeding:
