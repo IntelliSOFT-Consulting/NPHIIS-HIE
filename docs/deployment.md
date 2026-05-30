@@ -245,11 +245,11 @@ Wait for HAPI FHIR to be ready before proceeding:
 
 HAPI FHIR typically takes 60–120 seconds on first start as it initializes the schema.
 
-### Step 3 — Start the Web App
+### Step 3 — (Optional) Start the Web App
 
-```bash
-./start-admin.sh
-```
+`./start-hie.sh` already starts `nphiis-admin` (via `hie/docker-compose.yml`). Only run the command below if you have intentionally excluded `nphiis-admin` from Step 2 to avoid a host port 8080 conflict.
+
+    ./start-admin.sh
 
 Starts `nphiis-admin` (Next.js, port 8080).
 
