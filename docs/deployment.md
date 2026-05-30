@@ -206,7 +206,7 @@ Services have hard boot-order dependencies. Follow the sequence below exactly. E
 ### Step 1 — Create the Docker network
 
 ```bash
-docker network create cloudbuild
+docker network inspect cloudbuild >/dev/null 2>&1 || docker network create cloudbuild
 ```
 
 This is idempotent; re-running on an existing network is safe.
