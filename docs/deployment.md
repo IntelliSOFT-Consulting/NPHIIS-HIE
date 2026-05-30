@@ -97,7 +97,7 @@ Complete every item before starting the deployment sequence.
 
 ## 3. Environment Configuration
 
-Each service loads secrets from an `.env` file. None of these files are committed to the repository.
+Each service loads configuration from an `.env` file. Do not commit environment-specific `.env` files containing real secrets.
 
 ### 3.1 `nphiis-admin/.env`
 
