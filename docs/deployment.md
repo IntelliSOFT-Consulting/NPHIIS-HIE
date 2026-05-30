@@ -55,6 +55,8 @@ Update `proxy/nginx.conf` `server_name` directives to match the four hostnames a
 | Docker Compose (plugin) | v2.20 or later |
 | Git | any recent version |
 | Python 3 | 3.9+ (for `scripts/bulk_register.py`) |
+| jq | any recent version (used in verification commands below) |
+| dnsutils (`dig`) | any recent version |
 
 Install Docker on a fresh Ubuntu host:
 
