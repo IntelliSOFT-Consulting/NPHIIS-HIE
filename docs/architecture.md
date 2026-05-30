@@ -139,11 +139,11 @@ On first start, a one-shot init container (`hapi-fhir-config`) seeds the Kenya a
 
 | Route prefix | Responsibility |
 | ----- | ----- |
-| `POST /client/*`  | Client-side authentication flows (token exchange, refresh) |
-| `POST /provider/*`  | User registration, profile update, role management via Keycloak |
+| `GET/POST /client/*`  | Client-side authentication flows, user profile lookup/update, and password reset |
+| `GET/POST/PUT/DELETE /provider/*`  | User registration, profile lookup/update/delete, password reset, Superset token issuance, and role management via Keycloak |
 | `GET /reports/*`  | User and role listing (aggregates Keycloak + FHIR Practitioner data) |
-| `POST /notifications/*`  | FCM device token registration; notification retrieval |
-| `GET /subscriptions/*`  | FHIR subscription callback log access |
+| `GET/POST /notifications/*`  | FCM device token registration and notification retrieval |
+| `GET/POST/PUT /subscriptions/*`  | FHIR subscription callbacks, EPID/backfill operations, and callback log access |
 | `ALL /fhir/*`  | Authenticated FHIR reverse proxy — validates the bearer token via Keycloak middleware before forwarding to HAPI; used by the Web App for all FHIR interactions |
 #### EPID Auto-Assignment
 When a new `Encounter` resource is created on HAPI FHIR, a FHIR subscription REST-hook fires to `hie-auth`. The service resolves the patient's sub-county, county, and country from FHIR Location resources and generates an epidemiological ID in the format:
