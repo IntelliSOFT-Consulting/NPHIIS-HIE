@@ -7,6 +7,7 @@ import {
   EPID_SYSTEM_URI,
 } from "./epid-utils";
 import { notifyCaseSubmissionIfEnabled } from "./notification";
+import { resolveLocationHierarchy } from "./epid-location";
 
 const POSSIBLE_REASON_CODES: Record<string, string> = {
   "Measles Case Information": "MEA",
@@ -213,16 +214,10 @@ async function assignEpidForEncounterLocked(
     await FhirApi({ url: `/Observation?code=${subCountyCode}&encounter=${encounterId}` })
   ).data?.entry?.[0]?.resource;
   const vs = subCountyObservation?.valueString;
-  const subCounty = vs
-    ? (await FhirApi({ url: `/Location?name=${encodeURIComponent(vs)}` })).data?.entry?.[0]?.resource
-    : undefined;
-  const county = subCounty?.partOf?.reference?.split("/")[1]
-    ? (await FhirApi({ url: `/Location/${subCounty.partOf.reference.split("/")[1]}` })).data
-    : undefined;
-  const country =
-    county?.partOf?.reference?.split("/")[1] != null
-      ? (await FhirApi({ url: `/Location/${county.partOf.reference.split("/")[1]}` })).data
-      : undefined;
+  const hierarchy = vs ? await resolveLocationHierarchy(FhirApi, String(vs)) : undefined;
+  const subCounty = hierarchy?.subCounty;
+  const county = hierarchy?.county;
+  const country = hierarchy?.country;
 
   const subCountyName = subCounty?.name?.toUpperCase()?.trim();
   const countyName = county?.name?.toUpperCase()?.trim();
