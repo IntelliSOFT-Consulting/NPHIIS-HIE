@@ -9,6 +9,7 @@ import { findKeycloakUser } from '../lib/keycloak';
 import { prisma } from '../lib/prisma';
 import { orderEncounterIdsByV1 } from '../lib/fhir-resource-history';
 import { runEncounterBackfillJob } from '../lib/encounter-backfill-job';
+import { runEpidCorrectionBackfillJob } from '../lib/epid-correction-backfill';
 import { patientHasOfficialEpid } from '../lib/epid-utils';
 
 const router = express.Router();
@@ -116,6 +117,51 @@ router.post('/encounters/backfill-run', requireInternalApiKey, async (req: Reque
     return res.status(200).json({ status: 'completed', stats });
   } catch (error) {
     console.error('backfill-run:', error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
+    return res.status(500).json(OperationOutcome(error));
+  }
+});
+
+/**
+ * Recompute EPID location prefixes for already-assigned EPIDs (multi-word sub-county fix).
+ * Default dry-run. Set `dryRun: false` in body to apply corrections.
+ * Requires X-Internal-Api-Key.
+ */
+router.post('/encounters/epid-correction-backfill', requireInternalApiKey, async (req: Request, res: Response) => {
+  const start = Date.now();
+  attachSubscriptionAuditLog(
+    res,
+    { route: 'epid-correction-backfill', resourceType: 'Encounter', resourceId: 'all' },
+    start,
+  );
+  try {
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const dryRun = body.dryRun !== false;
+    const limit =
+      body.limit != null ? Math.max(0, parseInt(String(body.limit), 10) || 0) : undefined;
+    const fromDate = typeof body.fromDate === 'string' ? body.fromDate : undefined;
+    const toDate = typeof body.toDate === 'string' ? body.toDate : undefined;
+
+    const stats = await runEpidCorrectionBackfillJob({
+      dryRun,
+      limit: limit && limit > 0 ? limit : undefined,
+      fromDate,
+      toDate,
+    });
+
+    if (stats.skippedBecauseAlreadyRunning) {
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = 'EPID correction backfill already running';
+      return res.status(409).json(
+        OperationOutcome('EPID correction backfill is already running', 'error'),
+      );
+    }
+
+    res.locals.subscriptionOutcome = 'success';
+    return res.status(200).json({ status: dryRun ? 'dry-run' : 'completed', stats });
+  } catch (error) {
+    console.error('epid-correction-backfill:', error);
     res.locals.subscriptionOutcome = 'error';
     res.locals.subscriptionErrorMessage = String(error);
     return res.status(500).json(OperationOutcome(error));
