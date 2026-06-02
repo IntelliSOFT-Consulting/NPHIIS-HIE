@@ -12,8 +12,6 @@ import {
 const reminderMessageTemplate = `Follow up for AFP case {} is due. Please complete and submit the follow-up investigation form.`;
 const messageTitle = "60-day AFP Follow Up Reminder";
 
-const caseSubmissionPushTitle = "New case submitted";
-
 function caseSubmissionPushBody(parts: {
   epid: string;
   diseaseCondition: string;
@@ -154,6 +152,7 @@ export async function notifyCaseSubmissionIfEnabled(
     countyName: ctx.countyName,
     subCountyName: ctx.subCountyName,
   });
+  const caseSubmissionPushTitle = `New ${ctx.diseaseCondition} case submitted`;
 
   let sentFcm = 0;
   let sentEmail = 0;
