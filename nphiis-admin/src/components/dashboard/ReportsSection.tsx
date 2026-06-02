@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import SupersetDashboard from '../SupersetDashboard';
 
 interface ReportTab {
-  id: 'idsr_cbs';
+  id: 'idsr_cbs' | 'afp';
   label: string;
   dashboardId: string;
   feature: 'REPORTS_VIEW_IDSR';
@@ -16,6 +16,8 @@ const SUPERSET_URL = process.env.NEXT_PUBLIC_SUPERSET_URL ?? '';
 const IDSR_CBS_DASHBOARD_ID =
   process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_IDSR_CBS ??
   '363e13a5-bfd4-4ca9-b76e-ba284d5b6404';
+
+const AFP_DASHBOARD_ID = process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_AFP ?? '';
 
 interface ReportsSectionProps {
   title?: string;
@@ -41,6 +43,12 @@ export default function ReportsSection({
         id: 'idsr_cbs',
         label: 'IDSR Case-Based Surveillance',
         dashboardId: IDSR_CBS_DASHBOARD_ID,
+        feature: 'REPORTS_VIEW_IDSR',
+      },
+      {
+        id: 'afp',
+        label: 'AFP Surveillance',
+        dashboardId: AFP_DASHBOARD_ID,
         feature: 'REPORTS_VIEW_IDSR',
       },
     ],
