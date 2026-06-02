@@ -2,6 +2,8 @@
  * EPID location segment rules (country / county / sub-county prefixes in EPID).
  */
 
+import { resolveSubCountyLocationByName } from "./epid-location";
+
 /** Legacy rule: first 3 characters of the full name (pre multi-word fix). */
 export function legacyLocationSegment(name: string): string {
   return name.toUpperCase().trim().substring(0, 3);
@@ -99,10 +101,7 @@ export async function resolveLocationNamesForEncounter(
     await fhirApi({ url: `/Observation?code=${subCountyCode}&encounter=${encounterId}` })
   ).data?.entry?.[0]?.resource;
   const vs = subCountyObservation?.valueString;
-  const subCounty = vs
-    ? (await fhirApi({ url: `/Location?name=${encodeURIComponent(vs)}` })).data?.entry?.[0]
-        ?.resource
-    : undefined;
+  const subCounty = vs ? await resolveSubCountyLocationByName(fhirApi, vs) : undefined;
   const county = subCounty?.partOf?.reference?.split("/")[1]
     ? (await fhirApi({ url: `/Location/${subCounty.partOf.reference.split("/")[1]}` })).data
     : undefined;
