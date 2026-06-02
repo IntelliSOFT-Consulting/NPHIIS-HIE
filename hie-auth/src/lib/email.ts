@@ -669,9 +669,9 @@ export const sendCaseSubmissionEmail = async (
         const mailOptions = {
             from: '"NPHIIS" apps@intellisoftkenya.com',
             to,
-            subject: `New case submitted — ${ctx.epid}`,
+            subject: `New ${ctx.diseaseCondition} case submitted — ${ctx.epid}`,
             text: [
-                `NPHIIS — New case submitted`,
+                `NPHIIS — New ${ctx.diseaseCondition} case submitted`,
                 ``,
                 `EPID: ${ctx.epid}`,
                 `Disease: ${ctx.diseaseCondition}`,
@@ -686,7 +686,7 @@ export const sendCaseSubmissionEmail = async (
             html: `
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>New case submitted</title></head>
+<head><meta charset="UTF-8"><title>New ${safeDis} case submitted</title></head>
 <body style="margin:0;background:#f4f7f9;font-family:'Segoe UI',Tahoma,Geneva,sans-serif;">
   <div style="padding:24px 0;background:#f4f7f9;">
     <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
@@ -695,7 +695,7 @@ export const sendCaseSubmissionEmail = async (
         <p style="margin:10px 0 0;font-size:13px;opacity:.95;">National Public Health Information &amp; Surveillance System</p>
       </div>
       <div style="padding:32px;">
-        <h2 style="color:#2563eb;margin:0 0 12px;text-align:center;">New case submitted</h2>
+        <h2 style="color:#2563eb;margin:0 0 12px;text-align:center;">New ${safeDis} case submitted</h2>
         <p style="color:#666;font-size:16px;line-height:1.6;text-align:center;margin:0;">
           A new surveillance case has been recorded and is ready for review.
         </p>
