@@ -44,6 +44,23 @@ function toThreeDigits(num: number): string {
   return padStart(num.toString(), 3, "0");
 }
 
+/**
+ * EPID location segment rule:
+ * - Single-word names: first 3 letters (e.g. "KISUMU" -> "KIS")
+ * - Multi-word names: first 2 letters of first word + first letter of last word
+ *   (e.g. "KISUMU CENTRAL" -> "KIC", "TANA RIVER" -> "TAR")
+ */
+function locationSegment(name: string): string {
+  const cleaned = name.toUpperCase().trim();
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    const firstWord = parts[0];
+    const lastWord = parts[parts.length - 1];
+    return `${firstWord.substring(0, 2)}${lastWord.substring(0, 1)}`;
+  }
+  return cleaned.substring(0, 3);
+}
+
 function getValidYear(dateString: string | undefined, fallbackDate: Date = new Date()): number {
   if (!dateString) {
     return fallbackDate.getFullYear();
@@ -258,7 +275,7 @@ async function assignEpidForEncounterLocked(
 
   const caseSeq = await generateCaseId(countryName, countyName, subCountyName, caseCondition);
 
-  const formattedId = `${countryName.substring(0, 3)}-${countyName.substring(0, 3)}-${subCountyName.substring(0, 3)}-${yearForId}-${caseCondition}-${toThreeDigits(caseSeq)}`;
+  const formattedId = `${locationSegment(countryName)}-${locationSegment(countyName)}-${locationSegment(subCountyName)}-${yearForId}-${caseCondition}-${toThreeDigits(caseSeq)}`;
 
   const newId = FhirIdentifier(encounterCodeSystem, "EPID", "Epidemiological ID", formattedId, true);
 
