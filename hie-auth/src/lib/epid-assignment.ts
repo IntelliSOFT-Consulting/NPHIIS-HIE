@@ -343,7 +343,7 @@ async function assignEpidForEncounterLocked(
   if (opts?.notify) {
     void notifyCaseSubmissionIfEnabled(encounterPut.data, {
       epid: formattedId,
-      diseaseCondition: rc || caseCondition,
+      diseaseCondition: caseCondition,
       countyName,
       subCountyName,
     }).catch((e) =>

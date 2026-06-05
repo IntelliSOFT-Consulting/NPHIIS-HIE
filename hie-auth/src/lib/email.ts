@@ -544,6 +544,15 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
                     <p class="download-note">Available on Google Play Store</p>
                 </div>
 
+                <!-- WhatsApp Section -->
+                <div class="download-section">
+                    <h3>💬 Join the NPHIIS WhatsApp Group</h3>
+                    <a href="https://chat.whatsapp.com/ILcW0PFsfqW0zT96nomsiD?s=sh&p=a&mlu=1" class="download-btn">
+                        💬 Join WhatsApp Group
+                    </a>
+                    <p class="download-note">Connect with other NPHIIS users for support and updates</p>
+                </div>
+
                 <!-- What's Next Section -->
                 <div class="steps-section">
                     <h3>✅ What's Next?</h3>

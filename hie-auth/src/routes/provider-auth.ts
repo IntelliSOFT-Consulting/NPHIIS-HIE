@@ -6,6 +6,7 @@ import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../li
 import { getSupersetGuestToken } from "../lib/superset";
 import { getRoleFromPractitioner, providerRoleKeycloakAttributes } from "../lib/practitioner-role";
 import { runPractitionerRoleBackfillJob } from "../lib/practitioner-role-backfill";
+import { runCaseNotificationBackfillJob } from "../lib/notification-backfill-job";
 
 const router = express.Router();
 router.use(express.json());
@@ -531,6 +532,26 @@ router.post(
             return res.status(200).json({ status: "completed", stats });
         } catch (error) {
             console.error("backfill-practitioner-roles:", error);
+            return res.status(500).json({ status: "error", error: String(error) });
+        }
+    },
+);
+
+router.post(
+    "/users/backfill-case-notifications",
+    requireAdminOrInternalApiKey,
+    async (req: Request, res: Response) => {
+        try {
+            const stats = await runCaseNotificationBackfillJob();
+            if (stats.skippedBecauseAlreadyRunning) {
+                return res.status(409).json({
+                    status: "error",
+                    error: "Case notification backfill is already running",
+                });
+            }
+            return res.status(200).json({ status: "completed", stats });
+        } catch (error) {
+            console.error("backfill-case-notifications:", error);
             return res.status(500).json({ status: "error", error: String(error) });
         }
     },
