@@ -52,6 +52,37 @@ export const refreshToken = async (refreshToken: string) => {
 }
 
 
+export function isNotificationsEnabledForKeycloakUser(user: {
+  attributes?: Record<string, string[]>;
+} | null | undefined): boolean {
+  return user?.attributes?.notificationsEnabled?.[0] === "true";
+}
+
+export const findKeycloakUserByEmail = async (email: string) => {
+  try {
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) return null;
+    const searchResponse = await fetch(
+      `${KC_BASE_URL}/admin/realms/${KC_REALM}/users?email=${encodeURIComponent(email)}&exact=true`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (!searchResponse.ok) {
+      console.error(`Failed to search user with email ${email}`);
+      return null;
+    }
+    const userData = await searchResponse.json();
+    return userData[0] ?? null;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
 export const findKeycloakUser = async (username: string) => {
     try {
         // await Client.auth(authConfig);
@@ -494,6 +525,7 @@ export const getKeycloakUsers = async (first: number = 0, max: number = 100, sea
       role: user?.attributes?.practitionerRole?.[0] || null,
       /** FHIR Practitioner id when set on the Keycloak user (see provider registration). */
       fhirPractitionerId: user?.attributes?.fhirPractitionerId?.[0] || null,
+      notificationsEnabled: user?.attributes?.notificationsEnabled?.[0] === "true",
       active: user.enabled,
       createdTimestamp: user.createdTimestamp
     }));
@@ -766,6 +798,7 @@ const REQUIRED_USER_ATTRIBUTES: { name: string; displayName: string }[] = [
   { name: "practitionerRole",    displayName: "Practitioner Role" },
   { name: "nphiis_role",         displayName: "NPHIIS Role" },
   { name: "nphiis_location",     displayName: "NPHIIS Location" },
+  { name: "notificationsEnabled", displayName: "Notifications Enabled" },
 ];
 
 export const checkUserProfileAttributes = async () => {
