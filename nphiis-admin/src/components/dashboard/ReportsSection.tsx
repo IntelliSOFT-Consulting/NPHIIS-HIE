@@ -15,7 +15,7 @@ const SUPERSET_URL = process.env.NEXT_PUBLIC_SUPERSET_URL ?? '';
 
 const IDSR_CBS_DASHBOARD_ID =
   process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_IDSR_CBS ??
-  '363e13a5-bfd4-4ca9-b76e-ba284d5b6404';
+  'bb0e334e-e0cb-4def-ac48-3f681cc4d3f4';
 
 const AFP_DASHBOARD_ID = process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_AFP ?? '';
 

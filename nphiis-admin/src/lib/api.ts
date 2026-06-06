@@ -109,7 +109,8 @@ export const userApi = {
         const normalizedUsers = data.users.map(user => ({
           ...user,
           active: user.active ?? user.enabled ?? true, // Map enabled to active if active is not present
-          enabled: user.enabled ?? user.active ?? true // Ensure enabled is also set
+          enabled: user.enabled ?? user.active ?? true, // Ensure enabled is also set
+          notificationsEnabled: user.notificationsEnabled === true,
         }));
         
         return {
@@ -474,6 +475,53 @@ export const userApi = {
   // This would need to be implemented in the backend or handled differently
   toggleUserStatus: async (userId: string, enabled: boolean, accessToken?: string): Promise<User> => {
     throw new Error('Toggle user status functionality is not available in the current API');
+  },
+
+  toggleUserNotifications: async (
+    username: string,
+    enabled: boolean,
+    accessToken?: string,
+  ): Promise<User> => {
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+
+    try {
+      const response = await fetch(
+        `/api/provider/users/${encodeURIComponent(username)}/notifications-enabled`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            Cookie: 'frontend_lang=en_US',
+          },
+          body: JSON.stringify({ enabled }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        (error as any).response = { data: errorData, status: response.status };
+        throw error;
+      }
+
+      const data = await response.json();
+      if (data.status !== 'success') {
+        const error = new Error(data.error || 'Failed to update notification settings');
+        (error as any).response = { data, status: response.status };
+        throw error;
+      }
+
+      return {
+        ...data.user,
+        notificationsEnabled: data.user.notificationsEnabled === true,
+      };
+    } catch (error) {
+      console.error('Toggle user notifications error:', error);
+      throw error;
+    }
   },
 };
 

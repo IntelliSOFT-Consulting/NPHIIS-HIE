@@ -50,6 +50,7 @@ export async function getUsersByRoles(roles: string[]): Promise<CaseSubmissionRe
     for (const user of users) {
       const r = user.role as string | null | undefined;
       if (!roleMatches(r, allowed)) continue;
+      if (!user.notificationsEnabled) continue;
 
       const practitionerId =
         (user.fhirPractitionerId as string | null | undefined) ?? user.id;
