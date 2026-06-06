@@ -765,6 +765,66 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
     }
 });
 
+router.patch("/users/:username/notifications-enabled", authenticateUser, async (req: Request, res: Response) => {
+    try {
+        const currentUser = (req as any).user;
+        const { username } = req.params;
+        const { enabled } = req.body;
+
+        if (typeof enabled !== "boolean") {
+            return res.status(400).json({ error: "enabled must be a boolean", status: "error" });
+        }
+
+        const currentUserInfo = await findKeycloakUser(currentUser.preferred_username);
+        if (!currentUserInfo?.id) {
+            return res.status(403).json({ error: "User not found", status: "error" });
+        }
+
+        const currentPractitioner = await (await FhirApi({ url: `/Practitioner/${currentUserInfo.id}` })).data;
+        const currentUserRole = currentPractitioner?.extension?.length > 0
+            ? currentPractitioner.extension[1]?.valueString
+            : "ADMINISTRATOR";
+
+        if (currentUserRole !== "ADMINISTRATOR" && currentUserRole !== "SUPERUSER") {
+            return res.status(403).json({
+                error: "Unauthorized access. Only administrators can update notification settings.",
+                status: "error",
+            });
+        }
+
+        const targetUser = await findKeycloakUser(username);
+        if (!targetUser) {
+            return res.status(404).json({ error: "User not found", status: "error" });
+        }
+
+        const updated = await setKeycloakUserAttributes(targetUser.id, {
+            notificationsEnabled: [String(enabled)],
+        });
+        if (!updated) {
+            return res.status(500).json({
+                error: "Failed to update notification settings",
+                status: "error",
+            });
+        }
+
+        const updatedUser = await findKeycloakUser(username);
+        return res.status(200).json({
+            status: "success",
+            user: {
+                id: updatedUser.id,
+                username: updatedUser.username,
+                email: updatedUser.email ?? null,
+                firstName: updatedUser.firstName,
+                lastName: updatedUser.lastName,
+                notificationsEnabled: updatedUser.attributes?.notificationsEnabled?.[0] === "true",
+            },
+        });
+    } catch (error) {
+        console.error("PATCH /users/:username/notifications-enabled error:", error);
+        return res.status(500).json({ error: "Internal server error", status: "error" });
+    }
+});
+
 router.delete("/users/:username", authenticateUser, async (req: Request, res: Response) => {
     try {
         const currentUser = (req as any).user;
