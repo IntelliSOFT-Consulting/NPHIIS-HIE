@@ -19,7 +19,9 @@ import {
   EnvelopeIcon,
   IdentificationIcon,
   ShieldCheckIcon,
-  ClockIcon
+  ClockIcon,
+  BellIcon,
+  BellSlashIcon
 } from '@heroicons/react/24/outline';
 import EditUserForm from './EditUserForm';
 import PasswordResetModal from './PasswordResetModal';
@@ -117,6 +119,42 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
       alert(errorMessage);
       console.error('Error deleting user:', err);
       throw err; // Re-throw to let modal handle loading state
+    }
+  };
+
+  const handleToggleNotifications = async (user: User) => {
+    const username = user.username;
+    const currentlyEnabled = user.notificationsEnabled === true;
+    const action = currentlyEnabled ? 'disable' : 'enable';
+    if (!confirm(`Are you sure you want to ${action} notifications for this user?`)) {
+      return;
+    }
+
+    setActionLoading(`notify-${username}`);
+    try {
+      const accessToken = getAccessToken();
+      if (!accessToken) {
+        alert('No access token found. Please log in again.');
+        return;
+      }
+
+      const updatedUser = await userApi.toggleUserNotifications(
+        username,
+        !currentlyEnabled,
+        accessToken,
+      );
+      setUsers(users.map((u) => (
+        u.username === username
+          ? { ...u, notificationsEnabled: updatedUser.notificationsEnabled === true }
+          : u
+      )));
+      alert(`Notifications ${action}d successfully`);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || err.message || `Failed to ${action} notifications`;
+      alert(errorMessage);
+      console.error(`Error ${action}ing notifications:`, err);
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -349,6 +387,22 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                           title="Reset password"
                         >
                           <KeyIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleNotifications(user)}
+                          disabled={actionLoading === `notify-${user.username}`}
+                          className={`p-1 rounded ${
+                            user.notificationsEnabled
+                              ? 'text-blue-600 hover:text-blue-900 hover:bg-blue-50'
+                              : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                          } ${actionLoading === `notify-${user.username}` ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={user.notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
+                        >
+                          {user.notificationsEnabled ? (
+                            <BellIcon className="h-4 w-4" />
+                          ) : (
+                            <BellSlashIcon className="h-4 w-4" />
+                          )}
                         </button>
                         <button
                           onClick={() => {

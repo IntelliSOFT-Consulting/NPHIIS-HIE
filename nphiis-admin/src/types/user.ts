@@ -27,6 +27,7 @@ export interface User {
   practitionerRole?: string;
   idNumber?: string;
   locationInfo?: LocationInfo;
+  notificationsEnabled?: boolean;
 }
 
 // UserRole is loaded from process.env.USER_ROLES at runtime, not statically typed here.

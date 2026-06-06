@@ -2,6 +2,10 @@ import { NotificationType } from "@prisma/client";
 import { prisma } from "./prisma";
 import { FhirApi } from "./utils";
 import { fcmService } from "./fcm";
+import {
+  getKeycloakUserById,
+  isNotificationsEnabledForKeycloakUser,
+} from "./keycloak";
 import { getEpidValueFromEncounter } from "./epid-utils";
 import { sendCaseSubmissionEmail } from "./email";
 import {
@@ -342,6 +346,14 @@ export const sendDueNotifications = async () => {
             practitionerId: notification.practitionerId,
           },
         });
+
+        const keycloakUser = await getKeycloakUserById(notification.practitionerId);
+        if (!isNotificationsEnabledForKeycloakUser(keycloakUser)) {
+          console.warn(
+            `[Notification Cron] Notifications disabled for practitioner ${notification.practitionerId}, skipping notification ${notification.id}`,
+          );
+          continue;
+        }
 
         if (!recipient || !recipient.token) {
           console.warn(
