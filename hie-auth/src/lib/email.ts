@@ -1,5 +1,11 @@
 import nodemailer from 'nodemailer';
 import { findKeycloakUser, getKeycloakUserById, updateUserProfile } from './keycloak';
+import {
+    emailAttachments,
+    emailFooterCopyrightHtml,
+    emailFooterCopyrightText,
+    emailHeaderHtml,
+} from './email-branding';
 
 const SMTP_HOST = process.env['SMTP_HOST'];
 const SMTP_USERNAME = process.env['SMTP_USERNAME'];
@@ -82,23 +88,6 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-            padding: 30px 20px;
-            text-align: center;
-            color: white;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-        .header p {
-            margin: 8px 0 0 0;
-            font-size: 13px;
-            opacity: 0.95;
         }
         .content {
             padding: 40px 30px;
@@ -203,11 +192,7 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
 <body>
     <div class="email-wrapper">
         <div class="email-container">
-            <!-- Header -->
-            <div class="header">
-                <h1>KENYA NPHIIS</h1>
-                <p>National Public Health Information & Surveillance System</p>
-            </div>
+            ${emailHeaderHtml()}
 
             <!-- Content -->
             <div class="content">
@@ -249,15 +234,15 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
                     Tel: +254 718 777 000 | Email: dev@intellisoftkenya.com
                 </div>
                 <p class="footer-copyright">
-                    © 2026 National Public Health Information & Surveillance System<br>
-                    This is an automated message. Please do not reply to this email.
+                    ${emailFooterCopyrightHtml()}
                 </p>
             </div>
         </div>
     </div>
 </body>
 </html>
-                `
+                `,
+            attachments: emailAttachments(),
         };
         const info = await transporter.sendMail(mailOptions);
         console.log('Password reset email sent:', info.response);
@@ -306,23 +291,6 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-            padding: 30px 20px;
-            text-align: center;
-            color: white;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-        .header p {
-            margin: 8px 0 0 0;
-            font-size: 13px;
-            opacity: 0.95;
         }
         .content {
             padding: 40px 30px;
@@ -500,11 +468,7 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
 <body>
     <div class="email-wrapper">
         <div class="email-container">
-            <!-- Header -->
-            <div class="header">
-                <h1>KENYA NPHIIS</h1>
-                <p>National Public Health Information & Surveillance System</p>
-            </div>
+            ${emailHeaderHtml()}
 
             <!-- Content -->
             <div class="content">
@@ -594,8 +558,7 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
                     Tel: +254 718 777 000 | Email: dev@intellisoftkenya.com
                 </div>
                 <p class="footer-copyright">
-                    © 2026 National Public Health Information & Surveillance System<br>
-                    This is an automated message. Please do not reply to this email.
+                    ${emailFooterCopyrightHtml()}
                 </p>
             </div>
         </div>
@@ -603,7 +566,8 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
 </body>
 </html>
 
-            `
+            `,
+            attachments: emailAttachments(),
         };
         const info = await transporter.sendMail(mailOptions);
         console.log('Password reset email sent:', info.response);
@@ -627,6 +591,9 @@ export type CaseSubmissionEmailInput = {
     submittedAt: Date;
     portalUrl?: string | null;
     recipientRole?: string | null;
+    submittedByName: string;
+    submittedByRole: string;
+    submittedByFacility: string;
 };
 
 function formatEat(iso: Date): string {
@@ -658,6 +625,9 @@ export const sendCaseSubmissionEmail = async (
         const safeDis = escapeHtml(ctx.diseaseCondition);
         const safeCounty = escapeHtml(ctx.countyName);
         const safeSub = escapeHtml(ctx.subCountyName);
+        const safeSubmitter = escapeHtml(ctx.submittedByName);
+        const safeSubmitterRole = escapeHtml(ctx.submittedByRole);
+        const safeSubmitterFacility = escapeHtml(ctx.submittedByFacility);
         const when = escapeHtml(formatEat(ctx.submittedAt));
         const portal = ctx.portalUrl?.trim();
         const ctaHtml = portal
@@ -686,11 +656,14 @@ export const sendCaseSubmissionEmail = async (
                 `Disease: ${ctx.diseaseCondition}`,
                 `Location: ${ctx.countyName}, ${ctx.subCountyName}`,
                 `Submitted: ${formatEat(ctx.submittedAt)}`,
+                `Submitted by: ${ctx.submittedByName}`,
+                `Role: ${ctx.submittedByRole}`,
+                `Reporting facility: ${ctx.submittedByFacility}`,
                 ...(portal ? [`Portal: ${portal}`] : []),
                 "",
                 hintCopy,
                 "",
-                "© NPHIIS — automated message",
+                `${emailFooterCopyrightText()} — automated message`,
             ].join("\n"),
             html: `
 <!DOCTYPE html>
@@ -699,10 +672,7 @@ export const sendCaseSubmissionEmail = async (
 <body style="margin:0;background:#f4f7f9;font-family:'Segoe UI',Tahoma,Geneva,sans-serif;">
   <div style="padding:24px 0;background:#f4f7f9;">
     <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
-      <div style="background:linear-gradient(135deg,#2563eb 0%,#3b82f6 100%);padding:26px;text-align:center;color:#fff;">
-        <h1 style="margin:0;font-size:26px;">KENYA NPHIIS</h1>
-        <p style="margin:10px 0 0;font-size:13px;opacity:.95;">National Public Health Information &amp; Surveillance System</p>
-      </div>
+      ${emailHeaderHtml()}
       <div style="padding:32px;">
         <h2 style="color:#2563eb;margin:0 0 12px;text-align:center;">New ${safeDis} case submitted</h2>
         <p style="color:#666;font-size:16px;line-height:1.6;text-align:center;margin:0;">
@@ -720,6 +690,12 @@ export const sendCaseSubmissionEmail = async (
                 <td style="padding:8px 0;font-size:16px;">${safeSub}</td></tr>
             <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Submitted</td>
                 <td style="padding:8px 0;font-size:15px;color:#444;">${when} EAT</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Submitted by</td>
+                <td style="padding:8px 0;font-size:16px;">${safeSubmitter}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Role</td>
+                <td style="padding:8px 0;font-size:16px;">${safeSubmitterRole}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Reporting facility</td>
+                <td style="padding:8px 0;font-size:16px;">${safeSubmitterFacility}</td></tr>
           </table>
         </div>
         ${ctaHtml}
@@ -729,13 +705,14 @@ export const sendCaseSubmissionEmail = async (
         <p style="margin:0;color:#2563eb;font-weight:700;font-size:15px;">Ministry of Health, Kenya</p>
         <p style="margin:8px 0 0;color:#666;font-size:13px;">Tel: +254 718 777 000 | Email: dev@intellisoftkenya.com</p>
         <p style="margin:14px 0 0;color:#999;font-size:11px;">
-          © 2026 National Public Health Information &amp; Surveillance System<br>This is an automated message. Please do not reply.
+          ${emailFooterCopyrightHtml()}
         </p>
       </div>
     </div>
   </div>
 </body>
 </html>`,
+            attachments: emailAttachments(),
         };
 
         const info = await transporter.sendMail(mailOptions);

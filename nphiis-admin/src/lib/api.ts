@@ -1,5 +1,10 @@
 import { User, CreateUserRequest, LocationInfo } from '@/types/user';
 import type { CallbackLogsApiResponse } from '@/types/callback-log';
+import type {
+  EpidRetryBatchResponse,
+  MissingEpidEncountersResponse,
+  NotificationLogsApiResponse,
+} from '@/types/notification-log';
 
 // API host configurations
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST;
@@ -576,9 +581,10 @@ export const authApi = {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const error = new Error(errorData.error || `HTTP error! status: ${response.status}`);
-        (error as any).response = { data: errorData, status: response.status };
-        throw error;
+        return {
+          status: 'error',
+          error: errorData.error || `HTTP error ${response.status}`,
+        };
       }
 
       const data = await response.json();
@@ -604,7 +610,11 @@ export const authApi = {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          status: 'error',
+          error: errorData.error || `HTTP error ${response.status}`,
+        };
       }
 
       const data = await response.json();
@@ -1388,5 +1398,125 @@ export const callbackLogsApi = {
       throw err;
     }
     return data as CallbackLogsApiResponse;
+  },
+};
+
+export const epidRetryApi = {
+  listMissing: async (
+    accessToken: string,
+    params: { limit?: number; cursor?: string | null } = {},
+  ): Promise<MissingEpidEncountersResponse> => {
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+    const qs = new URLSearchParams();
+    if (params.limit) qs.set('limit', String(params.limit));
+    if (params.cursor) qs.set('cursor', params.cursor);
+    const suffix = qs.toString();
+    const url = `/api/subscriptions/encounters/missing-epid${suffix ? `?${suffix}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Cookie: 'frontend_lang=en_US',
+      },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const err = new Error(
+        (data as any).error ??
+          (data as any).issue?.[0]?.diagnostics ??
+          `HTTP error! status: ${response.status}`,
+      );
+      (err as any).response = { data, status: response.status };
+      throw err;
+    }
+    return data as MissingEpidEncountersResponse;
+  },
+
+  retry: async (
+    accessToken: string,
+    encounterIds: string[],
+  ): Promise<EpidRetryBatchResponse> => {
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+    const body =
+      encounterIds.length === 1
+        ? { encounterId: encounterIds[0] }
+        : { encounterIds };
+
+    const response = await fetch('/api/subscriptions/encounters/retry-epid', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        Cookie: 'frontend_lang=en_US',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const err = new Error(
+        (data as any).error ??
+          (data as any).issue?.[0]?.diagnostics ??
+          `HTTP error! status: ${response.status}`,
+      );
+      (err as any).response = { data, status: response.status };
+      throw err;
+    }
+
+    if (Array.isArray((data as EpidRetryBatchResponse).results)) {
+      return data as EpidRetryBatchResponse;
+    }
+
+    return {
+      results: [{ encounterId: encounterIds[0], ok: true }],
+    };
+  },
+};
+
+export const notificationLogsApi = {
+  getLogs: async (
+    accessToken: string,
+    params: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      type?: string;
+      search?: string;
+    } = {},
+  ): Promise<NotificationLogsApiResponse> => {
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+    const qs = new URLSearchParams();
+    if (params.page) qs.set('page', String(params.page));
+    if (params.limit) qs.set('limit', String(params.limit));
+    if (params.status) qs.set('status', params.status);
+    if (params.type) qs.set('type', params.type);
+    const s = params.search?.trim();
+    if (s) qs.set('search', s);
+    const suffix = qs.toString();
+    const url = `/api/subscriptions/notification-logs${suffix ? `?${suffix}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Cookie: 'frontend_lang=en_US',
+      },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const err = new Error(
+        (data as any).error ??
+          (data as any).issue?.[0]?.diagnostics ??
+          `HTTP error! status: ${response.status}`,
+      );
+      (err as any).response = { data, status: response.status };
+      throw err;
+    }
+    return data as NotificationLogsApiResponse;
   },
 };
