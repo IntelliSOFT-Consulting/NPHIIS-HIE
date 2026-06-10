@@ -1,7 +1,5 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import CallbackLogList from '@/components/CallbackLogList';
-
-export default function SubscriptionLogsPage() {
-  return <CallbackLogList />;
+export default function SubscriptionLogsRedirectPage() {
+  redirect('/settings/subscription-logs');
 }
