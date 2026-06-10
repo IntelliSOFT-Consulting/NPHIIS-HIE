@@ -28,6 +28,7 @@ import {
 } from '@/lib/questionnaires';
 import Spinner from '../ui/Spinner';
 import { Alert } from '../ui/Alert';
+import CaseSearch from './CaseSearch';
 import {
   DateInput,
   Field,
@@ -190,9 +191,9 @@ export default function SingleResultForm() {
     return match;
   };
 
-  const verifyEpid = async () => {
+  const verifyEpid = async (epidArg?: string) => {
     if (!accessToken) return;
-    const epid = answers.EPID.trim();
+    const epid = (epidArg ?? answers.EPID).trim();
     if (!epid) {
       setTopError('Enter an EPID to verify');
       return;
@@ -320,7 +321,17 @@ export default function SingleResultForm() {
       </Field>
 
       {!verified && (
-        <Field
+        <div className="space-y-4">
+          <CaseSearch
+            onSelect={(selectedEpid) => {
+              set('EPID', selectedEpid);
+              void verifyEpid(selectedEpid);
+            }}
+          />
+          <div className="text-center text-xs text-gray-400">
+            — or enter an EPID directly —
+          </div>
+          <Field
           label="EPID"
           htmlFor="epid-input"
           required
@@ -357,7 +368,8 @@ export default function SingleResultForm() {
               )}
             </button>
           </div>
-        </Field>
+          </Field>
+        </div>
       )}
 
       {verified && (
