@@ -4,6 +4,7 @@ import { processAfpObservation } from '../lib/notification';
 import { assignEpidForEncounter } from '../lib/epid-assignment';
 import { attachSubscriptionAuditLog } from '../lib/subscription-audit';
 import { requireInternalApiKey } from '../middleware/internal-api-key';
+import { requireInternalApiKeyOrAdminBearer } from '../middleware/internal-api-key-or-admin';
 import { authenticateUser } from '../lib/middleware';
 import { findKeycloakUser } from '../lib/keycloak';
 import { prisma } from '../lib/prisma';
@@ -11,6 +12,7 @@ import { orderEncounterIdsByV1 } from '../lib/fhir-resource-history';
 import { runEncounterBackfillJob } from '../lib/encounter-backfill-job';
 import { runEpidCorrectionBackfillJob } from '../lib/epid-correction-backfill';
 import { patientHasOfficialEpid } from '../lib/epid-utils';
+import { scanEncountersMissingEpid } from '../lib/missing-epid-encounters';
 
 const router = express.Router();
 router.use(express.json() as any);
@@ -178,7 +180,35 @@ router.post('/encounters/assign-ids', async (req: Request, res: Response, next: 
   }
 });
 
-router.post('/encounters/retry-epid', requireInternalApiKey, async (req: Request, res: Response) => {
+router.get('/encounters/missing-epid', authenticateUser, async (req: Request, res: Response) => {
+  try {
+    const ok = await requireAdminFromRequest(req, res);
+    if (!ok) return;
+
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string, 10) || 25));
+    const cursor =
+      typeof req.query.cursor === 'string' && req.query.cursor.trim()
+        ? req.query.cursor.trim()
+        : null;
+
+    const { encounters, nextCursor, hasMore } = await scanEncountersMissingEpid({
+      limit,
+      cursor,
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      encounters,
+      nextCursor,
+      hasMore,
+    });
+  } catch (error) {
+    console.error('Error fetching encounters missing EPID:', error);
+    return res.status(500).json(OperationOutcome('Failed to fetch encounters missing EPID'));
+  }
+});
+
+router.post('/encounters/retry-epid', requireInternalApiKeyOrAdminBearer, async (req: Request, res: Response) => {
   const start = Date.now();
   attachSubscriptionAuditLog(res, { route: 'retry-epid', resourceType: 'Encounter', resourceId: req.body?.encounterId }, start);
 
@@ -327,27 +357,37 @@ router.post('/observations/afp-follow-up', async (req: Request, res: Response) =
 });
 
 const VALID_OUTCOMES = ['success', 'error', 'skipped'] as const;
+const VALID_NOTIFICATION_STATUSES = ['PENDING', 'SENT', 'FAILED'] as const;
+const VALID_NOTIFICATION_TYPES = ['AFP_FOLLOW_UP', 'CASE_SUBMISSION'] as const;
+
+async function requireAdminFromRequest(req: Request, res: Response): Promise<boolean> {
+  const currentUser = (req as any).user;
+  const kcUser = await findKeycloakUser(currentUser.preferred_username);
+  if (!kcUser?.id) {
+    res.status(403).json({ status: 'error', error: 'User not found' });
+    return false;
+  }
+  const practitioner = (await FhirApi({ url: `/Practitioner/${kcUser.id}` })).data;
+  if (!practitioner) {
+    res.status(404).json({ status: 'error', error: 'Practitioner not found' });
+    return false;
+  }
+  const practitionerRole =
+    practitioner?.extension?.length > 0
+      ? practitioner.extension[1]?.valueString
+      : 'ADMINISTRATOR';
+
+  if (practitionerRole !== 'ADMINISTRATOR' && practitionerRole !== 'SUPERUSER') {
+    res.status(403).json({ status: 'error', error: 'Administrator access required' });
+    return false;
+  }
+  return true;
+}
 
 router.get('/callback-logs', authenticateUser, async (req: Request, res: Response) => {
   try {
-    const currentUser = (req as any).user;
-    const kcUser = await findKeycloakUser(currentUser.preferred_username);
-    if (!kcUser?.id) {
-      return res.status(403).json({ status: 'error', error: 'User not found' });
-    }
-    const practitioner = (await FhirApi({ url: `/Practitioner/${kcUser.id}` })).data;
-    if (!practitioner) {
-      return res.status(404).json({ status: 'error', error: 'Practitioner not found' });
-    }
-    const practitionerRole =
-      practitioner?.extension?.length > 0
-        ? practitioner.extension[1]?.valueString
-        : 'ADMINISTRATOR';
-
-    if (practitionerRole !== 'ADMINISTRATOR' && practitionerRole !== 'SUPERUSER') {
-      return res.status(403).json({ status: 'error', error: 'Administrator access required' });
-    }
-
+    const ok = await requireAdminFromRequest(req, res);
+    if (!ok) return;
     const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string, 10) || 25));
     const skip = (page - 1) * limit;
@@ -395,6 +435,56 @@ router.get('/callback-logs', authenticateUser, async (req: Request, res: Respons
   } catch (error) {
     console.error('Error fetching callback logs:', error);
     return res.status(500).json(OperationOutcome('Failed to fetch callback logs'));
+  }
+});
+
+router.get('/notification-logs', authenticateUser, async (req: Request, res: Response) => {
+  try {
+    const ok = await requireAdminFromRequest(req, res);
+    if (!ok) return;
+
+    const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string, 10) || 25));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    const status = req.query.status as string | undefined;
+    if (status && VALID_NOTIFICATION_STATUSES.includes(status as (typeof VALID_NOTIFICATION_STATUSES)[number])) {
+      where.status = status;
+    }
+
+    const type = req.query.type as string | undefined;
+    if (type && VALID_NOTIFICATION_TYPES.includes(type as (typeof VALID_NOTIFICATION_TYPES)[number])) {
+      where.type = type;
+    }
+
+    const search = req.query.search as string | undefined;
+    if (search && search.trim()) {
+      where.encounterId = { contains: search.trim(), mode: 'insensitive' };
+    }
+
+    const [notifications, total] = await Promise.all([
+      prisma.notification.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.notification.count({ where }),
+    ]);
+
+    return res.status(200).json({
+      status: 'success',
+      notifications,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 0,
+    });
+  } catch (error) {
+    console.error('Error fetching notification logs:', error);
+    return res.status(500).json(OperationOutcome('Failed to fetch notification logs'));
   }
 });
 
