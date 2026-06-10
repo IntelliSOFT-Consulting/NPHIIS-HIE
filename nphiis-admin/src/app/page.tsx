@@ -16,12 +16,18 @@ export default function Home() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  const handleLogin = async (idNumber: string, password: string) => {
+  const handleLogin = async (
+    idNumber: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       const result = await authApi.isAdministrator(idNumber, password);
       if (!result.success || !result.userInfo || !result.accessToken) {
         console.error('Authentication failed:', result.error);
-        return false;
+        return {
+          success: false,
+          error: result.error || 'Login failed',
+        };
       }
 
       signIn({
@@ -41,10 +47,10 @@ export default function Home() {
         timestamp: Date.now(),
       });
       router.replace('/dashboard');
-      return true;
+      return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      return { success: false, error: 'Authentication failed' };
     }
   };
 
