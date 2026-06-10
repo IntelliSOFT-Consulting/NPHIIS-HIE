@@ -17,6 +17,7 @@ Transaction bundle shaped like recent cases on [dsrfhir Encounter search](https:
 cd hie-auth/scripts
 python3 build-mpox-case-submission-bundle.py > ../fixtures/mpox-case-submission-bundle.json
 python3 build-mpox-case-submission-bundle.py --post --family "YourTestName"
+python3 build-mpox-case-submission-bundle.py --post --family "YourTestName" --practitioner-id "<keycloak-practitioner-uuid>"
 ```
 
 After POST, HAPI calls `hie-auth` `PUT /subscriptions/encounters/notifications/Encounter/{id}` → EPID assignment → case-submission email/FCM (if SMTP and Keycloak recipients are configured).

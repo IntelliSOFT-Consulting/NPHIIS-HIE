@@ -33,6 +33,8 @@ model Notification {
   title               String
   body                String
   status              NotificationStatus   @default(PENDING)
+  /** Populated when status = FAILED (FCM error, missing token, etc.). */
+  failureReason       String?
   /** Set when case-submission SMTP succeeded; prevents duplicate email on FCM retry (`type = CASE_SUBMISSION` only). */
   caseSubmissionEmailSentAt DateTime?
   createdAt           DateTime             @default(now())
