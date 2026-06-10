@@ -10,8 +10,10 @@ import { getEpidValueFromEncounter } from "./epid-utils";
 import { sendCaseSubmissionEmail } from "./email";
 import {
   getCaseSubmissionNotifyRolesFromEnv,
+  getFacilityFocalPersonsForEncounter,
   getUsersByRoles,
 } from "./notification-recipients";
+import { resolveCaseSubmitterInfo } from "./case-submitter";
 
 const reminderMessageTemplate = `Follow up for AFP case {} is due. Please complete and submit the follow-up investigation form.`;
 const messageTitle = "60-day AFP Follow Up Reminder";
@@ -21,9 +23,15 @@ function caseSubmissionPushBody(parts: {
   diseaseCondition: string;
   countyName: string;
   subCountyName: string;
+  submittedByName: string;
+  submittedByRole: string;
+  submittedByFacility: string;
 }): string {
   const loc = `${parts.countyName}, ${parts.subCountyName}`;
-  return `Case ${parts.epid} (${parts.diseaseCondition}) submitted in ${loc}.`;
+  return (
+    `Case ${parts.epid} (${parts.diseaseCondition}) submitted in ${loc} ` +
+    `by ${parts.submittedByName} (${parts.submittedByRole}, ${parts.submittedByFacility}).`
+  );
 }
 
 export const processAfpObservation = async (observation: any) => {
@@ -101,6 +109,13 @@ export const processAfpObservation = async (observation: any) => {
   });
 
   if (!config) {
+    await prisma.notification.update({
+      where: { id: notification.id },
+      data: {
+        status: "FAILED",
+        failureReason: "No FCM token registered for this practitioner",
+      },
+    });
     return { status: "error", error: "User is missing notification token configuration" };
   }
 
@@ -141,20 +156,31 @@ export async function notifyCaseSubmissionIfEnabled(
 
   const roles = getCaseSubmissionNotifyRolesFromEnv();
   const users = await getUsersByRoles(roles);
-  if (users.length === 0) {
+  const facilityFocalPersons = await getFacilityFocalPersonsForEncounter(encounterResource);
+  const seen = new Set(users.map((u) => u.practitionerId));
+  const allRecipients = [
+    ...users,
+    ...facilityFocalPersons.filter((fp) => !seen.has(fp.practitionerId)),
+  ];
+
+  if (allRecipients.length === 0) {
     console.warn(
-      `[CaseSubmissionNotify] No recipients for roles ${roles.join(", ")}; skipping. ` +
+      `[CaseSubmissionNotify] No recipients for roles ${roles.join(", ")} or facility FACILITY_SURVEILLANCE_FOCAL_PERSON; skipping. ` +
         "Ensure Keycloak users have practitionerRole set (POST /provider/users/backfill-practitioner-roles).",
     );
     return { recipients: 0 };
   }
 
   const submittedAt = new Date();
+  const submitter = await resolveCaseSubmitterInfo(encounterResource, encounterId);
   const pushBody = caseSubmissionPushBody({
     epid: ctx.epid,
     diseaseCondition: ctx.diseaseCondition,
     countyName: ctx.countyName,
     subCountyName: ctx.subCountyName,
+    submittedByName: submitter.name,
+    submittedByRole: submitter.role,
+    submittedByFacility: submitter.facility,
   });
   const caseSubmissionPushTitle = `New ${ctx.diseaseCondition} case submitted`;
 
@@ -171,7 +197,7 @@ export async function notifyCaseSubmissionIfEnabled(
       },
     }) as const;
 
-  for (const recipient of users) {
+  for (const recipient of allRecipients) {
     try {
       let row = await prisma.notification.findUnique({
         where: compositeWhere(recipient.practitionerId),
@@ -243,19 +269,25 @@ export async function notifyCaseSubmissionIfEnabled(
         if (fcm?.success) {
           await prisma.notification.update({
             where: { id: row.id },
-            data: { status: "SENT" },
+            data: { status: "SENT", failureReason: null },
           });
           sentFcm++;
         } else {
           await prisma.notification.update({
             where: { id: row.id },
-            data: { status: "FAILED" },
+            data: {
+              status: "FAILED",
+              failureReason: fcm?.error ?? "FCM delivery failed",
+            },
           });
         }
       } else {
         await prisma.notification.update({
           where: { id: row.id },
-          data: { status: "FAILED" },
+          data: {
+            status: "FAILED",
+            failureReason: "No FCM token registered for this practitioner",
+          },
         });
       }
 
@@ -268,6 +300,9 @@ export async function notifyCaseSubmissionIfEnabled(
           submittedAt,
           portalUrl,
           recipientRole: recipient.role,
+          submittedByName: submitter.name,
+          submittedByRole: submitter.role,
+          submittedByFacility: submitter.facility,
         });
         if (mailed) {
           sentEmail++;
@@ -285,7 +320,7 @@ export async function notifyCaseSubmissionIfEnabled(
   console.log(
     `[CaseSubmissionNotify] encounter=${encounterId} EPID=${ctx.epid} FCM_ok=${sentFcm} emails=${sentEmail}`,
   );
-  return { recipients: users.length, sentFcm, sentEmail };
+  return { recipients: allRecipients.length, sentFcm, sentEmail };
 }
 
 export const sendDueNotifications = async () => {
@@ -370,18 +405,19 @@ export const sendDueNotifications = async () => {
         if (fcmResponse && fcmResponse.success) {
           await prisma.notification.update({
             where: { id: notification.id },
-            data: { status: "SENT" },
+            data: { status: "SENT", failureReason: null },
           });
           sentCount++;
           console.log(`[Notification Cron] Successfully sent notification ${notification.id}`);
         } else {
+          const failureReason = fcmResponse?.error ?? "FCM delivery failed";
           await prisma.notification.update({
             where: { id: notification.id },
-            data: { status: "FAILED" },
+            data: { status: "FAILED", failureReason },
           });
           failedCount++;
           console.error(
-            `[Notification Cron] Failed to send notification ${notification.id}: ${fcmResponse?.error || "Unknown error"}`,
+            `[Notification Cron] Failed to send notification ${notification.id}: ${failureReason}`,
           );
         }
       } catch (error) {
@@ -389,7 +425,10 @@ export const sendDueNotifications = async () => {
         try {
           await prisma.notification.update({
             where: { id: notification.id },
-            data: { status: "FAILED" },
+            data: {
+              status: "FAILED",
+              failureReason: error instanceof Error ? error.message : String(error),
+            },
           });
           failedCount++;
         } catch (updateError) {

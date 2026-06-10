@@ -128,7 +128,21 @@ export const validateLocationForRole = async (role: string, location: string): P
 };
 
 // FHIR practitioner helper functions
-export const updatePractitionerLocation = async (userInfo: any, practitioner: any, fhirLocation: any) => {
+export const updatePractitionerLocation = async (
+    userInfo: any,
+    practitioner: any,
+    fhirLocation: any,
+    roleOverride?: string,
+) => {
+    const practitionerId = userInfo.attributes.fhirPractitionerId[0];
+    const role =
+        roleOverride ??
+        userInfo?.attributes?.practitionerRole?.[0] ??
+        practitioner?.extension?.find(
+            (e: { url?: string }) =>
+                e?.url === "http://example.org/fhir/StructureDefinition/role-group",
+        )?.valueString;
+
     // Remove meta tag
     const meta = {
         resourceType: 'Parameters',
@@ -143,7 +157,7 @@ export const updatePractitionerLocation = async (userInfo: any, practitioner: an
     };
 
     await (await FhirApi({
-        url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}/$meta-delete`,
+        url: `/Practitioner/${practitionerId}/$meta-delete`,
         method: "POST",
         data: JSON.stringify(meta)
     })).data;
@@ -160,12 +174,12 @@ export const updatePractitionerLocation = async (userInfo: any, practitioner: an
         },
         {
             "url": "http://example.org/fhir/StructureDefinition/role-group",
-            "valueString": userInfo?.attributes?.practitionerRole[0]
+            "valueString": role
         }
     ];
 
     const updatedPractitioner = await (await FhirApi({
-        url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`,
+        url: `/Practitioner/${practitionerId}`,
         method: "PUT",
         data: JSON.stringify({
             ...practitioner,
@@ -178,6 +192,12 @@ export const updatePractitionerLocation = async (userInfo: any, practitioner: an
             }
         })
     })).data;
+
+    const { putPractitionerRoleResource } = await import("./practitioner-role");
+    await putPractitionerRoleResource(practitionerId, role, {
+        id: fhirLocation.id,
+        name: fhirLocation.name,
+    });
 
     return updatedPractitioner;
 };
