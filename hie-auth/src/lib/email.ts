@@ -723,3 +723,139 @@ export const sendCaseSubmissionEmail = async (
         return false;
     }
 };
+
+export type LabResultEmailInput = {
+    epid: string;
+    diseaseCondition: string;
+    labFormName: string;
+    submittedAt: Date;
+    portalUrl?: string | null;
+    labEntererName: string;
+    submittedByName: string;
+    resultLines: Array<{ label: string; value: string }>;
+};
+
+/**
+ * Alert email to the case poster when lab results are submitted for their case.
+ */
+export const sendLabResultEmail = async (
+    to: string,
+    ctx: LabResultEmailInput,
+): Promise<boolean> => {
+    if (!SMTP_HOST || !SMTP_USERNAME) {
+        console.warn("[Email] SMTP not configured; skipping lab result email.");
+        return false;
+    }
+
+    try {
+        const safeEpid = escapeHtml(ctx.epid);
+        const safeDis = escapeHtml(ctx.diseaseCondition);
+        const safeForm = escapeHtml(ctx.labFormName);
+        const safeEnterer = escapeHtml(ctx.labEntererName);
+        const safeSubmitter = escapeHtml(ctx.submittedByName);
+        const when = escapeHtml(formatEat(ctx.submittedAt));
+        const portal = ctx.portalUrl?.trim();
+
+        const resultRowsText = ctx.resultLines
+            .map((l) => `  ${l.label}: ${l.value}`)
+            .join("\n");
+        const resultRowsHtml = ctx.resultLines
+            .map(
+                (l) =>
+                    `<tr><td style="padding:8px 12px;color:#666;font-size:14px;border-bottom:1px solid #eee;">${escapeHtml(l.label)}</td>` +
+                    `<td style="padding:8px 12px;font-size:14px;border-bottom:1px solid #eee;">${escapeHtml(l.value)}</td></tr>`,
+            )
+            .join("");
+
+        const resultsTableHtml =
+            ctx.resultLines.length > 0
+                ? `<table style="width:100%;border-collapse:collapse;margin-top:8px;">${resultRowsHtml}</table>`
+                : `<p style="color:#666;font-size:14px;">No result fields were available at send time.</p>`;
+
+        const ctaHtml = portal
+            ? `
+                <div style="text-align:center;margin:28px 0;">
+                  <a href="${escapeHtml(portal)}" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">
+                    Open NPHIIS admin portal
+                  </a>
+                </div>`
+            : "";
+
+        const mailOptions = {
+            from: '"NPHIIS" apps@intellisoftkenya.com',
+            to,
+            subject: `Lab results available — ${ctx.epid}`,
+            text: [
+                `NPHIIS — Lab results available for your case`,
+                ``,
+                `EPID: ${ctx.epid}`,
+                `Disease: ${ctx.diseaseCondition}`,
+                `Lab form: ${ctx.labFormName}`,
+                `Submitted: ${formatEat(ctx.submittedAt)}`,
+                `Entered by: ${ctx.labEntererName}`,
+                `Your case was originally submitted by: ${ctx.submittedByName}`,
+                ``,
+                `Results:`,
+                resultRowsText || "  (none recorded)",
+                ...(portal ? [``, `Portal: ${portal}`] : []),
+                ``,
+                `Please review the lab results in the admin portal or dashboards as appropriate.`,
+                ``,
+                `${emailFooterCopyrightText()} — automated message`,
+            ].join("\n"),
+            html: `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Lab results — ${safeEpid}</title></head>
+<body style="margin:0;background:#f4f7f9;font-family:'Segoe UI',Tahoma,Geneva,sans-serif;">
+  <div style="padding:24px 0;background:#f4f7f9;">
+    <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+      ${emailHeaderHtml()}
+      <div style="padding:32px;">
+        <h2 style="color:#2563eb;margin:0 0 12px;text-align:center;">Lab results available</h2>
+        <p style="color:#666;font-size:16px;line-height:1.6;text-align:center;margin:0;">
+          Lab results have been recorded for a case you submitted.
+        </p>
+        <div style="background:#f8f9fa;border-left:4px solid #2563eb;padding:20px;border-radius:8px;margin:24px 0;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:.5px;width:140px;">EPID</td>
+                <td style="padding:8px 0;font-size:17px;font-weight:700;font-family:'Courier New',monospace;word-break:break-all;">${safeEpid}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Disease</td>
+                <td style="padding:8px 0;font-size:16px;">${safeDis}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Lab form</td>
+                <td style="padding:8px 0;font-size:16px;">${safeForm}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Submitted</td>
+                <td style="padding:8px 0;font-size:15px;color:#444;">${when} EAT</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Entered by</td>
+                <td style="padding:8px 0;font-size:16px;">${safeEnterer}</td></tr>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Case submitter</td>
+                <td style="padding:8px 0;font-size:16px;">${safeSubmitter}</td></tr>
+          </table>
+        </div>
+        <h3 style="color:#333;font-size:15px;margin:0 0 8px;">Lab results</h3>
+        ${resultsTableHtml}
+        ${ctaHtml}
+        <p style="color:#555;font-size:14px;line-height:1.6;text-align:center;">Please review the lab results in the admin portal or dashboards as appropriate.</p>
+      </div>
+      <div style="background:#f8f9fa;padding:22px;text-align:center;border-top:1px solid #e5e7eb;">
+        <p style="margin:0;color:#2563eb;font-weight:700;font-size:15px;">Ministry of Health, Kenya</p>
+        <p style="margin:8px 0 0;color:#666;font-size:13px;">Tel: +254 718 777 000 | Email: dev@intellisoftkenya.com</p>
+        <p style="margin:14px 0 0;color:#999;font-size:11px;">
+          ${emailFooterCopyrightHtml()}
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`,
+            attachments: emailAttachments(),
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Lab result email:", info.response);
+        return true;
+    } catch (e) {
+        console.error("[Email] Failed to send lab result email:", e);
+        return false;
+    }
+};

@@ -11,6 +11,7 @@ import {
   buildEpidFormattedId,
   resolveLocationNamesForEncounter,
 } from "./epid-location-segment";
+import { resolveCountyLocationSegment } from "./county-segment-registry";
 
 const POSSIBLE_REASON_CODES: Record<string, string> = {
   "Measles Case Information": "MEA",
@@ -244,9 +245,11 @@ async function assignEpidForEncounterLocked(
 
   const caseSeq = await generateCaseId(countryName, countyName, subCountyName, caseCondition);
 
+  const countySegment = await resolveCountyLocationSegment(FhirApi, countyName);
+
   const formattedId = buildEpidFormattedId(
     countryName,
-    countyName,
+    countySegment,
     subCountyName,
     yearForId,
     caseCondition,
