@@ -1,18 +1,18 @@
-
-// ✅ Do this if using TYPESCRIPT
-import { RequestInfo, RequestInit } from 'node-fetch';
-
-const fetch = (url: RequestInfo, init?: RequestInit) =>
-    import('node-fetch').then(({ default: fetch }) => fetch(url, init));
-
-
 export let apiHost = process.env.FHIR_BASE_URL
 console.log("HAPI FHIR: ", apiHost)
 
 
-// a fetch wrapper for HAPI FHIR server.
+export const fhirApiDefaultHeaders = (
+    extra?: Record<string, string>,
+): Record<string, string> => ({
+    "Content-Type": "application/json",
+    "Accept-Encoding": "identity",
+    ...(extra || {}),
+});
+
+// a fetch wrapper for HAPI FHIR server (uses Node native fetch — node-fetch gzip breaks on Node 22+).
 export const FhirApi = async (params: any) => {
-    let _defaultHeaders = { "Content-Type": 'application/json', ...(params.headers || {}) }
+    let _defaultHeaders = fhirApiDefaultHeaders(params.headers);
     if (!params.method) {
         params.method = 'GET';
     }

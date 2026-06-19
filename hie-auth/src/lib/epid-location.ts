@@ -1,5 +1,6 @@
-const LOCATION_TYPE_SYSTEM = "http://terminology.hl7.org/CodeSystem/v3-RoleCode";
-const SUB_COUNTY_CODE = "SUB-COUNTY";
+export const LOCATION_TYPE_SYSTEM = "http://terminology.hl7.org/CodeSystem/v3-RoleCode";
+export const SUB_COUNTY_CODE = "SUB-COUNTY";
+export const COUNTY_CODE = "COUNTY";
 
 type FhirApiLike = (params: { url: string }) => Promise<{ data?: any }>;
 

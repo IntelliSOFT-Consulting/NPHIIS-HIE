@@ -189,8 +189,25 @@ router.post("/login", async (req: Request, res: Response) => {
             return res.status(401).json({ status: "error", error: "User not found" });
         }
 
-        let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo?.id}` })).data;
-        if (!practitioner || !practitioner.active) {
+        const practitionerResp = await FhirApi({ url: `/Practitioner/${userInfo.id}` });
+        if (practitionerResp.status !== "success") {
+            console.error(
+                "[Login] FHIR Practitioner lookup failed:",
+                userInfo.id,
+                practitionerResp.statusText,
+            );
+            return res.status(503).json({
+                status: "error",
+                error: "Unable to verify user profile. Please try again.",
+            });
+        }
+
+        const practitioner = practitionerResp.data;
+        if (
+            !practitioner?.resourceType ||
+            practitioner.resourceType !== "Practitioner" ||
+            !practitioner.active
+        ) {
             return res.status(401).json({ status: "error", error: "User not found or not active" });
         }
 
