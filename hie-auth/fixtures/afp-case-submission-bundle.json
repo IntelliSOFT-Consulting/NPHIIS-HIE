@@ -1,0 +1,312 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "58befeba-e47a-4baf-9a97-92d7797da9cf",
+        "name": [
+          {
+            "family": "TestCase",
+            "given": [
+              "Lab",
+              "Flow"
+            ]
+          }
+        ],
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "system-creation",
+                  "code": "system_creation",
+                  "display": "System Creation"
+                }
+              ],
+              "text": "2026-06-19 04:24:11"
+            },
+            "system": "system-creation",
+            "value": "2026-06-19 04:24:11"
+          },
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "afp-case-information",
+                  "code": "afp-case-information",
+                  "display": "afp-case-information"
+                }
+              ],
+              "text": "00f5f8cb-549a-44c7-b18e-5ac855234535"
+            },
+            "system": "afp-case-information",
+            "value": "00f5f8cb-549a-44c7-b18e-5ac855234535"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf"
+      }
+    },
+    {
+      "fullUrl": "Encounter/00f5f8cb-549a-44c7-b18e-5ac855234535",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "00f5f8cb-549a-44c7-b18e-5ac855234535",
+        "status": "finished",
+        "subject": {
+          "reference": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf"
+        },
+        "reasonCode": [
+          {
+            "coding": [
+              {
+                "code": "AFP Case Information"
+              }
+            ]
+          },
+          {
+            "coding": [
+              {
+                "system": "case-information",
+                "code": "case-information",
+                "display": "case-information"
+              }
+            ],
+            "text": "case-information"
+          }
+        ],
+        "period": {
+          "start": "2026-06-19T04:24:11+00:00",
+          "end": "2026-06-19T04:24:11+00:00"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Encounter/00f5f8cb-549a-44c7-b18e-5ac855234535"
+      }
+    },
+    {
+      "fullUrl": "Observation/85ec1a74-c582-4e59-98dc-3f373c0402f8",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "85ec1a74-c582-4e59-98dc-3f373c0402f8",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "873240407472",
+              "display": "First name"
+            }
+          ],
+          "text": "Lab"
+        },
+        "subject": {
+          "reference": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf"
+        },
+        "encounter": {
+          "reference": "Encounter/00f5f8cb-549a-44c7-b18e-5ac855234535"
+        },
+        "issued": "2026-06-19T04:24:11+00:00",
+        "valueString": "Lab"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/85ec1a74-c582-4e59-98dc-3f373c0402f8"
+      }
+    },
+    {
+      "fullUrl": "Observation/39c7c773-9823-4d47-b756-21cc7a91a1d6",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "39c7c773-9823-4d47-b756-21cc7a91a1d6",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "246751846436",
+              "display": "Middle name"
+            }
+          ],
+          "text": "Flow"
+        },
+        "subject": {
+          "reference": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf"
+        },
+        "encounter": {
+          "reference": "Encounter/00f5f8cb-549a-44c7-b18e-5ac855234535"
+        },
+        "issued": "2026-06-19T04:24:11+00:00",
+        "valueString": "Flow"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/39c7c773-9823-4d47-b756-21cc7a91a1d6"
+      }
+    },
+    {
+      "fullUrl": "Observation/2d7bc436-f703-4a6e-8e3f-ecc836bfca0c",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "2d7bc436-f703-4a6e-8e3f-ecc836bfca0c",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "486402457213",
+              "display": "Last name"
+            }
+          ],
+          "text": "TestCase"
+        },
+        "subject": {
+          "reference": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf"
+        },
+        "encounter": {
+          "reference": "Encounter/00f5f8cb-549a-44c7-b18e-5ac855234535"
+        },
+        "issued": "2026-06-19T04:24:11+00:00",
+        "valueString": "TestCase"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/2d7bc436-f703-4a6e-8e3f-ecc836bfca0c"
+      }
+    },
+    {
+      "fullUrl": "Observation/2c77eeec-fc0b-49d4-ad2a-1e84b5b15a6c",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "2c77eeec-fc0b-49d4-ad2a-1e84b5b15a6c",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "a4-county",
+              "display": "County"
+            }
+          ],
+          "text": "MERU"
+        },
+        "subject": {
+          "reference": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf"
+        },
+        "encounter": {
+          "reference": "Encounter/00f5f8cb-549a-44c7-b18e-5ac855234535"
+        },
+        "issued": "2026-06-19T04:24:11+00:00",
+        "valueString": "MERU"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/2c77eeec-fc0b-49d4-ad2a-1e84b5b15a6c"
+      }
+    },
+    {
+      "fullUrl": "Observation/033d36f3-865e-40f5-ba76-102863d75573",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "033d36f3-865e-40f5-ba76-102863d75573",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "a3-sub-county",
+              "display": "Sub County"
+            }
+          ],
+          "text": "IGEMBE CENTRAL"
+        },
+        "subject": {
+          "reference": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf"
+        },
+        "encounter": {
+          "reference": "Encounter/00f5f8cb-549a-44c7-b18e-5ac855234535"
+        },
+        "issued": "2026-06-19T04:24:11+00:00",
+        "valueString": "IGEMBE CENTRAL"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/033d36f3-865e-40f5-ba76-102863d75573"
+      }
+    },
+    {
+      "fullUrl": "Observation/af6461a4-46f3-4003-bfca-33f0517712de",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "af6461a4-46f3-4003-bfca-33f0517712de",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "929966324957",
+              "display": "Sex"
+            }
+          ],
+          "text": "Male"
+        },
+        "subject": {
+          "reference": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf"
+        },
+        "encounter": {
+          "reference": "Encounter/00f5f8cb-549a-44c7-b18e-5ac855234535"
+        },
+        "issued": "2026-06-19T04:24:11+00:00",
+        "valueString": "Male"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/af6461a4-46f3-4003-bfca-33f0517712de"
+      }
+    },
+    {
+      "fullUrl": "Observation/6a50a226-1505-4def-8f9a-7411a0ed0acb",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "6a50a226-1505-4def-8f9a-7411a0ed0acb",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "865158268604",
+              "display": "Case or Line List"
+            }
+          ],
+          "text": "Case"
+        },
+        "subject": {
+          "reference": "Patient/58befeba-e47a-4baf-9a97-92d7797da9cf"
+        },
+        "encounter": {
+          "reference": "Encounter/00f5f8cb-549a-44c7-b18e-5ac855234535"
+        },
+        "issued": "2026-06-19T04:24:11+00:00",
+        "valueString": "Case"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/6a50a226-1505-4def-8f9a-7411a0ed0acb"
+      }
+    }
+  ],
+  "_meta": {
+    "description": "Test AFP case submission for EPID + lab notification flow",
+    "disease": "afp",
+    "patientId": "58befeba-e47a-4baf-9a97-92d7797da9cf",
+    "encounterId": "00f5f8cb-549a-44c7-b18e-5ac855234535",
+    "subCounty": "IGEMBE CENTRAL",
+    "county": "MERU"
+  }
+}

@@ -50,6 +50,31 @@ For these, searching only by `Location?name={value}` can return county first. EP
 
 This avoids selecting county when the `a3-sub-county` Observation points to a same-named sub-county.
 
+## County EPID segment disambiguation (FHIR-driven)
+
+County segments (middle token in `KEN-COU-SUB-YEAR-CONDITION-SEQ`) are **not hardcoded**. At EPID assignment time, `hie-auth`:
+
+1. Loads all `Location` resources with `type=COUNTY` from FHIR (paginated search, cached ~24h).
+2. Builds a registry using the standard 3-character segment rule ([`src/lib/epid-location-segment.ts`](../src/lib/epid-location-segment.ts)).
+3. When two counties share the same 3-character segment, extends affected counties to 4 (then 5, up to 6) until unique within the fetched set.
+
+Implementation: [`src/lib/county-segment-registry.ts`](../src/lib/county-segment-registry.ts). Used by [`assignEpidForEncounter`](../src/lib/epid-assignment.ts) and [`epid-correction-backfill`](../src/lib/epid-correction-backfill.ts).
+
+Example outcomes with current Kenyan counties:
+
+- KISUMU → `KISU`, KISII → `KISI` (both collided at `KIS`)
+- NYANDARUA → `NYAN`, NYAMIRA → `NYAM` (both collided at `NYA`)
+- NAIROBI → `NAI` (no collision, stays 3 chars)
+
+After deploying a change to county segment rules, run the correction backfill to rewrite existing EPIDs:
+
+```http
+POST /subscriptions/encounters/epid-correction-backfill
+X-Internal-Api-Key: <key>
+```
+
+Sub-county segments still use the fixed 3-character rule (county disambiguation only).
+
 ## Client-side EPID Observation note
 
 Some clients may submit an Observation with `code=EPID` and a partial value. This is **not authoritative** for assignment.

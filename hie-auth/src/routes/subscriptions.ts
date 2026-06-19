@@ -11,7 +11,8 @@ import { prisma } from '../lib/prisma';
 import { orderEncounterIdsByV1 } from '../lib/fhir-resource-history';
 import { runEncounterBackfillJob } from '../lib/encounter-backfill-job';
 import { runEpidCorrectionBackfillJob } from '../lib/epid-correction-backfill';
-import { patientHasOfficialEpid } from '../lib/epid-utils';
+import { getEpidValueFromEncounter, patientHasOfficialEpid } from '../lib/epid-utils';
+import { isLabResultEncounter, notifyLabResultToCaseSubmitter } from '../lib/lab-result-notification';
 import { scanEncountersMissingEpid } from '../lib/missing-epid-encounters';
 
 const router = express.Router();
@@ -53,6 +54,10 @@ async function assignIdsHandler(
     }
 
     res.locals.subscriptionOutcome = 'success';
+    const epid = getEpidValueFromEncounter(result.encounter);
+    if (epid) {
+      res.locals.subscriptionDetail = { epid };
+    }
     return res.status(200).json(result.encounter);
   } catch (error) {
     console.error(error);
@@ -79,6 +84,16 @@ router.put('/encounters/notifications/Encounter/:id', async (req: Request, res: 
 
     /** Official EPIDs may be typed-only (Identifier.type.coding) — do not rely on Identifier.system alone. */
     if (patientHasOfficialEpid(patient)) {
+      if (isLabResultEncounter(data)) {
+        void notifyLabResultToCaseSubmitter(data, patient).catch((e) =>
+          console.error('[LabResultNotify] Background notification failed:', e),
+        );
+        res.locals.subscriptionOutcome = 'success';
+        res.locals.subscriptionDetail = { kind: 'lab_result_notification' };
+        return res.status(200).json(
+          OperationOutcome('Lab result notification queued for case submitter', 'information')
+        );
+      }
       res.locals.subscriptionOutcome = 'skipped';
       return res.status(200).json(
         OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID', 'information')
@@ -297,6 +312,10 @@ router.post('/encounters/retry-epid', requireInternalApiKeyOrAdminBearer, async 
     }
 
     res.locals.subscriptionOutcome = 'success';
+    const epid = getEpidValueFromEncounter(result.encounter);
+    if (epid) {
+      res.locals.subscriptionDetail = { epid };
+    }
     return res.status(200).json(result.encounter);
   } catch (error) {
     console.error(error);
@@ -358,7 +377,7 @@ router.post('/observations/afp-follow-up', async (req: Request, res: Response) =
 
 const VALID_OUTCOMES = ['success', 'error', 'skipped'] as const;
 const VALID_NOTIFICATION_STATUSES = ['PENDING', 'SENT', 'FAILED'] as const;
-const VALID_NOTIFICATION_TYPES = ['AFP_FOLLOW_UP', 'CASE_SUBMISSION'] as const;
+const VALID_NOTIFICATION_TYPES = ['AFP_FOLLOW_UP', 'CASE_SUBMISSION', 'LAB_RESULT'] as const;
 
 async function requireAdminFromRequest(req: Request, res: Response): Promise<boolean> {
   const currentUser = (req as any).user;
