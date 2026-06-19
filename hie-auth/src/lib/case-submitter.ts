@@ -94,7 +94,7 @@ async function practitionerIdFromObservation(
   return practitionerIdFromReference(performer?.reference);
 }
 
-async function resolvePractitionerId(
+export async function resolveCaseSubmitterPractitionerId(
   encounter: unknown,
   encounterId: string,
 ): Promise<{ practitionerId: string | null; displayName: string | null }> {
@@ -193,7 +193,7 @@ export async function resolveCaseSubmitterInfo(
   encounterResource: unknown,
   encounterId: string,
 ): Promise<CaseSubmitterInfo> {
-  const { practitionerId, displayName } = await resolvePractitionerId(
+  const { practitionerId, displayName } = await resolveCaseSubmitterPractitionerId(
     encounterResource,
     encounterId,
   );

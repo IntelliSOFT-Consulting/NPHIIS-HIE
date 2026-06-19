@@ -6,6 +6,7 @@ import {
   formatRoleLabel,
   practitionerIdFromReference,
   resolveCaseSubmitterInfo,
+  resolveCaseSubmitterPractitionerId,
 } from "./case-submitter";
 
 vi.mock("./utils", () => ({
@@ -180,6 +181,29 @@ describe("resolveCaseSubmitterInfo", () => {
       name: NOT_RECORDED,
       role: NOT_RECORDED,
       facility: NOT_RECORDED,
+    });
+  });
+});
+
+describe("resolveCaseSubmitterPractitionerId", () => {
+  it("returns practitioner id from encounter participant", async () => {
+    const encounter = {
+      id: "enc-1",
+      participant: [
+        { individual: { reference: "Practitioner/prac-99", display: "Test User" } },
+      ],
+    };
+
+    mockFhirApi.mockResolvedValue({
+      status: "success",
+      statusText: "OK",
+      data: { entry: [] },
+    });
+
+    const result = await resolveCaseSubmitterPractitionerId(encounter, "enc-1");
+    expect(result).toEqual({
+      practitionerId: "prac-99",
+      displayName: "Test User",
     });
   });
 });

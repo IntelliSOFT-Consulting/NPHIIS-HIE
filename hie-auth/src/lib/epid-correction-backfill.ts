@@ -11,6 +11,7 @@ import {
   parseEpid,
   resolveLocationNamesForEncounter,
 } from "./epid-location-segment";
+import { resolveCountyLocationSegment } from "./county-segment-registry";
 import { getEncounterVersionOneLastUpdatedInstant } from "./fhir-resource-history";
 
 export type EpidCorrectionExample = {
@@ -252,9 +253,11 @@ export async function runEpidCorrectionBackfillJob(
           continue;
         }
 
+        const countySegment = await resolveCountyLocationSegment(FhirApi, location.countyName);
+
         const expectedEpid = buildEpidFormattedId(
           location.countryName,
-          location.countyName,
+          countySegment,
           location.subCountyName,
           parsed.year,
           parsed.condition,
