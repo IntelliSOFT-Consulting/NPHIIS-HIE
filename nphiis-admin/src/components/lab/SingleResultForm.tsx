@@ -29,6 +29,7 @@ import {
 import Spinner from '../ui/Spinner';
 import { Alert } from '../ui/Alert';
 import CaseSearch from './CaseSearch';
+import ExistingResultModal from './ExistingResultModal';
 import {
   DateInput,
   Field,
@@ -60,6 +61,12 @@ interface VerifiedCase {
   recordType?: 'case' | 'line-list' | 'unknown';
   disease?: string | null;
   suggestedForms?: string[];
+}
+
+interface ExistingResultInfo {
+  count: number;
+  latest?: string;
+  formTitle: string;
 }
 
 function initialAnswers(form: LabFormDefinition | undefined): AnswerMap {
@@ -138,6 +145,11 @@ export default function SingleResultForm() {
   const [verified, setVerified] = useState<VerifiedCase | null>(null);
   const [autoSwitchedFrom, setAutoSwitchedFrom] = useState<string | null>(null);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  // Set when the verified case already has a result for the resolved form;
+  // drives the advisory warning modal. Acknowledging it just dismisses the
+  // modal — submission still proceeds (the user opted in).
+  const [existingResult, setExistingResult] =
+    useState<ExistingResultInfo | null>(null);
 
   const allItems = useMemo(
     () => (form ? indexItems(form.questionnaire) : new Map<string, QuestionnaireItem>()),
@@ -170,6 +182,7 @@ export default function SingleResultForm() {
     setVerified(null);
     setAutoSwitchedFrom(null);
     setTouched({});
+    setExistingResult(null);
   };
 
   const maybeAutoSwitchForm = (v: VerifiedCase): string => {
@@ -216,7 +229,8 @@ export default function SingleResultForm() {
       }
       const v = data as VerifiedCase;
       setVerified(v);
-      maybeAutoSwitchForm(v);
+      const resolvedFormId = maybeAutoSwitchForm(v);
+      void checkExistingResult(v.patient.id, resolvedFormId);
     } catch (err) {
       setTopError((err as Error).message);
       setVerified(null);
@@ -225,11 +239,45 @@ export default function SingleResultForm() {
     }
   };
 
+  /**
+   * Advisory check: warn (don't block) when the resolved form already has a
+   * result for this case. Failures are swallowed — a missed warning must never
+   * stop a legitimate submission.
+   */
+  const checkExistingResult = async (patientId: string, fId: string) => {
+    setExistingResult(null);
+    if (!patientId || !fId) return;
+    try {
+      const res = await authedFetch('/api/lab/existing-result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patientId, formId: fId }),
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as {
+        exists: boolean;
+        count: number;
+        latest?: string;
+        formTitle: string;
+      };
+      if (data.exists) {
+        setExistingResult({
+          count: data.count,
+          latest: data.latest,
+          formTitle: data.formTitle,
+        });
+      }
+    } catch {
+      // best-effort only
+    }
+  };
+
   const editEpid = () => {
     setVerified(null);
     setSuccess(null);
     setTopError(null);
     setAutoSwitchedFrom(null);
+    setExistingResult(null);
   };
 
   const set = (linkId: string, v: string) =>
@@ -274,7 +322,9 @@ export default function SingleResultForm() {
       const res = await authedFetch('/api/lab/bulk-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formId: form.id, rows: [row] }),
+        // Single entry is a deliberate one-at-a-time action: any duplicate was
+        // already surfaced via the warning modal, so don't re-flag on submit.
+        body: JSON.stringify({ formId: form.id, rows: [row], force: true }),
       });
       const data = (await res.json()) as UploadResponse | { error: string };
       if (!res.ok) {
@@ -288,6 +338,7 @@ export default function SingleResultForm() {
         setVerified(null);
         setAutoSwitchedFrom(null);
         setTouched({});
+        setExistingResult(null);
       } else {
         const first = payload.rejected[0];
         setTopError(first?.reason ?? 'Row rejected');
@@ -490,6 +541,17 @@ export default function SingleResultForm() {
             )}
           </button>
         </div>
+      )}
+
+      {existingResult && verified && (
+        <ExistingResultModal
+          formTitle={existingResult.formTitle}
+          count={existingResult.count}
+          latest={existingResult.latest}
+          subject={verified.epid}
+          onProceed={() => setExistingResult(null)}
+          onCancel={editEpid}
+        />
       )}
     </form>
   );

@@ -17,13 +17,16 @@ import { Field, Select } from "../ui/Field";
 interface RowResult {
   row: number;
   epid: string;
-  status: "accepted" | "rejected";
+  status: "accepted" | "rejected" | "flagged";
   reason?: string;
+  existingCount?: number;
+  existingLatest?: string;
 }
 
 interface UploadResponse {
   accepted: number;
   rejected: RowResult[];
+  flagged: RowResult[];
   results: RowResult[];
 }
 
@@ -40,6 +43,7 @@ export default function CsvUploadPanel() {
   const [fileName, setFileName] = useState("");
   const [parseError, setParseError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [importingFlagged, setImportingFlagged] = useState(false);
   const [response, setResponse] = useState<UploadResponse | null>(null);
 
   const form = formId ? getLabForm(formId) : undefined;
@@ -97,6 +101,54 @@ export default function CsvUploadPanel() {
     }
   };
 
+  /**
+   * Second-pass import for the rows the first pass held back because their
+   * case already had a result. Re-sends only those rows with `force: true`
+   * and folds the outcome back into the existing summary.
+   */
+  const importFlagged = async () => {
+    if (!form || !accessToken || !response?.flagged.length) return;
+    // Flagged row numbers are 1-based with a header row, so the original CSV
+    // index is `row - 2`.
+    const flaggedRows = response.flagged
+      .map((r) => rows[r.row - 2])
+      .filter(Boolean);
+    if (flaggedRows.length === 0) return;
+    setImportingFlagged(true);
+    try {
+      const res = await authedFetch("/api/lab/bulk-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formId: form.id, rows: flaggedRows, force: true }),
+      });
+      const data = (await res.json()) as UploadResponse | { error: string };
+      if (!res.ok) {
+        setParseError("error" in data ? data.error : "Import failed");
+        return;
+      }
+      const forced = data as UploadResponse;
+      setResponse((prev) =>
+        prev
+          ? {
+              accepted: prev.accepted + forced.accepted,
+              rejected: [...prev.rejected, ...forced.rejected],
+              flagged: [],
+              // Replace the held-back rows with their forced outcomes so the
+              // row total stays accurate instead of double-counting them.
+              results: [
+                ...prev.results.filter((r) => r.status !== 'flagged'),
+                ...forced.results,
+              ],
+            }
+          : forced,
+      );
+    } catch (err) {
+      setParseError((err as Error).message);
+    } finally {
+      setImportingFlagged(false);
+    }
+  };
+
   const downloadFailures = () => {
     if (!response?.rejected.length) return;
     const csv = Papa.unparse(
@@ -131,15 +183,24 @@ export default function CsvUploadPanel() {
   const ResultsSummary = () =>
     response ? (
       <div
-        className={`rounded-xl border p-4 text-sm space-y-2 ${
-          response.rejected.length === 0
+        className={`rounded-xl border p-4 text-sm space-y-3 ${
+          response.rejected.length === 0 && response.flagged.length === 0
             ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
             : 'bg-amber-50 border-amber-200 text-amber-900'
         }`}
       >
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <span className="font-semibold">{response.accepted}</span> accepted
+            <span className="font-semibold">{response.accepted}</span> imported
+            {response.flagged.length > 0 && (
+              <>
+                {' · '}
+                <span className="font-semibold text-amber-700">
+                  {response.flagged.length}
+                </span>{' '}
+                already have results
+              </>
+            )}
             {response.rejected.length > 0 && (
               <>
                 {' · '}
@@ -163,6 +224,47 @@ export default function CsvUploadPanel() {
             </button>
           )}
         </div>
+
+        {response.flagged.length > 0 && (
+          <div className="rounded-lg bg-white/70 border border-amber-200 p-3 space-y-2">
+            <div className="text-xs text-amber-900">
+              These rows were held back because the case already has a result
+              for this form. The new rows above were imported. Import these
+              anyway to add a separate result for each.
+            </div>
+            <ul className="text-xs text-amber-800 max-h-40 overflow-y-auto pl-4 list-disc">
+              {response.flagged.slice(0, 50).map((r) => (
+                <li key={r.row}>
+                  Row {r.row} (EPID {r.epid || '-'})
+                  {r.existingCount
+                    ? ` — ${r.existingCount} existing result${
+                        r.existingCount === 1 ? '' : 's'
+                      }`
+                    : ''}
+                </li>
+              ))}
+              {response.flagged.length > 50 && (
+                <li className="list-none italic text-gray-500">
+                  …and {response.flagged.length - 50} more.
+                </li>
+              )}
+            </ul>
+            <button
+              onClick={importFlagged}
+              disabled={importingFlagged}
+              className="btn-secondary"
+            >
+              {importingFlagged ? (
+                <Spinner size="sm" label="Importing…" />
+              ) : (
+                `Import ${response.flagged.length} flagged row${
+                  response.flagged.length === 1 ? '' : 's'
+                } anyway`
+              )}
+            </button>
+          </div>
+        )}
+
         {response.rejected.length > 0 && (
           <ul className="text-xs text-accent-800 max-h-40 overflow-y-auto pl-4 list-disc">
             {response.rejected.slice(0, 50).map((r) => (
