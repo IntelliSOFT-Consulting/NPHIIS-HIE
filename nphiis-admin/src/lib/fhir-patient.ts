@@ -55,6 +55,17 @@ interface ObservationResource {
   subject?: { reference?: string };
 }
 
+interface EncounterResource {
+  resourceType?: "Encounter";
+  id?: string;
+  reasonCode?: Array<{
+    coding?: Array<{ code?: string; display?: string }>;
+    text?: string;
+  }>;
+  period?: { start?: string; end?: string };
+  meta?: { lastUpdated?: string };
+}
+
 interface BundleEntry<T> {
   resource?: T;
   search?: { mode?: "match" | "include" };
@@ -437,6 +448,73 @@ export async function lookupPatientByEpid(
       caseEncounterSystem: caseEncounter?.system,
     },
   };
+}
+
+/* ── Existing lab-result detection ───────────────────────────────────────── */
+
+export interface ExistingLabResult {
+  exists: boolean;
+  count: number;
+  /** ISO timestamp of the most recent matching lab encounter, if any. */
+  latest?: string;
+}
+
+/**
+ * Detects whether a case already has a lab result recorded for the given form.
+ * Lab submissions write an Encounter whose `reasonCode.coding.code` equals the
+ * form's `encounterReason` (see lab-submission `buildLabSubmissionBundle`), so
+ * a matching encounter means a result is already on file.
+ *
+ * Best-effort by design: any lookup failure resolves to `exists:false` so this
+ * never blocks a submission — it backs an advisory "already has a result"
+ * warning, not an authoritative guard.
+ */
+export async function findExistingLabResult(
+  patientId: string,
+  encounterReason: string,
+  token: string,
+): Promise<ExistingLabResult> {
+  const url =
+    `${FHIR_BASE_URL}/Encounter` +
+    `?subject=Patient/${encodeURIComponent(patientId)}` +
+    `&_count=100`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: {
+        Accept: "application/fhir+json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (err) {
+    console.warn(
+      "[lab] existing-result lookup failed:",
+      (err as Error).message,
+    );
+    return { exists: false, count: 0 };
+  }
+  if (!res.ok) return { exists: false, count: 0 };
+
+  const bundle = (await res.json()) as {
+    entry?: BundleEntry<EncounterResource>[];
+  };
+  const encounters =
+    (bundle.entry
+      ?.filter((e) => e.search?.mode !== "include")
+      .map((e) => e.resource)
+      .filter(Boolean) as EncounterResource[]) ?? [];
+  const matches = encounters.filter((e) =>
+    (e.reasonCode ?? []).some((rc) =>
+      (rc.coding ?? []).some((c) => c.code === encounterReason),
+    ),
+  );
+  if (matches.length === 0) return { exists: false, count: 0 };
+
+  const latest = matches
+    .map((e) => e.period?.start ?? e.meta?.lastUpdated ?? "")
+    .filter(Boolean)
+    .sort((a, b) => b.localeCompare(a))[0];
+  return { exists: true, count: matches.length, latest: latest || undefined };
 }
 
 /* ── Case vs Line-List resolution ────────────────────────────────────────── */
