@@ -1,5 +1,6 @@
 import fetch from "cross-fetch";
 import { createHash, randomBytes } from 'crypto';
+import { getApplicationRoles } from "./roles";
 
 
 let KC_BASE_URL = String(process.env.KC_BASE_URL);
@@ -720,8 +721,6 @@ export const setFirstLoginPending = async (username: string) => {
   }
 };
 
-const USER_ROLES = process.env.USER_ROLES?.split(",") || [];
-
 // Create a role in Keycloak if it doesn't exist
 const addKeycloakRole = async (roleName: string) => {
   try {
@@ -761,7 +760,7 @@ const addKeycloakRole = async (roleName: string) => {
 export const checkUserRoles = async () => {
   try {
     const accessToken = (await getKeycloakAdminToken()).access_token;
-    for (let roleName of USER_ROLES) {
+    for (let roleName of getApplicationRoles()) {
       // Search for the specific role by name
       const response = await fetch(
         `${KC_BASE_URL}/admin/realms/${KC_REALM}/roles/${encodeURIComponent(roleName.trim())}`,

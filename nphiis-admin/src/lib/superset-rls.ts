@@ -1,5 +1,4 @@
 import type { LocationInfo } from "@/types/user";
-import { ROLES } from "@/lib/roles";
 
 export interface RlsClause {
   clause: string;
@@ -32,28 +31,28 @@ export function buildRlsClauses(
 ): RlsClause[] {
   // National full access.
   if (
-    roles.includes(ROLES.ADMINISTRATOR) ||
-    roles.includes(ROLES.SUPERUSER) ||
-    roles.includes(ROLES.NATIONAL_FOCAL_PERSON) ||
-    roles.includes(ROLES.NATIONAL_LAB)
+    roles.includes("ADMINISTRATOR") ||
+    roles.includes("SUPERUSER") ||
+    roles.includes("NATIONAL_FOCAL_PERSON") ||
+    roles.includes("NATIONAL_LAB")
   ) {
     return [];
   }
 
   // National viewer: only line-list (MOH 505) datasets.
-  if (roles.includes(ROLES.NATIONAL_VIEWER)) {
+  if (roles.includes("NATIONAL_VIEWER")) {
     return [{ clause: `${COL.reportType} = 'MOH_505'` }];
   }
 
   // Geographic restriction by smallest scope the user has.
   if (
-    roles.includes(ROLES.FACILITY_SURVEILLANCE_FOCAL_PERSON) &&
+    roles.includes("FACILITY_SURVEILLANCE_FOCAL_PERSON") &&
     locationInfo?.facility
   ) {
     return [{ clause: `${COL.facility} = '${escape(locationInfo.facility)}'` }];
   }
   if (
-    roles.includes(ROLES.SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER) &&
+    roles.includes("SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER") &&
     locationInfo?.subCounty
   ) {
     return [
@@ -61,7 +60,7 @@ export function buildRlsClauses(
     ];
   }
   if (
-    roles.includes(ROLES.COUNTY_DISEASE_SURVEILLANCE_OFFICER) &&
+    roles.includes("COUNTY_DISEASE_SURVEILLANCE_OFFICER") &&
     locationInfo?.county
   ) {
     return [{ clause: `${COL.county} = '${escape(locationInfo.county)}'` }];

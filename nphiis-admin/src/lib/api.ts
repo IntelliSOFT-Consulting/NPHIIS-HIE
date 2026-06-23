@@ -69,6 +69,31 @@ interface UsersApiResponse {
   error?: string;
 }
 
+interface RolesApiResponse {
+  roles: string[];
+  status: 'success' | 'error';
+  error?: string;
+}
+
+/** Canonical application roles from hie-auth (source of truth). */
+export const rolesApi = {
+  getRoles: async (): Promise<string[]> => {
+    const response = await fetch('/api/provider/roles', {
+      method: 'GET',
+      cache: 'no-store',
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+    const data: RolesApiResponse = await response.json();
+    if (data.status !== 'success' || !Array.isArray(data.roles)) {
+      throw new Error(data.error || 'Failed to fetch roles');
+    }
+    return data.roles;
+  },
+};
+
 
 // User management API functions
 export const userApi = {
