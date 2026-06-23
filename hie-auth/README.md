@@ -34,6 +34,12 @@ Recipient lookup uses Keycloak `practitionerRole` (not FHIR alone). After upgrad
 
 New provider registrations set `practitionerRole`, `nphiis_role`, and `fhirPractitionerId` on Keycloak automatically.
 
+### Application roles (source of truth)
+
+Roles are configured in `hie-auth/.env` as a comma-separated `USER_ROLES` list. `src/lib/roles.ts` loads that value, `checkUserRoles()` ensures each role exists in Keycloak on startup, and clients fetch the live list from:
+
+`GET /provider/roles` → `{ "roles": ["ADMINISTRATOR", ...], "status": "success" }`
+
 ### EPID location-prefix correction backfill
 
 When sub-counties (or counties) have multi-word names (e.g. `KISUMU CENTRAL` → `KIC` not `KIS`), older EPIDs may have been assigned with the legacy `substring(0, 3)` rule. Use the correction backfill to find and fix them.

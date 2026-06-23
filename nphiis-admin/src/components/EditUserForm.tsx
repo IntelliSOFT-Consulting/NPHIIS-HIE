@@ -1,51 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, UserRole } from '@/types/user';
-import { userApi, getAccessToken, fhirApi, FhirCounty, FhirSubCounty, FhirWard, FhirFacility, isUnauthorizedError, handleUnauthorized } from '@/lib/api';
+import { User } from '@/types/user';
+import { userApi, rolesApi, getAccessToken, fhirApi, FhirCounty, FhirSubCounty, FhirWard, FhirFacility, isUnauthorizedError, handleUnauthorized } from '@/lib/api';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 // import { useNotification } from './Notification';
 
-// Load roles from environment variable
-const getRolesFromEnv = (): UserRole[] => {
-  const envRoles = process.env.NEXT_PUBLIC_USER_ROLES || process.env.USER_ROLES;
-  if (!envRoles) {
-    // Fallback to default roles if env var is not set
-    return [
-    ];
-  }
-  
-  return envRoles.split(',').map(role => role.trim()) as UserRole[];
+type FormData = {
+  idNumber: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  locationId?: string;
+  subCountyId?: string;
+  wardId?: string;
+  facilityId?: string;
+  role: string;
+  enabled: boolean;
 };
-
-const ROLES: UserRole[] = getRolesFromEnv();
-
-const editUserSchema = z.object({
-  idNumber: z.string().min(1, 'ID Number is required'),
-  email: z.string().email('Invalid email address'),
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  phone: z.string().min(1, 'Phone number is required'),
-  locationId: z.string().optional(),
-  subCountyId: z.string().optional(),
-  wardId: z.string().optional(),
-  facilityId: z.string().optional(),
-  role: z.enum(ROLES.length > 0 ? ROLES as [string, ...string[]] : [
-    'ADMINISTRATOR',
-    'SUPERUSER',
-    'COUNTY_DISEASE_SURVEILLANCE_OFFICER',
-    'SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER',
-    'FACILITY_SURVEILLANCE_FOCAL_PERSON',
-    'SUPERVISORS',
-    'VACCINATOR'
-  ] as const),
-  enabled: z.boolean(),
-});
-
-type FormData = z.infer<typeof editUserSchema>;
 
 interface EditUserFormProps {
   user: User;
@@ -54,6 +30,9 @@ interface EditUserFormProps {
 }
 
 export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserFormProps) {
+  const [applicationRoles, setApplicationRoles] = useState<string[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
+  const [rolesError, setRolesError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -70,6 +49,29 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
   const [isLoadingFacilities, setIsLoadingFacilities] = useState(false);
   const [facilitiesError, setFacilitiesError] = useState('');
   // const { showSuccess, showError } = useNotification();
+
+  const editUserSchema = useMemo(
+    () =>
+      z.object({
+        idNumber: z.string().min(1, 'ID Number is required'),
+        email: z.string().email('Invalid email address'),
+        firstName: z.string().min(1, 'First name is required'),
+        lastName: z.string().min(1, 'Last name is required'),
+        phone: z.string().min(1, 'Phone number is required'),
+        locationId: z.string().optional(),
+        subCountyId: z.string().optional(),
+        wardId: z.string().optional(),
+        facilityId: z.string().optional(),
+        role: z
+          .string()
+          .min(1, 'Role is required')
+          .refine((val) => applicationRoles.length === 0 || applicationRoles.includes(val), {
+            message: 'Select a valid role',
+          }),
+        enabled: z.boolean(),
+      }),
+    [applicationRoles],
+  );
 
   const {
     register,
@@ -109,6 +111,24 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
   const showSubCounty = !isLocationDisabled && !showCountyOnly;
   const showWard = !isLocationDisabled && !showCountyOnly && !showSubCountyOnly;
   const showFacility = showWard; // Facility is shown for the same roles as ward
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      setIsLoadingRoles(true);
+      setRolesError('');
+      try {
+        const roles = await rolesApi.getRoles();
+        setApplicationRoles(roles);
+      } catch (error) {
+        console.error('Failed to fetch roles:', error);
+        setRolesError('Failed to load roles from auth service. Please refresh the page.');
+      } finally {
+        setIsLoadingRoles(false);
+      }
+    };
+
+    fetchRoles();
+  }, []);
 
   // Fetch counties from FHIR server on component mount
   useEffect(() => {
@@ -427,14 +447,22 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                 <select
                   {...register('role')}
                   id="role"
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                  disabled={isLoadingRoles || applicationRoles.length === 0}
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 disabled:bg-gray-100"
                 >
-                  {ROLES.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
+                  {isLoadingRoles ? (
+                    <option value={user.role}>{user.role}</option>
+                  ) : (
+                    applicationRoles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))
+                  )}
                 </select>
+                {rolesError && (
+                  <p className="mt-1 text-sm text-red-600">{rolesError}</p>
+                )}
                 {errors.role && (
                   <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
                 )}

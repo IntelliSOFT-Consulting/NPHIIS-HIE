@@ -8,15 +8,10 @@ import { getRoleFromPractitioner, providerRoleKeycloakAttributes, putPractitione
 import { runPractitionerRoleBackfillJob } from "../lib/practitioner-role-backfill";
 import { runPractitionerRoleResourceBackfillJob } from "../lib/practitioner-role-resource-backfill";
 import { runCaseNotificationBackfillJob } from "../lib/notification-backfill-job";
+import { getApplicationRoles, isValidApplicationRole } from "../lib/roles";
 
 const router = express.Router();
 router.use(express.json());
-
-const USER_ROLES = process.env.USER_ROLES?.split(",") || [];
-
-
-const allowedRoles = USER_ROLES;
-
 
 const heirachy = [
     { country: "COUNTRY" },
@@ -25,6 +20,16 @@ const heirachy = [
     { ward: "WARD" },
     { facility: "FACILITY" }
 ]
+
+/** Canonical role list for clients (admin web app, bulk scripts, etc.). */
+router.get("/roles", async (_req: Request, res: Response) => {
+    try {
+        return res.status(200).json({ roles: getApplicationRoles(), status: "success" });
+    } catch (error) {
+        console.error("GET /roles error:", error);
+        return res.status(500).json({ error: "Failed to retrieve roles", status: "error" });
+    }
+});
 
 
 
@@ -50,8 +55,8 @@ router.post("/register", async (req: Request, res: Response) => {
         }
 
         role = String(role).toUpperCase();
-        if (allowedRoles.indexOf(role) < 0) {
-            return res.status(400).json({ status: "error", error: `invalid role provided. Allowed roles: ${allowedRoles.join(",")}` });
+        if (!isValidApplicationRole(role)) {
+            return res.status(400).json({ status: "error", error: `invalid role provided. Allowed roles: ${getApplicationRoles().join(",")}` });
         }
 
         if (role !== "ADMINISTRATOR" && !facility) {
@@ -713,8 +718,8 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
         let normalizedRole = role ? String(role).toUpperCase() : null;
 
         // Validate role if provided
-        if (normalizedRole && !validateRole(normalizedRole, allowedRoles)) {
-            return res.status(400).json({ status: "error", error: `Invalid role ${normalizedRole} provided. Supported roles: ${allowedRoles.join(",")}` });
+        if (normalizedRole && !validateRole(normalizedRole, getApplicationRoles())) {
+            return res.status(400).json({ status: "error", error: `Invalid role ${normalizedRole} provided. Supported roles: ${getApplicationRoles().join(",")}` });
         }
 
         // Validate location for role if both are provided

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { ADMIN_ROLES, LAB_ROLES, ROLES } from "@/lib/roles";
+import { ADMIN_ROLES, LAB_ROLES } from "@/lib/roles";
 import UserRoleBreakdown from "../UserRoleBreakdown";
 import CountyDashboardPanel from "./CountyDashboardPanel";
 import SubCountyDashboardPanel from "./SubCountyDashboardPanel";
@@ -32,23 +32,23 @@ export default function DashboardHome() {
     );
   }
 
-  if (hasRole([ROLES.NATIONAL_LAB])) return <LabDashboardPanel />;
+  if (hasRole(["NATIONAL_LAB"])) return <LabDashboardPanel />;
 
-  if (hasRole([ROLES.NATIONAL_FOCAL_PERSON, ROLES.NATIONAL_VIEWER])) {
+  if (hasRole(["NATIONAL_FOCAL_PERSON", "NATIONAL_VIEWER"])) {
     return <NationalDashboardPanel />;
   }
 
   if (hasRole(LAB_ROLES)) return <LabDashboardPanel />;
 
-  if (hasRole([ROLES.FACILITY_SURVEILLANCE_FOCAL_PERSON])) {
+  if (hasRole(["FACILITY_SURVEILLANCE_FOCAL_PERSON"])) {
     return <FacilityDashboardPanel />;
   }
 
-  if (hasRole([ROLES.SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER])) {
+  if (hasRole(["SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER"])) {
     return <SubCountyDashboardPanel />;
   }
 
-  if (hasRole([ROLES.COUNTY_DISEASE_SURVEILLANCE_OFFICER])) {
+  if (hasRole(["COUNTY_DISEASE_SURVEILLANCE_OFFICER"])) {
     return <CountyDashboardPanel />;
   }
 
