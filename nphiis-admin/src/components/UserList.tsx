@@ -211,6 +211,12 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
   };
 
   const getRoleBadgeColor = (role: string) => {
+    if (role.includes('HEALTH_RECORDS_INFORMATION_OFFICER')) {
+      return 'bg-cyan-100 text-cyan-800';
+    }
+    if (role.includes('HEALTH_PROMOTION_OFFICER')) {
+      return 'bg-lime-100 text-lime-800';
+    }
     const colors: Record<string, string> = {
       'System Administrator': 'bg-red-100 text-red-800',
       'Super User': 'bg-purple-100 text-purple-800',

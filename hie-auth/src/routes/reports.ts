@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { computeMOH710 } from '../lib/reports'
 import { getKeycloakUsers } from "../lib/keycloak";
+import { getApplicationRoles } from "../lib/roles";
 import { FhirApi } from "../lib/utils";
 const router = express.Router();
 router.use(express.json());
@@ -38,7 +39,7 @@ router.get("/users", async (req: Request, res: Response) => {
 
 router.get("/roles", async (req: Request, res: Response) => {
     try {
-        const roles = (process.env.USER_ROLES?.split(",") || []).map((role: string) => role.toUpperCase());
+        const roles = getApplicationRoles();
         return res.status(200).json({ roles, status: "success" });
     }
     catch (error) {
