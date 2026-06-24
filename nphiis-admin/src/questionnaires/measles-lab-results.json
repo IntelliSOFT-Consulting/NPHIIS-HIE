@@ -128,6 +128,7 @@
       ],
       "linkId": "specimen-condition",
       "text": "Specimen Condition",
+      "required": true,
       "answerOption": [
         {
           "valueCoding": {
@@ -137,6 +138,22 @@
         },
         {
           "valueCoding": {
+            "code": "Inadequate",
+            "display": "Inadequate"
+          }
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "linkId": "specimen-inadequate-narrative",
+      "text": "Reason specimen is inadequate",
+      "required": true,
+      "enableWhen": [
+        {
+          "question": "specimen-condition",
+          "operator": "=",
+          "answerCoding": {
             "code": "Inadequate",
             "display": "Inadequate"
           }
@@ -166,6 +183,16 @@
       ],
       "linkId": "measles-igm",
       "text": "Measles IgM results",
+      "enableWhen": [
+        {
+          "question": "specimen-condition",
+          "operator": "!=",
+          "answerCoding": {
+            "code": "Inadequate",
+            "display": "Inadequate"
+          }
+        }
+      ],
       "answerOption": [
         {
           "valueCoding": {
@@ -225,11 +252,11 @@
       "text": "Rubella IgM results",
       "enableWhen": [
         {
-          "question": "measles-igm",
+          "question": "specimen-condition",
           "operator": "!=",
           "answerCoding": {
-            "code": "Positive",
-            "display": "Positive"
+            "code": "Inadequate",
+            "display": "Inadequate"
           }
         }
       ],
@@ -329,13 +356,33 @@
       ],
       "linkId": "date-lab-sent-results",
       "text": "Date lab sent out results to EPI/Surv Unit",
-      "required": true
+      "required": true,
+      "enableWhen": [
+        {
+          "question": "specimen-condition",
+          "operator": "!=",
+          "answerCoding": {
+            "code": "Inadequate",
+            "display": "Inadequate"
+          }
+        }
+      ]
     },
     {
       "type": "choice",
       "linkId": "139172422437",
       "text": "Was specimen sent to regional lab?",
       "required": true,
+      "enableWhen": [
+        {
+          "question": "specimen-condition",
+          "operator": "!=",
+          "answerCoding": {
+            "code": "Inadequate",
+            "display": "Inadequate"
+          }
+        }
+      ],
       "answerOption": [
         {
           "valueCoding": {
