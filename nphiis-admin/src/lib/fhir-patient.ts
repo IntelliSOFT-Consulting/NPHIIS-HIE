@@ -28,6 +28,12 @@ interface PatientIdentifier {
   value?: string;
 }
 
+interface PatientAddress {
+  city?: string;
+  state?: string;
+  line?: string[];
+}
+
 interface PatientResource {
   resourceType?: "Patient";
   id?: string;
@@ -35,6 +41,7 @@ interface PatientResource {
   name?: PatientName[];
   gender?: string;
   birthDate?: string;
+  address?: PatientAddress[];
   meta?: { lastUpdated?: string };
 }
 
@@ -46,6 +53,17 @@ interface ObservationResource {
   effectiveDateTime?: string;
   meta?: { lastUpdated?: string };
   subject?: { reference?: string };
+}
+
+interface EncounterResource {
+  resourceType?: "Encounter";
+  id?: string;
+  reasonCode?: Array<{
+    coding?: Array<{ code?: string; display?: string }>;
+    text?: string;
+  }>;
+  period?: { start?: string; end?: string };
+  meta?: { lastUpdated?: string };
 }
 
 interface BundleEntry<T> {
@@ -111,6 +129,93 @@ function patientRefId(ref: string | undefined): string | undefined {
   if (!ref) return undefined;
   const m = ref.match(/^Patient\/([^/?#]+)$/);
   return m ? m[1] : undefined;
+}
+
+/** The patient's EPID-typed identifier value, if present. */
+function epidValue(p: PatientResource): string | undefined {
+  return p.identifier?.find((id) =>
+    id.type?.coding?.some((c) => c.code === "EPID"),
+  )?.value;
+}
+
+/** Derive the disease slug from a `<disease>-case-information` system. */
+function diseaseFromCaseSystem(system: string): string | undefined {
+  const m = system.match(/([a-z0-9]+)-case-information$/i);
+  return m ? m[1].toLowerCase() : undefined;
+}
+
+export interface CaseSearchResult {
+  patientId: string;
+  epid?: string;
+  name: string;
+  county?: string;
+  subCounty?: string;
+  disease?: string;
+}
+
+/**
+ * Broader case lookup for the lab module: search registered *cases* by any of
+ * patient name, county, sub-county, or exact EPID and return a selectable
+ * list. County/sub-county map to Patient.address.city / .state (same shape the
+ * reports read). Only patients carrying a `<disease>-case-information`
+ * identifier are returned, since lab results can only attach to cases.
+ */
+export async function searchCases(
+  criteria: { name?: string; county?: string; subCounty?: string; epid?: string },
+  token: string,
+): Promise<CaseSearchResult[]> {
+  const name = criteria.name?.trim();
+  const county = criteria.county?.trim();
+  const subCounty = criteria.subCounty?.trim();
+  const epid = criteria.epid?.trim();
+
+  const params: string[] = [];
+  if (name) params.push(`name=${encodeURIComponent(name)}`);
+  if (county) params.push(`address-city=${encodeURIComponent(county)}`);
+  if (subCounty) params.push(`address-state=${encodeURIComponent(subCounty)}`);
+  if (epid) params.push(`identifier=${encodeURIComponent(epid)}`);
+  if (params.length === 0) return [];
+  params.push("_count=25");
+
+  const res = await fetch(`${FHIR_BASE_URL}/Patient?${params.join("&")}`, {
+    headers: {
+      Accept: "application/fhir+json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Case search failed (${res.status}): ${body.slice(0, 300)}`);
+  }
+  const bundle = (await res.json()) as {
+    entry?: BundleEntry<PatientResource>[];
+  };
+  const patients =
+    (bundle.entry
+      ?.filter((e) => e.search?.mode !== "include")
+      .map((e) => e.resource)
+      .filter(Boolean) as PatientResource[]) ?? [];
+
+  const seen = new Set<string>();
+  const results: CaseSearchResult[] = [];
+  for (const p of patients) {
+    if (!p.id) continue;
+    const caseEnc = findCaseEncounter(p);
+    if (!caseEnc) continue; // cases only — lab results can't attach to line-lists
+    const epidVal = epidValue(p);
+    const dedupeKey = epidVal ?? p.id;
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+    results.push({
+      patientId: p.id,
+      epid: epidVal,
+      name: displayName(p),
+      county: p.address?.[0]?.city,
+      subCounty: p.address?.[0]?.state,
+      disease: diseaseFromCaseSystem(caseEnc.system),
+    });
+  }
+  return results;
 }
 
 async function fetchPatientById(
@@ -343,6 +448,73 @@ export async function lookupPatientByEpid(
       caseEncounterSystem: caseEncounter?.system,
     },
   };
+}
+
+/* ── Existing lab-result detection ───────────────────────────────────────── */
+
+export interface ExistingLabResult {
+  exists: boolean;
+  count: number;
+  /** ISO timestamp of the most recent matching lab encounter, if any. */
+  latest?: string;
+}
+
+/**
+ * Detects whether a case already has a lab result recorded for the given form.
+ * Lab submissions write an Encounter whose `reasonCode.coding.code` equals the
+ * form's `encounterReason` (see lab-submission `buildLabSubmissionBundle`), so
+ * a matching encounter means a result is already on file.
+ *
+ * Best-effort by design: any lookup failure resolves to `exists:false` so this
+ * never blocks a submission — it backs an advisory "already has a result"
+ * warning, not an authoritative guard.
+ */
+export async function findExistingLabResult(
+  patientId: string,
+  encounterReason: string,
+  token: string,
+): Promise<ExistingLabResult> {
+  const url =
+    `${FHIR_BASE_URL}/Encounter` +
+    `?subject=Patient/${encodeURIComponent(patientId)}` +
+    `&_count=100`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: {
+        Accept: "application/fhir+json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (err) {
+    console.warn(
+      "[lab] existing-result lookup failed:",
+      (err as Error).message,
+    );
+    return { exists: false, count: 0 };
+  }
+  if (!res.ok) return { exists: false, count: 0 };
+
+  const bundle = (await res.json()) as {
+    entry?: BundleEntry<EncounterResource>[];
+  };
+  const encounters =
+    (bundle.entry
+      ?.filter((e) => e.search?.mode !== "include")
+      .map((e) => e.resource)
+      .filter(Boolean) as EncounterResource[]) ?? [];
+  const matches = encounters.filter((e) =>
+    (e.reasonCode ?? []).some((rc) =>
+      (rc.coding ?? []).some((c) => c.code === encounterReason),
+    ),
+  );
+  if (matches.length === 0) return { exists: false, count: 0 };
+
+  const latest = matches
+    .map((e) => e.period?.start ?? e.meta?.lastUpdated ?? "")
+    .filter(Boolean)
+    .sort((a, b) => b.localeCompare(a))[0];
+  return { exists: true, count: matches.length, latest: latest || undefined };
 }
 
 /* ── Case vs Line-List resolution ────────────────────────────────────────── */

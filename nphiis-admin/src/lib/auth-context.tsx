@@ -15,7 +15,6 @@ import {
   canAccess,
   hasAnyRole,
   isApplicationRole,
-  ROLES,
   type Feature,
   type Role,
 } from "@/lib/roles";
@@ -194,5 +193,3 @@ export function useAuthedFetch() {
     [accessToken, signOut],
   );
 }
-
-export { ROLES };

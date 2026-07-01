@@ -361,7 +361,7 @@ Verify the wildcard cert is presented and is not expired.
 2. Create or import the `nphiis` realm (use the realm export file if available).
 3. Create the `nphiis-admin` client. Copy the **client secret** into `hie-auth/.env` (`KEYCLOAK_CLIENT_SECRET`).
 4. Add the custom attributes: ensure `fhirPractitionerId` is defined as a user attribute on the `nphiis` realm.
-5. Assign the 24 application roles to the client. Refer to the [RBAC roles list](../CLAUDE.md#rbac-roles).
+5. Assign the application roles to the client. The full list of roles is defined by the `USER_ROLES` variable in `hie-auth/.env`.
 6. Import or configure the custom Keycloak themes from `keycloak/themes/`.
 
 After updating the client secret, restart hie-auth:

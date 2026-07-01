@@ -7,6 +7,11 @@ import {
   EPID_SYSTEM_URI,
 } from "./epid-utils";
 import { notifyCaseSubmissionIfEnabled } from "./notification";
+import {
+  buildEpidFormattedId,
+  resolveLocationNamesForEncounter,
+} from "./epid-location-segment";
+import { resolveCountyLocationSegment } from "./county-segment-registry";
 
 const POSSIBLE_REASON_CODES: Record<string, string> = {
   "Measles Case Information": "MEA",
@@ -208,27 +213,8 @@ async function assignEpidForEncounterLocked(
   const caseCondition =
     POSSIBLE_REASON_CODES[rc] || (rc ? rc.toUpperCase().slice(0, 3) : "UNK");
 
-  const subCountyCode = "a3-sub-county";
-  const subCountyObservation = (
-    await FhirApi({ url: `/Observation?code=${subCountyCode}&encounter=${encounterId}` })
-  ).data?.entry?.[0]?.resource;
-  const vs = subCountyObservation?.valueString;
-  const subCounty = vs
-    ? (await FhirApi({ url: `/Location?name=${encodeURIComponent(vs)}` })).data?.entry?.[0]?.resource
-    : undefined;
-  const county = subCounty?.partOf?.reference?.split("/")[1]
-    ? (await FhirApi({ url: `/Location/${subCounty.partOf.reference.split("/")[1]}` })).data
-    : undefined;
-  const country =
-    county?.partOf?.reference?.split("/")[1] != null
-      ? (await FhirApi({ url: `/Location/${county.partOf.reference.split("/")[1]}` })).data
-      : undefined;
-
-  const subCountyName = subCounty?.name?.toUpperCase()?.trim();
-  const countyName = county?.name?.toUpperCase()?.trim();
-  const countryName = country?.name?.toUpperCase()?.trim();
-
-  if (!countryName?.length || !countyName?.length || !subCountyName?.length) {
+  const location = await resolveLocationNamesForEncounter(encounterId, FhirApi);
+  if (!location) {
     return {
       kind: "error",
       error: new Error(
@@ -236,6 +222,7 @@ async function assignEpidForEncounterLocked(
       ),
     };
   }
+  const { countryName, countyName, subCountyName } = location;
 
   let onsetDate = getSystemCreationTimestampValue(patient);
   let normalizedOnsetDate = onsetDate;
@@ -258,7 +245,16 @@ async function assignEpidForEncounterLocked(
 
   const caseSeq = await generateCaseId(countryName, countyName, subCountyName, caseCondition);
 
-  const formattedId = `${countryName.substring(0, 3)}-${countyName.substring(0, 3)}-${subCountyName.substring(0, 3)}-${yearForId}-${caseCondition}-${toThreeDigits(caseSeq)}`;
+  const countySegment = await resolveCountyLocationSegment(FhirApi, countyName);
+
+  const formattedId = buildEpidFormattedId(
+    countryName,
+    countySegment,
+    subCountyName,
+    yearForId,
+    caseCondition,
+    caseSeq,
+  );
 
   const newId = FhirIdentifier(encounterCodeSystem, "EPID", "Epidemiological ID", formattedId, true);
 
@@ -350,7 +346,7 @@ async function assignEpidForEncounterLocked(
   if (opts?.notify) {
     void notifyCaseSubmissionIfEnabled(encounterPut.data, {
       epid: formattedId,
-      diseaseCondition: rc || caseCondition,
+      diseaseCondition: caseCondition,
       countyName,
       subCountyName,
     }).catch((e) =>

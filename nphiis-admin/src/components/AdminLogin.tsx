@@ -7,7 +7,10 @@ import { Field, TextInput } from './ui/Field';
 import { Alert } from './ui/Alert';
 
 interface AdminLoginProps {
-  onLogin: (idNumber: string, password: string) => Promise<boolean>;
+  onLogin: (
+    idNumber: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export default function AdminLogin({ onLogin }: AdminLoginProps) {
@@ -22,10 +25,10 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
     setIsLoading(true);
     setError('');
 
-    const success = await onLogin(idNumber, password);
+    const result = await onLogin(idNumber, password);
 
-    if (!success) {
-      setError('Invalid ID number or password');
+    if (!result.success) {
+      setError(result.error || 'Invalid ID number or password');
     }
 
     setIsLoading(false);

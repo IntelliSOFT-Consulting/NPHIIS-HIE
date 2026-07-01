@@ -4,17 +4,14 @@ import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUse
 import { authenticateUser } from "../lib/middleware";
 import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../lib/email";
 import { getSupersetGuestToken } from "../lib/superset";
-import { getRoleFromPractitioner, providerRoleKeycloakAttributes } from "../lib/practitioner-role";
+import { getRoleFromPractitioner, providerRoleKeycloakAttributes, putPractitionerRoleResource, resolvePractitionerAssignment, deletePractitionerRoleResource, syncPractitionerRoleAndExtensions, getLocationFromPractitioner } from "../lib/practitioner-role";
 import { runPractitionerRoleBackfillJob } from "../lib/practitioner-role-backfill";
+import { runPractitionerRoleResourceBackfillJob } from "../lib/practitioner-role-resource-backfill";
+import { runCaseNotificationBackfillJob } from "../lib/notification-backfill-job";
+import { getApplicationRoles, isValidApplicationRole } from "../lib/roles";
 
 const router = express.Router();
 router.use(express.json());
-
-const USER_ROLES = process.env.USER_ROLES?.split(",") || [];
-
-
-const allowedRoles = USER_ROLES;
-
 
 const heirachy = [
     { country: "COUNTRY" },
@@ -23,6 +20,16 @@ const heirachy = [
     { ward: "WARD" },
     { facility: "FACILITY" }
 ]
+
+/** Canonical role list for clients (admin web app, bulk scripts, etc.). */
+router.get("/roles", async (_req: Request, res: Response) => {
+    try {
+        return res.status(200).json({ roles: getApplicationRoles(), status: "success" });
+    } catch (error) {
+        console.error("GET /roles error:", error);
+        return res.status(500).json({ error: "Failed to retrieve roles", status: "error" });
+    }
+});
 
 
 
@@ -48,8 +55,8 @@ router.post("/register", async (req: Request, res: Response) => {
         }
 
         role = String(role).toUpperCase();
-        if (allowedRoles.indexOf(role) < 0) {
-            return res.status(400).json({ status: "error", error: `invalid role provided. Allowed roles: ${allowedRoles.join(",")}` });
+        if (!isValidApplicationRole(role)) {
+            return res.status(400).json({ status: "error", error: `invalid role provided. Allowed roles: ${getApplicationRoles().join(",")}` });
         }
 
         if (role !== "ADMINISTRATOR" && !facility) {
@@ -146,6 +153,11 @@ router.post("/register", async (req: Request, res: Response) => {
             return res.status(400).json({ status: "error", error: practitioner.issue[0].diagnostics });
         }
 
+        await putPractitionerRoleResource(practitionerId, role, {
+            id: location.id,
+            name: location.name,
+        });
+
         await setKeycloakUserAttributes(
             practitionerId,
             providerRoleKeycloakAttributes(practitionerId, role),
@@ -182,8 +194,25 @@ router.post("/login", async (req: Request, res: Response) => {
             return res.status(401).json({ status: "error", error: "User not found" });
         }
 
-        let practitioner = await (await FhirApi({ url: `/Practitioner/${userInfo?.id}` })).data;
-        if (!practitioner || !practitioner.active) {
+        const practitionerResp = await FhirApi({ url: `/Practitioner/${userInfo.id}` });
+        if (practitionerResp.status !== "success") {
+            console.error(
+                "[Login] FHIR Practitioner lookup failed:",
+                userInfo.id,
+                practitionerResp.statusText,
+            );
+            return res.status(503).json({
+                status: "error",
+                error: "Unable to verify user profile. Please try again.",
+            });
+        }
+
+        const practitioner = practitionerResp.data;
+        if (
+            !practitioner?.resourceType ||
+            practitioner.resourceType !== "Practitioner" ||
+            !practitioner.active
+        ) {
             return res.status(401).json({ status: "error", error: "User not found or not active" });
         }
 
@@ -230,9 +259,8 @@ router.get("/me", authenticateUser, async (req: Request, res: Response) => {
             return res.status(404).json({ error: "Practitioner not found", status: "error" });
         }
 
-        // Early return for ADMINISTRATOR role - no location processing needed
-        const practitionerRole = practitioner?.extension?.length > 0 ?
-            practitioner.extension[1]?.valueString : "ADMINISTRATOR";
+        const assignment = await resolvePractitionerAssignment(userId, practitioner);
+        const practitionerRole = assignment?.role ?? "ADMINISTRATOR";
 
         // For non-ADMINISTRATOR roles, build location info efficiently
         let locationInfo = {
@@ -240,15 +268,15 @@ router.get("/me", authenticateUser, async (req: Request, res: Response) => {
             subCounty: "", subCountyName: "", county: "", countyName: "", country: "", countryName: ""
         };
 
-        if (practitioner?.extension?.length > 0) {
-            const locationReference = practitioner.extension[0].valueReference.reference;
+        const locationReference =
+            assignment?.locationReference ??
+            getLocationFromPractitioner(practitioner).reference;
 
-            // Fetch initial location
+        if (locationReference) {
             const fhirLocation = await (await FhirApi({ url: `/${locationReference}` })).data;
             const locationType = fhirLocation?.type?.[0]?.coding?.[0]?.code;
 
             if (locationType && fhirLocation) {
-                // Use the optimized buildLocationInfo utility function
                 locationInfo = await buildLocationInfo(fhirLocation, heirachy);
             }
         }
@@ -517,6 +545,26 @@ async function requireAdminOrInternalApiKey(
 }
 
 router.post(
+    "/users/backfill-practitioner-role-resources",
+    requireAdminOrInternalApiKey,
+    async (req: Request, res: Response) => {
+        try {
+            const stats = await runPractitionerRoleResourceBackfillJob();
+            if (stats.skippedBecauseAlreadyRunning) {
+                return res.status(409).json({
+                    status: "error",
+                    error: "PractitionerRole resource backfill is already running",
+                });
+            }
+            return res.status(200).json({ status: "completed", stats });
+        } catch (error) {
+            console.error("backfill-practitioner-role-resources:", error);
+            return res.status(500).json({ status: "error", error: String(error) });
+        }
+    },
+);
+
+router.post(
     "/users/backfill-practitioner-roles",
     requireAdminOrInternalApiKey,
     async (req: Request, res: Response) => {
@@ -531,6 +579,26 @@ router.post(
             return res.status(200).json({ status: "completed", stats });
         } catch (error) {
             console.error("backfill-practitioner-roles:", error);
+            return res.status(500).json({ status: "error", error: String(error) });
+        }
+    },
+);
+
+router.post(
+    "/users/backfill-case-notifications",
+    requireAdminOrInternalApiKey,
+    async (req: Request, res: Response) => {
+        try {
+            const stats = await runCaseNotificationBackfillJob();
+            if (stats.skippedBecauseAlreadyRunning) {
+                return res.status(409).json({
+                    status: "error",
+                    error: "Case notification backfill is already running",
+                });
+            }
+            return res.status(200).json({ status: "completed", stats });
+        } catch (error) {
+            console.error("backfill-case-notifications:", error);
             return res.status(500).json({ status: "error", error: String(error) });
         }
     },
@@ -575,8 +643,8 @@ router.get("/users", authenticateUser, async (req: Request, res: Response) => {
                 continue;
             }
             const practitioner = await (await FhirApi({ url: `/Practitioner/${user.id}` })).data;
-            const role = practitioner?.extension?.length > 0 ?
-                practitioner.extension[1]?.valueString : "ADMINISTRATOR";
+            const assignment = await resolvePractitionerAssignment(user.id, practitioner);
+            const role = assignment?.role ?? getRoleFromPractitioner(practitioner) ?? "ADMINISTRATOR";
             user.role = role;
             response.push({...user, role});
         }
@@ -650,8 +718,8 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
         let normalizedRole = role ? String(role).toUpperCase() : null;
 
         // Validate role if provided
-        if (normalizedRole && !validateRole(normalizedRole, allowedRoles)) {
-            return res.status(400).json({ status: "error", error: `Invalid role ${normalizedRole} provided. Supported roles: ${allowedRoles.join(",")}` });
+        if (normalizedRole && !validateRole(normalizedRole, getApplicationRoles())) {
+            return res.status(400).json({ status: "error", error: `Invalid role ${normalizedRole} provided. Supported roles: ${getApplicationRoles().join(",")}` });
         }
 
         // Validate location for role if both are provided
@@ -676,17 +744,61 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
         // Get updated user info
         let updatedUserInfo = await findKeycloakUser(username);
         let locationInfo;
+        const practitionerId = updatedUserInfo?.attributes?.fhirPractitionerId?.[0] ?? updatedUserInfo?.id;
 
-        // Handle practitioner location updates if applicable
-        if (updatedUserInfo?.attributes?.fhirPractitionerId?.[0] && location) {
-            let practitioner = await (await FhirApi({ url: `/Practitioner/${updatedUserInfo.attributes.fhirPractitionerId[0]}` })).data;
+        if (updatedUserInfo?.attributes?.fhirPractitionerId?.[0] || updatedUserInfo?.id) {
+            let practitioner = await (await FhirApi({ url: `/Practitioner/${practitionerId}` })).data;
+            const currentAssignment = await resolvePractitionerAssignment(practitionerId, practitioner);
+            const effectiveRole = normalizedRole ?? currentAssignment?.role ?? getRoleFromPractitioner(practitioner) ?? "ADMINISTRATOR";
 
-            // Get FHIR location
-            let fhirLocation = await (await FhirApi({ url: `/Location/${location}` })).data;
+            if (location) {
+                const fhirLocation = await (await FhirApi({ url: `/Location/${location}` })).data;
+                practitioner = await updatePractitionerLocation(
+                    {
+                        ...updatedUserInfo,
+                        attributes: {
+                            ...updatedUserInfo.attributes,
+                            fhirPractitionerId: [practitionerId],
+                            practitionerRole: [effectiveRole],
+                        },
+                    },
+                    practitioner,
+                    fhirLocation,
+                    effectiveRole,
+                );
+                locationInfo = await buildLocationInfo(fhirLocation, heirachy);
+            } else if (normalizedRole) {
+                const currentLocationRef =
+                    currentAssignment?.locationReference ??
+                    getLocationFromPractitioner(practitioner).reference ??
+                    "Location/0";
+                const currentLocationId = currentLocationRef.replace(/^Location\//, "");
+                const fhirLocation = await (await FhirApi({ url: `/Location/${currentLocationId}` })).data;
 
-            // Update practitioner location
-            practitioner = await updatePractitionerLocation(updatedUserInfo, practitioner, fhirLocation);
-            locationInfo = await buildLocationInfo(fhirLocation, heirachy);
+                await syncPractitionerRoleAndExtensions(
+                    practitionerId,
+                    effectiveRole,
+                    {
+                        id: currentLocationId,
+                        name: fhirLocation?.name ?? currentAssignment?.locationDisplay ?? undefined,
+                    },
+                    {
+                        assignedByPractitionerId: currentUserInfo.id,
+                        practitioner,
+                    },
+                );
+                locationInfo = fhirLocation
+                    ? await buildLocationInfo(fhirLocation, heirachy)
+                    : undefined;
+            }
+
+            if (normalizedRole) {
+                await setKeycloakUserAttributes(
+                    updatedUserInfo.id,
+                    providerRoleKeycloakAttributes(practitionerId, effectiveRole),
+                );
+                updatedUserInfo = await findKeycloakUser(username);
+            }
         }
 
         // Handle practitioner name updates if firstName/lastName were provided
@@ -744,6 +856,66 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
     }
 });
 
+router.patch("/users/:username/notifications-enabled", authenticateUser, async (req: Request, res: Response) => {
+    try {
+        const currentUser = (req as any).user;
+        const { username } = req.params;
+        const { enabled } = req.body;
+
+        if (typeof enabled !== "boolean") {
+            return res.status(400).json({ error: "enabled must be a boolean", status: "error" });
+        }
+
+        const currentUserInfo = await findKeycloakUser(currentUser.preferred_username);
+        if (!currentUserInfo?.id) {
+            return res.status(403).json({ error: "User not found", status: "error" });
+        }
+
+        const currentPractitioner = await (await FhirApi({ url: `/Practitioner/${currentUserInfo.id}` })).data;
+        const currentUserRole = currentPractitioner?.extension?.length > 0
+            ? currentPractitioner.extension[1]?.valueString
+            : "ADMINISTRATOR";
+
+        if (currentUserRole !== "ADMINISTRATOR" && currentUserRole !== "SUPERUSER") {
+            return res.status(403).json({
+                error: "Unauthorized access. Only administrators can update notification settings.",
+                status: "error",
+            });
+        }
+
+        const targetUser = await findKeycloakUser(username);
+        if (!targetUser) {
+            return res.status(404).json({ error: "User not found", status: "error" });
+        }
+
+        const updated = await setKeycloakUserAttributes(targetUser.id, {
+            notificationsEnabled: [String(enabled)],
+        });
+        if (!updated) {
+            return res.status(500).json({
+                error: "Failed to update notification settings",
+                status: "error",
+            });
+        }
+
+        const updatedUser = await findKeycloakUser(username);
+        return res.status(200).json({
+            status: "success",
+            user: {
+                id: updatedUser.id,
+                username: updatedUser.username,
+                email: updatedUser.email ?? null,
+                firstName: updatedUser.firstName,
+                lastName: updatedUser.lastName,
+                notificationsEnabled: updatedUser.attributes?.notificationsEnabled?.[0] === "true",
+            },
+        });
+    } catch (error) {
+        console.error("PATCH /users/:username/notifications-enabled error:", error);
+        return res.status(500).json({ error: "Internal server error", status: "error" });
+    }
+});
+
 router.delete("/users/:username", authenticateUser, async (req: Request, res: Response) => {
     try {
         const currentUser = (req as any).user;
@@ -775,8 +947,14 @@ router.delete("/users/:username", authenticateUser, async (req: Request, res: Re
             return res.status(404).json({ error: "User not found", status: "error" });
         }
 
-        // Delete practitioner from FHIR if exists
+        // Delete PractitionerRole and Practitioner from FHIR if they exist
         if (targetUserInfo.id) {
+            try {
+                await deletePractitionerRoleResource(targetUserInfo.id);
+            } catch (fhirError) {
+                console.error(`Error deleting PractitionerRole from FHIR:`, fhirError);
+            }
+
             try {
                 const deletePractitionerResponse = await FhirApi({
                     url: `/Practitioner/${targetUserInfo.id}`,

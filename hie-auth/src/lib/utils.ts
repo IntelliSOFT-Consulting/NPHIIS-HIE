@@ -1,18 +1,18 @@
-
-// ✅ Do this if using TYPESCRIPT
-import { RequestInfo, RequestInit } from 'node-fetch';
-
-const fetch = (url: RequestInfo, init?: RequestInit) =>
-    import('node-fetch').then(({ default: fetch }) => fetch(url, init));
-
-
 export let apiHost = process.env.FHIR_BASE_URL
 console.log("HAPI FHIR: ", apiHost)
 
 
-// a fetch wrapper for HAPI FHIR server.
+export const fhirApiDefaultHeaders = (
+    extra?: Record<string, string>,
+): Record<string, string> => ({
+    "Content-Type": "application/json",
+    "Accept-Encoding": "identity",
+    ...(extra || {}),
+});
+
+// a fetch wrapper for HAPI FHIR server (uses Node native fetch — node-fetch gzip breaks on Node 22+).
 export const FhirApi = async (params: any) => {
-    let _defaultHeaders = { "Content-Type": 'application/json', ...(params.headers || {}) }
+    let _defaultHeaders = fhirApiDefaultHeaders(params.headers);
     if (!params.method) {
         params.method = 'GET';
     }
@@ -128,7 +128,21 @@ export const validateLocationForRole = async (role: string, location: string): P
 };
 
 // FHIR practitioner helper functions
-export const updatePractitionerLocation = async (userInfo: any, practitioner: any, fhirLocation: any) => {
+export const updatePractitionerLocation = async (
+    userInfo: any,
+    practitioner: any,
+    fhirLocation: any,
+    roleOverride?: string,
+) => {
+    const practitionerId = userInfo.attributes.fhirPractitionerId[0];
+    const role =
+        roleOverride ??
+        userInfo?.attributes?.practitionerRole?.[0] ??
+        practitioner?.extension?.find(
+            (e: { url?: string }) =>
+                e?.url === "http://example.org/fhir/StructureDefinition/role-group",
+        )?.valueString;
+
     // Remove meta tag
     const meta = {
         resourceType: 'Parameters',
@@ -143,7 +157,7 @@ export const updatePractitionerLocation = async (userInfo: any, practitioner: an
     };
 
     await (await FhirApi({
-        url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}/$meta-delete`,
+        url: `/Practitioner/${practitionerId}/$meta-delete`,
         method: "POST",
         data: JSON.stringify(meta)
     })).data;
@@ -160,12 +174,12 @@ export const updatePractitionerLocation = async (userInfo: any, practitioner: an
         },
         {
             "url": "http://example.org/fhir/StructureDefinition/role-group",
-            "valueString": userInfo?.attributes?.practitionerRole[0]
+            "valueString": role
         }
     ];
 
     const updatedPractitioner = await (await FhirApi({
-        url: `/Practitioner/${userInfo.attributes.fhirPractitionerId[0]}`,
+        url: `/Practitioner/${practitionerId}`,
         method: "PUT",
         data: JSON.stringify({
             ...practitioner,
@@ -178,6 +192,12 @@ export const updatePractitionerLocation = async (userInfo: any, practitioner: an
             }
         })
     })).data;
+
+    const { putPractitionerRoleResource } = await import("./practitioner-role");
+    await putPractitionerRoleResource(practitionerId, role, {
+        id: fhirLocation.id,
+        name: fhirLocation.name,
+    });
 
     return updatedPractitioner;
 };
