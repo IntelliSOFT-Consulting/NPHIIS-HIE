@@ -41,7 +41,7 @@ const createSubscription = async (subscriptionId: string, callbackUrl: string, c
                     payload: 'application/json',
                     extension: [{
                         url: 'http://hapifhir.io/fhir/StructureDefinition/subscription-delivery-retry-count',
-                        valueInteger: 0
+                        valueInteger: 3
                     }]
                 }
             })

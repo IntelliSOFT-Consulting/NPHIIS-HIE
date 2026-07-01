@@ -17,3 +17,10 @@ scripts/
 .DS_Store
 .cursor/
 .vscode/
+# Local AI / IDE tooling (do not commit)
+CLAUDE.md
+.claude/
+
+# Bulk registration run outputs (local only)
+registration_credentials_*.csv
+registration_results_*.json

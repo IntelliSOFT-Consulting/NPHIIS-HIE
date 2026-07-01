@@ -33,7 +33,9 @@ model Notification {
   title               String
   body                String
   status              NotificationStatus   @default(PENDING)
-  /** Set when case-submission SMTP succeeded; prevents duplicate email on FCM retry (`type = CASE_SUBMISSION` only). */
+  /** Populated when status = FAILED (FCM error, missing token, etc.). */
+  failureReason       String?
+  /** Set when immediate-alert SMTP succeeded; prevents duplicate email on FCM retry (`CASE_SUBMISSION`, `LAB_RESULT`). */
   caseSubmissionEmailSentAt DateTime?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
@@ -58,6 +60,7 @@ enum NotificationStatus {
 enum NotificationType {
   AFP_FOLLOW_UP
   CASE_SUBMISSION
+  LAB_RESULT
 }
 
 enum SubscriptionCallbackOutcome {

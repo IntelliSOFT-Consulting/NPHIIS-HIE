@@ -68,6 +68,8 @@ export default function UserRoleBreakdown() {
         NURSE: 'bg-teal-500',
         SUPERVISORS: 'bg-yellow-500',
       };
+      if (role.includes('HEALTH_RECORDS_INFORMATION_OFFICER')) return 'bg-cyan-500';
+      if (role.includes('HEALTH_PROMOTION_OFFICER')) return 'bg-lime-500';
       return map[role] ?? 'bg-gray-400';
     };
 

@@ -27,10 +27,10 @@ export interface User {
   practitionerRole?: string;
   idNumber?: string;
   locationInfo?: LocationInfo;
+  notificationsEnabled?: boolean;
 }
 
-// UserRole is loaded from process.env.USER_ROLES at runtime, not statically typed here.
-// To get the allowed roles, use: process.env.USER_ROLES?.split(",") ?? []
+// UserRole values come from hie-auth (GET /provider/roles).
 export type UserRole = string;
 
 export interface CreateUserRequest {

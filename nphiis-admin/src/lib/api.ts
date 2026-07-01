@@ -1,5 +1,10 @@
 import { User, CreateUserRequest, LocationInfo } from '@/types/user';
 import type { CallbackLogsApiResponse } from '@/types/callback-log';
+import type {
+  EpidRetryBatchResponse,
+  MissingEpidEncountersResponse,
+  NotificationLogsApiResponse,
+} from '@/types/notification-log';
 
 // API host configurations
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST;
@@ -64,6 +69,31 @@ interface UsersApiResponse {
   error?: string;
 }
 
+interface RolesApiResponse {
+  roles: string[];
+  status: 'success' | 'error';
+  error?: string;
+}
+
+/** Canonical application roles from hie-auth (source of truth). */
+export const rolesApi = {
+  getRoles: async (): Promise<string[]> => {
+    const response = await fetch('/api/provider/roles', {
+      method: 'GET',
+      cache: 'no-store',
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+    const data: RolesApiResponse = await response.json();
+    if (data.status !== 'success' || !Array.isArray(data.roles)) {
+      throw new Error(data.error || 'Failed to fetch roles');
+    }
+    return data.roles;
+  },
+};
+
 
 // User management API functions
 export const userApi = {
@@ -109,7 +139,8 @@ export const userApi = {
         const normalizedUsers = data.users.map(user => ({
           ...user,
           active: user.active ?? user.enabled ?? true, // Map enabled to active if active is not present
-          enabled: user.enabled ?? user.active ?? true // Ensure enabled is also set
+          enabled: user.enabled ?? user.active ?? true, // Ensure enabled is also set
+          notificationsEnabled: user.notificationsEnabled === true,
         }));
         
         return {
@@ -475,6 +506,53 @@ export const userApi = {
   toggleUserStatus: async (userId: string, enabled: boolean, accessToken?: string): Promise<User> => {
     throw new Error('Toggle user status functionality is not available in the current API');
   },
+
+  toggleUserNotifications: async (
+    username: string,
+    enabled: boolean,
+    accessToken?: string,
+  ): Promise<User> => {
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+
+    try {
+      const response = await fetch(
+        `/api/provider/users/${encodeURIComponent(username)}/notifications-enabled`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            Cookie: 'frontend_lang=en_US',
+          },
+          body: JSON.stringify({ enabled }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        (error as any).response = { data: errorData, status: response.status };
+        throw error;
+      }
+
+      const data = await response.json();
+      if (data.status !== 'success') {
+        const error = new Error(data.error || 'Failed to update notification settings');
+        (error as any).response = { data, status: response.status };
+        throw error;
+      }
+
+      return {
+        ...data.user,
+        notificationsEnabled: data.user.notificationsEnabled === true,
+      };
+    } catch (error) {
+      console.error('Toggle user notifications error:', error);
+      throw error;
+    }
+  },
 };
 
 // Helper function to get access token from localStorage
@@ -528,9 +606,10 @@ export const authApi = {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const error = new Error(errorData.error || `HTTP error! status: ${response.status}`);
-        (error as any).response = { data: errorData, status: response.status };
-        throw error;
+        return {
+          status: 'error',
+          error: errorData.error || `HTTP error ${response.status}`,
+        };
       }
 
       const data = await response.json();
@@ -556,7 +635,11 @@ export const authApi = {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          status: 'error',
+          error: errorData.error || `HTTP error ${response.status}`,
+        };
       }
 
       const data = await response.json();
@@ -1340,5 +1423,125 @@ export const callbackLogsApi = {
       throw err;
     }
     return data as CallbackLogsApiResponse;
+  },
+};
+
+export const epidRetryApi = {
+  listMissing: async (
+    accessToken: string,
+    params: { limit?: number; cursor?: string | null } = {},
+  ): Promise<MissingEpidEncountersResponse> => {
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+    const qs = new URLSearchParams();
+    if (params.limit) qs.set('limit', String(params.limit));
+    if (params.cursor) qs.set('cursor', params.cursor);
+    const suffix = qs.toString();
+    const url = `/api/subscriptions/encounters/missing-epid${suffix ? `?${suffix}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Cookie: 'frontend_lang=en_US',
+      },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const err = new Error(
+        (data as any).error ??
+          (data as any).issue?.[0]?.diagnostics ??
+          `HTTP error! status: ${response.status}`,
+      );
+      (err as any).response = { data, status: response.status };
+      throw err;
+    }
+    return data as MissingEpidEncountersResponse;
+  },
+
+  retry: async (
+    accessToken: string,
+    encounterIds: string[],
+  ): Promise<EpidRetryBatchResponse> => {
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+    const body =
+      encounterIds.length === 1
+        ? { encounterId: encounterIds[0] }
+        : { encounterIds };
+
+    const response = await fetch('/api/subscriptions/encounters/retry-epid', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        Cookie: 'frontend_lang=en_US',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const err = new Error(
+        (data as any).error ??
+          (data as any).issue?.[0]?.diagnostics ??
+          `HTTP error! status: ${response.status}`,
+      );
+      (err as any).response = { data, status: response.status };
+      throw err;
+    }
+
+    if (Array.isArray((data as EpidRetryBatchResponse).results)) {
+      return data as EpidRetryBatchResponse;
+    }
+
+    return {
+      results: [{ encounterId: encounterIds[0], ok: true }],
+    };
+  },
+};
+
+export const notificationLogsApi = {
+  getLogs: async (
+    accessToken: string,
+    params: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      type?: string;
+      search?: string;
+    } = {},
+  ): Promise<NotificationLogsApiResponse> => {
+    if (!accessToken) {
+      throw new Error('Access token required');
+    }
+    const qs = new URLSearchParams();
+    if (params.page) qs.set('page', String(params.page));
+    if (params.limit) qs.set('limit', String(params.limit));
+    if (params.status) qs.set('status', params.status);
+    if (params.type) qs.set('type', params.type);
+    const s = params.search?.trim();
+    if (s) qs.set('search', s);
+    const suffix = qs.toString();
+    const url = `/api/subscriptions/notification-logs${suffix ? `?${suffix}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Cookie: 'frontend_lang=en_US',
+      },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const err = new Error(
+        (data as any).error ??
+          (data as any).issue?.[0]?.diagnostics ??
+          `HTTP error! status: ${response.status}`,
+      );
+      (err as any).response = { data, status: response.status };
+      throw err;
+    }
+    return data as NotificationLogsApiResponse;
   },
 };

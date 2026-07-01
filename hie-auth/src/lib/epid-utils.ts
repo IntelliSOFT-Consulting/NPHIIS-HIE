@@ -32,6 +32,19 @@ export function patientHasOfficialEpid(patient: any): boolean {
   return ids.some(identifierIsOfficialEpid);
 }
 
+/** Official EPID value on Patient.identifier (FHIR Simple or Typed identifier variants). */
+export function getEpidValueFromPatient(patient: any): string | undefined {
+  const ids = patient?.identifier;
+  if (!Array.isArray(ids)) return undefined;
+  for (const id of ids) {
+    if (!identifierIsOfficialEpid(id)) continue;
+    if (typeof id?.value === "string" && id.value.trim()) {
+      return String(id.value).trim();
+    }
+  }
+  return undefined;
+}
+
 /**
  * EPID value on Encounter.identifier (FHIR Simple or Typed identifier variants).
  */

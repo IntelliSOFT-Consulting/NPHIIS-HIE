@@ -15,6 +15,7 @@ import {
 } from '@/lib/lab-submission';
 import {
   fetchFullPatient,
+  findExistingLabResult,
   getPatientRecordType,
   lookupPatientByEpid,
 } from '@/lib/fhir-patient';
@@ -28,8 +29,12 @@ if (!FHIR_BASE_URL) {
 interface RowResult {
   row: number;
   epid: string;
-  status: 'accepted' | 'rejected';
+  status: 'accepted' | 'rejected' | 'flagged';
   reason?: string;
+  /** For flagged rows: how many lab results the case already has. */
+  existingCount?: number;
+  /** For flagged rows: ISO timestamp of the most recent existing result. */
+  existingLatest?: string;
 }
 
 /**
@@ -138,6 +143,12 @@ async function postBundle(bundle: unknown, token: string): Promise<void> {
 interface RequestBody {
   formId: string;
   rows: Array<Record<string, string>>;
+  /**
+   * When false/absent, rows whose case already has a result for this form are
+   * flagged and skipped (not imported); the new ones still import. Re-submit
+   * the flagged rows with `force: true` to import them anyway.
+   */
+  force?: boolean;
 }
 
 export async function POST(req: NextRequest) {
@@ -215,6 +226,29 @@ export async function POST(req: NextRequest) {
         });
         continue;
       }
+
+      // Flag (and skip) cases that already have a result for this form unless
+      // the caller explicitly opted to import duplicates. The new rows in the
+      // same batch still import — only the existing ones are held back.
+      if (!body.force) {
+        const existing = await findExistingLabResult(
+          lookup.patient.id,
+          form.encounterReason,
+          session.raw,
+        );
+        if (existing.exists) {
+          results.push({
+            row: rowNumber,
+            epid,
+            status: 'flagged',
+            reason: `Case already has a ${form.title} result on file`,
+            existingCount: existing.count,
+            existingLatest: existing.latest,
+          });
+          continue;
+        }
+      }
+
       const derivedAnswers: Record<string, DerivedAnswer> = {};
       if (form.id === 'measles-lab-results') {
         const igmAnswer = row['measles-igm'] ?? row['measles_igm'];
@@ -275,5 +309,6 @@ export async function POST(req: NextRequest) {
 
   const accepted = results.filter((r) => r.status === 'accepted').length;
   const rejected = results.filter((r) => r.status === 'rejected');
-  return NextResponse.json({ accepted, rejected, results });
+  const flagged = results.filter((r) => r.status === 'flagged');
+  return NextResponse.json({ accepted, rejected, flagged, results });
 }
