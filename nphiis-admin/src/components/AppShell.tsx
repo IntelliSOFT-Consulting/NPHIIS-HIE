@@ -19,6 +19,10 @@ export const PAGE_META: Record<
     subtitle: 'Counties, sub-counties, wards, facilities',
   },
   '/lab': { title: 'Lab', subtitle: 'Submit results and manage bulk uploads' },
+  '/rumours': {
+    title: 'Rumours',
+    subtitle: 'Set High / Medium / Low priority on rumour reports',
+  },
   '/settings': { title: 'Settings', subtitle: 'System configuration' },
   '/settings/subscription-logs': {
     title: 'Subscription logs',
