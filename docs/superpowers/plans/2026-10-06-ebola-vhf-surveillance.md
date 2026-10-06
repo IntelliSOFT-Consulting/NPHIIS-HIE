@@ -389,7 +389,7 @@ In `epid-assignment.ts`, replace the `POSSIBLE_REASON_CODES` constant and lines 
   - `SingleResultForm.tsx:643-674` renders every non-radio choice as one `<Select>`.
   - `lab-submission.ts:160-187` (`coerce`/`findChoice`) accepts a single option.
   - Without this, a lab can record only one test, and CSV rows with `PCR;ELISA` are rejected.
-  - Add: a multi-value answer type; a check-box renderer; `;`-separated values in CSV `coerce`; one Observation per selected value in `extractAnswers`, which matches the mobile convention; and "any of" matching in `isItemEnabled` for `laboratory_tests_other`.
+  - Add: a multi-value answer type; a check-box renderer; `;`-separated values in CSV `coerce`; **one** Observation whose value is the selected options joined by `", "` in `extractAnswers`, which is what mobile writes (`ScreenerViewModel.kt:420`), so Superset sees one shape for the field; and "any of" matching in `isItemEnabled` for `laboratory_tests_other`.
 - Modify: `nphiis-admin/src/app/api/lab/bulk-upload/route.ts:252-261`. Add a `vhf-lab-results` branch that derives `final_classification`; this depends on gap 3 in section 2.
 
 ```ts
