@@ -126,7 +126,11 @@ def _constraint_ext(rows_by_id, row):
                 "extension": [
                     {"url": "key", "valueId": f"{row['link_id']}-after-{other}".replace("_", "-")},
                     {"url": "severity", "valueCode": "error"},
+                    # Empty-safe: the other date may be hidden by enableWhen,
+                    # and an empty result counts as a failed constraint.
                     {"url": "expression", "valueString":
+                        f"%context.answer.value.empty() or "
+                        f"%resource.descendants().where(linkId='{other}').answer.value.empty() or "
                         f"%context.answer.value >= %resource.descendants().where(linkId='{other}').answer.value"},
                     {"url": "human", "valueString": human},
                     {"url": "location", "valueString": other},
@@ -150,7 +154,9 @@ def _enable_when(rows_by_id, options, row):
             conditions.append({"question": question, "operator": "=",
                                "answerCoding": {"code": code, "display": display}})
         else:
-            conditions.append({"question": question, "operator": "=", "answerString": code})
+            raise ValueError(
+                f"{row['link_id']}: enable_when target '{question}' is {target['type']}; only choice targets are supported"
+            )
     return conditions
 
 
@@ -170,6 +176,8 @@ def _build_item(row, rows_by_id, options, platform_items):
         if row["type"] == "choice":
             opts = options[row["value_set"]]
             item["answerOption"] = [{"valueCoding": dict(o)} for o in opts]
+            if row.get("initial"):
+                item["initial"] = [{"valueCoding": dict(next(o for o in opts if o["code"] == row["initial"]))}]
             if row["repeats"] == "yes":
                 item["repeats"] = True
                 extensions.append(_item_control("check-box"))

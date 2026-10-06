@@ -384,6 +384,12 @@ In `epid-assignment.ts`, replace the `POSSIBLE_REASON_CODES` constant and lines 
 - Create: `nphiis-admin/src/questionnaires/vhf-lab-results.json`. Copy it **byte-for-byte** from `forms/vhf/out/vhf-lab-results.json`; this is the same file shipped in the mobile assets. It must contain the `reporting-dates` group, following the `33a407f4` pattern.
 - Modify: `nphiis-admin/src/lib/questionnaires.ts`. Add the import (L6-11), add `"vhf-lab-results"` to `ENABLED_FORM_IDS` (L118), and add the definition below to `ALL_LAB_FORMS`.
 - Modify: `nphiis-admin/src/lib/lab-submission.ts:50-68`. Add `case "VHF": return ["vhf-lab-results"];`.
+- **Modify, required: multi-select support in admin.** `laboratory_tests` repeats ("tick all that apply" in CIF_Final), but admin has no `repeats` support anywhere:
+  - `AnswerMap` is `Record<string,string>` (`questionnaires.ts:324`).
+  - `SingleResultForm.tsx:643-674` renders every non-radio choice as one `<Select>`.
+  - `lab-submission.ts:160-187` (`coerce`/`findChoice`) accepts a single option.
+  - Without this, a lab can record only one test, and CSV rows with `PCR;ELISA` are rejected.
+  - Add: a multi-value answer type; a check-box renderer; `;`-separated values in CSV `coerce`; one Observation per selected value in `extractAnswers`, which matches the mobile convention; and "any of" matching in `isItemEnabled` for `laboratory_tests_other`.
 - Modify: `nphiis-admin/src/app/api/lab/bulk-upload/route.ts:252-261`. Add a `vhf-lab-results` branch that derives `final_classification`; this depends on gap 3 in section 2.
 
 ```ts

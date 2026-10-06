@@ -269,7 +269,7 @@
                 },
                 {
                   "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='date_sample_received').answer.value"
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_sample_received').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_sample_received').answer.value"
                 },
                 {
                   "url": "human",
@@ -413,7 +413,7 @@
                 },
                 {
                   "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='date_sample_received').answer.value"
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_sample_received').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_sample_received').answer.value"
                 },
                 {
                   "url": "human",
