@@ -12,12 +12,7 @@ import {
   resolveLocationNamesForEncounter,
 } from "./epid-location-segment";
 import { resolveCountyLocationSegment } from "./county-segment-registry";
-
-const POSSIBLE_REASON_CODES: Record<string, string> = {
-  "Measles Case Information": "MEA",
-  "MOH 505 Reporting Form": "MOH505",
-  "AFP Case Information": "AFP",
-};
+import { conditionCodeForReason } from "./condition-codes";
 
 /** Serialize EPID mutations per Patient to avoid concurrent double-allocation under subscription races. */
 const epidQueues = new Map<string, Promise<unknown>>();
@@ -209,9 +204,7 @@ async function assignEpidForEncounterLocked(
   }
 
   const reasonCode = dataFresh?.reasonCode?.[0]?.coding?.[0]?.code;
-  const rc = reasonCode ? String(reasonCode) : "";
-  const caseCondition =
-    POSSIBLE_REASON_CODES[rc] || (rc ? rc.toUpperCase().slice(0, 3) : "UNK");
+  const caseCondition = conditionCodeForReason(reasonCode);
 
   const location = await resolveLocationNamesForEncounter(encounterId, FhirApi);
   if (!location) {
