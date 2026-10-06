@@ -11,10 +11,11 @@ vhf-case,demographics,873240407472,Given Names,string,yes,no,,,,,CIF,given,Platf
 vhf-case,demographics,national_id,National Identifier (National ID),string,no,no,,,,,CIF,national_id,
 vhf-case,demographics,929966324957,Sex,choice,yes,no,sex,,,,CIF,sex,Platform linkId. Codes male/female match mobile gender mapping.
 vhf-case,demographics,sex_other,Sex - other (specify),string,yes,no,,929966324957=other,,,CIF,,
-vhf-case,demographics,257830485990,Date of Birth,date,no,no,,,not_future;max_age_150,,CIF,date_of_birth,Platform linkId.
-vhf-case,demographics,492731638700,Age (years),integer,yes,no,,,range:0:150,age_years,CIF,age_years,Platform linkId. Calculated from DOB when present; editable otherwise (99 if unknown per CIF).
-vhf-case,demographics,185726989867,Age (months),integer,yes,no,,,range:0:11,age_months,CIF,age_months,Platform linkId.
-vhf-case,demographics,828303331247,Age (days),integer,yes,no,,,range:0:,age_days,CIF,age_days,Platform linkId.
+vhf-case,demographics,442636360588,Date of birth known?,choice,yes,no,dob_known,,,,PLATFORM,,"Platform pattern (measles/AFP/VL): DOB when known, age fields when unknown."
+vhf-case,demographics,257830485990,Date of Birth,date,yes,no,,442636360588=known,not_future;max_age_150,,CIF,date_of_birth,Platform linkId. Required when known (CIF: optional; age covers unknown DOB).
+vhf-case,demographics,492731638700,Age (years),integer,yes,no,,442636360588=unknown,range:0:150,,CIF,age_years,"Platform linkId. Entered when DOB unknown (99 years if age unknown, per CIF). Not auto-calculated: FHIRPath has no reliable date-difference."
+vhf-case,demographics,185726989867,Age (months),integer,yes,no,,442636360588=unknown,range:0:11,,CIF,age_months,"Platform linkId. Entered when DOB unknown (99 years if age unknown, per CIF). Not auto-calculated: FHIRPath has no reliable date-difference."
+vhf-case,demographics,828303331247,Age (days),integer,yes,no,,442636360588=unknown,range:0:,,CIF,age_days,"Platform linkId. Entered when DOB unknown (99 years if age unknown, per CIF). Not auto-calculated: FHIRPath has no reliable date-difference."
 vhf-case,demographics,pregnant,Pregnant,choice,no,no,yes_no_unknown,929966324957=female,,,CIF,pregnant,enableWhen inferred.
 vhf-case,demographics,phone_number,Phone Number,string,yes,no,,,phone,,CIF,phone_number,e.g. +254700000000
 vhf-case,demographics,marital_status,Marital Status,choice,yes,no,marital_status,,,,CIF,marital_status,CIF list used (Options.xlsx splits Widow/Widower and adds Unknown).

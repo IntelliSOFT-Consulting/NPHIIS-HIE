@@ -229,25 +229,25 @@ Canonical URL pattern: `http://nphiis.health.go.ke/Questionnaire/<id>`, with `id
   - `date_of_onset` appears in both clinical sections. Keep the platform `728034137219` for the VHF one and use `ebola-date-of-onset` for the Ebola one, or drop the Ebola duplicate; ask the clinicians which.
   - `type_of_contact`, `relationship`, `health_facility`, `phone_number` and similar names should get a section prefix where they clash.
 
-### Task 1: Generate the Questionnaires from the dictionary instead of writing them by hand
+### Task 1: Generate the Questionnaires from the spec instead of writing them by hand (DONE 2026-10-06; Step 5 rendering still to do)
 
 Hand-writing 150 items into five JSON files is slow and error-prone, and the dictionary will change during an outbreak. Add a small generator whose inputs are versioned in this repo.
 
 **Files:**
 - Input (**done** on 2026-10-06 on branch `feat/vhf-surveillance`): `forms/vhf/fields.csv` (120 questions across 4 forms), `forms/vhf/options.csv` (35 option lists) and `forms/vhf/README.md`. The README sets out the syntax, the merge rule, and the KNPHI sign-off list.
-- Create: `scripts/forms/dd_to_questionnaire.py`
-- Create: `scripts/forms/test_dd_to_questionnaire.py`
+- Create: `forms/tools/build_questionnaires.py`
+- Create: `forms/tools/test_build_questionnaires.py`
 - Output (committed): `forms/vhf/out/*.json`
 
 **Interfaces:**
-- Produces: `build_forms(fields_csv, options_csv) -> dict[str, dict]`, which maps a form id to a Questionnaire JSON. Also a CLI: `python scripts/forms/dd_to_questionnaire.py forms/vhf --out forms/vhf/out`.
+- Produces: `build_forms(fields_csv, options_csv) -> dict[str, dict]`, which maps a form id to a Questionnaire JSON. Also a CLI: `python forms/tools/build_questionnaires.py forms/vhf --out forms/vhf/out`.
 
 - [ ] **Step 1: Write the failing tests**
 
 ```python
-# scripts/forms/test_dd_to_questionnaire.py
+# forms/tools/test_build_questionnaires.py
 from pathlib import Path
-from dd_to_questionnaire import build_forms, all_items
+from build_questionnaires import build_forms, all_items
 
 VHF = Path(__file__).resolve().parents[2] / "forms" / "vhf"
 
@@ -297,13 +297,13 @@ def test_future_dates_blocked():
     assert any(e["url"].endswith("maxValue") for e in onset["extension"])
 ```
 
-- [ ] **Step 2: Run them and confirm they fail.** Run `cd scripts/forms && python -m pytest -q`. They should fail with `ModuleNotFoundError: dd_to_questionnaire`.
+- [ ] **Step 2: Run them and confirm they fail.** Run `python3 -m unittest discover forms/tools`. They should fail with `ModuleNotFoundError: build_questionnaires`. (The tests use the standard library `unittest`, since pytest is not installed.)
 - [ ] **Step 3: Implement the generator.** Use the type and validation mapping in section 4.2. Emit `id`, `url`, `status: active`, `title`, one `group` per dictionary section, and the `variable`/`calculatedExpression` items for age. Each item records its source field name in an extension (`http://nphiis.health.go.ke/fhir/StructureDefinition/source-field`) so it can be traced back to the dictionary. The test helper reads this as `extension_source_field`. `platform_block` rows copy the item tree from `nphiis/src/main/assets/afp-case.json` (pass its path as a CLI flag).
 - [ ] **Step 4: Run the tests.** All should pass.
 - [ ] **Step 5: Load-test the forms.** Open each `out/*.json` in the SDC renderer (https://lhcforms.nlm.nih.gov/sdc, or the Android SDK catalog app) and check skip logic and age calculation by hand.
-- [ ] **Step 6: Commit:** `git add forms/vhf scripts/forms && git commit -m "Add VHF data dictionary and Questionnaire generator"`
+- [ ] **Step 6: Commit:** `git add forms/vhf forms/tools && git commit -m "Add VHF data dictionary and Questionnaire generator"`
 
-### Task 2: hie-auth: one reason-code map, VHF registered, tests
+### Task 2: hie-auth: one reason-code map, VHF registered, tests (DONE 2026-10-06, `0e3234ed`)
 
 The reason-code map is copied in three files. Consolidate it before adding VHF, so that a future disease is a one-line change.
 
