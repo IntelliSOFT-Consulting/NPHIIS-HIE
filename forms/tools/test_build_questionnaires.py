@@ -131,6 +131,29 @@ class BuildFormsTest(unittest.TestCase):
         expr = ext(arrival, "questionnaire-constraint")[0]
         self.assertIn("date_of_departure", json.dumps(expr))
 
+    def test_after_constraint_passes_when_either_date_is_empty(self):
+        # The other date may be hidden by enableWhen (e.g. no admission for
+        # outpatients); an empty FHIRPath result would otherwise fail validation.
+        discharge = by_link_id(self.forms["vhf-clinical-outcome"])["date_of_discharge"]
+        c = ext(discharge, "questionnaire-constraint")[0]
+        expr = next(e["valueString"] for e in c["extension"] if e["url"] == "expression")
+        self.assertTrue(expr.startswith("%context.answer.value.empty() or "), expr)
+        self.assertIn("where(linkId='date_of_admission').answer.value.empty() or", expr)
+
+    def test_initial_value_applied(self):
+        country = by_link_id(self.forms["vhf-case"])["country"]
+        self.assertEqual(country["initial"], [{"valueCoding": {"code": "KE", "display": "Kenya"}}])
+
+    def test_enable_when_on_non_choice_target_is_rejected(self):
+        import tempfile, shutil
+        with tempfile.TemporaryDirectory() as d:
+            bad = Path(d) / "fields.csv"
+            shutil.copy(FIELDS, bad)
+            with open(bad, "a", newline="") as f:
+                f.write("vhf-contact-follow-up,follow_up,x,X,string,no,no,,day_of_follow_up=3,,,,,,\n")
+            with self.assertRaises(ValueError):
+                build_forms(bad, OPTIONS, PLATFORM)
+
     def test_constraint_keys_are_valid_fhir_ids(self):
         import re
         for q in self.forms.values():

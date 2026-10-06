@@ -41,7 +41,9 @@ Values in the `source` column: `CIF`, `OPTIONS`, `DD`, `CIF+OPTIONS`, `PLATFORM`
   - `max_age_150`.
   - `range:min:max`, where either bound may be left empty.
   - `phone` means `+2547…` or `07…`.
-  - `after:<linkId>` means the date must be on or after another date in the same form.
+  - `after:<linkId>` means the date must be on or after another date in the same form. It passes when either date is empty, because the other date may be hidden.
+- `enable_when` targets must be choice questions; the generator rejects any other type.
+- `initial`: the default option code for a choice question, e.g. `KE` for country.
 - `calculated`: reserved and currently unused. Age follows the platform pattern instead: `442636360588` "Date of birth known?" shows date of birth when it is known, and the age fields when it is not. FHIRPath has no reliable date-difference function, so age is not auto-calculated.
 - `type: platform_block` and `type: reference`: the item is copied from `platform/afp-case.json`. A `reference` item takes its text and required flag from the CSV.
 - Date limits are written as `valueDate: {extension: [cqf-calculatedValue today()]}`. This matches the existing mobile forms and what admin's `dateMaxIsToday()` reads, but strict FHIR JSON would use `_valueDate`. A strict validator flags it; that is expected.
@@ -65,7 +67,8 @@ Values in the `source` column: `CIF`, `OPTIONS`, `DD`, `CIF+OPTIONS`, `PLATFORM`
 9. **Stopovers.** CIF_Final makes this field required, but many travellers have no stopover.
 10. **Outcome versus status.** `outcome_of_case` (Alive/Dead) and `status_of_case` (Active/Recovered/Dead) overlap. Are both needed?
 11. **Disease list.** Options.xlsx lists Chikungunya, Dengue, Yellow Fever and Rift Valley Fever. CIF_Final lists Ebola, Marburg and "Other VHF". The CIF list is used here.
-12. **Case definition.** The rules that derive `final_classification` from lab results (Confirmed / Probable / Not a case).
+12. **Age in months and days.** CIF_Final requires them, so when the date of birth is unknown the user must enter 0 months and 0 days even if only the age in years is known. The platform AFP form makes them optional. Should they be optional?
+13. **Case definition.** The rules that derive `final_classification` from lab results (Confirmed / Probable / Not a case).
 
 **Dictionary fields dropped** because CIF_Final omits them:
 - `principal_field`, `country_of_nationality`.

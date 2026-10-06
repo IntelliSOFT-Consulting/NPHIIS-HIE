@@ -461,7 +461,7 @@
                 },
                 {
                   "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='date_of_admission').answer.value"
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_of_admission').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_of_admission').answer.value"
                 },
                 {
                   "url": "human",

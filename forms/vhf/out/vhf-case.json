@@ -1823,6 +1823,14 @@
               }
             }
           ],
+          "initial": [
+            {
+              "valueCoding": {
+                "code": "KE",
+                "display": "Kenya"
+              }
+            }
+          ],
           "extension": [
             {
               "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -4089,7 +4097,7 @@
                 },
                 {
                   "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='date_of_departure').answer.value"
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_of_departure').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_of_departure').answer.value"
                 },
                 {
                   "url": "human",
@@ -4610,7 +4618,7 @@
                 },
                 {
                   "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='date_of_collection').answer.value"
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_of_collection').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_of_collection').answer.value"
                 },
                 {
                   "url": "human",
