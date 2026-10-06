@@ -1,0 +1,108 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "vhf-contact-follow-up",
+  "url": "http://nphiis.health.go.ke/Questionnaire/vhf-contact-follow-up",
+  "name": "vhf_contact_follow_up",
+  "title": "VHF - Contact Follow-up",
+  "status": "active",
+  "item": [
+    {
+      "linkId": "vhf-follow_up",
+      "text": "Contact Follow-up",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "day_of_follow_up",
+          "text": "Day of follow up",
+          "type": "integer",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 0
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueInteger": 21
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "day_of_follow_up"
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_follow_up",
+          "text": "Date of follow up",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_follow_up"
+            }
+          ]
+        },
+        {
+          "linkId": "contact_is_symptomatic",
+          "text": "Symptomatic?",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "contact_is_symptomatic"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

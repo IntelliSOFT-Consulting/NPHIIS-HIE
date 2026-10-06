@@ -186,3 +186,5 @@ place_of_death,health_facility,Health facility,CIF
 case_status,active,Active,CIF
 case_status,recovered,Recovered,CIF
 case_status,dead,Dead,CIF
+dob_known,known,Known,PLATFORM
+dob_known,unknown,Unknown,PLATFORM
