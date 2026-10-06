@@ -1,13 +1,8 @@
 import { FhirApi } from "./utils";
 import { patientHasOfficialEpid } from "./epid-utils";
+import { REASON_CODE_CONDITIONS, conditionCodeForReason } from "./condition-codes";
 
 const apiHost = process.env.FHIR_BASE_URL || "";
-
-const POSSIBLE_REASON_CODES: Record<string, string> = {
-  "Measles Case Information": "MEA",
-  "MOH 505 Reporting Form": "MOH505",
-  "AFP Case Information": "AFP",
-};
 
 const DEFAULT_ENCOUNTER_PATH = "/Encounter?_count=500";
 const MAX_LIMIT = 50;
@@ -87,8 +82,8 @@ function conditionFromEncounter(enc: any): { code: string | null; label: string 
   const code = coding?.code != null ? String(coding.code) : null;
   const display = coding?.display != null ? String(coding.display) : null;
   const label =
-    (display && POSSIBLE_REASON_CODES[display]) ||
-    (code ? code.toUpperCase().slice(0, 3) : null);
+    (display && REASON_CODE_CONDITIONS[display]) ||
+    (code ? conditionCodeForReason(code) : null);
   return { code, label };
 }
 
