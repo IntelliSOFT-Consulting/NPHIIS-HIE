@@ -407,7 +407,7 @@ In `epid-assignment.ts`, replace the `POSSIBLE_REASON_CODES` constant and lines 
 - [ ] **Step 3: Manual check against a local stack.** Take a VHF fixture case (Task 5) with EPID `KEN-…-VHF-001` and run `/api/lab/verify-epid`. It should suggest `vhf-lab-results`. Submit a result. The transaction should create a lab Encounter with `partOf` the case, a QuestionnaireResponse and Observations. hie-auth should log a LAB_RESULT notification. The CSV template download should have headers equal to the linkIds.
 - [ ] **Step 4: Commit:** `git commit -m "Add VHF lab results form to admin"`
 
-### Task 4: Mobile app (`android-fhir` @ `jk-surveillance`): wire the VHF forms
+### Task 4: Mobile app (`android-fhir` @ `jk-surveillance`): wire the VHF forms (tracked in #71, assigned to @Itskiprotich)
 
 Assets are under `nphiis/src/main/assets/`. Kotlin paths are under `nphiis/src/main/java/com/icl/surveillance/`. Every file named below was confirmed to exist on that branch.
 
