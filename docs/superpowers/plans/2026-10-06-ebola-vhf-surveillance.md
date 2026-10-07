@@ -378,7 +378,7 @@ In `epid-assignment.ts`, replace the `POSSIBLE_REASON_CODES` constant and lines 
 - [ ] **Step 4: Run the tests.** `yarn test` should be all green, and `yarn build` should compile.
 - [ ] **Step 5: Commit:** `git commit -m "Centralise EPID condition codes and register VHF"`
 
-### Task 3: nphiis-admin: register the VHF lab form
+### Task 3: nphiis-admin: register the VHF lab form (DONE 2026-10-07, except the manual check in Step 3 and the classification derivation, which waits on the case definition)
 
 **Files:**
 - Create: `nphiis-admin/src/questionnaires/vhf-lab-results.json`. Copy it **byte-for-byte** from `forms/vhf/out/vhf-lab-results.json`; this is the same file shipped in the mobile assets. It must contain the `reporting-dates` group, following the `33a407f4` pattern.

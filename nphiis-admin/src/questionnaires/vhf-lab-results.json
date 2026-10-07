@@ -1,0 +1,525 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "vhf-lab-results",
+  "url": "http://nphiis.health.go.ke/Questionnaire/vhf-lab-results",
+  "name": "vhf_lab_results",
+  "title": "VHF - Lab Information",
+  "status": "active",
+  "item": [
+    {
+      "linkId": "vhf-laboratory",
+      "text": "Laboratory",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "date_sample_received",
+          "text": "Date sample received at the laboratory",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            }
+          ]
+        },
+        {
+          "linkId": "condition_of_sample",
+          "text": "Condition of sample",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "good",
+                "display": "Good"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "spoiled",
+                "display": "Spoiled"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ]
+        },
+        {
+          "linkId": "laboratory_tests",
+          "text": "Laboratory tests performed (tick all that apply)",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "pcr",
+                "display": "PCR"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "elisa",
+                "display": "ELISA"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "antigen_rapid_test",
+                "display": "Antigen rapid test (RDT)"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "serology",
+                "display": "Serology"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "antibodies",
+                "display": "Antibodies"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "sequencing",
+                "display": "Sequencing"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "cytology",
+                "display": "Cytology"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "gram_stain",
+                "display": "Gram stain"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unknown",
+                "display": "Unknown"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "repeats": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "laboratory_tests"
+            }
+          ]
+        },
+        {
+          "linkId": "laboratory_tests_other",
+          "text": "Laboratory tests - other (specify)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "laboratory_tests_other"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "laboratory_tests",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-preliminary",
+      "text": "Preliminary Result",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "preliminary_laboratory_result",
+          "text": "Preliminary result",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "positive",
+                "display": "Positive"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "negative",
+                "display": "Negative"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "pending",
+                "display": "Pending"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "preliminary_laboratory_result"
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_preliminary_result",
+          "text": "Date of preliminary result",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+              "extension": [
+                {
+                  "url": "key",
+                  "valueId": "date-of-preliminary-result-after-date-sample-received"
+                },
+                {
+                  "url": "severity",
+                  "valueCode": "error"
+                },
+                {
+                  "url": "expression",
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_sample_received').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_sample_received').answer.value"
+                },
+                {
+                  "url": "human",
+                  "valueString": "Must be on or after 'Date sample received at the laboratory'"
+                },
+                {
+                  "url": "location",
+                  "valueString": "date_sample_received"
+                }
+              ]
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_preliminary_result"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "preliminary_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "positive",
+                "display": "Positive"
+              }
+            },
+            {
+              "question": "preliminary_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "negative",
+                "display": "Negative"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "preliminary_laboratory_result_narration",
+          "text": "Narration (preliminary)",
+          "type": "text",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "preliminary_laboratory_result_narration"
+            }
+          ]
+        },
+        {
+          "linkId": "preliminary_laboratory_facility",
+          "text": "Preliminary laboratory facility",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "preliminary_laboratory_facility"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-final",
+      "text": "Final Result",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "final_laboratory_result",
+          "text": "Final result",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "positive",
+                "display": "Positive"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "negative",
+                "display": "Negative"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "final_laboratory_result"
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_final_laboratory_result",
+          "text": "Date of final result",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+              "extension": [
+                {
+                  "url": "key",
+                  "valueId": "date-of-final-laboratory-result-after-date-sample-received"
+                },
+                {
+                  "url": "severity",
+                  "valueCode": "error"
+                },
+                {
+                  "url": "expression",
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_sample_received').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_sample_received').answer.value"
+                },
+                {
+                  "url": "human",
+                  "valueString": "Must be on or after 'Date sample received at the laboratory'"
+                },
+                {
+                  "url": "location",
+                  "valueString": "date_sample_received"
+                }
+              ]
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_final_laboratory_result"
+            }
+          ]
+        },
+        {
+          "linkId": "final_laboratory_result_narration",
+          "text": "Narration (final)",
+          "type": "text",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "final_laboratory_result_narration"
+            }
+          ]
+        },
+        {
+          "linkId": "final_laboratory_facility",
+          "text": "Final laboratory facility",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "final_laboratory_facility"
+            }
+          ]
+        },
+        {
+          "linkId": "final_classification",
+          "text": "Final classification",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "confirmed",
+                "display": "Confirmed"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "probable",
+                "display": "Probable"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "not_a_case",
+                "display": "Not a case"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "final_classification"
+            }
+          ]
+        },
+        {
+          "linkId": "automatically_updated",
+          "text": "Automatically updated (system use only)",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "automatically_updated"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
