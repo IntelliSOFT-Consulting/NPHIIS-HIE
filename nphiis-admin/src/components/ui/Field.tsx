@@ -497,3 +497,48 @@ export function RadioGroup({ name, value, options, onChange, required }: RadioGr
     </div>
   );
 }
+
+export interface CheckboxGroupProps {
+  name: string;
+  /** Selected option values. */
+  values: string[];
+  options: RadioOption[];
+  onChange: (values: string[]) => void;
+}
+
+/** Multi-select pill group for "tick all that apply" (repeating choice) items. */
+export function CheckboxGroup({ name, values, options, onChange }: CheckboxGroupProps) {
+  const toggle = (v: string) =>
+    onChange(
+      values.includes(v)
+        ? values.filter((x) => x !== v)
+        : options.map((o) => o.value).filter((x) => x === v || values.includes(x)),
+    );
+  return (
+    <div className="flex flex-wrap gap-2 pt-1">
+      {options.map((o) => {
+        const checked = values.includes(o.value);
+        return (
+          <label
+            key={o.value}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border cursor-pointer transition-colors ${
+              checked
+                ? 'border-nphi-600 bg-nphi-50 text-nphi-800'
+                : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <input
+              type="checkbox"
+              name={name}
+              value={o.value}
+              checked={checked}
+              onChange={() => toggle(o.value)}
+              className="h-4 w-4 rounded text-nphi-600 focus:ring-nphi-500"
+            />
+            <span>{o.label}</span>
+          </label>
+        );
+      })}
+    </div>
+  );
+}

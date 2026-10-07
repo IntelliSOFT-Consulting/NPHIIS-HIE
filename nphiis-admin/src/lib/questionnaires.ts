@@ -9,6 +9,8 @@ import afpStoolLabResults from "@/questionnaires/afp-case-stool-lab-results.json
 import afpItdLab from "@/questionnaires/afp-itd-lab.json";
 import afpFinalLabResults from "@/questionnaires/afp-final-lab-results.json";
 import vlCaseLabInformation from "@/questionnaires/vl-case-lab-information.json";
+// Generated from forms/vhf (see forms/vhf/README.md) — regenerate, don't hand-edit.
+import vhfLabResults from "@/questionnaires/vhf-lab-results.json";
 
 /* ── Minimal FHIR Questionnaire types (only fields we actually read) ─────── */
 
@@ -76,6 +78,7 @@ export interface QuestionnaireItem {
   text?: string;
   type: QuestionnaireItemType;
   required?: boolean;
+  repeats?: boolean;
   readOnly?: boolean;
   answerOption?: QuestionnaireAnswerOption[];
   enableWhen?: EnableWhen[];
@@ -118,6 +121,7 @@ export interface LabFormDefinition {
 const ENABLED_FORM_IDS = new Set<string>([
   "measles-lab-results",
   "afp-stool-lab-results",
+  "vhf-lab-results",
 ]);
 
 const ALL_LAB_FORMS: LabFormDefinition[] = [
@@ -188,6 +192,20 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
       "SUPERUSER",
     ],
     questionnaire: vlCaseLabInformation as unknown as FhirQuestionnaire,
+  },
+  {
+    id: "vhf-lab-results",
+    title: "VHF - Lab Information",
+    // Must end in "Lab Information": hie-auth keys LAB_RESULT notifications on it.
+    encounterReason: "VHF Lab Information",
+    questionnaireUrl: "http://nphiis.health.go.ke/Questionnaire/vhf-lab-results",
+    allowedRoles: [
+      "LAB_TECHNICIAN",
+      "NATIONAL_LAB",
+      "ADMINISTRATOR",
+      "SUPERUSER",
+    ],
+    questionnaire: vhfLabResults as unknown as FhirQuestionnaire,
   },
 ];
 
@@ -323,10 +341,22 @@ export function indexItems(q: FhirQuestionnaire): Map<string, QuestionnaireItem>
  * User-entered answers keyed by linkId. Strings come from the form:
  *  - choice: stored as the answerOption `code`
  *  - boolean: "true" / "false"
+ *  - repeating choice: option codes joined by MULTI_VALUE_SEPARATOR
  *  - date: ISO yyyy-mm-dd
  *  - everything else: the raw string.
  */
 export type AnswerMap = Record<string, string>;
+
+/** Joins the selected option codes of a repeating choice inside an AnswerMap. */
+export const MULTI_VALUE_SEPARATOR = ";";
+
+export function splitMultiValue(v: string | undefined): string[] {
+  if (!v) return [];
+  return v
+    .split(MULTI_VALUE_SEPARATOR)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 function matchesEnableWhen(ew: EnableWhen, answer: string | undefined): boolean {
   const hasValue = answer !== undefined && answer !== "";
@@ -343,14 +373,17 @@ function matchesEnableWhen(ew: EnableWhen, answer: string | undefined): boolean 
   if (expected === undefined) return false;
   const lhs = answer ?? "";
   const rhs = expected;
+  // A repeating choice matches `=` when any selected option matches (FHIR
+  // enableWhen semantics); single answers split to a one-element list.
+  const selected = ew.answerCoding ? splitMultiValue(lhs) : [lhs];
   switch (ew.operator) {
     case "=":
-      return lhs === rhs;
+      return selected.includes(rhs);
     case "!=":
       // If nothing has been answered yet, a `!= X` condition is not yet met —
       // this mirrors the mobile behaviour where dependent fields stay hidden
       // until the parent has an explicit non-matching answer.
-      return hasValue && lhs !== rhs;
+      return hasValue && !selected.includes(rhs);
     case "<":
       return hasValue && lhs < rhs;
     case "<=":

@@ -30,6 +30,15 @@ describe("isLabResultEncounter", () => {
     ).toBe(true);
   });
 
+  it("returns true for VHF lab reason code", () => {
+    expect(
+      isLabResultEncounter({
+        partOf: { reference: "Encounter/case-1" },
+        reasonCode: [{ coding: [{ code: "VHF Lab Information" }] }],
+      }),
+    ).toBe(true);
+  });
+
   it("returns false without partOf", () => {
     expect(
       isLabResultEncounter({

@@ -22,6 +22,8 @@ import {
   labelFor,
   getLabForm,
   itemControl,
+  splitMultiValue,
+  MULTI_VALUE_SEPARATOR,
   type AnswerMap,
   type LabFormDefinition,
   type QuestionnaireItem,
@@ -31,6 +33,7 @@ import { Alert } from '../ui/Alert';
 import CaseSearch from './CaseSearch';
 import ExistingResultModal from './ExistingResultModal';
 import {
+  CheckboxGroup,
   DateInput,
   Field,
   RadioGroup,
@@ -645,6 +648,19 @@ function Input({
       const codings = (item.answerOption ?? [])
         .map((o) => o.valueCoding)
         .filter((c): c is { code: string; display: string } => Boolean(c));
+      if (item.repeats) {
+        return (
+          <CheckboxGroup
+            name={item.linkId}
+            values={splitMultiValue(value)}
+            options={codings.map((c) => ({ value: c.code, label: c.display }))}
+            onChange={(vs) => {
+              onChange(vs.join(MULTI_VALUE_SEPARATOR));
+              onBlur();
+            }}
+          />
+        );
+      }
       if (ctrl === 'radio-button') {
         return (
           <RadioGroup

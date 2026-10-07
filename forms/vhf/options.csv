@@ -1,0 +1,190 @@
+value_set,code,display,source
+yes_no,yes,Yes,CIF
+yes_no,no,No,CIF
+yes_no_unknown,yes,Yes,CIF
+yes_no_unknown,no,No,CIF
+yes_no_unknown,unknown,Unknown,CIF
+vhf_disease,ebola,Ebola,CIF
+vhf_disease,marburg,Marburg,CIF
+vhf_disease,other_vhf,Other VHF (specify),CIF
+location_of_investigation,health_facility,Health facility,CIF
+location_of_investigation,community,Community,CIF
+location_of_investigation,household,Household,CIF
+location_of_investigation,other,Other (specify),CIF
+type_of_case,suspected,Suspected,CIF
+type_of_case,probable,Probable,CIF
+type_of_case,confirmed,Confirmed,CIF
+type_of_case,contact,Contact,CIF
+sex,male,Male,CIF
+sex,female,Female,CIF
+sex,other,Other (specify),CIF
+marital_status,not_applicable,N/A (child),CIF
+marital_status,single,Single,CIF
+marital_status,married,Married,CIF
+marital_status,divorced,Divorced,CIF
+marital_status,widowed,Widowed,CIF
+occupation,long_distance_truck_driver,Long distance truck driver,OPTIONS
+occupation,health_care_worker,Health care worker,OPTIONS
+occupation,butcher_abattoir_worker,Butcher / Abattoir worker,OPTIONS
+occupation,driver,Driver,OPTIONS
+occupation,hides_skin_trader,Hides/Skin trader,OPTIONS
+occupation,pastoralist,Pastoralist,OPTIONS
+occupation,homemaker,Homemaker,OPTIONS
+occupation,veterinary_worker,Veterinary worker,OPTIONS
+occupation,business_person,Business person,OPTIONS
+occupation,employee,Employee,OPTIONS
+occupation,farmer,Farmer,OPTIONS
+occupation,commercial_sex_worker,Commercial sex worker,OPTIONS
+occupation,student,Student,OPTIONS
+occupation,unemployed,Unemployed,OPTIONS
+occupation,unknown,Unknown,OPTIONS
+occupation,other,Other (specify),OPTIONS
+education,none,None,CIF
+education,primary,Primary,CIF
+education,secondary,Secondary,CIF
+education,tertiary,Tertiary,CIF
+residence_type,permanent_home,Permanent home,OPTIONS
+residence_type,internally_displaced_person,Internally Displaced Person,OPTIONS
+residence_type,migrant_community,Migrant community,OPTIONS
+residence_type,refugee_camp,Refugee camp,OPTIONS
+residence_type,temporary_shelter,Temporary shelter,OPTIONS
+residence_type,other,Other,OPTIONS
+residence_type,unknown,Unknown,OPTIONS
+country,KE,Kenya,PROPOSED
+country,UG,Uganda,PROPOSED
+country,TZ,Tanzania,PROPOSED
+country,RW,Rwanda,PROPOSED
+country,BI,Burundi,PROPOSED
+country,SS,South Sudan,PROPOSED
+country,ET,Ethiopia,PROPOSED
+country,SO,Somalia,PROPOSED
+country,CD,DR Congo,PROPOSED
+country,SD,Sudan,PROPOSED
+country,other,Other (specify),PROPOSED
+respondent,patient,Patient,CIF
+respondent,guardian,Guardian,CIF
+respondent,relative,Relative,CIF
+respondent,hcw,Health care worker,CIF
+respondent,other,Other (specify),CIF
+symptoms,fever,Fever,CIF
+symptoms,headache,Headache,CIF
+symptoms,fatigue,Fatigue,CIF
+symptoms,vomiting,Vomiting,CIF
+symptoms,diarrhoea,Diarrhoea,CIF
+symptoms,unexplained_bleeding,Unexplained bleeding,CIF
+symptoms,muscle_pain,Muscle pain,CIF
+symptoms,other,Other (specify),CIF
+exposure_type,human,Human contact,CIF
+exposure_type,animal,Animal contact,CIF
+exposure_type,other,Other (specify),CIF
+human_contact_type,direct,Direct,CIF
+human_contact_type,indirect,Indirect,CIF
+direct_contact,touching,Touching,CIF
+direct_contact,body_fluids,Body fluids,CIF
+direct_contact,sexual_contact,Sexual contact,CIF
+direct_contact,other,Other (specify),CIF
+indirect_contact,fomites,Fomites,CIF
+indirect_contact,contaminated_environment,Contaminated environment,CIF
+indirect_contact,other,Other (specify),CIF
+contact_frequency,daily,Daily,CIF
+contact_frequency,weekly,Weekly,CIF
+contact_frequency,once,Once,CIF
+contact_duration,lt_15_min,< 15 min,CIF
+contact_duration,15_min_1_hour,15 min - 1 hour,CIF
+contact_duration,gt_1_hour,> 1 hour,CIF
+contact_location,home,Home,CIF
+contact_location,health_facility,Health facility,CIF
+contact_location,funeral,Funeral,CIF
+contact_location,workplace,Workplace,CIF
+contact_location,other,Other (specify),CIF
+relationship,family,Family,CIF
+relationship,hcw,Health care worker,CIF
+relationship,friend,Friend,CIF
+relationship,other,Other (specify),CIF
+animal_contact_type,handling,Handling,CIF
+animal_contact_type,butchering,Butchering,CIF+OPTIONS
+animal_contact_type,caring_for_sick_animal,Caring for a sick animal,OPTIONS
+animal_contact_type,contact_with_fluids,Contact with fluids,CIF
+animal_contact_type,disposing_of_carcass,Disposing of a carcass,OPTIONS
+animal_contact_type,eating,Eating,CIF+OPTIONS
+animal_contact_type,skinning,Skinning,OPTIONS
+animal_contact_type,slaughtering,Slaughtering,OPTIONS
+animal_contact_type,other,Other (specify),CIF+OPTIONS
+animal_species,baboon,Baboon,OPTIONS
+animal_species,bat,Bat,CIF+OPTIONS
+animal_species,buffalo,Buffalo,OPTIONS
+animal_species,camel,Camel,OPTIONS
+animal_species,cat,Cat,OPTIONS
+animal_species,chimpanzee,Chimpanzee,OPTIONS
+animal_species,cow,Cow,OPTIONS
+animal_species,dog,Dog,OPTIONS
+animal_species,duiker,Duiker,OPTIONS
+animal_species,goat,Goat,OPTIONS
+animal_species,gorilla,Gorilla,OPTIONS
+animal_species,monkey,Monkey,CIF+OPTIONS
+animal_species,mosquito,Mosquito,OPTIONS
+animal_species,pig,Pig,CIF
+animal_species,rodent,Rodent,CIF
+animal_species,sheep,Sheep,OPTIONS
+animal_species,squirrel,Squirrel,OPTIONS
+animal_species,other,Other (specify),CIF+OPTIONS
+ppe_items,gloves,Gloves,CIF
+ppe_items,gown,Gown,CIF
+ppe_items,mask,Mask,CIF
+ppe_items,goggles,Goggles,CIF
+ppe_items,other,Other (specify),CIF
+means_of_travel,land,Land,CIF
+means_of_travel,air,Air,CIF
+means_of_travel,water,Water,CIF
+sample_type,blood,Blood,CIF+OPTIONS
+sample_type,whole_blood,Whole blood,OPTIONS
+sample_type,serum,Serum,OPTIONS
+sample_type,body_fluids,Body fluids,OPTIONS
+sample_type,cerebrospinal_fluid,Cerebrospinal fluid,OPTIONS
+sample_type,genital_swab,Genital swab,OPTIONS
+sample_type,lesion,Lesion,OPTIONS
+sample_type,nasopharyngeal_oropharyngeal_swab,Nasopharyngeal and oropharyngeal swab,OPTIONS
+sample_type,nasopharyngeal_swab,Nasopharyngeal swab,OPTIONS
+sample_type,oropharyngeal_swab,Oropharyngeal swab,OPTIONS
+sample_type,rectal_swab,Rectal swab,OPTIONS
+sample_type,saliva,Saliva,CIF+OPTIONS
+sample_type,semen,Semen,OPTIONS
+sample_type,stool,Stool,OPTIONS
+sample_type,tissue,Tissue,CIF+OPTIONS
+sample_type,urine,Urine,CIF+OPTIONS
+sample_type,vesicular_fluid,Vesicular fluid,OPTIONS
+sample_type,vomitus,Vomitus,OPTIONS
+sample_type,wound_exudates,Wound exudates,OPTIONS
+sample_type,other,Other (specify),CIF+OPTIONS
+sample_condition,good,Good,CIF
+sample_condition,spoiled,Spoiled,CIF
+lab_tests,pcr,PCR,CIF+OPTIONS
+lab_tests,elisa,ELISA,CIF
+lab_tests,antigen_rapid_test,Antigen rapid test (RDT),CIF+OPTIONS
+lab_tests,serology,Serology,OPTIONS
+lab_tests,antibodies,Antibodies,OPTIONS
+lab_tests,sequencing,Sequencing,OPTIONS
+lab_tests,cytology,Cytology,OPTIONS
+lab_tests,gram_stain,Gram stain,OPTIONS
+lab_tests,unknown,Unknown,OPTIONS
+lab_tests,other,Other (specify),CIF+OPTIONS
+preliminary_result,positive,Positive,CIF
+preliminary_result,negative,Negative,CIF
+preliminary_result,pending,Pending,CIF
+final_result,positive,Positive,CIF
+final_result,negative,Negative,CIF
+final_classification,confirmed,Confirmed,CIF
+final_classification,probable,Probable,CIF
+final_classification,not_a_case,Not a case,CIF
+type_of_care,inpatient,Inpatient,CIF
+type_of_care,outpatient,Outpatient,CIF
+type_of_care,home_care,Home care,CIF
+outcome,alive,Alive,CIF
+outcome,dead,Dead,CIF
+place_of_death,community,Community,CIF
+place_of_death,health_facility,Health facility,CIF
+case_status,active,Active,CIF
+case_status,recovered,Recovered,CIF
+case_status,dead,Dead,CIF
+dob_known,known,Known,PLATFORM
+dob_known,unknown,Unknown,PLATFORM
