@@ -49,7 +49,7 @@ vhf-case,exposure,type_of_direct_contact_other,Type of direct contact - other (s
 vhf-case,exposure,type_of_indirect_contact,Type of indirect contact,choice,yes,no,indirect_contact,type_of_contact=indirect,,,CIF,type_of_indirect_contact,,
 vhf-case,exposure,other_type_of_indirect_contact,Type of indirect contact - other (specify),string,yes,no,,type_of_indirect_contact=other,,,CIF,other_type_of_indirect_contact,,
 vhf-case,exposure,contact_symptomatic,Case symptomatic during contact?,choice,yes,no,yes_no,type_of_exposure=human,,,CIF,contact_symptomatic,,
-vhf-case,exposure,date_of_contact,Date of contact,date,yes,no,,type_of_exposure=human,not_future,,CIF,date_of_contact,Anchors the 21-day follow-up window for contacts.,
+vhf-case,exposure,date_of_contact,Date of contact,date,yes,no,,type_of_exposure=human|type_of_case=contact,not_future,,CIF,date_of_contact,"Anchors the 21-day follow-up window for contacts (hie-auth reads it), so it is also shown and required whenever type_of_case=contact.",
 vhf-case,exposure,frequency_of_contact,Frequency of contact,choice,no,no,contact_frequency,type_of_exposure=human,,,CIF,frequency_of_contact,,
 vhf-case,exposure,duration_of_contact,Maximum duration of contact,choice,no,no,contact_duration,type_of_exposure=human,,,CIF,duration_of_contact,,
 vhf-case,exposure,location_of_contact,Location of contact,choice,no,no,contact_location,type_of_exposure=human,,,CIF,location_of_contact,,

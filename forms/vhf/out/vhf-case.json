@@ -2633,8 +2633,17 @@
                 "code": "human",
                 "display": "Human contact"
               }
+            },
+            {
+              "question": "type_of_case",
+              "operator": "=",
+              "answerCoding": {
+                "code": "contact",
+                "display": "Contact"
+              }
             }
-          ]
+          ],
+          "enableBehavior": "any"
         },
         {
           "linkId": "frequency_of_contact",

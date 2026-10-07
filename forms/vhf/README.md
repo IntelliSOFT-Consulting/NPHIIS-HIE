@@ -57,18 +57,19 @@ Values in the `source` column: `CIF`, `OPTIONS`, `DD`, `CIF+OPTIONS`, `PLATFORM`
 2. Country lists are **proposed**: East African Community countries, neighbouring countries, and "Other (specify)". No source supplies a country list.
 3. `pregnant` is shown only when sex is Female.
 4. Date of birth uses the platform's "known / unknown" switch. Date of birth is required when known; age (years, months and days) is required when it is not. CIF_Final marks date of birth optional and age always required.
-5. Several enableWhen rules are inferred: the PPE details, a preliminary result date only when the result is not pending, the admission fields only for inpatients, and the discharge date only when the case has recovered. Each one is marked "inferred" in the notes.
+5. `date_of_contact` is shown and required for human-contact exposure **or** when Type of case = Contact. hie-auth anchors the 21-day follow-up on it, so every contact needs one.
+6. Several enableWhen rules are inferred: the PPE details, a preliminary result date only when the result is not pending, the admission fields only for inpatients, and the discharge date only when the case has recovered. Each one is marked "inferred" in the notes.
 
 **Questions:**
 
-6. **Contact to source case.** No source has a field linking a contact to the case they were exposed to. Should we add `source_case_epid`? 21-day follow-up and transmission chains depend on it.
-7. **Symptoms for contacts.** Symptoms and onset date are required for every record, including asymptomatic contacts. Should they be hidden when `type_of_case = contact`?
-8. **Final result.** CIF_Final makes it required, which blocks a lab from submitting a preliminary result on its own. Should it be optional?
-9. **Stopovers.** CIF_Final makes this field required, but many travellers have no stopover.
-10. **Outcome versus status.** `outcome_of_case` (Alive/Dead) and `status_of_case` (Active/Recovered/Dead) overlap. Are both needed?
-11. **Disease list.** Options.xlsx lists Chikungunya, Dengue, Yellow Fever and Rift Valley Fever. CIF_Final lists Ebola, Marburg and "Other VHF". The CIF list is used here.
-12. **Age in months and days.** CIF_Final requires them, so when the date of birth is unknown the user must enter 0 months and 0 days even if only the age in years is known. The platform AFP form makes them optional. Should they be optional?
-13. **Case definition.** The rules that derive `final_classification` from lab results (Confirmed / Probable / Not a case).
+7. **Contact to source case.** No source has a field linking a contact to the case they were exposed to. Should we add `source_case_epid`? 21-day follow-up and transmission chains depend on it.
+8. **Symptoms for contacts.** Symptoms and onset date are required for every record, including asymptomatic contacts. Should they be hidden when `type_of_case = contact`?
+9. **Final result.** CIF_Final makes it required, which blocks a lab from submitting a preliminary result on its own. Should it be optional?
+10. **Stopovers.** CIF_Final makes this field required, but many travellers have no stopover.
+11. **Outcome versus status.** `outcome_of_case` (Alive/Dead) and `status_of_case` (Active/Recovered/Dead) overlap. Are both needed?
+12. **Disease list.** Options.xlsx lists Chikungunya, Dengue, Yellow Fever and Rift Valley Fever. CIF_Final lists Ebola, Marburg and "Other VHF". The CIF list is used here.
+13. **Age in months and days.** CIF_Final requires them, so when the date of birth is unknown the user must enter 0 months and 0 days even if only the age in years is known. The platform AFP form makes them optional. Should they be optional?
+14. **Case definition.** The rules that derive `final_classification` from lab results (Confirmed / Probable / Not a case).
 
 **Dictionary fields dropped** because CIF_Final omits them:
 - `principal_field`, `country_of_nationality`.
