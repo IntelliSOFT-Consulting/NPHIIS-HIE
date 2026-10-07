@@ -25,6 +25,7 @@ import {
   maxLength,
   csvHeaderFor,
   labelFor,
+  MULTI_VALUE_SEPARATOR,
 } from "./questionnaires";
 
 /* ── EPID → form inference ───────────────────────────────────────────────── */
@@ -60,6 +61,8 @@ export function formsForDisease(disease: string | null): string[] {
       ];
     case "VL":
       return ["vl-case-lab-information"];
+    case "VHF":
+      return ["vhf-lab-results"];
     default:
       // MPOVAC / MPO / Mpox / MOH505 / SOC / RCC / RTT have no dedicated
       // lab-results form yet.
@@ -81,6 +84,8 @@ export class RowMappingError extends Error {
 interface CoercedAnswer {
   /** The FHIR answer.value{X} field as a JSON blob. */
   fhir: Record<string, unknown>;
+  /** Repeating choice only: one answer.value{X} per selected option (QR answers). */
+  fhirValues?: Record<string, unknown>[];
   /** The raw value used by enableWhen evaluation (coding code, "true"/"false", iso date, etc.). */
   normalised: string;
   /** Display string for Observation.valueString fallback and logs. */
@@ -159,6 +164,7 @@ function coerce(
     }
     case "choice":
     case "open-choice": {
+      if (item.repeats) return coerceMultiChoice(item, trimmed, headerForErrors);
       const match = findChoice(item, trimmed);
       if (match?.valueCoding) {
         const c = match.valueCoding;
@@ -208,6 +214,48 @@ function coerce(
       };
     }
   }
+}
+
+/**
+ * Repeating choice ("tick all that apply"). Accepts option codes or displays
+ * separated by `;` (the AnswerMap form) or `,` (convenient in CSV). The
+ * Observation value joins displays with ", " — what the mobile app writes
+ * (ScreenerViewModel.extractStructuredAnswersFromItems) — while the
+ * QuestionnaireResponse keeps one coded answer per selection.
+ */
+function coerceMultiChoice(
+  item: QuestionnaireItem,
+  raw: string,
+  headerForErrors: string,
+): CoercedAnswer {
+  const parts = raw
+    .split(/[;,]/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const codings: Array<{ code: string; display: string; system?: string }> = [];
+  for (const part of parts) {
+    const c = findChoice(item, part)?.valueCoding;
+    if (!c) {
+      throw new RowMappingError(`Value "${part}" is not a valid option`, headerForErrors);
+    }
+    if (!codings.some((x) => x.code === c.code)) codings.push(c);
+  }
+  if (codings.length === 0) {
+    throw new RowMappingError(`No option selected in "${raw}"`, headerForErrors);
+  }
+  const fhirValues = codings.map((c) => ({
+    valueCoding: {
+      code: c.code,
+      display: c.display,
+      ...(c.system ? { system: c.system } : {}),
+    },
+  }));
+  return {
+    fhir: fhirValues[0],
+    fhirValues,
+    normalised: codings.map((c) => c.code).join(MULTI_VALUE_SEPARATOR),
+    display: codings.map((c) => c.display).join(", "),
+  };
 }
 
 /* ── Reading values from a row (CSV or form) ─────────────────────────────── */
@@ -514,7 +562,7 @@ export function buildLabSubmissionBundle(
   const qrItems = answered.map(({ item, answer }) => ({
     linkId: item.linkId,
     ...(item.text ? { text: item.text } : {}),
-    answer: [answer.fhir],
+    answer: answer.fhirValues ?? [answer.fhir],
   }));
 
   const qr: Record<string, unknown> = {
