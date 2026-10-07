@@ -130,10 +130,32 @@ describe("VHF lab form rules", () => {
     expect(answers.find((a) => a.item.linkId === "date_of_preliminary_result")).toBeUndefined();
   });
 
-  it("requires a final classification", () => {
+  it("requires a final classification once a final result is entered", () => {
     expect(() => extractAnswers(vhfForm(), vhfRow({ final_classification: "" }))).toThrow(
       /Final classification/,
     );
+  });
+
+  it("accepts a preliminary-only result (final result pending)", () => {
+    const answers = extractAnswers(
+      vhfForm(),
+      vhfRow({
+        final_laboratory_result: "",
+        date_of_final_laboratory_result: "",
+        final_classification: "",
+      }),
+    );
+    const ids = answers.map((a) => a.item.linkId);
+    expect(ids).toContain("preliminary_laboratory_result");
+    expect(ids).not.toContain("final_classification");
+  });
+
+  it("ignores final details sent without a final result", () => {
+    const answers = extractAnswers(
+      vhfForm(),
+      vhfRow({ final_laboratory_result: "", final_classification: "confirmed" }),
+    );
+    expect(answers.map((a) => a.item.linkId)).not.toContain("final_classification");
   });
 
   it("links the lab encounter to the case and uses the VHF reason code", () => {

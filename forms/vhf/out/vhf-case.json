@@ -1006,6 +1006,22 @@
               "valueString": "type_of_record;initial_classification"
             }
           ]
+        },
+        {
+          "linkId": "source_case_epid",
+          "text": "Source case EPID",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "type_of_case",
+              "operator": "=",
+              "answerCoding": {
+                "code": "contact",
+                "display": "Contact"
+              }
+            }
+          ]
         }
       ]
     },
@@ -1250,7 +1266,6 @@
           "linkId": "185726989867",
           "text": "Age (months)",
           "type": "integer",
-          "required": true,
           "extension": [
             {
               "url": "http://hl7.org/fhir/StructureDefinition/minValue",
@@ -1280,7 +1295,6 @@
           "linkId": "828303331247",
           "text": "Age (days)",
           "type": "integer",
-          "required": true,
           "extension": [
             {
               "url": "http://hl7.org/fhir/StructureDefinition/minValue",
@@ -2184,6 +2198,16 @@
               "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
               "valueString": "symptoms;fever;headache;fatigue;vomiting;diarrhea;unexplained_bleeding;muscle_pain"
             }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_case",
+              "operator": "!=",
+              "answerCoding": {
+                "code": "contact",
+                "display": "Contact"
+              }
+            }
           ]
         },
         {
@@ -2257,6 +2281,16 @@
             {
               "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
               "valueString": "date_of_onset"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_case",
+              "operator": "!=",
+              "answerCoding": {
+                "code": "contact",
+                "display": "Contact"
+              }
             }
           ]
         }

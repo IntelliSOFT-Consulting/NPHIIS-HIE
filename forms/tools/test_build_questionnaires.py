@@ -112,6 +112,14 @@ class BuildFormsTest(unittest.TestCase):
                     if target and target["type"] == "choice":
                         self.assertIn(ew["answerCoding"]["code"], codes[target["value_set"]])
 
+    def test_not_equal_condition(self):
+        onset = by_link_id(self.forms["vhf-case"])["728034137219"]
+        self.assertEqual(
+            onset["enableWhen"],
+            [{"question": "type_of_case", "operator": "!=",
+              "answerCoding": {"code": "contact", "display": "Contact"}}],
+        )
+
     def test_any_of_conditions_set_enable_behavior(self):
         item = by_link_id(self.forms["vhf-case"])["ppe_items_worn"]
         self.assertEqual(len(item["enableWhen"]), 2)
