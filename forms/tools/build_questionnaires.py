@@ -147,11 +147,12 @@ def _constraint_ext(rows_by_id, row):
 def _enable_when(rows_by_id, options, row):
     conditions = []
     for cond in filter(None, row["enable_when"].split("|")):
-        question, code = cond.split("=")
+        operator = "!=" if "!=" in cond else "="
+        question, code = cond.split(operator)
         target = rows_by_id[question]
         if target["type"] == "choice":
             display = next(o["display"] for o in options[target["value_set"]] if o["code"] == code)
-            conditions.append({"question": question, "operator": "=",
+            conditions.append({"question": question, "operator": operator,
                                "answerCoding": {"code": code, "display": display}})
         else:
             raise ValueError(

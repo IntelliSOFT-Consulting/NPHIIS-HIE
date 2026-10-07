@@ -343,7 +343,6 @@
           "linkId": "final_laboratory_result",
           "text": "Final result",
           "type": "choice",
-          "required": true,
           "answerOption": [
             {
               "valueCoding": {
@@ -433,7 +432,26 @@
               "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
               "valueString": "date_of_final_laboratory_result"
             }
-          ]
+          ],
+          "enableWhen": [
+            {
+              "question": "final_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "positive",
+                "display": "Positive"
+              }
+            },
+            {
+              "question": "final_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "negative",
+                "display": "Negative"
+              }
+            }
+          ],
+          "enableBehavior": "any"
         },
         {
           "linkId": "final_laboratory_result_narration",
@@ -444,7 +462,26 @@
               "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
               "valueString": "final_laboratory_result_narration"
             }
-          ]
+          ],
+          "enableWhen": [
+            {
+              "question": "final_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "positive",
+                "display": "Positive"
+              }
+            },
+            {
+              "question": "final_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "negative",
+                "display": "Negative"
+              }
+            }
+          ],
+          "enableBehavior": "any"
         },
         {
           "linkId": "final_laboratory_facility",
@@ -455,7 +492,26 @@
               "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
               "valueString": "final_laboratory_facility"
             }
-          ]
+          ],
+          "enableWhen": [
+            {
+              "question": "final_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "positive",
+                "display": "Positive"
+              }
+            },
+            {
+              "question": "final_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "negative",
+                "display": "Negative"
+              }
+            }
+          ],
+          "enableBehavior": "any"
         },
         {
           "linkId": "final_classification",
@@ -502,7 +558,26 @@
               "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
               "valueString": "final_classification"
             }
-          ]
+          ],
+          "enableWhen": [
+            {
+              "question": "final_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "positive",
+                "display": "Positive"
+              }
+            },
+            {
+              "question": "final_laboratory_result",
+              "operator": "=",
+              "answerCoding": {
+                "code": "negative",
+                "display": "Negative"
+              }
+            }
+          ],
+          "enableBehavior": "any"
         },
         {
           "linkId": "automatically_updated",

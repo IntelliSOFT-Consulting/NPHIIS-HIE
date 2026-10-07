@@ -60,16 +60,19 @@ Values in the `source` column: `CIF`, `OPTIONS`, `DD`, `CIF+OPTIONS`, `PLATFORM`
 5. `date_of_contact` is shown and required for human-contact exposure **or** when Type of case = Contact. hie-auth anchors the 21-day follow-up on it, so every contact needs one.
 6. Several enableWhen rules are inferred: the PPE details, a preliminary result date only when the result is not pending, the admission fields only for inpatients, and the discharge date only when the case has recovered. Each one is marked "inferred" in the notes.
 
-**Questions:**
+**Decided 2026-10-07 (programme owner):**
 
-7. **Contact to source case.** No source has a field linking a contact to the case they were exposed to. Should we add `source_case_epid`? 21-day follow-up and transmission chains depend on it.
-8. **Symptoms for contacts.** Symptoms and onset date are required for every record, including asymptomatic contacts. Should they be hidden when `type_of_case = contact`?
-9. **Final result.** CIF_Final makes it required, which blocks a lab from submitting a preliminary result on its own. Should it be optional?
-10. **Stopovers.** CIF_Final makes this field required, but many travellers have no stopover.
-11. **Outcome versus status.** `outcome_of_case` (Alive/Dead) and `status_of_case` (Active/Recovered/Dead) overlap. Are both needed?
-12. **Disease list.** Options.xlsx lists Chikungunya, Dengue, Yellow Fever and Rift Valley Fever. CIF_Final lists Ebola, Marburg and "Other VHF". The CIF list is used here.
-13. **Age in months and days.** CIF_Final requires them, so when the date of birth is unknown the user must enter 0 months and 0 days even if only the age in years is known. The platform AFP form makes them optional. Should they be optional?
-14. **Case definition.** The rules that derive `final_classification` from lab results (Confirmed / Probable / Not a case).
+- **Contact to source case.** Added `source_case_epid`, shown and required when `type_of_case = contact`.
+- **Symptoms for contacts.** `symptoms` and onset date (`728034137219`) are hidden when `type_of_case = contact`, together with their dependent fields. A contact reclassified as a case should have them captured at conversion (mobile, #71).
+- **Final result.** `final_laboratory_result` is optional, so a lab can submit a preliminary result on its own. The final result's date, narration, facility and `final_classification` appear only once a final result is entered; the date and the classification are then required.
+- **Disease list.** CIF_Final's list stands: Ebola, Marburg, Other VHF.
+- **Age.** When date of birth is unknown, at least one age value is required. This is implemented as **years required** (0 for infants, 99 if unknown) with months and days optional. A strict "any one of years / months / days" rule would need a cross-field constraint, and it is unclear whether the Android SDK evaluates those on empty fields. Verify on a device before switching (#71).
+
+**Still open:**
+
+7. **Stopovers.** CIF_Final makes this field required, but many travellers have no stopover.
+8. **Outcome versus status.** `outcome_of_case` (Alive/Dead) and `status_of_case` (Active/Recovered/Dead) overlap. Are both needed?
+9. **Case definition (to confirm).** The rules that derive `final_classification` from lab results (Confirmed / Probable / Not a case). The admin lab form does not auto-derive the classification until this arrives.
 
 **Dictionary fields dropped** because CIF_Final omits them:
 - `principal_field`, `country_of_nationality`.
