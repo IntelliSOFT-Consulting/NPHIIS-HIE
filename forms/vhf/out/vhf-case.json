@@ -1,0 +1,4877 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "vhf-case",
+  "url": "http://nphiis.health.go.ke/Questionnaire/vhf-case",
+  "name": "vhf_case",
+  "title": "VHF Case Investigation",
+  "status": "active",
+  "item": [
+    {
+      "item": [
+        {
+          "linkId": "user_role",
+          "type": "string",
+          "text": "User Role",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "user_facility",
+          "type": "string",
+          "text": "User Facility",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "user_ward",
+          "type": "string",
+          "text": "User Ward",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "user_sub_county",
+          "type": "string",
+          "text": "User Sub County",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "user_county",
+          "type": "string",
+          "text": "User County",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "linkId": "facility_level",
+          "text": " ",
+          "enableWhen": [
+            {
+              "question": "user_role",
+              "operator": "=",
+              "answerString": "VACCINATOR"
+            }
+          ],
+          "item": [
+            {
+              "linkId": "294367770999",
+              "text": "County",
+              "type": "reference",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?_id={{%assignedCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819946803642",
+              "text": "Sub County",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?_id={{%assignedSubCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819943434",
+              "text": "Ward",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?_id={{%assignedWard}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819946803677",
+              "text": "Health Facility",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?_id={{%assignedFacility}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "choice",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "radio-button",
+                        "display": "Radio Button"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+                  "valueCode": "horizontal"
+                }
+              ],
+              "linkId": "438862163919",
+              "text": "Type of health facility",
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "Private",
+                    "display": "Private"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "Public",
+                    "display": "Public"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "Faith Based",
+                    "display": "Faith Based"
+                  }
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "linkId": "sub_county_level",
+          "text": "",
+          "enableWhen": [
+            {
+              "question": "user_role",
+              "operator": "=",
+              "answerString": "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER"
+            }
+          ],
+          "item": [
+            {
+              "linkId": "294367770999_sub_county",
+              "text": "County",
+              "type": "reference",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?_id={{%assignedCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819946803642_sub_county",
+              "text": "Sub County",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?_id={{%assignedSubCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819943434_sub_county",
+              "text": "Ward",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%selectedSubCountyNameSubCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819946803677_sub_county",
+              "text": "Health Facility",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%selectedWardNameSubCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "linkId": "438862163919_sub_county",
+              "type": "choice",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "radio-button",
+                        "display": "Radio Button"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+                  "valueCode": "horizontal"
+                }
+              ],
+              "text": "Type of health facility",
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "Private",
+                    "display": "Private"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "Public",
+                    "display": "Public"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "Faith Based",
+                    "display": "Faith Based"
+                  }
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "linkId": "county_level",
+          "text": " ",
+          "enableWhen": [
+            {
+              "question": "user_role",
+              "operator": "=",
+              "answerString": "COUNTY_DISEASE_SURVEILLANCE_OFFICER"
+            }
+          ],
+          "item": [
+            {
+              "linkId": "294367770999_county",
+              "text": "County",
+              "type": "reference",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?_id={{%assignedCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "linkId": "819946803642_county",
+              "type": "reference",
+              "text": "Sub County",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%selectedCountyNameCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819943434_county",
+              "text": "Ward",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%selectedSubCountyNameCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819946803677_county",
+              "text": "Health Facility",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%selectedWardNameCounty}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "choice",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "radio-button",
+                        "display": "Radio Button"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+                  "valueCode": "horizontal"
+                }
+              ],
+              "linkId": "438862163919_county",
+              "text": "Type of health facility",
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "Private",
+                    "display": "Private"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "Public",
+                    "display": "Public"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "Faith Based",
+                    "display": "Faith Based"
+                  }
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "linkId": "national_level",
+          "text": " ",
+          "enableWhen": [
+            {
+              "question": "user_role",
+              "operator": "=",
+              "answerString": "ADMINISTRATOR"
+            }
+          ],
+          "item": [
+            {
+              "linkId": "294367770999_national",
+              "text": "County",
+              "type": "reference",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof=Location/0&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "linkId": "819946803642_national",
+              "type": "reference",
+              "text": "Sub County",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%selectedCountyNameNational}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819943434_national",
+              "text": "Ward",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%selectedSubCountyNameNational}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "reference",
+              "linkId": "819946803677_national",
+              "text": "Health Facility",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%selectedWardNameNational}}&_sort=name"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
+                }
+              ],
+              "required": true
+            },
+            {
+              "type": "choice",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "radio-button",
+                        "display": "Radio Button"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+                  "valueCode": "horizontal"
+                }
+              ],
+              "linkId": "438862163919_national",
+              "text": "Type of health facility",
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "Private",
+                    "display": "Private"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "Public",
+                    "display": "Public"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "Faith Based",
+                    "display": "Faith Based"
+                  }
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "type": "string",
+          "linkId": "992818778559",
+          "text": "EPID No",
+          "readOnly": true
+        }
+      ],
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "151479012557",
+      "text": "Reporting Site"
+    },
+    {
+      "linkId": "vhf-case_investigation",
+      "text": "Case Investigation",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "vhf-disease",
+          "text": "Viral Hemorrhagic Fever Disease",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "ebola",
+                "display": "Ebola"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "marburg",
+                "display": "Marburg"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other_vhf",
+                "display": "Other VHF (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "disease"
+            }
+          ]
+        },
+        {
+          "linkId": "vhf-disease-other",
+          "text": "Other VHF (specify)",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "vhf-disease",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other_vhf",
+                "display": "Other VHF (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_investigation",
+          "text": "Date of Investigation",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_investigation"
+            }
+          ]
+        },
+        {
+          "linkId": "location_of_investigation",
+          "text": "Location of investigation",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "health_facility",
+                "display": "Health facility"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "community",
+                "display": "Community"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "household",
+                "display": "Household"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "vertical"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "location_of_investigation"
+            }
+          ]
+        },
+        {
+          "linkId": "location_of_investigation_other",
+          "text": "Other location of investigation (specify)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "location_of_investigation_other"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "location_of_investigation",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_case",
+          "text": "Type of case",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "suspected",
+                "display": "Suspected"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "probable",
+                "display": "Probable"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "confirmed",
+                "display": "Confirmed"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "contact",
+                "display": "Contact"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "vertical"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_record;initial_classification"
+            }
+          ]
+        },
+        {
+          "linkId": "source_case_epid",
+          "text": "Source case EPID",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "type_of_case",
+              "operator": "=",
+              "answerCoding": {
+                "code": "contact",
+                "display": "Contact"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-demographics",
+      "text": "Demographics",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "486402457213",
+          "text": "Family Name (Surname)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "family"
+            }
+          ]
+        },
+        {
+          "linkId": "873240407472",
+          "text": "Given Names",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "given"
+            }
+          ]
+        },
+        {
+          "linkId": "national_id",
+          "text": "National Identifier (National ID)",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "national_id"
+            }
+          ]
+        },
+        {
+          "linkId": "929966324957",
+          "text": "Sex",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "male",
+                "display": "Male"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "female",
+                "display": "Female"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "sex"
+            }
+          ]
+        },
+        {
+          "linkId": "sex_other",
+          "text": "Sex - other (specify)",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "929966324957",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "442636360588",
+          "text": "Date of birth known?",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "known",
+                "display": "Known"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unknown",
+                "display": "Unknown"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ]
+        },
+        {
+          "linkId": "257830485990",
+          "text": "Date of Birth",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today() - 150 years"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future; Age must be under 150 years"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_birth"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "442636360588",
+              "operator": "=",
+              "answerCoding": {
+                "code": "known",
+                "display": "Known"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "492731638700",
+          "text": "Age (years)",
+          "type": "integer",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 0
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueInteger": 150
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "age_years"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "442636360588",
+              "operator": "=",
+              "answerCoding": {
+                "code": "unknown",
+                "display": "Unknown"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "185726989867",
+          "text": "Age (months)",
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 0
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueInteger": 11
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "age_months"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "442636360588",
+              "operator": "=",
+              "answerCoding": {
+                "code": "unknown",
+                "display": "Unknown"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "828303331247",
+          "text": "Age (days)",
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 0
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "age_days"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "442636360588",
+              "operator": "=",
+              "answerCoding": {
+                "code": "unknown",
+                "display": "Unknown"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "pregnant",
+          "text": "Pregnant",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unknown",
+                "display": "Unknown"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "pregnant"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "929966324957",
+              "operator": "=",
+              "answerCoding": {
+                "code": "female",
+                "display": "Female"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "phone_number",
+          "text": "Phone Number",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/regex",
+              "valueString": "^(\\+254|0)[17]\\d{8}$"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+              "valueString": "+254700000000"
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Enter a valid Kenyan phone number, e.g. +254700000000"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "phone_number"
+            }
+          ]
+        },
+        {
+          "linkId": "marital_status",
+          "text": "Marital Status",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "not_applicable",
+                "display": "N/A (child)"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "single",
+                "display": "Single"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "married",
+                "display": "Married"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "divorced",
+                "display": "Divorced"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "widowed",
+                "display": "Widowed"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "marital_status"
+            }
+          ]
+        },
+        {
+          "linkId": "occupation",
+          "text": "Occupation",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "long_distance_truck_driver",
+                "display": "Long distance truck driver"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "health_care_worker",
+                "display": "Health care worker"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "butcher_abattoir_worker",
+                "display": "Butcher / Abattoir worker"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "driver",
+                "display": "Driver"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "hides_skin_trader",
+                "display": "Hides/Skin trader"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "pastoralist",
+                "display": "Pastoralist"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "homemaker",
+                "display": "Homemaker"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "veterinary_worker",
+                "display": "Veterinary worker"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "business_person",
+                "display": "Business person"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "employee",
+                "display": "Employee"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "farmer",
+                "display": "Farmer"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "commercial_sex_worker",
+                "display": "Commercial sex worker"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "student",
+                "display": "Student"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unemployed",
+                "display": "Unemployed"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unknown",
+                "display": "Unknown"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "occupation"
+            }
+          ]
+        },
+        {
+          "linkId": "occupation_other",
+          "text": "Occupation - other (specify)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "occupation_other"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "occupation",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "487686858194",
+          "text": "Health Facility",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "health_facility"
+            }
+          ]
+        },
+        {
+          "linkId": "level_of_education",
+          "text": "Level of Education",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "none",
+                "display": "None"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "primary",
+                "display": "Primary"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "secondary",
+                "display": "Secondary"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "tertiary",
+                "display": "Tertiary"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "vertical"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "level_of_education"
+            }
+          ]
+        },
+        {
+          "linkId": "insurance_cover",
+          "text": "Insurance cover",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "insurance_cover"
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_residence",
+          "text": "Type of Residence",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "permanent_home",
+                "display": "Permanent home"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "internally_displaced_person",
+                "display": "Internally Displaced Person"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "migrant_community",
+                "display": "Migrant community"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "refugee_camp",
+                "display": "Refugee camp"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "temporary_shelter",
+                "display": "Temporary shelter"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unknown",
+                "display": "Unknown"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_residence"
+            }
+          ]
+        },
+        {
+          "linkId": "country",
+          "text": "Country",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "KE",
+                "display": "Kenya"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "UG",
+                "display": "Uganda"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "TZ",
+                "display": "Tanzania"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "RW",
+                "display": "Rwanda"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "BI",
+                "display": "Burundi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "SS",
+                "display": "South Sudan"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ET",
+                "display": "Ethiopia"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "SO",
+                "display": "Somalia"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "CD",
+                "display": "DR Congo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "SD",
+                "display": "Sudan"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "initial": [
+            {
+              "valueCoding": {
+                "code": "KE",
+                "display": "Kenya"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "country"
+            }
+          ]
+        },
+        {
+          "linkId": "country_other",
+          "text": "Country - other (specify)",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "country",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "a4-county",
+          "text": "County",
+          "type": "reference",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "Location?partof=Location/0&_sort=name"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+              "extension": [
+                {
+                  "url": "path",
+                  "valueString": "name"
+                },
+                {
+                  "url": "forDisplay",
+                  "valueBoolean": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "a3-sub-county",
+          "type": "reference",
+          "text": "Subcounty",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "Location?partof={{%patientCountyName}}"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+              "extension": [
+                {
+                  "url": "path",
+                  "valueString": "name"
+                },
+                {
+                  "url": "forDisplay",
+                  "valueBoolean": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "a2-ward",
+          "type": "reference",
+          "text": "Ward",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "Location?partof={{%patientSubCountyName}}&_sort=name"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+              "extension": [
+                {
+                  "url": "path",
+                  "valueString": "name"
+                },
+                {
+                  "url": "forDisplay",
+                  "valueBoolean": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "110761799063",
+          "text": "Town/Village/Camp",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "town_village_camp"
+            }
+          ]
+        },
+        {
+          "linkId": "946232932304",
+          "text": "Neighbourhood major landmark",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "landmark"
+            }
+          ]
+        },
+        {
+          "linkId": "856448027666",
+          "text": "Parent/Guardian/Next of Kin",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "name_of_guardian"
+            }
+          ]
+        },
+        {
+          "linkId": "576318206363",
+          "text": "Guardian Phone Number",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/regex",
+              "valueString": "^(\\+254|0)[17]\\d{8}$"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+              "valueString": "+254700000000"
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Enter a valid Kenyan phone number, e.g. +254700000000"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "guardian_phone_number"
+            }
+          ]
+        },
+        {
+          "linkId": "respondent_name",
+          "text": "Respondent (name)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "respondent_family_name;respondent_given_name"
+            }
+          ]
+        },
+        {
+          "linkId": "respondent",
+          "text": "Who provided information?",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "patient",
+                "display": "Patient"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "guardian",
+                "display": "Guardian"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "relative",
+                "display": "Relative"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "hcw",
+                "display": "Health care worker"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "respondent"
+            }
+          ]
+        },
+        {
+          "linkId": "respondent_other",
+          "text": "Who provided information - other (specify)",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "respondent",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-clinical",
+      "text": "Clinical Information",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "symptoms",
+          "text": "Symptoms (tick all that apply)",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "fever",
+                "display": "Fever"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "headache",
+                "display": "Headache"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "fatigue",
+                "display": "Fatigue"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "vomiting",
+                "display": "Vomiting"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "diarrhoea",
+                "display": "Diarrhoea"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unexplained_bleeding",
+                "display": "Unexplained bleeding"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "muscle_pain",
+                "display": "Muscle pain"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "repeats": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "symptoms;fever;headache;fatigue;vomiting;diarrhea;unexplained_bleeding;muscle_pain"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_case",
+              "operator": "!=",
+              "answerCoding": {
+                "code": "contact",
+                "display": "Contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "symptoms_other",
+          "text": "Other symptoms (specify)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "symptoms_other;other_symptoms_specify"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "symptoms",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "symptoms_unexplained_bleeding",
+          "text": "Unexplained bleeding (specify site)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "symptoms_unexplained_bleeding"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "symptoms",
+              "operator": "=",
+              "answerCoding": {
+                "code": "unexplained_bleeding",
+                "display": "Unexplained bleeding"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "728034137219",
+          "text": "Date of Onset",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_onset"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_case",
+              "operator": "!=",
+              "answerCoding": {
+                "code": "contact",
+                "display": "Contact"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-exposure",
+      "text": "Exposure",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "type_of_exposure",
+          "text": "Type of exposure",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "human",
+                "display": "Human contact"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "animal",
+                "display": "Animal contact"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_exposure_other",
+          "text": "Type of exposure - other (specify)",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_contact",
+          "text": "Type of human contact",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "direct",
+                "display": "Direct"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "indirect",
+                "display": "Indirect"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_contact"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "human",
+                "display": "Human contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_direct_contact",
+          "text": "Type of direct contact (tick all that apply)",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "touching",
+                "display": "Touching"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "body_fluids",
+                "display": "Body fluids"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "sexual_contact",
+                "display": "Sexual contact"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "repeats": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_direct_contact"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_contact",
+              "operator": "=",
+              "answerCoding": {
+                "code": "direct",
+                "display": "Direct"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_direct_contact_other",
+          "text": "Type of direct contact - other (specify)",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "type_of_direct_contact",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_indirect_contact",
+          "text": "Type of indirect contact",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "fomites",
+                "display": "Fomites"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "contaminated_environment",
+                "display": "Contaminated environment"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_indirect_contact"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_contact",
+              "operator": "=",
+              "answerCoding": {
+                "code": "indirect",
+                "display": "Indirect"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "other_type_of_indirect_contact",
+          "text": "Type of indirect contact - other (specify)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "other_type_of_indirect_contact"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_indirect_contact",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "contact_symptomatic",
+          "text": "Case symptomatic during contact?",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "contact_symptomatic"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "human",
+                "display": "Human contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_contact",
+          "text": "Date of contact",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_contact"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "human",
+                "display": "Human contact"
+              }
+            },
+            {
+              "question": "type_of_case",
+              "operator": "=",
+              "answerCoding": {
+                "code": "contact",
+                "display": "Contact"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "frequency_of_contact",
+          "text": "Frequency of contact",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "daily",
+                "display": "Daily"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "weekly",
+                "display": "Weekly"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "once",
+                "display": "Once"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "frequency_of_contact"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "human",
+                "display": "Human contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "duration_of_contact",
+          "text": "Maximum duration of contact",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "lt_15_min",
+                "display": "< 15 min"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "15_min_1_hour",
+                "display": "15 min - 1 hour"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "gt_1_hour",
+                "display": "> 1 hour"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "duration_of_contact"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "human",
+                "display": "Human contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "location_of_contact",
+          "text": "Location of contact",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "home",
+                "display": "Home"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "health_facility",
+                "display": "Health facility"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "funeral",
+                "display": "Funeral"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "workplace",
+                "display": "Workplace"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "location_of_contact"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "human",
+                "display": "Human contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "location_of_contact_other",
+          "text": "Location of contact - other (specify)",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "location_of_contact_other"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "location_of_contact",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "relationship",
+          "text": "Relationship",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "family",
+                "display": "Family"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "hcw",
+                "display": "Health care worker"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "friend",
+                "display": "Friend"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "vertical"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "relationship"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "human",
+                "display": "Human contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "relationship_other",
+          "text": "Relationship - other (specify)",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "relationship_other"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "relationship",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_animal_contact",
+          "text": "Animal exposure type (tick all that apply)",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "handling",
+                "display": "Handling"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "butchering",
+                "display": "Butchering"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "caring_for_sick_animal",
+                "display": "Caring for a sick animal"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "contact_with_fluids",
+                "display": "Contact with fluids"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "disposing_of_carcass",
+                "display": "Disposing of a carcass"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "eating",
+                "display": "Eating"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "skinning",
+                "display": "Skinning"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "slaughtering",
+                "display": "Slaughtering"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "repeats": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_animal_contact"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "animal",
+                "display": "Animal contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_contact_other",
+          "text": "Animal exposure type - other (specify)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_contact_other"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_animal_contact",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "animal_species",
+          "text": "Animal species (tick all that apply)",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "baboon",
+                "display": "Baboon"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "bat",
+                "display": "Bat"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "buffalo",
+                "display": "Buffalo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "camel",
+                "display": "Camel"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "cat",
+                "display": "Cat"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "chimpanzee",
+                "display": "Chimpanzee"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "cow",
+                "display": "Cow"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "dog",
+                "display": "Dog"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "duiker",
+                "display": "Duiker"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "goat",
+                "display": "Goat"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "gorilla",
+                "display": "Gorilla"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "monkey",
+                "display": "Monkey"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mosquito",
+                "display": "Mosquito"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "pig",
+                "display": "Pig"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "rodent",
+                "display": "Rodent"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "sheep",
+                "display": "Sheep"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "squirrel",
+                "display": "Squirrel"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "repeats": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "animal_species"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "animal",
+                "display": "Animal contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "animal_species_other",
+          "text": "Animal species - other (specify)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "animal_species_other"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "animal_species",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "location_of_exposure",
+          "text": "Location of exposure",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "location_of_exposure"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "animal",
+                "display": "Animal contact"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_exposure",
+          "text": "Date of exposure",
+          "type": "date",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_exposure"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_exposure",
+              "operator": "=",
+              "answerCoding": {
+                "code": "animal",
+                "display": "Animal contact"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-ipc",
+      "text": "Infection Prevention & Control",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "case_wearing_ppe",
+          "text": "Was the case wearing appropriate PPE?",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ]
+        },
+        {
+          "linkId": "wearing_ppe",
+          "text": "Was the contact wearing appropriate PPE?",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "wearing_ppe"
+            }
+          ]
+        },
+        {
+          "linkId": "ppe_items_worn",
+          "text": "PPE items worn",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "gloves",
+                "display": "Gloves"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "gown",
+                "display": "Gown"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "mask",
+                "display": "Mask"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "goggles",
+                "display": "Goggles"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "repeats": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "ppe_items_worn"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "case_wearing_ppe",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "question": "wearing_ppe",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "ppe_items_worn_other",
+          "text": "PPE items worn - other (specify)",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "ppe_items_worn",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "ppe_breach",
+          "text": "Was there a breach of PPE?",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "ppe_breach"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "case_wearing_ppe",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "question": "wearing_ppe",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "hand_hygiene_before_wearing_ppe",
+          "text": "Hand hygiene before PPE?",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "hand_hygiene_before_wearing_ppe"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "case_wearing_ppe",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "question": "wearing_ppe",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "hand_hygiene_after_wearing_ppe",
+          "text": "Hand hygiene after PPE?",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "hand_hygiene_after_wearing_ppe"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "case_wearing_ppe",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "question": "wearing_ppe",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-travel",
+      "text": "Travel History",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "travel_exposure_exists",
+          "text": "Travelled to a region reporting confirmed cases within the past 21 days?",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "travel_exposure_exists"
+            }
+          ]
+        },
+        {
+          "linkId": "country_of_origin",
+          "text": "Travel origin country",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "KE",
+                "display": "Kenya"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "UG",
+                "display": "Uganda"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "TZ",
+                "display": "Tanzania"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "RW",
+                "display": "Rwanda"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "BI",
+                "display": "Burundi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "SS",
+                "display": "South Sudan"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ET",
+                "display": "Ethiopia"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "SO",
+                "display": "Somalia"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "CD",
+                "display": "DR Congo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "SD",
+                "display": "Sudan"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "country_of_origin"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "travel_exposure_exists",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "country_of_origin_other",
+          "text": "Travel origin country - other (specify)",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "country_of_origin",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "city_of_origin",
+          "text": "Origin city/town/village",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "city_of_origin"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "travel_exposure_exists",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_departure",
+          "text": "Date of departure",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_departure"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "travel_exposure_exists",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "means_of_travel",
+          "text": "Means of travel",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "land",
+                "display": "Land"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "air",
+                "display": "Air"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "water",
+                "display": "Water"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "travel_exposure_exists",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "stopovers",
+          "text": "Stopovers (specify locations)",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "travel_exposure_exists",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "destination_country",
+          "text": "Destination country",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "KE",
+                "display": "Kenya"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "UG",
+                "display": "Uganda"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "TZ",
+                "display": "Tanzania"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "RW",
+                "display": "Rwanda"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "BI",
+                "display": "Burundi"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "SS",
+                "display": "South Sudan"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "ET",
+                "display": "Ethiopia"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "SO",
+                "display": "Somalia"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "CD",
+                "display": "DR Congo"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "SD",
+                "display": "Sudan"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "destination_country"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "travel_exposure_exists",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "destination_country_other",
+          "text": "Destination country - other (specify)",
+          "type": "string",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "destination_country",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "destination_city",
+          "text": "Destination city/town/village",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "destination_city"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "travel_exposure_exists",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "travel_arrival_date",
+          "text": "Date of arrival",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+              "extension": [
+                {
+                  "url": "key",
+                  "valueId": "travel-arrival-date-after-date-of-departure"
+                },
+                {
+                  "url": "severity",
+                  "valueCode": "error"
+                },
+                {
+                  "url": "expression",
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_of_departure').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_of_departure').answer.value"
+                },
+                {
+                  "url": "human",
+                  "valueString": "Must be on or after 'Date of departure'"
+                },
+                {
+                  "url": "location",
+                  "valueString": "date_of_departure"
+                }
+              ]
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "travel_arrival_date"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "travel_exposure_exists",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-vaccination",
+      "text": "Vaccination (Ebola)",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "ebola_vaccine_received",
+          "text": "Did the patient receive Ebola vaccination?",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "ebola_vaccine_received"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "vhf-disease",
+              "operator": "=",
+              "answerCoding": {
+                "code": "ebola",
+                "display": "Ebola"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "name_of_vaccine",
+          "text": "Name of vaccine",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "name_of_vaccine"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "ebola_vaccine_received",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "number_of_doses",
+          "text": "Number of doses",
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 1
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "number_of_doses"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "ebola_vaccine_received",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_vaccination",
+          "text": "Date of vaccination",
+          "type": "date",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_vaccination"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "ebola_vaccine_received",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-specimen",
+      "text": "Specimen Collection",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "sample_collected",
+          "text": "Were samples collected?",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "sample_collected"
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_sample",
+          "text": "Type of sample",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "blood",
+                "display": "Blood"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "whole_blood",
+                "display": "Whole blood"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "serum",
+                "display": "Serum"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "body_fluids",
+                "display": "Body fluids"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "cerebrospinal_fluid",
+                "display": "Cerebrospinal fluid"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "genital_swab",
+                "display": "Genital swab"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lesion",
+                "display": "Lesion"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nasopharyngeal_oropharyngeal_swab",
+                "display": "Nasopharyngeal and oropharyngeal swab"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "nasopharyngeal_swab",
+                "display": "Nasopharyngeal swab"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "oropharyngeal_swab",
+                "display": "Oropharyngeal swab"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "rectal_swab",
+                "display": "Rectal swab"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "saliva",
+                "display": "Saliva"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "semen",
+                "display": "Semen"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "stool",
+                "display": "Stool"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "tissue",
+                "display": "Tissue"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "urine",
+                "display": "Urine"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "vesicular_fluid",
+                "display": "Vesicular fluid"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "vomitus",
+                "display": "Vomitus"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "wound_exudates",
+                "display": "Wound exudates"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_sample"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "sample_collected",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "type_of_sample_other",
+          "text": "Type of sample - other (specify)",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_sample_other"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_sample",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other",
+                "display": "Other (specify)"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "specimen_id",
+          "text": "Specimen ID",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "specimen_id"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "sample_collected",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_collection",
+          "text": "Date of collection",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_collection"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "sample_collected",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "date_sample_sent",
+          "text": "Date sample sent to the laboratory",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+              "extension": [
+                {
+                  "url": "key",
+                  "valueId": "date-sample-sent-after-date-of-collection"
+                },
+                {
+                  "url": "severity",
+                  "valueCode": "error"
+                },
+                {
+                  "url": "expression",
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_of_collection').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_of_collection').answer.value"
+                },
+                {
+                  "url": "human",
+                  "valueString": "Must be on or after 'Date of collection'"
+                },
+                {
+                  "url": "location",
+                  "valueString": "date_of_collection"
+                }
+              ]
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "sample_collected",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "extension": [
+        {
+          "url": "name",
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/uv/sdc/CodeSystem/launchContext",
+            "code": "patient"
+          }
+        },
+        {
+          "url": "type",
+          "valueCode": "Patient"
+        }
+      ],
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "countyName",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='294367770999').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "patientCountyName",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='a4-county').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "patientSubCountyName",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='a3-sub-county').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedSubCountyName",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='819946803642').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedWardName",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='819943434').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedFacilityName",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='819943434').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "assignedCounty",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='user_county').answer.value"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "assignedRole",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='user_role').answer.value"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "assignedSubCounty",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='user_sub_county').answer.value"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "assignedWard",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='user_ward').answer.value"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "assignedFacility",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='user_facility').answer.value"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedCountyNameCounty",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='294367770999_county').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedSubCountyNameCounty",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='819946803642_county').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedWardNameCounty",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='819943434_county').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedCountyNameSubCounty",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='294367770999_sub_county').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedSubCountyNameSubCounty",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='819946803642_sub_county').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedWardNameSubCounty",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='819943434_sub_county').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedCountyNameNational",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='294367770999_national').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedSubCountyNameNational",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='819946803642_national').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "selectedWardNameNational",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='819943434_national').answer.value.reference"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-entryMode",
+      "valueCode": "prior-edit"
+    }
+  ]
+}

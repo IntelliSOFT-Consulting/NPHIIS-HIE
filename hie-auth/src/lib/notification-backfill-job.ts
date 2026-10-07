@@ -6,12 +6,7 @@ import { patientHasOfficialEpid, getEpidValueFromEncounter } from "./epid-utils"
 import { resolveLocationHierarchy } from "./epid-location";
 import { notifyCaseSubmissionIfEnabled } from "./notification";
 import { getCaseSubmissionNotifyRolesFromEnv, getUsersByRoles } from "./notification-recipients";
-
-const POSSIBLE_REASON_CODES: Record<string, string> = {
-  "Measles Case Information": "MEA",
-  "MOH 505 Reporting Form": "MOH505",
-  "AFP Case Information": "AFP",
-};
+import { conditionCodeForReason } from "./condition-codes";
 
 export type CaseNotificationBackfillStats = {
   scanned: number;
@@ -122,8 +117,7 @@ export async function runCaseNotificationBackfillJob(): Promise<CaseNotification
         const rc = enc?.reasonCode?.[0]?.coding?.[0]?.code
           ? String(enc.reasonCode[0].coding[0].code)
           : "";
-        const diseaseCondition =
-          POSSIBLE_REASON_CODES[rc] || (rc ? rc.toUpperCase().slice(0, 3) : "UNK");
+        const diseaseCondition = conditionCodeForReason(rc);
 
         const { countyName, subCountyName } = await resolveLocationNames(eid, epid);
 

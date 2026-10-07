@@ -15,7 +15,7 @@ EPID is **not** created implicitly by saving a Patient or Encounter in FHIR. It 
 3. **What `assignEpidForEncounter` does** ([`src/lib/epid-assignment.ts`](../src/lib/epid-assignment.ts))  
    - **Skip**: Patient already has official EPID → no new ID.  
    - **Sync (not generate)**: Encounter already carries an EPID identifier → copy to Patient.  
-   - **Generate**: Builds `formattedId` from reason code, location chain (Observation `a3-sub-county` → resolve `Location` by `name` and `type=SUB-COUNTY` → county/country), year (from Patient `system-creation` identifier, else fallbacks), and `generateCaseId` ([`src/lib/caseIdTracker.ts`](../src/lib/caseIdTracker.ts)) → then PUT Patient + PUT Encounter with the new identifier.
+   - **Generate**: Builds `formattedId` from reason code (mapped to the `CONDITION` segment in [`src/lib/condition-codes.ts`](../src/lib/condition-codes.ts): `MEA`, `AFP`, `MOH505`, `VHF`; unmapped reasons use their first 3 letters), location chain (Observation `a3-sub-county` → resolve `Location` by `name` and `type=SUB-COUNTY` → county/country), year (from Patient `system-creation` identifier, else fallbacks), and `generateCaseId` ([`src/lib/caseIdTracker.ts`](../src/lib/caseIdTracker.ts)) → then PUT Patient + PUT Encounter with the new identifier.
 
 4. **Optional cron backfill**  
    [`src/lib/schedule.ts`](../src/lib/schedule.ts) runs `runEncounterBackfillJob()` only when `ENCOUNTER_BACKFILL_CRON_ENABLED === 'true'`. Same assignment logic as above.

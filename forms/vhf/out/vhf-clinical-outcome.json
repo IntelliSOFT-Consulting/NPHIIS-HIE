@@ -1,0 +1,499 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "vhf-clinical-outcome",
+  "url": "http://nphiis.health.go.ke/Questionnaire/vhf-clinical-outcome",
+  "name": "vhf_clinical_outcome",
+  "title": "VHF - Clinical Care & Outcome",
+  "status": "active",
+  "item": [
+    {
+      "linkId": "vhf-clinical_care",
+      "text": "Clinical Care & Treatment",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "type_of_care",
+          "text": "Type of care",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "inpatient",
+                "display": "Inpatient"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "outpatient",
+                "display": "Outpatient"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "home_care",
+                "display": "Home care"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "type_of_care"
+            }
+          ]
+        },
+        {
+          "linkId": "health_facility_name",
+          "text": "Facility name",
+          "type": "string",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "health_facility_name"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_care",
+              "operator": "=",
+              "answerCoding": {
+                "code": "inpatient",
+                "display": "Inpatient"
+              }
+            },
+            {
+              "question": "type_of_care",
+              "operator": "=",
+              "answerCoding": {
+                "code": "outpatient",
+                "display": "Outpatient"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "date_of_admission",
+          "text": "Date of admission",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_admission"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_care",
+              "operator": "=",
+              "answerCoding": {
+                "code": "inpatient",
+                "display": "Inpatient"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "inpatient_number",
+          "text": "In-patient number",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "inpatient_number"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_care",
+              "operator": "=",
+              "answerCoding": {
+                "code": "inpatient",
+                "display": "Inpatient"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "outpatient_number",
+          "text": "Out-patient number",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "outpatient_number"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "type_of_care",
+              "operator": "=",
+              "answerCoding": {
+                "code": "outpatient",
+                "display": "Outpatient"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "treatment_given",
+          "text": "Treatment given",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "treatment_given"
+            }
+          ]
+        },
+        {
+          "linkId": "taken_antibiotics",
+          "text": "Taken any antibiotics?",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "taken_antibiotics"
+            }
+          ]
+        },
+        {
+          "linkId": "name_of_the_antibiotic",
+          "text": "Name of the antibiotic",
+          "type": "string",
+          "extension": [
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "name_of_the_antibiotic"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "taken_antibiotics",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "vhf-outcome",
+      "text": "Outcome",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "outcome_of_case",
+          "text": "Outcome of case",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "alive",
+                "display": "Alive"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "dead",
+                "display": "Dead"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "outcome_of_case"
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_death",
+          "text": "Date of death",
+          "type": "date",
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_death"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "outcome_of_case",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dead",
+                "display": "Dead"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "place_of_death",
+          "text": "Place of death",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "community",
+                "display": "Community"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "health_facility",
+                "display": "Health facility"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "place_of_death"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "outcome_of_case",
+              "operator": "=",
+              "answerCoding": {
+                "code": "dead",
+                "display": "Dead"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "status_of_case",
+          "text": "Status of case",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "active",
+                "display": "Active"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "recovered",
+                "display": "Recovered"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "dead",
+                "display": "Dead"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "status_of_case"
+            }
+          ]
+        },
+        {
+          "linkId": "date_of_discharge",
+          "text": "Date of discharge",
+          "type": "date",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+              "extension": [
+                {
+                  "url": "key",
+                  "valueId": "date-of-discharge-after-date-of-admission"
+                },
+                {
+                  "url": "severity",
+                  "valueCode": "error"
+                },
+                {
+                  "url": "expression",
+                  "valueString": "%context.answer.value.empty() or %resource.descendants().where(linkId='date_of_admission').answer.value.empty() or %context.answer.value >= %resource.descendants().where(linkId='date_of_admission').answer.value"
+                },
+                {
+                  "url": "human",
+                  "valueString": "Must be on or after 'Date of admission'"
+                },
+                {
+                  "url": "location",
+                  "valueString": "date_of_admission"
+                }
+              ]
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://nphiis.health.go.ke/fhir/StructureDefinition/source-field",
+              "valueString": "date_of_discharge"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "status_of_case",
+              "operator": "=",
+              "answerCoding": {
+                "code": "recovered",
+                "display": "Recovered"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
