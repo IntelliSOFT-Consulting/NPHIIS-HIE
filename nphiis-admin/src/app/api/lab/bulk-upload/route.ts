@@ -8,10 +8,11 @@ import {
   type VerifiedToken,
 } from '@/lib/server-auth';
 import { canAccess, hasAnyRole } from '@/lib/roles';
-import { getLabForm } from '@/lib/questionnaires';
+import { getLabForm, labResultReasons } from '@/lib/questionnaires';
 import {
   RowMappingError,
   buildLabSubmissionBundle,
+  hasFormValues,
 } from '@/lib/lab-submission';
 import {
   fetchFullPatient,
@@ -29,7 +30,7 @@ if (!FHIR_BASE_URL) {
 interface RowResult {
   row: number;
   epid: string;
-  status: 'accepted' | 'rejected' | 'flagged';
+  status: 'accepted' | 'rejected' | 'flagged' | 'skipped';
   reason?: string;
   /** For flagged rows: how many lab results the case already has. */
   existingCount?: number;
@@ -192,6 +193,11 @@ export async function POST(req: NextRequest) {
     const row = body.rows[i];
     const epid = (row.EPID ?? row.epid ?? '').trim();
     const rowNumber = i + 2; // account for header row
+    // Pre-filled template rows the lab has not filled in yet.
+    if (!hasFormValues(form, row)) {
+      results.push({ row: rowNumber, epid, status: 'skipped' });
+      continue;
+    }
     if (!epid) {
       results.push({
         row: rowNumber,
@@ -233,7 +239,7 @@ export async function POST(req: NextRequest) {
       if (!body.force) {
         const existing = await findExistingLabResult(
           lookup.patient.id,
-          form.encounterReason,
+          labResultReasons(form),
           session.raw,
         );
         if (existing.exists) {
@@ -310,5 +316,6 @@ export async function POST(req: NextRequest) {
   const accepted = results.filter((r) => r.status === 'accepted').length;
   const rejected = results.filter((r) => r.status === 'rejected');
   const flagged = results.filter((r) => r.status === 'flagged');
-  return NextResponse.json({ accepted, rejected, flagged, results });
+  const skipped = results.filter((r) => r.status === 'skipped').length;
+  return NextResponse.json({ accepted, rejected, flagged, skipped, results });
 }

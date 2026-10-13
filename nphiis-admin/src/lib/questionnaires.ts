@@ -109,6 +109,19 @@ export interface LabFormDefinition {
    * Reports group lab encounters by this string.
    */
   encounterReason: string;
+  /**
+   * Encounter.reasonCode values the mobile app writes for the same result,
+   * when they differ from `encounterReason`. A case with any of these already
+   * has a result for this form.
+   */
+  mobileEncounterReasons?: string[];
+  /** Patient.identifier system that marks a case of this form's disease. */
+  caseIdentifierSystem: string;
+}
+
+/** Every Encounter.reasonCode that records a result for `form`. */
+export function labResultReasons(form: LabFormDefinition): string[] {
+  return [form.encounterReason, ...(form.mobileEncounterReasons ?? [])];
 }
 
 /**
@@ -129,6 +142,7 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
     id: "measles-lab-results",
     title: "Measles - Lab Information",
     encounterReason: "Measles Lab Information",
+    caseIdentifierSystem: "measles-case-information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/measles-lab-results",
     allowedRoles: [
@@ -143,6 +157,7 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
     id: "measles-lab-reg-results",
     title: "Measles - Regional Lab Information",
     encounterReason: "Measles Regional Lab Information",
+    caseIdentifierSystem: "measles-case-information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/measles-lab-reg-results",
     allowedRoles: ["NATIONAL_LAB", "ADMINISTRATOR", "SUPERUSER"],
@@ -152,6 +167,8 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
     id: "afp-stool-lab-results",
     title: "AFP - Stool Specimen Lab Results",
     encounterReason: "AFP Lab Information",
+    mobileEncounterReasons: ["AFP Stool Lab Information"],
+    caseIdentifierSystem: "afp-case-information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/afp-case-stool-lab-results",
     allowedRoles: [
@@ -166,6 +183,7 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
     id: "afp-itd-lab",
     title: "AFP - ITD Lab Information",
     encounterReason: "AFP ITD Lab Information",
+    caseIdentifierSystem: "afp-case-information",
     questionnaireUrl: "http://nphiis.health.go.ke/Questionnaire/afp-itd-lab",
     allowedRoles: ["NATIONAL_LAB", "ADMINISTRATOR", "SUPERUSER"],
     questionnaire: afpItdLab as unknown as FhirQuestionnaire,
@@ -174,6 +192,7 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
     id: "afp-final-lab-results",
     title: "AFP - Final Laboratory Result",
     encounterReason: "AFP Final Lab Information",
+    caseIdentifierSystem: "afp-case-information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/afp-final-lab-results",
     allowedRoles: ["NATIONAL_LAB", "ADMINISTRATOR", "SUPERUSER"],
@@ -183,6 +202,7 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
     id: "vl-case-lab-information",
     title: "VL - Case Lab Information",
     encounterReason: "VL Lab Information",
+    caseIdentifierSystem: "vl-case-information",
     questionnaireUrl:
       "http://nphiis.health.go.ke/Questionnaire/vl-case-lab-information",
     allowedRoles: [
@@ -198,6 +218,8 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
     title: "VHF - Lab Information",
     // Must end in "Lab Information": hie-auth keys LAB_RESULT notifications on it.
     encounterReason: "VHF Lab Information",
+    mobileEncounterReasons: ["VHF Laboratory Results"],
+    caseIdentifierSystem: "vhf-case-information",
     questionnaireUrl: "http://nphiis.health.go.ke/Questionnaire/vhf-lab-results",
     allowedRoles: [
       "LAB_TECHNICIAN",
@@ -421,12 +443,6 @@ export function csvHeaderFor(item: QuestionnaireItem): string {
   return base || item.linkId;
 }
 
-/** CSV template: `EPID` plus every visible input field for the form. */
-export function csvTemplateForForm(form: LabFormDefinition): string {
-  const items = flattenItems(form.questionnaire);
-  const headers = ["EPID", ...items.map(csvHeaderFor)];
-  return headers.join(",") + "\n";
-}
 
 /** Friendly label for the UI: the questionnaire item text, falling back to a
  * humanised linkId. */

@@ -5,11 +5,8 @@ import Papa from "papaparse";
 import { Download02, UploadCloud02 } from "@untitled-ui/icons-react";
 import { useAuth, useAuthedFetch } from "@/lib/auth-context";
 import { hasAnyRole } from "@/lib/roles";
-import {
-  LAB_FORMS,
-  csvTemplateForForm,
-  getLabForm,
-} from "@/lib/questionnaires";
+import { LAB_FORMS, getLabForm } from "@/lib/questionnaires";
+import { type PendingLabCases, labTemplateCsv } from "@/lib/lab-template";
 import Spinner from "../ui/Spinner";
 import { Alert } from "../ui/Alert";
 import { Field, Select } from "../ui/Field";
@@ -17,7 +14,7 @@ import { Field, Select } from "../ui/Field";
 interface RowResult {
   row: number;
   epid: string;
-  status: "accepted" | "rejected" | "flagged";
+  status: "accepted" | "rejected" | "flagged" | "skipped";
   reason?: string;
   existingCount?: number;
   existingLatest?: string;
@@ -27,7 +24,18 @@ interface UploadResponse {
   accepted: number;
   rejected: RowResult[];
   flagged: RowResult[];
+  /** Pre-filled template rows left blank. */
+  skipped: number;
   results: RowResult[];
+}
+
+function saveCsv(csv: string, fileName: string) {
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function CsvUploadPanel() {
@@ -45,18 +53,38 @@ export default function CsvUploadPanel() {
   const [submitting, setSubmitting] = useState(false);
   const [importingFlagged, setImportingFlagged] = useState(false);
   const [response, setResponse] = useState<UploadResponse | null>(null);
+  const [templateLoading, setTemplateLoading] = useState(false);
+  const [templateNote, setTemplateNote] = useState<string | null>(null);
+  const [templateError, setTemplateError] = useState<string | null>(null);
 
   const form = formId ? getLabForm(formId) : undefined;
 
-  const downloadTemplate = () => {
+  /** Template pre-filled with the cases that have no result for the form yet. */
+  const downloadTemplate = async () => {
     if (!form) return;
-    const blob = new Blob([csvTemplateForForm(form)], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${form.id}-template.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setTemplateLoading(true);
+    setTemplateNote(null);
+    setTemplateError(null);
+    try {
+      const res = await authedFetch(`/api/lab/pending-cases?formId=${encodeURIComponent(form.id)}`);
+      const data = (await res.json()) as PendingLabCases | { error: string };
+      if (!res.ok || "error" in data) {
+        throw new Error("error" in data ? data.error : `Request failed (${res.status})`);
+      }
+      saveCsv(labTemplateCsv(form, data.cases), `${form.id}-template.csv`);
+      const n = data.cases.length;
+      setTemplateNote(
+        `${n} case${n === 1 ? "" : "s"} without a result pre-filled.` +
+          (data.withoutEpid
+            ? ` ${data.withoutEpid} record${data.withoutEpid === 1 ? "" : "s"} without a complete EPID left out.`
+            : "") +
+          " Fill in the results you have; blank rows are skipped on upload.",
+      );
+    } catch (err) {
+      setTemplateError((err as Error).message);
+    } finally {
+      setTemplateLoading(false);
+    }
   };
 
   const handleFile = (file: File) => {
@@ -133,6 +161,7 @@ export default function CsvUploadPanel() {
               accepted: prev.accepted + forced.accepted,
               rejected: [...prev.rejected, ...forced.rejected],
               flagged: [],
+              skipped: prev.skipped + forced.skipped,
               // Replace the held-back rows with their forced outcomes so the
               // row total stays accurate instead of double-counting them.
               results: [
@@ -158,13 +187,7 @@ export default function CsvUploadPanel() {
         reason: r.reason,
       })),
     );
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${form?.id ?? "lab"}-failures.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    saveCsv(csv, `${form?.id ?? "lab"}-failures.csv`);
   };
 
   if (availableForms.length === 0) {
@@ -208,6 +231,13 @@ export default function CsvUploadPanel() {
                   {response.rejected.length}
                 </span>{' '}
                 rejected
+              </>
+            )}
+            {response.skipped > 0 && (
+              <>
+                {' · '}
+                <span className="font-semibold">{response.skipped}</span> blank
+                row{response.skipped === 1 ? '' : 's'} skipped
               </>
             )}
             <span className="text-xs text-gray-500 ml-2">
@@ -297,6 +327,8 @@ export default function CsvUploadPanel() {
                 setRows([]);
                 setResponse(null);
                 setFileName("");
+                setTemplateNote(null);
+                setTemplateError(null);
               }}
               options={availableForms.map((f) => ({
                 value: f.id,
@@ -307,12 +339,31 @@ export default function CsvUploadPanel() {
         </div>
         <button
           onClick={downloadTemplate}
-          disabled={!form}
+          disabled={!form || templateLoading}
           className="btn-secondary"
         >
-          <Download02 className="h-4 w-4 mr-1.5" /> Download template
+          {templateLoading ? (
+            <Spinner size="sm" label="Preparing…" />
+          ) : (
+            <>
+              <Download02 className="h-4 w-4 mr-1.5" /> Download template
+            </>
+          )}
         </button>
       </div>
+
+      {templateNote && <Alert variant="info">{templateNote}</Alert>}
+      {templateError && form && (
+        <Alert variant="error" title="Could not load the cases without results">
+          {templateError}{" "}
+          <button
+            onClick={() => saveCsv(labTemplateCsv(form, []), `${form.id}-template.csv`)}
+            className="underline font-medium"
+          >
+            Download a blank template instead
+          </button>
+        </Alert>
+      )}
 
       <label className="block border-2 border-dashed border-nphi-200 rounded-2xl p-8 text-center cursor-pointer hover:bg-nphi-50/60 transition-colors">
         <UploadCloud02 className="h-9 w-9 mx-auto text-nphi-600" />
