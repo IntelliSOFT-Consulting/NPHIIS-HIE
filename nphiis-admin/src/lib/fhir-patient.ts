@@ -4,11 +4,8 @@
 // ScreenerViewModel.kt:245 and AddClientViewModel.kt:747). Patient lookups
 // therefore have to go through that Observation.
 
-const FHIR_BASE_URL =
-  process.env.FHIR_BASE_URL || process.env.NEXT_PUBLIC_FHIR_BASE_URL;
-if (!FHIR_BASE_URL) {
-  throw new Error("FHIR_BASE_URL is not set");
-}
+import { FHIR_BASE_URL, chunk, searchAll } from "./fhir-search";
+import type { PendingLabCases } from "./lab-template";
 
 interface PatientName {
   use?: string;
@@ -42,6 +39,7 @@ interface PatientResource {
   gender?: string;
   birthDate?: string;
   address?: PatientAddress[];
+  active?: boolean;
   meta?: { lastUpdated?: string };
 }
 
@@ -63,6 +61,7 @@ interface EncounterResource {
     text?: string;
   }>;
   period?: { start?: string; end?: string };
+  subject?: { reference?: string };
   meta?: { lastUpdated?: string };
 }
 
@@ -461,9 +460,9 @@ export interface ExistingLabResult {
 
 /**
  * Detects whether a case already has a lab result recorded for the given form.
- * Lab submissions write an Encounter whose `reasonCode.coding.code` equals the
- * form's `encounterReason` (see lab-submission `buildLabSubmissionBundle`), so
- * a matching encounter means a result is already on file.
+ * A result is an Encounter whose `reasonCode.coding.code` is one of
+ * `encounterReasons` (`labResultReasons(form)`: the admin form writes
+ * `encounterReason`, the mobile app may write another).
  *
  * Best-effort by design: any lookup failure resolves to `exists:false` so this
  * never blocks a submission — it backs an advisory "already has a result"
@@ -471,7 +470,7 @@ export interface ExistingLabResult {
  */
 export async function findExistingLabResult(
   patientId: string,
-  encounterReason: string,
+  encounterReasons: string[],
   token: string,
 ): Promise<ExistingLabResult> {
   const url =
@@ -505,7 +504,7 @@ export async function findExistingLabResult(
       .filter(Boolean) as EncounterResource[]) ?? [];
   const matches = encounters.filter((e) =>
     (e.reasonCode ?? []).some((rc) =>
-      (rc.coding ?? []).some((c) => c.code === encounterReason),
+      (rc.coding ?? []).some((c) => c.code && encounterReasons.includes(c.code)),
     ),
   );
   if (matches.length === 0) return { exists: false, count: 0 };
@@ -561,10 +560,112 @@ export async function getPatientRecordType(
       const tb = b?.meta?.lastUpdated ?? b?.issued ?? "";
       return tb.localeCompare(ta);
     })[0];
-  const v = (latest?.valueString ?? "").trim().toLowerCase();
+  return recordTypeOf(latest?.valueString);
+}
+
+function recordTypeOf(answer: string | undefined): PatientRecordType {
+  const v = (answer ?? "").trim().toLowerCase();
   if (v === "case") return "case";
   if (v === "line list" || v === "line-list" || v === "linelist")
     return "line-list";
   return "unknown";
+}
+
+/* ── Cases still waiting for a lab result ────────────────────────────────── */
+
+const SUBJECTS_PER_QUERY = 40;
+
+/** Latest Observation answer per patient for `code`, among `patientIds`. */
+async function latestAnswers(
+  code: string,
+  patientIds: string[],
+  token: string,
+): Promise<Map<string, ObservationResource>> {
+  const latest = new Map<string, ObservationResource>();
+  for (const ids of chunk(patientIds, SUBJECTS_PER_QUERY)) {
+    const query = new URLSearchParams({
+      code,
+      subject: ids.map((id) => `Patient/${id}`).join(","),
+      _count: "200",
+    });
+    const observations = await searchAll<ObservationResource>(
+      `${FHIR_BASE_URL}/Observation?${query}`,
+      token,
+    );
+    for (const o of observations) {
+      const id = patientRefId(o.subject?.reference);
+      const current = id ? latest.get(id) : undefined;
+      if (id && (!current || (o.meta?.lastUpdated ?? "") > (current.meta?.lastUpdated ?? ""))) {
+        latest.set(id, o);
+      }
+    }
+  }
+  return latest;
+}
+
+/**
+ * Cases (Patients with `caseIdentifierSystem`) that have no lab result yet,
+ * one per EPID, for pre-filling the bulk-upload template.
+ *
+ * Mobile does not deduplicate, so one EPID can have several Patient records;
+ * the EPID has a result if any of them does, and the row describes the most
+ * recently updated one (the record the upload's EPID lookup picks). Line-list
+ * entries are left out because the upload rejects them, and so are records
+ * without a complete EPID: an unassigned one ("KEN-...-VHF-") matches many.
+ */
+export async function listCasesWithoutLabResult(
+  caseIdentifierSystem: string,
+  resultReasons: string[],
+  token: string,
+): Promise<PendingLabCases> {
+  const patientQuery = new URLSearchParams({
+    identifier: `${caseIdentifierSystem}|`,
+    _elements: "identifier,name,address,active",
+    _count: "200",
+  });
+  const encounterQuery = new URLSearchParams({
+    "reason-code": resultReasons.join(","),
+    _elements: "subject",
+    _count: "500",
+  });
+  const [patients, resultEncounters] = await Promise.all([
+    searchAll<PatientResource>(`${FHIR_BASE_URL}/Patient?${patientQuery}`, token),
+    searchAll<EncounterResource>(`${FHIR_BASE_URL}/Encounter?${encounterQuery}`, token),
+  ]);
+  const withResult = new Set(
+    resultEncounters.map((e) => patientRefId(e.subject?.reference)).filter(Boolean),
+  );
+
+  let withoutEpid = 0;
+  const byEpid = new Map<string, PatientResource[]>();
+  for (const p of patients) {
+    if (!p.id || p.active === false) continue;
+    const epid = epidValue(p)?.trim();
+    if (!epid || !/\d$/.test(epid)) {
+      withoutEpid++;
+      continue;
+    }
+    byEpid.set(epid, [...(byEpid.get(epid) ?? []), p]);
+  }
+
+  const pending = Array.from(byEpid.entries())
+    .filter(([, records]) => !records.some((p) => withResult.has(p.id!)))
+    .map(([epid, records]) => ({ epid, patient: chooseLatestPatient(records, epid)! }));
+
+  const recordTypes = await latestAnswers(
+    CASE_OR_LINELIST_LINKID,
+    pending.map(({ patient }) => patient.id!),
+    token,
+  );
+  const cases = pending
+    .filter(({ patient }) => recordTypeOf(recordTypes.get(patient.id!)?.valueString) !== "line-list")
+    .map(({ epid, patient }) => ({
+      epid,
+      name: displayName(patient),
+      county: patient.address?.[0]?.city,
+      subCounty: patient.address?.[0]?.state,
+    }))
+    .sort((a, b) => a.epid.localeCompare(b.epid));
+  return { cases, withoutEpid };
 }
 
