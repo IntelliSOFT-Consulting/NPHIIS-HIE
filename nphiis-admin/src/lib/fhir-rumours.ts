@@ -12,13 +12,7 @@ import {
   isRumourPriority,
 } from "./rumours";
 import type { UserProfile } from "./server-auth";
-
-const FHIR_BASE_URL = (
-  process.env.FHIR_BASE_URL || process.env.NEXT_PUBLIC_FHIR_BASE_URL
-)?.replace(/\/$/, "");
-if (!FHIR_BASE_URL) {
-  throw new Error("FHIR_BASE_URL is not set");
-}
+import { FHIR_BASE_URL, chunk, fhirHeaders, searchAll } from "./fhir-search";
 
 const RUMOUR_SYSTEM = "social-listening-and-rumor-tracking-tool";
 export const RUMOUR_PRIORITY_CODE = "rumour-priority";
@@ -45,7 +39,6 @@ const FIELD_CODES = {
 
 const PATIENT_PAGE_SIZE = 100;
 const SUBJECTS_PER_OBSERVATION_QUERY = 40;
-const MAX_PAGES = 20;
 
 export class RumourNotFoundError extends Error {
   constructor(patientId: string) {
@@ -70,11 +63,6 @@ interface RumourObservation {
   meta?: { lastUpdated?: string };
 }
 
-interface SearchBundle<T> {
-  entry?: Array<{ resource?: T }>;
-  link?: Array<{ relation?: string; url?: string }>;
-}
-
 /** The county or sub-county (by name) whose reports a user may see. */
 export interface RumourScope {
   county?: string;
@@ -93,45 +81,6 @@ export function rumourScopeFor(
   if (subCountyName) return { subCounty: subCountyName };
   if (countyName) return { county: countyName };
   return undefined;
-}
-
-function fhirHeaders(token: string): HeadersInit {
-  return {
-    Accept: "application/fhir+json",
-    Authorization: `Bearer ${token}`,
-  };
-}
-
-/**
- * HAPI's `next` links carry its own public base URL, which this container
- * may not be able to reach, so only the paging query string is kept.
- */
-function nextPageUrl<T>(bundle: SearchBundle<T>): string | undefined {
-  const next = bundle.link?.find((l) => l.relation === "next")?.url;
-  if (!next) return undefined;
-  return `${FHIR_BASE_URL}?${new URL(next).searchParams.toString()}`;
-}
-
-async function searchAll<T>(url: string, token: string): Promise<T[]> {
-  const out: T[] = [];
-  let next: string | undefined = url;
-  for (let page = 0; next && page < MAX_PAGES; page++) {
-    const res = await fetch(next, { headers: fhirHeaders(token), cache: "no-store" });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      throw new Error(`FHIR search failed (${res.status}): ${body.slice(0, 300)}`);
-    }
-    const bundle = (await res.json()) as SearchBundle<T>;
-    for (const e of bundle.entry ?? []) if (e.resource) out.push(e.resource);
-    next = nextPageUrl(bundle);
-  }
-  return out;
-}
-
-function chunk<T>(items: T[], size: number): T[][] {
-  const out: T[][] = [];
-  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
-  return out;
 }
 
 function sameName(a: string | undefined, b: string | undefined): boolean {

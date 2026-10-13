@@ -304,6 +304,17 @@ function initialAnswerFor(
 }
 
 /**
+ * True when the row answers at least one of the form's fields. Rows of the
+ * pre-filled template that the lab left blank answer none and are skipped.
+ */
+export function hasFormValues(
+  form: LabFormDefinition,
+  row: Record<string, string>,
+): boolean {
+  return flattenItems(form.questionnaire).some((item) => rawValueFor(item, row) !== "");
+}
+
+/**
  * Walks the form's items (in order) and returns the coerced answers for each
  * visible+answered item, skipping fields whose `enableWhen` is not satisfied.
  * Throws `RowMappingError` on missing requireds, bad types, or constraint
