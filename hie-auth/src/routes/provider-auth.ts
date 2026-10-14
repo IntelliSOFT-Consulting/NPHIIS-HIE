@@ -340,6 +340,7 @@ router.get("/user/:username", authenticateUser, async (req: Request, res: Respon
                 fullNames: user.name,
                 phone: user.attributes?.phone?.[0] || null,
                 email: user.email || null,
+                createdTimestamp: user.createdTimestamp,
                 locationInfo
             }
         });
