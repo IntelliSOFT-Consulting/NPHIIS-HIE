@@ -114,7 +114,7 @@ function buildName(obj: Record<string, unknown>) {
     const text = pickString(obj, ["full_name", "fullName", "name", "client_name"]);
     const family = pickString(obj, ["last_name", "lastName", "surname", "family_name", "familyName"]);
     const first = pickString(obj, ["first_name", "firstName", "given_name", "givenName"]);
-    const middle = pickString(obj, ["middle_name", "middleName", "other_name", "otherName"]);
+    const middle = pickString(obj, ["middle_name", "middleName", "other_name", "otherName", "other_names", "otherNames"]);
 
     const given = [first, middle].filter(Boolean) as string[];
     if (!family && given.length === 0 && !text) return undefined;

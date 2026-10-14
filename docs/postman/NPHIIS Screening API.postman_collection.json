@@ -1,0 +1,565 @@
+{
+  "info": {
+    "_postman_id": "5007e9a5-33ed-403c-a4e1-57142c6777d4",
+    "name": "NPHIIS Screening API",
+    "description": "Screening intake for NPHIIS (hie-auth `POST /provider/screenings`).\n\nA screening system sends a screened person as plain JSON. The service matches an existing FHIR `Patient` by identifier type + number (or creates one), then stores point of entry, travel history and signs/symptoms as a `QuestionnaireResponse` linked to that patient.\n\n**Auth** (either):\n- `X-Screening-Api-Key: {{SCREENING_API_KEY}}`: machine key for integrations. A wrong key is rejected; it does not fall back to Bearer.\n- `Authorization: Bearer {{token}}`: a provider token from **Auth > Provider Login**.\n\n**Idempotent** on `screeningId`: resubmitting the same id returns `duplicate: true` and creates nothing.\n\n| Status | Meaning |\n|---|---|\n| 201 / 200 | Created a patient / matched an existing one |\n| 400 | Invalid payload; `errors[]` lists every problem |\n| 401 | Wrong API key or invalid token |\n| 409 | Identifiers match more than one patient (`patientIds[]`) |\n| 502 | FHIR server failure; if `patientId` is returned, retry with the same `screeningId` |\n| 503 | `SCREENING_API_KEY` not configured on the server |\n\nEnumerations: `outcome` = cleared | referred | suspected; `pointOfEntry.type` = airport | seaport | border | facility | community; symptom `code` = fever, cough, sore-throat, difficulty-breathing, headache, fatigue, muscle-pain, vomiting, diarrhoea, abdominal-pain, rash, bleeding, jaundice, confusion, other; identifier `type` = Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID. Dates are `YYYY-MM-DD`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-Screening-Api-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{SCREENING_API_KEY}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Provider Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/login",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "login"
+              ]
+            },
+            "description": "Optional: only needed for the Bearer-token requests. Stores `access_token` in `{{token}}`.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idNumber\": \"{{providerIdNumber}}\",\n  \"password\": \"{{providerPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"token\", pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Submit Screening",
+      "item": [
+        {
+          "name": "Submit screening - full (API key)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings"
+              ]
+            },
+            "description": "Full payload: point of entry, demographics, travel history and symptoms. Generates a new `screeningId` and saves the returned `patientId` / `questionnaireResponseId`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{screeningIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"hasTravelled\": true,\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ]\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Fresh screeningId per run; Retry reuses it to show idempotency",
+                  "pm.collectionVariables.set(\"screeningId\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"screenedAt\", new Date().toISOString());",
+                  "if (!pm.collectionVariables.get(\"screeningIdNumber\")) {",
+                  "    pm.collectionVariables.set(\"screeningIdNumber\", String(Math.floor(10000000 + Math.random() * 89999999)));",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created or 200 matched\", () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"not a duplicate\", () => pm.expect(b.duplicate).to.eql(false));",
+                  "pm.collectionVariables.set(\"patientId\", b.patientId);",
+                  "pm.collectionVariables.set(\"questionnaireResponseId\", b.questionnaireResponseId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Retry same screeningId (idempotent)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings"
+              ]
+            },
+            "description": "Resends the previous request's `screeningId`; expect `200` with `duplicate: true` and the same ids.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{screeningIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"hasTravelled\": true,\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ]\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"duplicate\", () => pm.expect(b.duplicate).to.eql(true));",
+                  "pm.test(\"same patient\", () => pm.expect(b.patientId).to.eql(pm.collectionVariables.get(\"patientId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Re-screen same person (matches patient)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings"
+              ]
+            },
+            "description": "New `screeningId`, same identifier: matches the existing patient (`200`, `patientCreated: false`) and adds a second screening.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"outcome\": \"cleared\",\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{screeningIdNumber}}\"\n      }\n    ]\n  },\n  \"travelHistory\": {\n    \"hasTravelled\": false\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 36.7\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"screeningId\", pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 matched\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"existing patient\", () => {",
+                  "    const b = pm.response.json();",
+                  "    pm.expect(b.patientCreated).to.eql(false);",
+                  "    pm.expect(b.patientId).to.eql(pm.collectionVariables.get(\"patientId\"));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit screening - minimal (Bearer token)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings"
+              ]
+            },
+            "description": "Smallest valid body, authenticated with a provider token instead of the API key.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"screeningId\": \"{{$guid}}\",\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{screeningIdNumber}}\"\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 or 201\", () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid payload (400)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings"
+              ]
+            },
+            "description": "Every problem is reported in `errors[]`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"screeningId\": \"\",\n  \"outcome\": \"unknown\",\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"Passport\",\n        \"value\": \"X1\"\n      }\n    ],\n    \"birthDate\": \"14/05/1990\"\n  },\n  \"signsAndSymptoms\": {\n    \"symptoms\": [\n      {\n        \"code\": \"sneezing\"\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"lists errors\", () => pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Find Screenings",
+      "item": [
+        {
+          "name": "List screened patients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings/patients?_count=50&_sort=-_lastUpdated",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings",
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "_count",
+                  "value": "50",
+                  "description": "Page size, max 200"
+                },
+                {
+                  "key": "_sort",
+                  "value": "-_lastUpdated"
+                }
+              ]
+            },
+            "description": "FHIR Bundle of patients tagged `record-origin|screened`. Optional: `name`, `identifier`, `_count` (max 200), `_offset`, `_sort`."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"is a Bundle\", () => pm.expect(pm.response.json().resourceType).to.eql(\"Bundle\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Find screened patient by identifier",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings/patients?identifier={{screeningIdNumber}}",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings",
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "identifier",
+                  "value": "{{screeningIdNumber}}"
+                }
+              ]
+            },
+            "description": "Look up the patient created above by its identifier number."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get screened Patient (FHIR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/fhir/Patient/{{patientId}}",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "fhir",
+                "Patient",
+                "{{patientId}}"
+              ]
+            },
+            "description": "The patient via the FHIR proxy (Bearer token required).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Screenings for patient (FHIR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/fhir/QuestionnaireResponse?subject=Patient/{{patientId}}&_profile=http://nphiis.health.go.ke/fhir/StructureDefinition/traveller-screening-response",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "fhir",
+                "QuestionnaireResponse"
+              ],
+              "query": [
+                {
+                  "key": "subject",
+                  "value": "Patient/{{patientId}}"
+                },
+                {
+                  "key": "_profile",
+                  "value": "http://nphiis.health.go.ke/fhir/StructureDefinition/traveller-screening-response"
+                }
+              ]
+            },
+            "description": "All screenings recorded for `{{patientId}}`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Screenings by outcome (FHIR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/fhir/QuestionnaireResponse?_tag=http://nphiis.health.go.ke/fhir/CodeSystem/screening-outcome|referred",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "fhir",
+                "QuestionnaireResponse"
+              ],
+              "query": [
+                {
+                  "key": "_tag",
+                  "value": "http://nphiis.health.go.ke/fhir/CodeSystem/screening-outcome|referred"
+                }
+              ]
+            },
+            "description": "Filter screenings by outcome tag: cleared | referred | suspected.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "API_HOST",
+      "value": "https://dsrfhir.intellisoftkenya.com/api",
+      "type": "default"
+    },
+    {
+      "key": "SCREENING_API_KEY",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "providerIdNumber",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "providerPassword",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "screeningIdNumber",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "screeningId",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "screenedAt",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "patientId",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "questionnaireResponseId",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
