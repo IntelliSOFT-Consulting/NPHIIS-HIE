@@ -17,11 +17,21 @@ router.use(express.json({ limit: "1mb" }));
 
 const entries = (bundle: any): any[] => (bundle?.entry ?? []).map((e: any) => e.resource).filter(Boolean);
 
+/**
+ * HAPI reuses identical search results for 60s by default, so a lookup made just
+ * before a create would keep answering "not found" and a retry would create a duplicate.
+ * Searches that decide whether to create something must bypass that cache.
+ */
+const FRESH_SEARCH = { "Cache-Control": "no-cache" };
+
 /** Find Patients already holding any of the supplied identifiers (type + number). */
 async function findMatchingPatients(identifiers: Array<{ type: any; value: string }>) {
     const found = new Map<string, any>();
     for (const id of identifiers) {
-        const resp = await FhirApi({ url: `/Patient?identifier=${encodeURIComponent(id.value.trim())}&_count=20` });
+        const resp = await FhirApi({
+            url: `/Patient?identifier=${encodeURIComponent(id.value.trim())}&_count=20`,
+            headers: FRESH_SEARCH,
+        });
         if (resp.status !== "success") throw new Error("Patient search failed");
         for (const p of entries(resp.data)) {
             if (p.resourceType === "Patient" && patientHasIdentifier(p, id.type, id.value)) found.set(p.id, p);
@@ -44,6 +54,7 @@ router.post("/", authenticateUser, async (req: Request, res: Response) => {
         // Idempotency: a retried submission returns the original result
         const prior = await FhirApi({
             url: `/QuestionnaireResponse?identifier=${encodeURIComponent(`${SCREENING_ID_SYSTEM}|${payload.screeningId}`)}`,
+            headers: FRESH_SEARCH,
         });
         if (prior.status !== "success") return res.status(502).json({ status: "error", error: "FHIR server unavailable" });
         const existingQr = entries(prior.data)[0];
