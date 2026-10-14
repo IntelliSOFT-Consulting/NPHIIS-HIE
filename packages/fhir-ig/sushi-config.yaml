@@ -1,0 +1,18 @@
+id: nphiis.fhir.identity
+canonical: http://nphiis.health.go.ke/fhir
+name: NPHIISIdentityIG
+title: NPHIIS Patient Identity Implementation Guide
+status: draft
+version: 0.1.0
+fhirVersion: 4.0.1
+copyrightYear: 2026+
+releaseLabel: ci-build
+publisher:
+  name: Kenya National Public Health Institute
+  url: https://nphiis.health.go.ke
+description: >
+  FHIR R4 profiles for patients resolved from Client Registry (CR) and
+  Integrated Population Registration System (IPRS) lookups used by NPHIIS
+  provider authentication services.
+dependencies:
+  hl7.fhir.r4.core: 4.0.1
