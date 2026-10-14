@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { requireScreeningAuth } from "../middleware/screening-auth";
+import { authenticateUser } from "../lib/middleware";
 import { FhirApi } from "../lib/utils";
 import {
     SCREENING_ID_SYSTEM,
@@ -35,7 +35,7 @@ async function findMatchingPatients(identifiers: Array<{ type: any; value: strin
  * (point of entry, travel history, signs & symptoms) as a QuestionnaireResponse linked to it.
  * Idempotent on `screeningId`.
  */
-router.post("/", requireScreeningAuth, async (req: Request, res: Response) => {
+router.post("/", authenticateUser, async (req: Request, res: Response) => {
     try {
         const parsed = validateScreeningPayload(req.body);
         if (!parsed.ok) return res.status(400).json({ status: "error", errors: parsed.errors });
@@ -117,7 +117,7 @@ router.post("/", requireScreeningAuth, async (req: Request, res: Response) => {
  * List screened patients. Query: outcome, _count, _offset, name, identifier.
  * Equivalent FHIR search via the proxy: GET /fhir/Patient?_tag=<system>|screened
  */
-router.get("/patients", requireScreeningAuth, async (req: Request, res: Response) => {
+router.get("/patients", authenticateUser, async (req: Request, res: Response) => {
     try {
         const params = new URLSearchParams();
         params.set("_tag", `${SCREENING_TAG_SYSTEM}|${SCREENING_TAG_CODE}`);

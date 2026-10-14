@@ -328,7 +328,8 @@ router.post("/refresh_token", async (req: Request, res: Response) => {
     try {
         let { refresh_token } = req.body;
         let token = await refreshToken(refresh_token);
-        if (!token) {
+        // Keycloak answers a bad/expired refresh token with an error body, not a throw
+        if (!token || token.error || !token.access_token) {
             return res.status(401).json({ status: "error", error: "Invalid refresh token provided" });
         }
         return res.status(200).json({ ...token, status: "success" });
