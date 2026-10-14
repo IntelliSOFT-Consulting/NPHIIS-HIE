@@ -11,7 +11,7 @@ spring:
     url: jdbc:postgresql://hapi-fhir-postgres:5432/hapi
     dialect: org.hibernate.dialect.PostgreSQL95Dialect
     username: postgres
-    password: ***REMOVED***
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driverClassName: org.postgresql.Driver
 
   jpa:

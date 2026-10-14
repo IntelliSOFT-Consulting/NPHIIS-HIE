@@ -18,7 +18,7 @@ services:
         environment:
             POSTGRES_USER: postgres
             POSTGRES_DB: hapi
-            POSTGRES_PASSWORD: ***REMOVED***
+            POSTGRES_PASSWORD: ${HAPI_DB_PASSWORD}
         volumes:
             - 'hapi-fhir-postgres:/var/lib/postgresql/data'
 
@@ -37,6 +37,7 @@ services:
             - "./hapi-fhir:/hapi"
         environment:
             SPRING_CONFIG_LOCATION: /hapi/application.yaml
+            SPRING_DATASOURCE_PASSWORD: ${HAPI_DB_PASSWORD}
             TZ: Africa/Nairobi
     
     hie-auth:
@@ -76,7 +77,7 @@ services:
         environment:
             POSTGRES_USER: postgres
             POSTGRES_DB: nphiis-mediators
-            POSTGRES_PASSWORD: ***REMOVED***
+            POSTGRES_PASSWORD: ${NPHIIS_DB_PASSWORD}
         # ports:
             # - "5432:5432"
         volumes:
