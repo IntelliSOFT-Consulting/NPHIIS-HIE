@@ -4,15 +4,19 @@ Authenticated providers can validate a patient by identification document:
 
 `GET /provider/patients/validate?identification_number=…&identification_type=…`
 
-Lookup order: **Client Registry** first; on not-found, **IPRS**. Upstream errors on CR do not fall through to IPRS (returns `502`). Success responses include a FHIR R4 `Patient` conforming to `ClientRegistryPatient` or `IprsPatient` (see `packages/fhir-ig`).
+Lookup order: **Client Registry** first; on not-found, **IPRS**. `CR_BASE_URL` is the middleware root (e.g. `https://ilm-dev.dha.go.ke/uat-middleware`); the service appends `/api/v1/patients`. The DHA middleware's `400 … zero results found` is treated as not-found. Upstream errors on CR do not fall through to IPRS (returns `502`). Success responses include a FHIR R4 `Patient` conforming to `ClientRegistryPatient` or `IprsPatient` (see `packages/fhir-ig`).
 
 | Variable | Purpose |
 |----------|---------|
 | `CR_BASE_URL` | Base URL for Client Registry (required for CR step) |
 | `CR_API_TOKEN` | Optional Bearer token for CR |
+| `CR_CLIENT_ID` / `CR_CLIENT_SECRET` | OAuth2 client credentials (DHA middleware). When set, a token is fetched, cached until shortly before expiry, and refreshed once on `401`; takes precedence over `CR_API_TOKEN` |
+| `CR_TOKEN_URL` | Optional token endpoint (default `${CR_BASE_URL}/api/v1/tenants/token`) |
 | `CR_TIMEOUT_MS` | Optional CR timeout (default `10000`) |
 | `IPRS_BASE_URL` | Base URL for IPRS (required for IPRS fallback) |
-| `IPRS_API_TOKEN` | Optional Bearer token for IPRS |
+| `IPRS_USERNAME` / `IPRS_PASSWORD` | Basic auth credentials for IPRS (SHA Health ID) |
+| `IPRS_BASIC_AUTH` | Optional pre-built Basic auth value, sent as-is instead of username/password |
+| `IPRS_API_TOKEN` | Optional Bearer token for IPRS, used only when no Basic auth is configured |
 | `IPRS_TIMEOUT_MS` | Optional IPRS timeout (default `10000`) |
 
 Allowed `identification_type` values: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID.
