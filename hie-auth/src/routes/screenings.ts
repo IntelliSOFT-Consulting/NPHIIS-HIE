@@ -76,7 +76,7 @@ router.post("/", authenticateUser, async (req: Request, res: Response) => {
             });
         }
 
-        const incoming = buildScreenedPatient(payload.patient);
+        const incoming = buildScreenedPatient(payload.patient, payload.screeningNumber ?? payload.screeningId);
         let patient: any;
         let patientCreated = false;
         if (matches.length === 1) {
