@@ -197,7 +197,7 @@ export const userApi = {
           role: data.user.role || data.user.practitionerRole,
           enabled: data.user.enabled ?? isActive, // Use enabled if provided, otherwise derive from status
           active: isActive, // Map status/enabled to active for UI display
-          createdTimestamp: Date.now(), // Default timestamp
+          createdTimestamp: data.user.createdTimestamp,
           fhirPractitionerId: data.user.fhirPractitionerId,
           practitionerRole: data.user.practitionerRole,
           idNumber: data.user.idNumber,
@@ -271,7 +271,7 @@ export const userApi = {
         role: userData.role,
         enabled: true,
         active: true, // Newly created users are active
-        createdTimestamp: Date.now(),
+        createdTimestamp: data.createdTimestamp,
       };
     } catch (error) {
       console.error('Create user error:', error);
@@ -351,7 +351,7 @@ export const userApi = {
           role: data.user.role || data.user.practitionerRole,
           enabled: data.user.enabled ?? isActive, // Use enabled if provided, otherwise derive from status
           active: isActive, // Map status/enabled to active for UI display
-          createdTimestamp: Date.now() // Default timestamp
+          createdTimestamp: data.user.createdTimestamp
         };
       } else {
         // Handle API error responses with proper structure
