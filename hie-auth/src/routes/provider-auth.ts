@@ -9,6 +9,10 @@ import { runPractitionerRoleBackfillJob } from "../lib/practitioner-role-backfil
 import { runPractitionerRoleResourceBackfillJob } from "../lib/practitioner-role-resource-backfill";
 import { runCaseNotificationBackfillJob } from "../lib/notification-backfill-job";
 import { getApplicationRoles, isValidApplicationRole } from "../lib/roles";
+import { lookupClientRegistryPatient } from "../lib/client-registry";
+import { lookupIprsPatient } from "../lib/iprs";
+import { isIdentificationType } from "../lib/identification-types";
+import { mapCrResponseToPatient, mapIprsResponseToPatient } from "../lib/patient-identity-map";
 
 const router = express.Router();
 router.use(express.json());
@@ -223,6 +227,100 @@ router.post("/login", async (req: Request, res: Response) => {
     catch (error) {
         console.log(error);
         return res.status(401).json({ error: "incorrect email or password", status: "error" });
+    }
+});
+
+/**
+ * Validate a patient identity via Client Registry, falling back to IPRS on not-found.
+ * Returns a FHIR Patient conforming to ClientRegistryPatient or IprsPatient.
+ */
+router.get("/patients/validate", authenticateUser, async (req: Request, res: Response) => {
+    try {
+        const identificationNumber = String(req.query.identification_number ?? "").trim();
+        const identificationTypeRaw = String(req.query.identification_type ?? "").trim();
+
+        if (!identificationNumber || !identificationTypeRaw) {
+            return res.status(400).json({
+                status: "error",
+                error: "identification_number and identification_type are required",
+            });
+        }
+
+        if (!isIdentificationType(identificationTypeRaw)) {
+            return res.status(400).json({
+                status: "error",
+                error: `invalid identification_type. Allowed: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID`,
+            });
+        }
+
+        const identificationType = identificationTypeRaw;
+
+        const crResult = await lookupClientRegistryPatient({
+            identificationNumber,
+            identificationType,
+        });
+
+        if (crResult.status === "misconfigured") {
+            return res.status(503).json({ status: "error", error: crResult.error });
+        }
+
+        if (crResult.status === "error") {
+            return res.status(502).json({
+                status: "error",
+                error: crResult.error || "Client Registry lookup failed",
+            });
+        }
+
+        if (crResult.status === "found") {
+            return res.status(200).json({
+                status: "success",
+                found: true,
+                source: "client-registry",
+                patient: mapCrResponseToPatient(
+                    crResult.data,
+                    identificationNumber,
+                    identificationType,
+                ),
+            });
+        }
+
+        // CR not found — fall back to IPRS
+        const iprsResult = await lookupIprsPatient({
+            identificationNumber,
+            identificationType,
+        });
+
+        if (iprsResult.status === "misconfigured") {
+            return res.status(503).json({ status: "error", error: iprsResult.error });
+        }
+
+        if (iprsResult.status === "error") {
+            return res.status(502).json({
+                status: "error",
+                error: iprsResult.error || "IPRS lookup failed",
+            });
+        }
+
+        if (iprsResult.status === "found") {
+            return res.status(200).json({
+                status: "success",
+                found: true,
+                source: "iprs",
+                patient: mapIprsResponseToPatient(
+                    iprsResult.data,
+                    identificationNumber,
+                    identificationType,
+                ),
+            });
+        }
+
+        return res.status(200).json({ status: "success", found: false });
+    } catch (error) {
+        console.error("GET /patients/validate error:", error);
+        return res.status(500).json({
+            status: "error",
+            error: "Failed to validate patient identity",
+        });
     }
 });
 

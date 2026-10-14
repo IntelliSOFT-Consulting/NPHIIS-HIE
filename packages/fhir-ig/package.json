@@ -1,0 +1,13 @@
+{
+  "name": "nphiis-fhir-identity-ig",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NPHIIS FHIR IG for Client Registry and IPRS patient identity profiles",
+  "scripts": {
+    "build": "sushi .",
+    "sushi": "sushi ."
+  },
+  "devDependencies": {
+    "fsh-sushi": "^3.16.0"
+  }
+}
