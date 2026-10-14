@@ -4,7 +4,7 @@ Authenticated providers can validate a patient by identification document:
 
 `GET /provider/patients/validate?identification_number=…&identification_type=…`
 
-Lookup order: **Client Registry** first; on not-found, **IPRS**. `CR_BASE_URL` is the middleware root (e.g. `https://ilm-dev.dha.go.ke/uat-middleware`); the service appends `/api/v1/patients`. The DHA middleware's `400 … zero results found` is treated as not-found. Upstream errors on CR do not fall through to IPRS (returns `502`). Success responses include a FHIR R4 `Patient` conforming to `ClientRegistryPatient` or `IprsPatient` (see `packages/fhir-ig`).
+Lookup order: **Client Registry** first; on not-found, **IPRS**. `CR_BASE_URL` is the middleware root (e.g. `https://ilm-dev.dha.go.ke/uat-middleware`); the service appends `/api/v1/patients`. The DHA middleware's `400 … zero results found` is treated as not-found. Upstream errors on CR do not fall through to IPRS (returns `502`). Success responses include a FHIR R4 `Patient` conforming to `ClientRegistryPatient` or `IprsPatient` (see `packages/fhir-ig`). When neither registry has the person it returns `400` with a FHIR `OperationOutcome` (`issue[0].code: "not-found"`).
 
 | Variable | Purpose |
 |----------|---------|

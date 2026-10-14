@@ -302,7 +302,16 @@ router.get("/patients/validate", authenticateUser, async (req: Request, res: Res
             return res.status(result.httpStatus).json({ status: "error", error: result.error });
         }
         if (result.kind === "not_found") {
-            return res.status(200).json({ status: "success", found: false });
+            return res.status(400).json({
+                resourceType: "OperationOutcome",
+                issue: [
+                    {
+                        severity: "error",
+                        code: "not-found",
+                        diagnostics: `No patient found in the Client Registry or IPRS for ${req.query.identification_type} ${req.query.identification_number}`,
+                    },
+                ],
+            });
         }
 
         const toFhir = result.source === "client-registry" ? mapCrResponseToPatient : mapIprsResponseToPatient;
