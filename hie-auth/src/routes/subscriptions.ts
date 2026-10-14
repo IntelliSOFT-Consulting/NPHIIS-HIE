@@ -14,6 +14,7 @@ import { runEpidCorrectionBackfillJob } from '../lib/epid-correction-backfill';
 import { getEpidValueFromEncounter, patientHasOfficialEpid } from '../lib/epid-utils';
 import { isLabResultEncounter, notifyLabResultToCaseSubmitter } from '../lib/lab-result-notification';
 import { scanEncountersMissingEpid } from '../lib/missing-epid-encounters';
+import { CaseSyncResult, queueSpecimenSync, syncCaseNow, syncSpecimenToNphl } from '../lib/nphl-lab-sync';
 
 const router = express.Router();
 router.use(express.json() as any);
@@ -350,6 +351,78 @@ router.put('/observations/notifications/Observation/:id', async (req: Request, r
     res.locals.subscriptionOutcome = 'error';
     res.locals.subscriptionErrorMessage = String(error);
     return res.status(400).json(OperationOutcome('Failed to process AFP Follow Up', 'error'));
+  }
+});
+
+function sendCaseSyncResult(res: Response, result: CaseSyncResult) {
+  if (result.kind === 'skipped') {
+    res.locals.subscriptionOutcome = 'skipped';
+    return res.status(200).json(OperationOutcome(result.reason, 'information'));
+  }
+  if (result.kind === 'error') {
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = result.error;
+    return res.status(400).json(OperationOutcome(result.error));
+  }
+  res.locals.subscriptionOutcome = result.submitted ? 'success' : 'error';
+  res.locals.subscriptionDetail = { caseEncounterId: result.caseEncounterId, specimens: result.specimens };
+  if (!result.submitted) {
+    res.locals.subscriptionErrorMessage = 'Specimens not submitted to NPHL; see Task statusReason';
+  }
+  return res.status(200).json(result);
+}
+
+/**
+ * Queues the specimen's case for NPHL and answers HAPI at once, so a slow NPHL never holds
+ * delivery threads or triggers HAPI retries. The sync itself is logged as route nphl-case-sync.
+ */
+router.put('/specimens/notifications/Specimen/:id', async (req: Request, res: Response) => {
+  console.log('Specimen subscription triggered for ID:', req.params.id);
+  const start = Date.now();
+  attachSubscriptionAuditLog(
+    res,
+    { route: 'specimen-notification', resourceType: 'Specimen', resourceId: req.params.id },
+    start
+  );
+  try {
+    const result = await queueSpecimenSync(req.params.id);
+    if (result.kind === 'queued') {
+      res.locals.subscriptionOutcome = 'success';
+      res.locals.subscriptionDetail = { caseEncounterId: result.caseEncounterId, queue: result.status };
+      return res.status(200).json(OperationOutcome(`Case ${result.caseEncounterId} ${result.status} for NPHL`, 'information'));
+    }
+    return sendCaseSyncResult(res, result);
+  } catch (error) {
+    console.error('Error in Specimen subscription:', error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
+    return res.status(400).json(OperationOutcome(error));
+  }
+});
+
+/** Manual re-submission of one case to NPHL: body { specimenId } or { encounterId }. */
+router.post('/specimens/nphl-sync', requireInternalApiKeyOrAdminBearer, async (req: Request, res: Response) => {
+  const start = Date.now();
+  const specimenId = typeof req.body?.specimenId === 'string' ? req.body.specimenId.trim() : '';
+  const encounterId = typeof req.body?.encounterId === 'string' ? req.body.encounterId.trim() : '';
+  attachSubscriptionAuditLog(
+    res,
+    { route: 'nphl-sync', resourceType: specimenId ? 'Specimen' : 'Encounter', resourceId: specimenId || encounterId },
+    start
+  );
+  if (!specimenId && !encounterId) {
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = 'specimenId or encounterId required';
+    return res.status(400).json(OperationOutcome('Provide specimenId or encounterId'));
+  }
+  try {
+    const result = specimenId ? await syncSpecimenToNphl(specimenId) : await syncCaseNow(encounterId);
+    return sendCaseSyncResult(res, result);
+  } catch (error) {
+    console.error('nphl-sync:', error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
+    return res.status(500).json(OperationOutcome(error));
   }
 });
 
