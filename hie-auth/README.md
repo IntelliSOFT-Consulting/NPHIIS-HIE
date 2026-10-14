@@ -40,7 +40,7 @@ Allowed `identification_type` values: Temporary ID, Alien ID, Refugee ID, Mandat
 | `409` | Identifiers match more than one patient (`patientIds[]`) |
 | `502` | FHIR server failure; if a `patientId` is returned, retry with the same `screeningId` |
 
-Minimal body: `{ "screeningId": "<uuid>", "patient": { "identifiers": [{ "type": "National ID", "value": "12345678" }] } }`. Optional: `screenedAt`, `outcome` (`cleared|referred|suspected`), `pointOfEntry`, `patient` demographics, `travelHistory { hasTravelled, trips[] }`, `signsAndSymptoms { temperatureCelsius, symptoms[{ code, present, onsetDate, note }] }`. Symptom codes: see `screening-symptom` CodeSystem in `packages/fhir-ig`.
+Minimal body: `{ "screeningId": "<uuid>", "patient": { "identifiers": [{ "type": "National ID", "value": "12345678" }] } }`. Optional: `screeningNumber` (the human-readable Screening No., e.g. `SCR-2026-40560`; defaults to `screeningId`; written to the Patient as identifier system `vhf-screening-number`, type `vhf-screened`), `screenedAt`, `outcome` (`cleared|referred|suspected`), `pointOfEntry`, `patient` demographics, `travelHistory { hasTravelled, trips[] }`, `signsAndSymptoms { temperatureCelsius, symptoms[{ code, present, onsetDate, note }] }`. Symptom codes: see `screening-symptom` CodeSystem in `packages/fhir-ig`.
 
 **Finding screenings** (all via `/fhir/...` or `GET /provider/screenings/patients`):
 

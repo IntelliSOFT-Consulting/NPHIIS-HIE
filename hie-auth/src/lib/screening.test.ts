@@ -51,6 +51,31 @@ describe("patient mapping", () => {
         expect(patientHasIdentifier(p, "Alien ID", "12345678")).toBe(false);
     });
 
+    it("gives the patient a Screening No. in the shape mobile writes", () => {
+        const p = buildScreenedPatient(valid.patient as any, "SCR-2026-40560");
+        expect(p.identifier[0]).toEqual({
+            type: {
+                coding: [{ system: "vhf-screened", code: "vhf-screened", display: "VHF Screening" }],
+                text: "Screening No.",
+            },
+            system: "vhf-screening-number",
+            value: "SCR-2026-40560",
+        });
+        expect(buildScreenedPatient(valid.patient as any).identifier.some((i: any) => i.system === "vhf-screening-number")).toBe(false);
+    });
+
+    it("adds a new Screening No. to an existing patient once, keeping earlier ones", () => {
+        const first = mergeIntoExistingPatient(
+            { resourceType: "Patient", id: "9", identifier: [] },
+            buildScreenedPatient(valid.patient as any, "SCR-1"),
+        );
+        const again = mergeIntoExistingPatient(first, buildScreenedPatient(valid.patient as any, "SCR-1"));
+        const second = mergeIntoExistingPatient(again, buildScreenedPatient(valid.patient as any, "SCR-2"));
+        const numbers = (p: any) => p.identifier.filter((i: any) => i.system === "vhf-screening-number").map((i: any) => i.value);
+        expect(numbers(again)).toEqual(["SCR-1"]);
+        expect(numbers(second)).toEqual(["SCR-1", "SCR-2"]);
+    });
+
     it("merges into an existing patient without overwriting", () => {
         const existing = { resourceType: "Patient", id: "9", gender: "male", identifier: [{ system: "x", value: "12345678" }] };
         const merged = mergeIntoExistingPatient(existing, buildScreenedPatient(valid.patient as any));
