@@ -1,3 +1,22 @@
+### Patient identity validation (CR + IPRS)
+
+Authenticated providers can validate a patient by identification document:
+
+`GET /provider/patients/validate?identification_number=…&identification_type=…`
+
+Lookup order: **Client Registry** first; on not-found, **IPRS**. Upstream errors on CR do not fall through to IPRS (returns `502`). Success responses include a FHIR R4 `Patient` conforming to `ClientRegistryPatient` or `IprsPatient` (see `packages/fhir-ig`).
+
+| Variable | Purpose |
+|----------|---------|
+| `CR_BASE_URL` | Base URL for Client Registry (required for CR step) |
+| `CR_API_TOKEN` | Optional Bearer token for CR |
+| `CR_TIMEOUT_MS` | Optional CR timeout (default `10000`) |
+| `IPRS_BASE_URL` | Base URL for IPRS (required for IPRS fallback) |
+| `IPRS_API_TOKEN` | Optional Bearer token for IPRS |
+| `IPRS_TIMEOUT_MS` | Optional IPRS timeout (default `10000`) |
+
+Allowed `identification_type` values: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID.
+
 ### EPID assignment
 
 See [docs/EPID.md](docs/EPID.md) for when epidemiological IDs are generated (subscriptions, cron, manual endpoints) and when they are skipped.
