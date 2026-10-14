@@ -83,12 +83,21 @@ describe("GET /provider/patients/validate", () => {
         expect(body.patient.meta.profile[0]).toContain("iprs-patient");
     });
 
-    it("found:false when both miss", async () => {
+    it("400 OperationOutcome when both miss", async () => {
         cr.lookupClientRegistryPatient.mockResolvedValue({ status: "not_found" });
         iprs.lookupIprsPatient.mockResolvedValue({ status: "not_found" });
         const res = await get(Q);
-        expect(res.status).toBe(200);
-        expect(await res.json()).toEqual({ status: "success", found: false });
+        expect(res.status).toBe(400);
+        expect(await res.json()).toEqual({
+            resourceType: "OperationOutcome",
+            issue: [
+                {
+                    severity: "error",
+                    code: "not-found",
+                    diagnostics: "No patient found in the Client Registry or IPRS for National ID 12345678",
+                },
+            ],
+        });
     });
 
     it("502 on CR error without falling through to IPRS", async () => {

@@ -73,7 +73,8 @@ async function getClientRegistryToken(
 async function isNotFoundResponse(response: Response): Promise<boolean> {
     if (response.status === 404) return true;
     if (response.status !== 400) return false;
-    const text = await response.text().catch(() => "");
+    // Read a clone so the body stays available for error logging
+    const text = await response.clone().text().catch(() => "");
     return /zero results found/i.test(text);
 }
 
@@ -125,6 +126,8 @@ export async function lookupClientRegistryPatient(params: {
         }
 
         if (!response.ok) {
+            const detail = await response.text().catch(() => "");
+            console.error("[ClientRegistry] HTTP", response.status, detail.slice(0, 500));
             return {
                 status: "error",
                 error: `Client Registry returned HTTP ${response.status}`,
