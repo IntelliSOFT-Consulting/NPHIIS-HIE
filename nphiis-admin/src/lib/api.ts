@@ -690,7 +690,56 @@ export const authApi = {
         error: 'Authentication failed'
       };
     }
-  }
+  },
+
+  /**
+   * Validate a patient via Client Registry, falling back to IPRS on not-found.
+   * Returns a FHIR Patient when found (ClientRegistryPatient or IprsPatient profile).
+   */
+  validatePatient: async (params: {
+    identificationNumber: string;
+    identificationType: string;
+  }): Promise<{
+    status: 'success' | 'error';
+    found?: boolean;
+    source?: 'client-registry' | 'iprs';
+    patient?: Record<string, unknown>;
+    error?: string;
+  }> => {
+    try {
+      const token = getAccessToken();
+      if (!token) {
+        return { status: 'error', error: 'Not authenticated' };
+      }
+
+      const qs = new URLSearchParams({
+        identification_number: params.identificationNumber,
+        identification_type: params.identificationType,
+      });
+
+      const response = await fetch(`/api/provider/patients/validate?${qs.toString()}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        return {
+          status: 'error',
+          error: data.error || `HTTP error ${response.status}`,
+        };
+      }
+
+      return data;
+    } catch (error) {
+      console.error('validatePatient error:', error);
+      return { status: 'error', error: 'Network error occurred' };
+    }
+  },
 };
 
 // FHIR types
