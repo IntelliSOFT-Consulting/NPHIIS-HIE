@@ -111,3 +111,96 @@ describe("GET /provider/patients/validate", () => {
         expect((await get(Q)).status).toBe(503);
     });
 });
+
+const getRegistry = (qs: string, auth = true) =>
+    fetch(`${base}/patients/registry?${qs}`, {
+        headers: auth ? { Authorization: "Bearer x" } : {},
+    });
+
+describe("GET /provider/patients/registry", () => {
+    const crRecord = {
+        id: "CR6724396934727-8",
+        resourceType: "Patient",
+        first_name: "OMAR",
+        middle_name: "ABDULLAHI",
+        last_name: "MOHAMUD",
+        gender: "Male",
+        identification_type: "National ID",
+        identification_number: "12345678",
+        other_identifications: [{ identification_type: "SHA Number", identification_number: "SHA1" }],
+    };
+
+    it("401 without bearer token", async () => {
+        expect((await getRegistry(Q, false)).status).toBe(401);
+    });
+
+    it("400 on missing or invalid params", async () => {
+        expect((await getRegistry("identification_number=1&identification_type=Bogus")).status).toBe(400);
+        expect(cr.lookupClientRegistryPatient).not.toHaveBeenCalled();
+    });
+
+    it("returns the CR record unchanged when CR finds", async () => {
+        cr.lookupClientRegistryPatient.mockResolvedValue({ status: "found", data: crRecord });
+        const res = await getRegistry(Q);
+        expect(res.status).toBe(200);
+        expect(await res.json()).toEqual({ status: "success", found: true, source: "client-registry", patient: crRecord });
+        expect(iprs.lookupIprsPatient).not.toHaveBeenCalled();
+    });
+
+    it("converts an IPRS record into the CR format", async () => {
+        cr.lookupClientRegistryPatient.mockResolvedValue({ status: "not_found" });
+        iprs.lookupIprsPatient.mockResolvedValue({
+            status: "found",
+            data: {
+                data: {
+                    id_number: "12345678",
+                    first_name: "JANIS",
+                    other_names: "ONDITI",
+                    last_name: "SUCHI",
+                    sex: "M",
+                    date_of_birth: "1995-04-12",
+                    serial_number: "257094257",
+                    nationality: null,
+                    place_of_birth: null,
+                },
+            },
+        });
+        const body = await (await getRegistry(Q)).json();
+        expect(body).toMatchObject({ status: "success", found: true, source: "iprs" });
+        expect(body.patient).toEqual({
+            id: null,
+            resourceType: "Patient",
+            originSystem: { system: "IPRS" },
+            first_name: "JANIS",
+            middle_name: "ONDITI",
+            last_name: "SUCHI",
+            gender: "Male",
+            date_of_birth: "1995-04-12",
+            place_of_birth: null,
+            citizenship: "KENYAN",
+            identification_type: "National ID",
+            identification_number: "12345678",
+            other_identifications: [],
+            id_serial: "257094257",
+        });
+    });
+
+    it("returns the Client Registry's own not-found response when both miss", async () => {
+        cr.lookupClientRegistryPatient.mockResolvedValue({ status: "not_found" });
+        iprs.lookupIprsPatient.mockResolvedValue({ status: "not_found" });
+        const res = await getRegistry(Q);
+        expect(res.status).toBe(400);
+        const body = await res.json();
+        expect(body).toMatchObject({
+            error: "Bad Request",
+            message: "failed to get patient record: zero results found in client registry fetch patient search response",
+        });
+        expect(body.trace_id).toMatch(/^[0-9a-f]{32}$/);
+    });
+
+    it("502 on CR error without falling through to IPRS", async () => {
+        cr.lookupClientRegistryPatient.mockResolvedValue({ status: "error", error: "boom" });
+        expect((await getRegistry(Q)).status).toBe(502);
+        expect(iprs.lookupIprsPatient).not.toHaveBeenCalled();
+    });
+});

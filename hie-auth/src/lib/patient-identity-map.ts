@@ -281,3 +281,47 @@ export function mapIprsResponseToPatient(
         source: "iprs",
     });
 }
+
+/** A person in the Client Registry's own JSON shape (DHA middleware `GET /api/v1/patients`). */
+export type RegistryPatient = Record<string, unknown>;
+
+function registryGender(raw?: string): string | null {
+    const g = normalizeGender(raw);
+    if (g === "male") return "Male";
+    if (g === "female") return "Female";
+    return raw ? raw : null;
+}
+
+/**
+ * Express a CR or IPRS lookup result in the Client Registry's JSON shape.
+ * CR records are returned as the registry sent them; IPRS records are converted
+ * field by field, with registry-only fields (CR id, SHA/household numbers) left empty.
+ */
+export function toRegistryPatient(
+    raw: unknown,
+    source: PatientIdentitySource,
+    identificationNumber: string,
+    identificationType: IdentificationType,
+): RegistryPatient {
+    const obj = unwrapPatientPayload(raw);
+    if (source === "client-registry") return obj;
+
+    const nationality = pickString(obj, ["nationality", "citizenship"]);
+    return {
+        id: null,
+        resourceType: "Patient",
+        originSystem: { system: "IPRS" },
+        first_name: pickString(obj, ["first_name", "firstName"]) ?? null,
+        middle_name: pickString(obj, ["middle_name", "other_names", "otherNames"]) ?? null,
+        last_name: pickString(obj, ["last_name", "lastName", "surname"]) ?? null,
+        gender: registryGender(pickString(obj, ["gender", "sex"])),
+        date_of_birth: normalizeBirthDate(pickString(obj, ["date_of_birth", "dateOfBirth", "dob"])) ?? null,
+        place_of_birth: pickString(obj, ["place_of_birth", "district_of_birth"]) ?? null,
+        // IPRS "citizen" lookups (National ID) only return Kenyan citizens
+        citizenship: nationality ?? (identificationType === "National ID" ? "KENYAN" : null),
+        identification_type: identificationType,
+        identification_number: pickString(obj, ["id_number", "identification_number"]) ?? identificationNumber,
+        other_identifications: [],
+        id_serial: pickString(obj, ["serial_number", "id_serial"]) ?? null,
+    };
+}
