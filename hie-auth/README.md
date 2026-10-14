@@ -17,6 +17,29 @@ Lookup order: **Client Registry** first; on not-found, **IPRS**. Upstream errors
 
 Allowed `identification_type` values: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID.
 
+### Screening intake
+
+`POST /provider/screenings` receives a screened person as plain JSON (no FHIR needed by the caller). The service matches an existing `Patient` by identifier type + number (or creates one), then stores point of entry, travel history and signs/symptoms as a `QuestionnaireResponse` linked to that patient. Idempotent on `screeningId`: a retry returns `duplicate: true` and creates nothing.
+
+**Auth:** `X-Screening-Api-Key` header matching `SCREENING_API_KEY`, or a provider Bearer token. A wrong key is rejected (it does not fall back to Bearer).
+
+| Status | Meaning |
+|--------|---------|
+| `201` / `200` | Created / matched an existing patient |
+| `400` | Invalid payload (`errors[]` lists every problem) |
+| `409` | Identifiers match more than one patient (`patientIds[]`) |
+| `502` | FHIR server failure; if a `patientId` is returned, retry with the same `screeningId` |
+
+Minimal body: `{ "screeningId": "<uuid>", "patient": { "identifiers": [{ "type": "National ID", "value": "12345678" }] } }`. Optional: `screenedAt`, `outcome` (`cleared|referred|suspected`), `pointOfEntry`, `patient` demographics, `travelHistory { hasTravelled, trips[] }`, `signsAndSymptoms { temperatureCelsius, symptoms[{ code, present, onsetDate, note }] }`. Symptom codes: see `screening-symptom` CodeSystem in `packages/fhir-ig`.
+
+**Finding screenings** (all via `/fhir/...` or `GET /provider/screenings/patients`):
+
+- Screened patients: `Patient?_tag=http://nphiis.health.go.ke/fhir/CodeSystem/record-origin|screened` or `Patient?_profile=…/screened-patient`
+- Screenings: `QuestionnaireResponse?_profile=…/traveller-screening-response`
+- By outcome: `QuestionnaireResponse?_tag=…/CodeSystem/screening-outcome|referred`
+
+Profiles `ScreenedPatient` and `TravellerScreeningResponse`, plus the `traveller-screening` Questionnaire, are defined in `packages/fhir-ig/input/fsh/screening.fsh`. An existing patient who is screened later also gets the tag and profile, so the filter means "has been screened".
+
 ### EPID assignment
 
 See [docs/EPID.md](docs/EPID.md) for when epidemiological IDs are generated (subscriptions, cron, manual endpoints) and when they are skipped.

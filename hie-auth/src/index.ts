@@ -15,6 +15,7 @@ dotenv.config() // Load environment variables
 //Import routes
 import ClientAuth from './routes/client-auth'
 import ProviderAuth from './routes/provider-auth'
+import Screenings from './routes/screenings'
 import Reports from './routes/reports'
 import Notifications from './routes/notifications'
 import Subscriptions from './routes/subscriptions'
@@ -42,6 +43,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/client', ClientAuth)
+app.use('/provider/screenings', Screenings)
 app.use('/provider', ProviderAuth)
 app.use('/reports', Reports)
 app.use('/notifications', Notifications)
