@@ -62,6 +62,18 @@ describe("POST /provider/screenings", () => {
         expect(JSON.parse(qrPost.data).subject.reference).toBe("Patient/p1");
     });
 
+    it("bypasses HAPI's search cache for the lookups that decide whether to create", async () => {
+        fhir.FhirApi
+            .mockResolvedValueOnce(bundle())
+            .mockResolvedValueOnce(bundle())
+            .mockResolvedValueOnce(ok({ id: "p1" }))
+            .mockResolvedValueOnce(ok({ id: "q1" }));
+        await post(body);
+        const [idempotency, patientSearch] = fhir.FhirApi.mock.calls.map((c: any[]) => c[0]);
+        expect(idempotency.headers["Cache-Control"]).toBe("no-cache");
+        expect(patientSearch.headers["Cache-Control"]).toBe("no-cache");
+    });
+
     it("updates a single matching patient instead of creating one", async () => {
         const existing = { resourceType: "Patient", id: "p9", identifier: [{ system: "x", value: "12345678" }] };
         fhir.FhirApi

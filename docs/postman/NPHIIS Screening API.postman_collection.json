@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "5007e9a5-33ed-403c-a4e1-57142c6777d4",
     "name": "NPHIIS Screening API",
-    "description": "Screening intake for NPHIIS (hie-auth `POST /provider/screenings`).\n\nA screening system sends a screened person as plain JSON. The service matches an existing FHIR `Patient` by identifier type + number (or creates one), then stores point of entry, travel history and signs/symptoms as a `QuestionnaireResponse` linked to that patient.\n\n**Auth:** Bearer JWT, like every other NPHIIS API. The screening service has its own user account: run **Auth > Login** to obtain `{{token}}` (and `{{refresh_token}}`), and **Auth > Refresh Token** before it expires. All other requests inherit the collection's Bearer auth.\n\n**Idempotent** on `screeningId`: resubmitting the same id returns `duplicate: true` and creates nothing.\n\n| Status | Meaning |\n|---|---|\n| 201 / 200 | Created a patient / matched an existing one |\n| 400 | Invalid payload; `errors[]` lists every problem |\n| 401 | Missing, invalid or expired token |\n| 409 | Identifiers match more than one patient (`patientIds[]`) |\n| 502 | FHIR server failure; if `patientId` is returned, retry with the same `screeningId` |\n\nEnumerations: `outcome` = cleared | referred | suspected; `pointOfEntry.type` = airport | seaport | border | facility | community; symptom `code` = fever, cough, sore-throat, difficulty-breathing, headache, fatigue, muscle-pain, vomiting, diarrhoea, abdominal-pain, rash, bleeding, jaundice, confusion, other; identifier `type` = Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID. Dates are `YYYY-MM-DD`.",
+    "description": "Screening intake for NPHIIS (hie-auth `POST /provider/screenings`).\n\nA screening system sends a screened person as plain JSON. The service matches an existing FHIR `Patient` by identifier type + number (or creates one), then stores point of entry, travel history and signs/symptoms as a `QuestionnaireResponse` linked to that patient.\n\n**Auth:** Bearer JWT, like every other NPHIIS API. The screening service has its own user account: run **Auth > Login** to obtain `{{token}}` (and `{{refresh_token}}`), and **Auth > Refresh Token** before it expires. All other requests inherit the collection's Bearer auth.\n\n**Idempotent** on `screeningId`: resubmitting the same id returns `duplicate: true` and creates nothing.\n\n| Status | Meaning |\n|---|---|\n| 201 / 200 | Created a patient / matched an existing one |\n| 400 | Invalid payload; `errors[]` lists every problem |\n| 401 | Missing, invalid or expired token |\n| 409 | Identifiers match more than one patient (`patientIds[]`) |\n| 502 | FHIR server failure; if `patientId` is returned, retry with the same `screeningId` |\n\nEnumerations: `outcome` = cleared | referred | suspected; `pointOfEntry.type` = airport | seaport | border | facility | community; symptom `code` = fever, cough, sore-throat, difficulty-breathing, headache, fatigue, muscle-pain, vomiting, diarrhoea, abdominal-pain, rash, bleeding, jaundice, confusion, other; identifier `type` = Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID. Dates are `YYYY-MM-DD`.\n\nIn query strings, encode `|` as `%7C` (e.g. `_tag=<system>%7C<code>`); the FHIR server rejects a raw `|` with 400.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -448,7 +448,19 @@
             },
             "description": "The patient via the FHIR proxy."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"is the screened patient\", () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get(\"patientId\")));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Screenings for patient (FHIR)",
@@ -477,7 +489,19 @@
             },
             "description": "All screenings recorded for `{{patientId}}`."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"has the patient's screenings\", () => pm.expect(pm.response.json().entry || []).to.have.length.of.at.least(2));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Screenings by outcome (FHIR)",
@@ -485,7 +509,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{API_HOST}}/fhir/QuestionnaireResponse?_tag=http://nphiis.health.go.ke/fhir/CodeSystem/screening-outcome|referred",
+              "raw": "{{API_HOST}}/fhir/QuestionnaireResponse?_tag=http://nphiis.health.go.ke/fhir/CodeSystem/screening-outcome%7Creferred",
               "host": [
                 "{{API_HOST}}"
               ],
@@ -496,13 +520,24 @@
               "query": [
                 {
                   "key": "_tag",
-                  "value": "http://nphiis.health.go.ke/fhir/CodeSystem/screening-outcome|referred"
+                  "value": "http://nphiis.health.go.ke/fhir/CodeSystem/screening-outcome%7Creferred"
                 }
               ]
             },
             "description": "Filter screenings by outcome tag: cleared | referred | suspected."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
