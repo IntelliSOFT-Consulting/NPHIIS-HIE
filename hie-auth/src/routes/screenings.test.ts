@@ -23,7 +23,6 @@ const bundle = (...r: any[]) => ok({ entry: r.map((resource) => ({ resource })) 
 let server: Server;
 let base: string;
 beforeAll(async () => {
-    process.env.SCREENING_API_KEY = "secret";
     const app = express();
     app.use("/provider/screenings", router);
     server = app.listen(0);
@@ -32,13 +31,12 @@ beforeAll(async () => {
 afterAll(() => server.close());
 beforeEach(() => fhir.FhirApi.mockReset());
 
-const post = (payload: any, headers: Record<string, string> = { "x-screening-api-key": "secret" }) =>
+const post = (payload: any, headers: Record<string, string> = { authorization: "Bearer token" }) =>
     fetch(base, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(payload) });
 
 describe("POST /provider/screenings", () => {
-    it("rejects missing and wrong credentials", async () => {
+    it("requires a Bearer token", async () => {
         expect((await post(body, {})).status).toBe(401);
-        expect((await post(body, { "x-screening-api-key": "nope" })).status).toBe(401);
     });
 
     it("returns 400 with errors for an invalid payload", async () => {
@@ -62,6 +60,18 @@ describe("POST /provider/screenings", () => {
         const qrPost = fhir.FhirApi.mock.calls[3][0];
         expect(qrPost.headers["If-None-Exist"]).toContain("scr-1");
         expect(JSON.parse(qrPost.data).subject.reference).toBe("Patient/p1");
+    });
+
+    it("bypasses HAPI's search cache for the lookups that decide whether to create", async () => {
+        fhir.FhirApi
+            .mockResolvedValueOnce(bundle())
+            .mockResolvedValueOnce(bundle())
+            .mockResolvedValueOnce(ok({ id: "p1" }))
+            .mockResolvedValueOnce(ok({ id: "q1" }));
+        await post(body);
+        const [idempotency, patientSearch] = fhir.FhirApi.mock.calls.map((c: any[]) => c[0]);
+        expect(idempotency.headers["Cache-Control"]).toBe("no-cache");
+        expect(patientSearch.headers["Cache-Control"]).toBe("no-cache");
     });
 
     it("updates a single matching patient instead of creating one", async () => {
@@ -107,7 +117,7 @@ describe("POST /provider/screenings", () => {
 describe("GET /provider/screenings/patients", () => {
     it("searches by the screened tag", async () => {
         fhir.FhirApi.mockResolvedValueOnce(bundle({ id: "p1" }));
-        const res = await fetch(`${base}/patients?_count=5`, { headers: { "x-screening-api-key": "secret" } });
+        const res = await fetch(`${base}/patients?_count=5`, { headers: { authorization: "Bearer token" } });
         expect(res.status).toBe(200);
         expect(decodeURIComponent(fhir.FhirApi.mock.calls[0][0].url)).toContain("_tag=http://nphiis.health.go.ke/fhir/CodeSystem/record-origin|screened");
     });

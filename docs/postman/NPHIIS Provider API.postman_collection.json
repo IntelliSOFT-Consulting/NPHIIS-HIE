@@ -1,0 +1,1035 @@
+{
+  "info": {
+    "_postman_id": "1481e017-0bd4-4ad5-9f90-69b24341d967",
+    "name": "NPHIIS Provider API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "25663242",
+    "_collection_link": "https://go.postman.co/collection/25663242-1481e017-0bd4-4ad5-9f90-69b24341d967?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Admin Management",
+      "item": [
+        {
+          "name": "Manage Users",
+          "item": [
+            {
+              "name": "Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                      "const t = pm.response.json();",
+                      "pm.collectionVariables.set(\"token\", t.access_token);",
+                      "pm.collectionVariables.set(\"refresh_token\", t.refresh_token);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"idNumber\": \"{{providerIdNumber}}\",\n    \"password\": \"{{providerPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{API_HOST}}/provider/login",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Current User Infomation",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{API_HOST}}/provider/me",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Current User Infomation Copy",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/fhir/Encounter/b80be3cc-397b-4a34-b217-3845621ee99b",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "fhir",
+                    "Encounter",
+                    "b80be3cc-397b-4a34-b217-3845621ee99b"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Users",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{API_HOST}}/provider/users",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Available Roles",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{API_HOST}}/provider/users",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get User Info by ID Number / Username",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{API_HOST}}/provider/user/909090",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "user",
+                    "909090"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update User Information",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"role\": \"ADMINISTRATOR\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{API_HOST}}/provider/me",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update User Information Copy",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"role\": \"SUB_COUNTY_SYSTEM_ADMINISTRATOR\",\r\n    \"subCounty\": \"KISAUNI\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{API_HOST}}/provider/me",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register - Vaccinator",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"idNumber\": \"101010\",\n    \"password\": \"{{newUserPassword}}\",\n    \"email\": \"vaccinator@example.com\",\n    \"role\": \"VACCINATOR\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"Vaccinator\",\n    \"facility\": \"NAKURU-NORTH\",\n    \"phone\": \"0700000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{API_HOST}}/provider/register",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register - Clerk",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"idNumber\": \"1010111\",\n    \"password\": \"{{newUserPassword}}\",\n    \"email\": \"nurse@example.com\",\n    \"role\": \"NURSE\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"Nurse\",\n    \"facility\": \"11237\",\n    \"phone\": \"0700000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{API_HOST}}/provider/register",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register - Admin",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"idNumber\": \"909090\",\n    \"password\": \"{{newUserPassword}}\",\n    \"email\": \"admin@example.com\",\n    \"role\": \"ADMINISTRATOR\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"Admin\",\n    \"phone\": \"0700000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{API_HOST}}/provider/register",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Reset Password",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{API_HOST}}/provider/reset-password?idNumber={{resetIdNumber}}&email={{resetEmail}}",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "reset-password"
+                  ],
+                  "query": [
+                    {
+                      "key": "idNumber",
+                      "value": "{{resetIdNumber}}"
+                    },
+                    {
+                      "key": "email",
+                      "value": "{{resetEmail}}"
+                    }
+                  ]
+                },
+                "description": "OTP is expected to be sent by this request."
+              },
+              "response": []
+            },
+            {
+              "name": "Set New Password",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"resetCode\": \"{{resetCode}}\",\n    \"idNumber\": \"{{resetIdNumber}}\",\n    \"password\": \"{{newUserPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{API_HOST}}/provider/reset-password",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "reset-password"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Refresh Token",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{API_HOST}}/provider/refresh_token",
+                  "host": [
+                    "{{API_HOST}}"
+                  ],
+                  "path": [
+                    "provider",
+                    "refresh_token"
+                  ]
+                },
+                "description": "Exchange `{{refresh_token}}` (saved by Login) for a new token pair."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                      "const t = pm.response.json();",
+                      "pm.collectionVariables.set(\"token\", t.access_token);",
+                      "pm.collectionVariables.set(\"refresh_token\", t.refresh_token);"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Manage Locations",
+          "item": [
+            {
+              "name": "Get Locations",
+              "request": {
+                "method": "GET",
+                "header": []
+              },
+              "response": []
+            },
+            {
+              "name": "Post Location",
+              "request": {
+                "method": "POST",
+                "header": []
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Manage Roles",
+          "item": [
+            {
+              "name": "Add Role",
+              "request": {
+                "method": "POST",
+                "header": []
+              },
+              "response": []
+            },
+            {
+              "name": "Get Roles",
+              "request": {
+                "method": "GET",
+                "header": []
+              },
+              "response": []
+            },
+            {
+              "name": "Get Role",
+              "request": {
+                "method": "GET",
+                "header": []
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Patient Validation",
+      "description": "Validate a patient by identification document.\n\nLookup order: **Client Registry** (DHA middleware, OAuth2 client credentials) first; on not-found, **IPRS** (SHA Health ID, Basic auth). IPRS only holds National ID (`citizen`) and Alien ID (`alien`); other types skip IPRS.\n\nResponses:\n- `200 {status, found: true, source: client-registry|iprs, patient}`: `patient` is a FHIR R4 Patient (`ClientRegistryPatient` or `IprsPatient` profile)\n- `200 {status, found: false}`: not in CR or IPRS\n- `400`: missing/invalid parameters\n- `401`: missing/invalid provider token (run **Admin Management > Manage Users > Login** first)\n- `502`: CR/IPRS upstream error (a CR error does not fall through to IPRS)\n- `503`: CR/IPRS not configured on the server",
+      "item": [
+        {
+          "name": "Validate - National ID (Client Registry)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"found in Client Registry\", () => {",
+                  "    pm.expect(body.found).to.eql(true);",
+                  "    pm.expect(body.source).to.eql(\"client-registry\");",
+                  "    pm.expect(body.patient.resourceType).to.eql(\"Patient\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/validate?identification_number=1000002017&identification_type=National%20ID",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "validate"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "1000002017"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "National%20ID",
+                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                }
+              ]
+            },
+            "description": "UAT test ID held in the Client Registry; expect `source: client-registry`."
+          },
+          "response": []
+        },
+        {
+          "name": "Validate - National ID (IPRS fallback)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"found in IPRS\", () => {",
+                  "    pm.expect(body.found).to.eql(true);",
+                  "    pm.expect(body.source).to.eql(\"iprs\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/validate?identification_number=32041729&identification_type=National%20ID",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "validate"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "32041729"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "National%20ID",
+                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                }
+              ]
+            },
+            "description": "Not in the Client Registry but held in IPRS; expect `source: iprs`."
+          },
+          "response": []
+        },
+        {
+          "name": "Validate - Not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"not found\", () => pm.expect(pm.response.json().found).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/validate?identification_number=1000099999&identification_type=National%20ID",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "validate"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "1000099999"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "National%20ID",
+                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                }
+              ]
+            },
+            "description": "In neither registry; expect `found: false`."
+          },
+          "response": []
+        },
+        {
+          "name": "Validate - Birth Certificate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/validate?identification_number=3809632980&identification_type=Birth%20Certificate",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "validate"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "3809632980"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "Birth%20Certificate",
+                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                }
+              ]
+            },
+            "description": "Client Registry only (IPRS does not hold birth certificates)."
+          },
+          "response": []
+        },
+        {
+          "name": "Validate - Invalid type (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/validate?identification_number=123&identification_type=Passport",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "validate"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "123"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "Passport",
+                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                }
+              ]
+            },
+            "description": "Unsupported identification_type; expect 400 listing the allowed values."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "FHIR Proxy",
+      "item": [
+        {
+          "name": "FHIR Example",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/fhir/Subscription/1",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "fhir",
+                "Subscription",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Appointment",
+      "item": [
+        {
+          "name": "Create Appointments",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Appointment\",\n  \"id\": \"adcbb91f-a302-4b29-8dc4-e55e4b36471d\",\n  \"status\": \"booked\",\n  \"description\": \"Title: Title Description:Desc\",\n  \"supportingInformation\": [\n    {\n      \"reference\": \"Patient/06c71399-d5e1-490d-b4b0-d6066fbf67e7\"\n    }\n  ],\n  \"start\": \"2024-12-01T00:00:00.000+03:00\",\n  \"created\": \"2024-01-04T20:05:15+03:00\",\n  \"basedOn\": [\n    {\n      \"reference\": \"ImmunizationRecommendation/\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{API_HOST}}/Appointment",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "Appointment"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Appointments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/Appointment",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "Appointment"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Send Notification Config",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"Test\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{API_HOST}}/notifications/config",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "notifications",
+                "config"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Notification from Appointment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Appointment\",\n  \"id\": \"adcbb91f-a302-4b29-8dc4-e55e4b36471d\",\n  \"status\": \"booked\",\n  \"description\": \"Title: Title Description:Desc\",\n  \"supportingInformation\": [\n    {\n      \"reference\": \"Patient/06c71399-d5e1-490d-b4b0-d6066fbf67e7\"\n    }\n  ],\n  \"start\": \"2024-12-01T00:00:00.000+03:00\",\n  \"created\": \"2024-01-04T20:05:15+03:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{API_HOST}}/fhir/Appointment",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "fhir",
+                "Appointment"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Notifications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/notifications",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "API_HOST",
+      "value": "https://dsrfhir.intellisoftkenya.com/api",
+      "type": "default"
+    },
+    {
+      "key": "NPHIIS_API_HOST",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "providerIdNumber",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "providerPassword",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "newUserPassword",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "resetIdNumber",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "resetEmail",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "resetCode",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
