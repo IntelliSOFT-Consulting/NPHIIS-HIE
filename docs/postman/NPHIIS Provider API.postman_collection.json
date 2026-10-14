@@ -784,6 +784,238 @@
       ]
     },
     {
+      "name": "Registry Lookup (CR format)",
+      "description": "Same lookup as **Patient Validation** (Client Registry first, IPRS on not-found), but `patient` is in the Client Registry's own JSON format instead of FHIR.\n\n- `200 {status, found: true, source: client-registry|iprs, patient}`: CR records exactly as the registry returns them; IPRS records converted to CR field names (`first_name`, `middle_name`, `last_name`, `gender`, `date_of_birth`, `citizenship`, `identification_type`, `identification_number`, `id_serial`); CR-only fields (`id`, `other_identifications`) empty.\n- Not found in either: the Client Registry's own response, `400 {error: \"Bad Request\", message: \"failed to get patient record: zero results found …\", trace_id}`.\n- `400` bad parameters, `401` missing/invalid token, `502` upstream error, `503` not configured: same as Patient Validation.",
+      "item": [
+        {
+          "name": "Registry - National ID (Client Registry)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"found in Client Registry\", () => {",
+                  "    pm.expect(b.found).to.eql(true);",
+                  "    pm.expect(b.source).to.eql(\"client-registry\");",
+                  "});",
+                  "pm.test(\"CR format\", () => {",
+                  "    pm.expect(b.patient.identification_number).to.eql(\"1000002017\");",
+                  "    pm.expect(b.patient).to.have.property(\"first_name\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "description": "UAT test ID held in the Client Registry; the CR record is returned unchanged.",
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/registry?identification_number=1000002017&identification_type=National%20ID",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "registry"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "1000002017"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "National%20ID",
+                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registry - National ID (IPRS fallback)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"found in IPRS\", () => pm.expect(b.source).to.eql(\"iprs\"));",
+                  "pm.test(\"CR format\", () => {",
+                  "    pm.expect(b.patient.identification_type).to.eql(\"National ID\");",
+                  "    pm.expect(b.patient.identification_number).to.eql(\"32041729\");",
+                  "    pm.expect(b.patient.gender).to.be.oneOf([\"Male\", \"Female\"]);",
+                  "    pm.expect(b.patient).to.not.have.property(\"meta\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "description": "Not in the Client Registry; the IPRS record is converted to the CR format.",
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/registry?identification_number=32041729&identification_type=National%20ID",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "registry"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "32041729"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "National%20ID",
+                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registry - Not found (CR response)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 like the Client Registry\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"CR not-found body\", () => pm.expect(pm.response.json().message).to.include(\"zero results found\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "description": "In neither registry; returns the Client Registry's own not-found response.",
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/registry?identification_number=1000099999&identification_type=National%20ID",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "registry"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "1000099999"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "National%20ID",
+                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registry - Invalid type (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "description": "Unsupported identification_type; expect 400 listing the allowed values.",
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/registry?identification_number=123&identification_type=Passport",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "registry"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "123"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "Passport",
+                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "FHIR Proxy",
       "item": [
         {

@@ -21,6 +21,12 @@ Lookup order: **Client Registry** first; on not-found, **IPRS**. `CR_BASE_URL` i
 
 Allowed `identification_type` values: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID.
 
+**Registry format:** `GET /provider/patients/registry` takes the same query and runs the same lookup (CR, then IPRS), but returns the patient in the Client Registry's own JSON format instead of FHIR:
+
+- Found: `200 { status, found: true, source: "client-registry" | "iprs", patient }`. CR records are returned exactly as the registry sent them. IPRS records are converted to CR field names (`first_name`, `middle_name`, `last_name`, `gender`, `date_of_birth`, `citizenship`, `identification_type`, `identification_number`, `id_serial`, …); CR-only fields such as `id` and `other_identifications` are empty.
+- Not found in either: the Client Registry's own response, `400 { error: "Bad Request", message: "failed to get patient record: zero results found …", trace_id }`.
+- Errors (`400` bad params, `401`, `502`, `503`) are the same as `/patients/validate`.
+
 ### Screening intake
 
 `POST /provider/screenings` receives a screened person as plain JSON (no FHIR needed by the caller). The service matches an existing `Patient` by identifier type + number (or creates one), then stores point of entry, travel history and signs/symptoms as a `QuestionnaireResponse` linked to that patient. Idempotent on `screeningId`: a retry returns `duplicate: true` and creates nothing.

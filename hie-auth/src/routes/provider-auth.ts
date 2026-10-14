@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import express, { Request, Response, NextFunction } from "express";
 import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
 import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken, deleteKeycloakUser, setFirstLoginComplete, setFirstLoginPending, setKeycloakUserAttributes, validateBearerToken, validateUserAuthentication } from './../lib/keycloak'
@@ -11,8 +12,13 @@ import { runCaseNotificationBackfillJob } from "../lib/notification-backfill-job
 import { getApplicationRoles, isValidApplicationRole } from "../lib/roles";
 import { lookupClientRegistryPatient } from "../lib/client-registry";
 import { lookupIprsPatient } from "../lib/iprs";
-import { isIdentificationType } from "../lib/identification-types";
-import { mapCrResponseToPatient, mapIprsResponseToPatient } from "../lib/patient-identity-map";
+import { IdentificationType, isIdentificationType } from "../lib/identification-types";
+import {
+    mapCrResponseToPatient,
+    mapIprsResponseToPatient,
+    PatientIdentitySource,
+    toRegistryPatient,
+} from "../lib/patient-identity-map";
 
 const router = express.Router();
 router.use(express.json());
@@ -234,92 +240,114 @@ router.post("/login", async (req: Request, res: Response) => {
  * Validate a patient identity via Client Registry, falling back to IPRS on not-found.
  * Returns a FHIR Patient conforming to ClientRegistryPatient or IprsPatient.
  */
+type PatientIdentityLookup =
+    | { kind: "found"; source: PatientIdentitySource; data: unknown; identificationNumber: string; identificationType: IdentificationType }
+    | { kind: "not_found" }
+    | { kind: "failed"; httpStatus: number; error: string };
+
+/**
+ * Shared by the identity endpoints: validate the query, then look the person up in
+ * the Client Registry and, when CR has no match, fall back to IPRS.
+ * CR upstream errors do not fall through to IPRS.
+ */
+async function lookupPatientIdentity(query: Request["query"]): Promise<PatientIdentityLookup> {
+    const identificationNumber = String(query.identification_number ?? "").trim();
+    const identificationTypeRaw = String(query.identification_type ?? "").trim();
+
+    if (!identificationNumber || !identificationTypeRaw) {
+        return { kind: "failed", httpStatus: 400, error: "identification_number and identification_type are required" };
+    }
+
+    if (!isIdentificationType(identificationTypeRaw)) {
+        return {
+            kind: "failed",
+            httpStatus: 400,
+            error: `invalid identification_type. Allowed: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID`,
+        };
+    }
+
+    const identificationType = identificationTypeRaw;
+
+    const crResult = await lookupClientRegistryPatient({ identificationNumber, identificationType });
+    if (crResult.status === "misconfigured") {
+        return { kind: "failed", httpStatus: 503, error: crResult.error || "Client Registry is not configured" };
+    }
+    if (crResult.status === "error") {
+        return { kind: "failed", httpStatus: 502, error: crResult.error || "Client Registry lookup failed" };
+    }
+    if (crResult.status === "found") {
+        return { kind: "found", source: "client-registry", data: crResult.data, identificationNumber, identificationType };
+    }
+
+    // CR not found — fall back to IPRS
+    const iprsResult = await lookupIprsPatient({ identificationNumber, identificationType });
+    if (iprsResult.status === "misconfigured") {
+        return { kind: "failed", httpStatus: 503, error: iprsResult.error || "IPRS is not configured" };
+    }
+    if (iprsResult.status === "error") {
+        return { kind: "failed", httpStatus: 502, error: iprsResult.error || "IPRS lookup failed" };
+    }
+    if (iprsResult.status === "found") {
+        return { kind: "found", source: "iprs", data: iprsResult.data, identificationNumber, identificationType };
+    }
+
+    return { kind: "not_found" };
+}
+
+/** Patient identity as a FHIR R4 Patient (ClientRegistryPatient / IprsPatient profile). */
 router.get("/patients/validate", authenticateUser, async (req: Request, res: Response) => {
     try {
-        const identificationNumber = String(req.query.identification_number ?? "").trim();
-        const identificationTypeRaw = String(req.query.identification_type ?? "").trim();
-
-        if (!identificationNumber || !identificationTypeRaw) {
-            return res.status(400).json({
-                status: "error",
-                error: "identification_number and identification_type are required",
-            });
+        const result = await lookupPatientIdentity(req.query);
+        if (result.kind === "failed") {
+            return res.status(result.httpStatus).json({ status: "error", error: result.error });
+        }
+        if (result.kind === "not_found") {
+            return res.status(200).json({ status: "success", found: false });
         }
 
-        if (!isIdentificationType(identificationTypeRaw)) {
-            return res.status(400).json({
-                status: "error",
-                error: `invalid identification_type. Allowed: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID`,
-            });
-        }
-
-        const identificationType = identificationTypeRaw;
-
-        const crResult = await lookupClientRegistryPatient({
-            identificationNumber,
-            identificationType,
+        const toFhir = result.source === "client-registry" ? mapCrResponseToPatient : mapIprsResponseToPatient;
+        return res.status(200).json({
+            status: "success",
+            found: true,
+            source: result.source,
+            patient: toFhir(result.data, result.identificationNumber, result.identificationType),
         });
-
-        if (crResult.status === "misconfigured") {
-            return res.status(503).json({ status: "error", error: crResult.error });
-        }
-
-        if (crResult.status === "error") {
-            return res.status(502).json({
-                status: "error",
-                error: crResult.error || "Client Registry lookup failed",
-            });
-        }
-
-        if (crResult.status === "found") {
-            return res.status(200).json({
-                status: "success",
-                found: true,
-                source: "client-registry",
-                patient: mapCrResponseToPatient(
-                    crResult.data,
-                    identificationNumber,
-                    identificationType,
-                ),
-            });
-        }
-
-        // CR not found — fall back to IPRS
-        const iprsResult = await lookupIprsPatient({
-            identificationNumber,
-            identificationType,
-        });
-
-        if (iprsResult.status === "misconfigured") {
-            return res.status(503).json({ status: "error", error: iprsResult.error });
-        }
-
-        if (iprsResult.status === "error") {
-            return res.status(502).json({
-                status: "error",
-                error: iprsResult.error || "IPRS lookup failed",
-            });
-        }
-
-        if (iprsResult.status === "found") {
-            return res.status(200).json({
-                status: "success",
-                found: true,
-                source: "iprs",
-                patient: mapIprsResponseToPatient(
-                    iprsResult.data,
-                    identificationNumber,
-                    identificationType,
-                ),
-            });
-        }
-
-        return res.status(200).json({ status: "success", found: false });
     } catch (error) {
         console.error("GET /patients/validate error:", error);
         return res.status(500).json({
             status: "error",
             error: "Failed to validate patient identity",
+        });
+    }
+});
+
+/** Patient identity in the Client Registry's own JSON format, whichever registry matched. */
+router.get("/patients/registry", authenticateUser, async (req: Request, res: Response) => {
+    try {
+        const result = await lookupPatientIdentity(req.query);
+        if (result.kind === "failed") {
+            return res.status(result.httpStatus).json({ status: "error", error: result.error });
+        }
+        if (result.kind === "not_found") {
+            // Same body the Client Registry returns for an unknown patient
+            return res.status(400).json({
+                error: "Bad Request",
+                message: "failed to get patient record: zero results found in client registry fetch patient search response",
+                trace_id: randomBytes(16).toString("hex"),
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            found: true,
+            source: result.source,
+            patient: toRegistryPatient(result.data, result.source, result.identificationNumber, result.identificationType),
+        });
+    } catch (error) {
+        console.error("GET /patients/registry error:", error);
+        return res.status(500).json({
+            status: "error",
+            error: "Failed to look up patient identity",
         });
     }
 });
