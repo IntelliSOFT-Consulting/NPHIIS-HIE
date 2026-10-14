@@ -5,7 +5,7 @@ const apiHost = process.env.FHIR_BASE_URL || "";
 /**
  * Convert an absolute FHIR next link to a path suitable for FhirApi (`${FHIR_BASE_URL}${path}`).
  */
-function toRelativeRequestPath(fullUrl: string): string {
+export function toRelativeRequestPath(fullUrl: string): string {
   try {
     const u = new URL(fullUrl);
     let path = u.pathname + (u.search || "");
