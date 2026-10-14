@@ -23,7 +23,6 @@ const bundle = (...r: any[]) => ok({ entry: r.map((resource) => ({ resource })) 
 let server: Server;
 let base: string;
 beforeAll(async () => {
-    process.env.SCREENING_API_KEY = "secret";
     const app = express();
     app.use("/provider/screenings", router);
     server = app.listen(0);
@@ -32,13 +31,12 @@ beforeAll(async () => {
 afterAll(() => server.close());
 beforeEach(() => fhir.FhirApi.mockReset());
 
-const post = (payload: any, headers: Record<string, string> = { "x-screening-api-key": "secret" }) =>
+const post = (payload: any, headers: Record<string, string> = { authorization: "Bearer token" }) =>
     fetch(base, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(payload) });
 
 describe("POST /provider/screenings", () => {
-    it("rejects missing and wrong credentials", async () => {
+    it("requires a Bearer token", async () => {
         expect((await post(body, {})).status).toBe(401);
-        expect((await post(body, { "x-screening-api-key": "nope" })).status).toBe(401);
     });
 
     it("returns 400 with errors for an invalid payload", async () => {
@@ -107,7 +105,7 @@ describe("POST /provider/screenings", () => {
 describe("GET /provider/screenings/patients", () => {
     it("searches by the screened tag", async () => {
         fhir.FhirApi.mockResolvedValueOnce(bundle({ id: "p1" }));
-        const res = await fetch(`${base}/patients?_count=5`, { headers: { "x-screening-api-key": "secret" } });
+        const res = await fetch(`${base}/patients?_count=5`, { headers: { authorization: "Bearer token" } });
         expect(res.status).toBe(200);
         expect(decodeURIComponent(fhir.FhirApi.mock.calls[0][0].url)).toContain("_tag=http://nphiis.health.go.ke/fhir/CodeSystem/record-origin|screened");
     });

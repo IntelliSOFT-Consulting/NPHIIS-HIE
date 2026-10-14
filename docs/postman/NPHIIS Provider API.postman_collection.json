@@ -19,16 +19,13 @@
                 {
                   "listen": "test",
                   "script": {
-                    "exec": [
-                      "var jsonData = JSON.parse(responseBody);",
-                      "// postman.setEnvironmentVariable(\"token\", jsonData.access_token);",
-                      "",
-                      "postman.setGlobalVariable(\"token\", jsonData.access_token);",
-                      ""
-                    ],
                     "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
+                    "exec": [
+                      "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                      "const t = pm.response.json();",
+                      "pm.collectionVariables.set(\"token\", t.access_token);",
+                      "pm.collectionVariables.set(\"refresh_token\", t.refresh_token);"
+                    ]
                   }
                 }
               ],
@@ -37,7 +34,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"idNumber\": \"909090\",\r\n    \"password\": \"password\"\r\n}",
+                  "raw": "{\n    \"idNumber\": \"{{providerIdNumber}}\",\n    \"password\": \"{{providerPassword}}\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -282,7 +279,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"idNumber\": \"101010\",\r\n    \"password\": \"password\",\r\n    \"email\": \"railamolo+12@gmail.com\",\r\n    \"role\": \"VACCINATOR\",\r\n    \"firstName\":\"Ezekiel\",\r\n    \"lastName\":\"Bowen\",\r\n    \"facility\":\"NAKURU-NORTH\",\r\n    \"phone\":\"0712345678\"\r\n}",
+                  "raw": "{\n    \"idNumber\": \"101010\",\n    \"password\": \"{{newUserPassword}}\",\n    \"email\": \"vaccinator@example.com\",\n    \"role\": \"VACCINATOR\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"Vaccinator\",\n    \"facility\": \"NAKURU-NORTH\",\n    \"phone\": \"0700000000\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -309,7 +306,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"idNumber\": \"1010111\",\r\n    \"password\": \"password\",\r\n    \"email\": \"nurse-jane@gmail.com\",\r\n    \"role\": \"NURSE\",\r\n    \"firstName\":\"Jane\",\r\n    \"lastName\":\"Nurse\",\r\n    \"facility\":\"11237\",\r\n    \"phone\":\"0712345678\"\r\n}",
+                  "raw": "{\n    \"idNumber\": \"1010111\",\n    \"password\": \"{{newUserPassword}}\",\n    \"email\": \"nurse@example.com\",\n    \"role\": \"NURSE\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"Nurse\",\n    \"facility\": \"11237\",\n    \"phone\": \"0700000000\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -336,7 +333,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"idNumber\": \"909090\",\r\n    \"password\": \"password\",\r\n    \"email\": \"clerk-24@gmail.com\",\r\n    \"role\": \"ADMINISTRATOR\",\r\n    \"firstName\":\"Brian\",\r\n    \"lastName\":\"Amolo\",\r\n    \"phone\":\"0719697171\"\r\n}",
+                  "raw": "{\n    \"idNumber\": \"909090\",\n    \"password\": \"{{newUserPassword}}\",\n    \"email\": \"admin@example.com\",\n    \"role\": \"ADMINISTRATOR\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"Admin\",\n    \"phone\": \"0700000000\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -362,7 +359,7 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{API_HOST}}/provider/reset-password?idNumber=1234567&email=bamolo@intellisoftkenya.com",
+                  "raw": "{{API_HOST}}/provider/reset-password?idNumber={{resetIdNumber}}&email={{resetEmail}}",
                   "host": [
                     "{{API_HOST}}"
                   ],
@@ -373,11 +370,11 @@
                   "query": [
                     {
                       "key": "idNumber",
-                      "value": "1234567"
+                      "value": "{{resetIdNumber}}"
                     },
                     {
                       "key": "email",
-                      "value": "bamolo@intellisoftkenya.com"
+                      "value": "{{resetEmail}}"
                     }
                   ]
                 },
@@ -392,7 +389,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"resetCode\":\"59529\",\r\n    \"idNumber\":\"1234567\",\r\n    \"password\":\"password\"\r\n}",
+                  "raw": "{\n    \"resetCode\": \"{{resetCode}}\",\n    \"idNumber\": \"{{resetIdNumber}}\",\n    \"password\": \"{{newUserPassword}}\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -419,7 +416,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"resetCode\":\"59529\",\r\n    \"idNumber\":\"1234567\",\r\n    \"password\":\"password\"\r\n}",
+                  "raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -435,9 +432,24 @@
                     "provider",
                     "refresh_token"
                   ]
-                }
+                },
+                "description": "Exchange `{{refresh_token}}` (saved by Login) for a new token pair."
               },
-              "response": []
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                      "const t = pm.response.json();",
+                      "pm.collectionVariables.set(\"token\", t.access_token);",
+                      "pm.collectionVariables.set(\"refresh_token\", t.refresh_token);"
+                    ]
+                  }
+                }
+              ]
             }
           ]
         },
@@ -976,6 +988,46 @@
     },
     {
       "key": "NPHIIS_API_HOST",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "providerIdNumber",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "providerPassword",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "newUserPassword",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "resetIdNumber",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "resetEmail",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "resetCode",
       "value": "",
       "type": "default"
     }
