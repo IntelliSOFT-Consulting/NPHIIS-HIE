@@ -15,15 +15,19 @@ import {
   buildSpecimenTask,
   buildSurveillancePayload,
   isVhfCaseEncounter,
+  notifiableOutcome,
+  parseLabUpdates,
   surveillanceEntryState,
   resultChanged,
   resultObservationIdForSpecimen,
   specimenCaseEncounterId,
   specimenLabel,
+  specimenWithLabStatus,
   taskChanged,
   taskIdForSpecimen,
   taskPayloadHash,
 } from "./nphl-lab";
+import { notifySpecimenOutcome } from "./nphl-result-notification";
 
 export type SpecimenSyncOutcome = { specimenId: string; label: string; status: string; businessStatus: string };
 
@@ -117,6 +121,29 @@ async function searchAll(path: string, maxPages = 20): Promise<any[]> {
   return out;
 }
 
+/**
+ * Puts the Specimen's lab status. Versioned (If-Match) so a mobile re-sync in between is not
+ * overwritten; on a conflict it re-reads the Specimen and tries once more.
+ */
+async function updateSpecimenLabStatus(specimen: any, task: any): Promise<void> {
+  let current = specimen;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const next = specimenWithLabStatus(current, task);
+    if (!next) return;
+    const version = current?.meta?.versionId;
+    const r = await FhirApi({
+      url: `/Specimen/${current.id}`,
+      method: "PUT",
+      data: JSON.stringify(next),
+      ...(version ? { headers: { "If-Match": `W/"${version}"` } } : {}),
+    });
+    if (r.status === "success") return;
+    current = await getResource(`/Specimen/${specimen.id}`);
+    if (!current) break;
+  }
+  console.error(`[NPHL] Could not update lab status on Specimen/${specimen.id}`);
+}
+
 /** Writes the result Observation and the Task for one specimen; skips writes that change nothing. */
 async function recordSpecimenState(
   specimen: any,
@@ -148,8 +175,9 @@ async function recordSpecimenState(
   }
 
   let resultObservationId: string | undefined;
+  let observation: any;
   if (state.kind === "submitted" && state.result?.result) {
-    const observation = buildResultObservation({ specimen, caseEncounterId, result: state.result });
+    observation = buildResultObservation({ specimen, caseEncounterId, result: state.result });
     const current = await getResource(`/Observation/${observation.id}`);
     if (resultChanged(current, observation)) await putResource(observation);
     resultObservationId = resultObservationIdForSpecimen(specimen.id);
@@ -157,6 +185,19 @@ async function recordSpecimenState(
 
   const task = buildSpecimenTask({ existing, specimen, caseEncounterId, state, resultObservationId, payloadHash });
   if (taskChanged(existing, task)) await putResource(task);
+  // Our Specimen write re-fires the Specimen subscription; the case then has an unchanged
+  // payload hash and is not re-posted. A failure here never fails the sync.
+  await updateSpecimenLabStatus(specimen, task).catch((e) =>
+    console.error(`[NPHL] Specimen/${specimen.id} lab status update failed:`, e),
+  );
+
+  // Email the case submitter once per new outcome; a mail failure never fails the sync.
+  const outcome = notifiableOutcome(existing, task);
+  if (outcome) {
+    await notifySpecimenOutcome({ outcome, task, caseEncounterId, observation }).catch((e) =>
+      console.error(`[NPHL] ${outcome} email for ${task.id} failed:`, e),
+    );
+  }
   return {
     specimenId: specimen.id,
     label: specimenLabel(specimen).value,
@@ -400,4 +441,82 @@ export async function applyLabUpdates(updates: LabUpdate[]): Promise<PushedUpdat
     }
   }
   return out;
+}
+
+function labStagingConfig() {
+  return {
+    baseUrl: (process.env.LAB_STAGING_API_URL || "https://lab-staging-api.nphl.go.ke").replace(/\/$/, ""),
+    apiKey: process.env.LAB_STAGING_API_KEY?.trim(),
+    timeoutMs: Number(process.env.LAB_STAGING_TIMEOUT_MS) || 60000,
+    lookbackDays: Math.max(1, Number(process.env.LAB_STAGING_LOOKBACK_DAYS) || 14),
+  };
+}
+
+/** GET /list on the NPHL lab staging API: lab line-list rows with a test date on or after dateFrom. */
+async function fetchLabStagingRows(dateFrom: string): Promise<{ ok: true; rows: any[] } | { ok: false; error: string }> {
+  const { baseUrl, apiKey, timeoutMs } = labStagingConfig();
+  if (!apiKey) return { ok: false, error: "LAB_STAGING_API_KEY is not configured" };
+  try {
+    const res = await fetch(`${baseUrl}/list?dateFrom=${dateFrom}`, {
+      headers: { "x-api-key": apiKey },
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const text = await res.text();
+    let body: any;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = { message: text.slice(0, 500) };
+    }
+    if (!res.ok) return { ok: false, error: `Lab staging ${res.status}: ${body?.message ?? ""}`.trim() };
+    return { ok: true, rows: Array.isArray(body?.data) ? body.data : [] };
+  } catch (e) {
+    return { ok: false, error: `Lab staging request failed: ${String(e)}` };
+  }
+}
+
+let stagingPollRunning = false;
+
+/**
+ * Pulls results that are ready from the NPHL lab staging API (GET /list) and records the ones
+ * for specimens we submitted and are still waiting on. Rows are matched to Tasks on the tube
+ * label (specimenIdentifier); rows for other specimens, and specimens with a final result or a
+ * rejection already, are ignored.
+ */
+export async function pollLabStagingResults(): Promise<
+  { rows: number; open: number; updates: number; matched: number } | { error: string } | null
+> {
+  if (stagingPollRunning) return null;
+  stagingPollRunning = true;
+  try {
+    const { lookbackDays } = labStagingConfig();
+    const { pollMaxAgeDays } = nphlConfig();
+    const dateFrom = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const fetched = await fetchLabStagingRows(dateFrom);
+    if (!fetched.ok) {
+      console.error(`[NPHL] ${fetched.error}`);
+      return { error: fetched.error };
+    }
+
+    const since = new Date(Date.now() - pollMaxAgeDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const openTasks = await searchAll(
+      `/Task?code=${encodeURIComponent(`${TASK_CODE_SYSTEM}|${TASK_CODE}`)}&status=requested,in-progress,on-hold&authored-on=ge${since}&_count=200`,
+      10,
+    );
+    const openLabels = new Set(
+      openTasks
+        .map((t) => (t.identifier ?? []).find((i: any) => i?.system === SPECIMEN_LABEL_SYSTEM)?.value)
+        .filter(Boolean),
+    );
+    const updates = parseLabUpdates(fetched.rows).filter((u) => openLabels.has(u.specimenId));
+    const outcomes = updates.length ? await applyLabUpdates(updates) : [];
+    return {
+      rows: fetched.rows.length,
+      open: openLabels.size,
+      updates: updates.length,
+      matched: outcomes.filter((o) => o.matched).length,
+    };
+  } finally {
+    stagingPollRunning = false;
+  }
 }

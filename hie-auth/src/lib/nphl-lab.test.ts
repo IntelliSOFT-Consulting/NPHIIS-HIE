@@ -17,6 +17,10 @@ import {
   surveillanceEntryState,
   specimenCaseEncounterId,
   specimenLabel,
+  SPECIMEN_LAB_STATUS_EXT,
+  labOutcomeEmailLines,
+  notifiableOutcome,
+  specimenWithLabStatus,
   taskChanged,
   taskStatusFor,
 } from "./nphl-lab";
@@ -290,6 +294,22 @@ describe("parseLineListRecords", () => {
     testingLabName: "National Virology Reference Laboratory (NVRL)",
   });
 
+  // The live /list returns Absent/Present (LOINC LA9634-2 / LA9633-4) as often as Negative/Positive.
+  it("reads Absent as negative and Present as positive", () => {
+    const [neg] = parseLineListRecords([row("EVD", "Absent"), row("MARBUG", "Absent")]);
+    expect(neg.result).toBe("Negative");
+    expect(neg.narration.map((n) => n.result)).toEqual(["Negative", "Negative"]);
+    const [pos] = parseLineListRecords([row("EVD", "Present"), row("MARBUG", "Absent")]);
+    expect(pos.result).toBe("Positive");
+  });
+
+  it("falls back to the LOINC answer code, and ignores rows with no recognisable result", () => {
+    const [r] = parseLineListRecords([{ ...row("EVD", ""), valueCode: "LA9634-2" }, row("MARBUG", "Pending")]);
+    expect(r).toMatchObject({ result: "Negative" });
+    expect(r.narration).toHaveLength(1);
+    expect(parseLineListRecords([row("EVD", "Inconclusive")])[0].result).toBeNull();
+  });
+
   it("groups test rows per specimen; any positive test makes the specimen positive", () => {
     const [r] = parseLineListRecords([row("EVD", "Negative"), row("Marburg", "Positive")]);
     expect(r).toMatchObject({ specimenId: "NVRL/ML/0001/26", result: "Positive", resultType: "Final", resultDate: "2026-10-11" });
@@ -436,5 +456,71 @@ describe("Task lifecycle", () => {
     expect(resultChanged({ ...o, meta: { versionId: "3" } }, o)).toBe(false);
     expect(resultChanged(o, { ...o, status: "final" })).toBe(true);
     expect(resultChanged(null, o)).toBe(true);
+  });
+});
+
+const taskIn = (code: string, over: Record<string, unknown> = {}) => ({
+  id: "nphl-spec-1",
+  status: code === "final-result" ? "completed" : code === "specimen-rejected" ? "rejected" : "in-progress",
+  businessStatus: { coding: [{ system: "s", code, display: code }], text: code },
+  identifier: [{ system: SPECIMEN_LABEL_SYSTEM, value: "TUBE-1" }],
+  ...over,
+});
+
+describe("notifiableOutcome", () => {
+  it("fires once when a result or rejection first arrives", () => {
+    expect(notifiableOutcome(taskIn("awaiting-result"), taskIn("preliminary-result"))).toBe("preliminary-result");
+    expect(notifiableOutcome(taskIn("preliminary-result"), taskIn("final-result"))).toBe("final-result");
+    expect(notifiableOutcome(null, taskIn("specimen-rejected"))).toBe("specimen-rejected");
+  });
+
+  it("stays quiet on repeats and on non-result states", () => {
+    expect(notifiableOutcome(taskIn("final-result"), taskIn("final-result"))).toBeNull();
+    expect(notifiableOutcome(null, taskIn("awaiting-result"))).toBeNull();
+    expect(notifiableOutcome(taskIn("awaiting-result"), taskIn("submission-failed"))).toBeNull();
+  });
+});
+
+describe("labOutcomeEmailLines", () => {
+  it("lists the result and each test", () => {
+    const task = taskIn("final-result", { output: [{ type: { text: "result" }, valueString: "Negative" }] });
+    const obs = { effectiveDateTime: "2026-10-15", component: [{ code: { text: "EVD — Ebola" }, valueString: "Negative" }] };
+    expect(labOutcomeEmailLines(task, obs)).toEqual([
+      { label: "Specimen ID", value: "TUBE-1" },
+      { label: "Status", value: "final-result" },
+      { label: "Result", value: "Negative" },
+      { label: "Result date", value: "2026-10-15" },
+      { label: "EVD — Ebola", value: "Negative" },
+    ]);
+  });
+
+  it("gives the rejection reason for a rejected specimen", () => {
+    const task = taskIn("specimen-rejected", { output: [{ type: { text: "rejection-reason" }, valueString: "Haemolysed" }] });
+    expect(labOutcomeEmailLines(task)).toContainEqual({ label: "Rejection reason", value: "Haemolysed" });
+  });
+});
+
+describe("specimenWithLabStatus", () => {
+  const labStatus = (s: any) => s.extension.find((e: any) => e.url === SPECIMEN_LAB_STATUS_EXT)?.valueCoding?.code;
+
+  it("records progress once the specimen is at the lab, keeping other extensions", () => {
+    const s = specimen({ status: "available" });
+    const next = specimenWithLabStatus(s, taskIn("awaiting-result"));
+    expect(labStatus(next)).toBe("awaiting-result");
+    expect(next.status).toBe("available");
+    expect(next.extension).toHaveLength(s.extension.length + 1);
+    expect(specimenWithLabStatus(next, taskIn("awaiting-result"))).toBeNull();
+    expect(labStatus(specimenWithLabStatus(next, taskIn("final-result")))).toBe("final-result");
+  });
+
+  it("marks a rejected specimen unsatisfactory, and available again if a result replaces the rejection", () => {
+    const rejected = specimenWithLabStatus(specimen({ status: "available" }), taskIn("specimen-rejected"));
+    expect(rejected.status).toBe("unsatisfactory");
+    expect(specimenWithLabStatus(rejected, taskIn("final-result")).status).toBe("available");
+  });
+
+  it("leaves the specimen alone before it reaches the lab", () => {
+    expect(specimenWithLabStatus(specimen(), taskIn("submission-failed"))).toBeNull();
+    expect(specimenWithLabStatus(specimen(), taskIn("awaiting-epid"))).toBeNull();
   });
 });

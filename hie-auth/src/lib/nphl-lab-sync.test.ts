@@ -10,6 +10,7 @@ vi.mock("./utils", () => ({
   }),
   apiHost: "http://hapi/fhir",
 }));
+vi.mock("./nphl-result-notification", () => ({ notifySpecimenOutcome: vi.fn(async () => ({ sent: false })) }));
 vi.mock("./prisma", () => ({ prisma: { fhirSubscriptionCallbackLog: { create: vi.fn(async () => ({})) } } }));
 
 import { queueCaseSync } from "./nphl-lab-sync";

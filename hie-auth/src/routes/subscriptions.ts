@@ -14,7 +14,7 @@ import { runEpidCorrectionBackfillJob } from '../lib/epid-correction-backfill';
 import { getEpidValueFromEncounter, patientHasOfficialEpid } from '../lib/epid-utils';
 import { isLabResultEncounter, notifyLabResultToCaseSubmitter } from '../lib/lab-result-notification';
 import { scanEncountersMissingEpid } from '../lib/missing-epid-encounters';
-import { CaseSyncResult, queueSpecimenSync, syncCaseNow, syncSpecimenToNphl } from '../lib/nphl-lab-sync';
+import { CaseSyncResult, pollLabStagingResults, queueSpecimenSync, syncCaseNow, syncSpecimenToNphl } from '../lib/nphl-lab-sync';
 
 const router = express.Router();
 router.use(express.json() as any);
@@ -420,6 +420,32 @@ router.post('/specimens/nphl-sync', requireInternalApiKeyOrAdminBearer, async (r
     return sendCaseSyncResult(res, result);
   } catch (error) {
     console.error('nphl-sync:', error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
+    return res.status(500).json(OperationOutcome(error));
+  }
+});
+
+/** Pulls ready results from the NPHL lab staging API now, instead of waiting for the cron. */
+router.post('/specimens/lab-staging-pull', requireInternalApiKeyOrAdminBearer, async (_req: Request, res: Response) => {
+  const start = Date.now();
+  attachSubscriptionAuditLog(res, { route: 'lab-staging-pull', resourceType: 'Task', resourceId: 'batch' }, start);
+  try {
+    const result = await pollLabStagingResults();
+    if (!result) {
+      res.locals.subscriptionOutcome = 'skipped';
+      return res.status(409).json(OperationOutcome('A lab staging pull is already running'));
+    }
+    if ('error' in result) {
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = result.error;
+      return res.status(502).json(OperationOutcome(result.error));
+    }
+    res.locals.subscriptionOutcome = 'success';
+    res.locals.subscriptionDetail = result;
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('lab-staging-pull:', error);
     res.locals.subscriptionOutcome = 'error';
     res.locals.subscriptionErrorMessage = String(error);
     return res.status(500).json(OperationOutcome(error));
