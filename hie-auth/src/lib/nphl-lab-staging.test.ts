@@ -63,9 +63,25 @@ describe("pollLabStagingResults", () => {
     const fetchUrl = String((fetch as any).mock.calls[0][0]);
     expect(fetchUrl).toMatch(/^https:\/\/lab-staging-api\.nphl\.go\.ke\/list\?dateFrom=\d{4}-\d{2}-\d{2}$/);
 
-    const observation = puts.find((r) => r.resourceType === "Observation");
-    expect(observation).toMatchObject({ id: "nphl-result-spec-1", valueString: "Negative", specimen: { reference: "Specimen/spec-1" } });
+    const observation = puts.find((r) => r.id === "nphl-result-spec-1");
+    expect(observation).toMatchObject({ resourceType: "Observation", valueString: "Negative", specimen: { reference: "Specimen/spec-1" } });
+    const report = puts.find((r) => r.resourceType === "DiagnosticReport");
+    expect(report).toMatchObject({
+      id: "nphl-report-spec-1",
+      encounter: { reference: "Encounter/case-1" },
+      specimen: [{ reference: "Specimen/spec-1" }],
+      conclusion: "Negative",
+    });
+    expect(report.result).toEqual([{ reference: "Observation/nphl-result-spec-1" }, ...observation.hasMember]);
+    // Referenced resources are written before the resources that reference them.
+    const order = (id: string) => puts.findIndex((r) => r.id === id);
+    for (const m of observation.hasMember) expect(order(m.reference.split("/")[1])).toBeLessThan(order("nphl-result-spec-1"));
+    expect(order("nphl-result-spec-1")).toBeLessThan(order("nphl-report-spec-1"));
     expect(puts.find((r) => r.resourceType === "Task")).toMatchObject({ status: "completed" });
+    expect(puts.find((r) => r.resourceType === "Task").output).toContainEqual({
+      type: { text: "result-report" },
+      valueReference: { reference: "DiagnosticReport/nphl-report-spec-1" },
+    });
     const spec = puts.find((r) => r.resourceType === "Specimen");
     expect(spec.extension[0].valueCoding.code).toBe("final-result");
 

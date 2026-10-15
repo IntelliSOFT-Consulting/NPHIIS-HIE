@@ -4,15 +4,19 @@ import { describe, expect, it } from "vitest";
 import {
   SPECIMEN_LABEL_SYSTEM,
   buildClinicalInformation,
+  buildResultDiagnosticReport,
   buildResultObservation,
   buildSpecimenTask,
   buildSurveillancePayload,
+  buildTestObservations,
+  resultFromObservation,
   isVhfCaseEncounter,
   nairobiDate,
   observationValues,
   parseLabUpdates,
   parseLineListRecords,
   parseSurveillanceEntry,
+  reportChanged,
   resultChanged,
   surveillanceEntryState,
   specimenCaseEncounterId,
@@ -456,6 +460,83 @@ describe("Task lifecycle", () => {
     expect(resultChanged({ ...o, meta: { versionId: "3" } }, o)).toBe(false);
     expect(resultChanged(o, { ...o, status: "final" })).toBe(true);
     expect(resultChanged(null, o)).toBe(true);
+  });
+
+  it("builds a DiagnosticReport linking the case, specimen and result Observation", () => {
+    const r = buildResultDiagnosticReport({
+      specimen: specimen(),
+      caseEncounterId: "case-1",
+      result: { ...result("Final", "Negative"), resultDate: "2026-10-15T09:11:00.000Z", testingLab: "NVRL" },
+    });
+    expect(r).toMatchObject({
+      resourceType: "DiagnosticReport",
+      id: "nphl-report-spec-1",
+      status: "final",
+      subject: { reference: "Patient/pat-1" },
+      encounter: { reference: "Encounter/case-1" },
+      specimen: [{ reference: "Specimen/spec-1" }],
+      result: [{ reference: "Observation/nphl-result-spec-1" }],
+      effectiveDateTime: "2026-10-15T09:11:00.000Z",
+      performer: [{ display: "NVRL" }],
+      conclusion: "Negative",
+    });
+    expect(reportChanged({ ...r, meta: { versionId: "2" } }, r)).toBe(false);
+    expect(reportChanged(r, { ...r, status: "preliminary" })).toBe(true);
+    expect(reportChanged(null, r)).toBe(true);
+  });
+
+  const tested = () => ({
+    ...result("Final", "Negative"),
+    narration: [
+      { test_name: "Ebola VIrus", analysis: "Ebola VIrus", result: "Negative" },
+      { test_name: "Marbug virus", analysis: "Marbug virus", result: "Absent" },
+      { test_name: "CCHF", result: "" },
+    ],
+  });
+
+  it("builds one Observation per tested result, linked from the overall result and the report", () => {
+    const args = { specimen: specimen(), caseEncounterId: "case-1", result: tested() };
+    const tests = buildTestObservations(args);
+    expect(tests.map((t) => [t.code.text, t.valueString, t.status])).toEqual([
+      ["Ebola VIrus", "Negative", "final"],
+      ["Marbug virus", "Negative", "final"],
+    ]);
+    for (const t of tests) {
+      expect(t.id).toMatch(/^nphl-result-spec-1-[0-9a-f]{8}$/);
+      expect(t.id.length).toBeLessThanOrEqual(64);
+      expect(t).toMatchObject({
+        encounter: { reference: "Encounter/case-1" },
+        specimen: { reference: "Specimen/spec-1" },
+        subject: { reference: "Patient/pat-1" },
+      });
+    }
+    const refs = tests.map((t) => ({ reference: `Observation/${t.id}` }));
+    expect(buildResultObservation(args).hasMember).toEqual(refs);
+    expect(buildResultDiagnosticReport(args).result).toEqual([{ reference: "Observation/nphl-result-spec-1" }, ...refs]);
+    // Same ids on the next poll, so the same Observations are updated.
+    expect(buildTestObservations(args).map((t) => t.id)).toEqual(tests.map((t) => t.id));
+  });
+
+  it("rebuilds the same result from a stored result Observation", () => {
+    const args = { specimen: specimen(), caseEncounterId: "case-1", result: tested() };
+    const stored = buildResultObservation(args);
+    const rebuilt = resultFromObservation(stored)!;
+    expect(rebuilt).toMatchObject({ result: "Negative", resultType: "Final", specimenId: "spec-1" });
+    expect(buildTestObservations({ ...args, result: rebuilt }).map((t) => [t.id, t.valueString])).toEqual(
+      buildTestObservations(args).map((t) => [t.id, t.valueString]),
+    );
+    expect(resultFromObservation({ ...stored, valueString: "Pending" })).toBeNull();
+  });
+
+  it("links the DiagnosticReport from the Task output", () => {
+    const t = buildSpecimenTask({
+      specimen: specimen(),
+      caseEncounterId: "case-1",
+      state: { kind: "submitted", result: result("Final") },
+      resultObservationId: "nphl-result-spec-1",
+      resultReportId: "nphl-report-spec-1",
+    });
+    expect(t.output).toContainEqual({ type: { text: "result-report" }, valueReference: { reference: "DiagnosticReport/nphl-report-spec-1" } });
   });
 });
 
