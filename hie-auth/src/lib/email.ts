@@ -733,6 +733,11 @@ export type LabResultEmailInput = {
     labEntererName: string;
     submittedByName: string;
     resultLines: Array<{ label: string; value: string }>;
+    /** Overrides for alerts that are not a lab form, e.g. an NPHL result or specimen rejection. */
+    subject?: string;
+    heading?: string;
+    intro?: string;
+    entererLabel?: string;
 };
 
 /**
@@ -755,6 +760,10 @@ export const sendLabResultEmail = async (
         const safeSubmitter = escapeHtml(ctx.submittedByName);
         const when = escapeHtml(formatEat(ctx.submittedAt));
         const portal = ctx.portalUrl?.trim();
+        const subject = ctx.subject ?? `Lab results available — ${ctx.epid}`;
+        const heading = ctx.heading ?? "Lab results available";
+        const intro = ctx.intro ?? "Lab results have been recorded for a case you submitted.";
+        const entererLabel = ctx.entererLabel ?? "Entered by";
 
         const resultRowsText = ctx.resultLines
             .map((l) => `  ${l.label}: ${l.value}`)
@@ -784,15 +793,17 @@ export const sendLabResultEmail = async (
         const mailOptions = {
             from: '"NPHIIS" apps@intellisoftkenya.com',
             to,
-            subject: `Lab results available — ${ctx.epid}`,
+            subject,
             text: [
-                `NPHIIS — Lab results available for your case`,
+                `NPHIIS — ${heading}`,
+                ``,
+                intro,
                 ``,
                 `EPID: ${ctx.epid}`,
                 `Disease: ${ctx.diseaseCondition}`,
                 `Lab form: ${ctx.labFormName}`,
                 `Submitted: ${formatEat(ctx.submittedAt)}`,
-                `Entered by: ${ctx.labEntererName}`,
+                `${entererLabel}: ${ctx.labEntererName}`,
                 `Your case was originally submitted by: ${ctx.submittedByName}`,
                 ``,
                 `Results:`,
@@ -806,15 +817,15 @@ export const sendLabResultEmail = async (
             html: `
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>Lab results — ${safeEpid}</title></head>
+<head><meta charset="UTF-8"><title>${escapeHtml(heading)} — ${safeEpid}</title></head>
 <body style="margin:0;background:#f4f7f9;font-family:'Segoe UI',Tahoma,Geneva,sans-serif;">
   <div style="padding:24px 0;background:#f4f7f9;">
     <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
       ${emailHeaderHtml()}
       <div style="padding:32px;">
-        <h2 style="color:#2563eb;margin:0 0 12px;text-align:center;">Lab results available</h2>
+        <h2 style="color:#2563eb;margin:0 0 12px;text-align:center;">${escapeHtml(heading)}</h2>
         <p style="color:#666;font-size:16px;line-height:1.6;text-align:center;margin:0;">
-          Lab results have been recorded for a case you submitted.
+          ${escapeHtml(intro)}
         </p>
         <div style="background:#f8f9fa;border-left:4px solid #2563eb;padding:20px;border-radius:8px;margin:24px 0;">
           <table style="width:100%;border-collapse:collapse;">
@@ -826,7 +837,7 @@ export const sendLabResultEmail = async (
                 <td style="padding:8px 0;font-size:16px;">${safeForm}</td></tr>
             <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Submitted</td>
                 <td style="padding:8px 0;font-size:15px;color:#444;">${when} EAT</td></tr>
-            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Entered by</td>
+            <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">${escapeHtml(entererLabel)}</td>
                 <td style="padding:8px 0;font-size:16px;">${safeEnterer}</td></tr>
             <tr><td style="padding:8px 0;color:#666;font-size:11px;text-transform:uppercase;">Case submitter</td>
                 <td style="padding:8px 0;font-size:16px;">${safeSubmitter}</td></tr>

@@ -263,9 +263,24 @@ export function buildSurveillancePayload(args: {
   };
 }
 
+/**
+ * Lab results come as Negative/Positive, or as Absent/Present (lab line-list conclusions,
+ * LOINC LA9634-2 / LA9633-4). Anything else (pending, inconclusive, blank) is not a result.
+ * Negative is checked first: "Not detected" contains "detected".
+ */
 function normaliseResult(v: unknown): "Positive" | "Negative" | null {
-  if (v == null || String(v).trim() === "") return null;
-  return /^negative$/i.test(String(v).trim()) ? "Negative" : "Positive";
+  const s = String(v ?? "").trim();
+  if (!s) return null;
+  if (/\b(negative|absent|not\s+detected)\b/i.test(s)) return "Negative";
+  if (/\b(positive|present|detected)\b/i.test(s)) return "Positive";
+  return null;
+}
+
+const ANSWER_CODES: Record<string, "Positive" | "Negative"> = { "LA9634-2": "Negative", "LA9633-4": "Positive" };
+
+/** A line-list row's result: its conclusion, else its LOINC answer code. */
+function lineListResult(r: any): "Positive" | "Negative" | null {
+  return normaliseResult(r?.conclusion) ?? ANSWER_CODES[String(r?.valueCode ?? "").trim()] ?? null;
 }
 
 function normaliseResultType(v: unknown): "Final" | "Preliminary" | null {
@@ -297,8 +312,8 @@ export function parseLineListRecords(rows: any[]): NphlResult[] {
     bySpecimen.set(id, [...(bySpecimen.get(id) ?? []), r]);
   }
   return [...bySpecimen].map(([specimenId, rs]) => {
-    const tested = rs.filter((r) => normaliseResult(r.conclusion) !== null);
-    const results = tested.map((r) => normaliseResult(r.conclusion));
+    const tested = rs.filter((r) => lineListResult(r) !== null);
+    const results = tested.map((r) => lineListResult(r));
     const types = tested.map((r) => normaliseResultType(r.resultType ?? "Final"));
     const dates = tested.map((r) => r.effectiveDateTime).filter(Boolean).sort();
     return {
@@ -308,7 +323,7 @@ export function parseLineListRecords(rows: any[]): NphlResult[] {
       narration: tested.map((r) => ({
         analysis: r.codeText || undefined,
         test_name: r.testName || undefined,
-        result: String(r.conclusion),
+        result: lineListResult(r) ?? String(r.conclusion),
         result_type: normaliseResultType(r.resultType ?? "Final") ?? undefined,
       })),
       resultDate: dates[dates.length - 1] ?? null,
@@ -525,6 +540,62 @@ export function resultChanged(existingObservation: any, next: any): boolean {
       component: o.component,
     });
   return strip(existingObservation) !== strip(next);
+}
+
+export const SPECIMEN_LAB_STATUS_EXT = "http://nphiis.health.go.ke/fhir/StructureDefinition/nphl-lab-status";
+const LAB_STATUS_ON_SPECIMEN = new Set(["awaiting-result", "preliminary-result", "final-result", "specimen-rejected"]);
+
+/**
+ * The Specimen with its lab progress from `task`: the businessStatus in the nphl-lab-status
+ * extension, and status "unsatisfactory" while the lab has it rejected. Only once the specimen
+ * has reached the lab; null when nothing would change.
+ */
+export function specimenWithLabStatus(specimen: any, task: any): any | null {
+  const coding = task?.businessStatus?.coding?.[0];
+  if (!LAB_STATUS_ON_SPECIMEN.has(coding?.code)) return null;
+  const others = (specimen?.extension ?? []).filter((e: any) => e?.url !== SPECIMEN_LAB_STATUS_EXT);
+  const previous = (specimen?.extension ?? []).find((e: any) => e?.url === SPECIMEN_LAB_STATUS_EXT)?.valueCoding?.code;
+  const rejected = coding.code === "specimen-rejected";
+  const status = rejected
+    ? "unsatisfactory"
+    : previous === "specimen-rejected" && specimen?.status === "unsatisfactory"
+      ? "available"
+      : specimen?.status;
+  if (previous === coding.code && status === specimen?.status) return null;
+  return {
+    ...specimen,
+    ...(status ? { status } : {}),
+    extension: [...others, { url: SPECIMEN_LAB_STATUS_EXT, valueCoding: { system: coding.system, code: coding.code, display: coding.display } }],
+  };
+}
+
+const NOTIFY_ON = new Set(["preliminary-result", "final-result", "specimen-rejected"]);
+
+/** The outcome to email the case submitter about when a Task moves from `existing` to `next`, else null. */
+export function notifiableOutcome(existing: any, next: any): string | null {
+  const code = next?.businessStatus?.coding?.[0]?.code;
+  if (!NOTIFY_ON.has(code)) return null;
+  return existing?.businessStatus?.coding?.[0]?.code === code ? null : code;
+}
+
+/** Rows for the lab result email, from the specimen's Task and (for a result) its Observation. */
+export function labOutcomeEmailLines(task: any, observation?: any): Array<{ label: string; value: string }> {
+  const out = (name: string) => (task?.output ?? []).find((o: any) => o?.type?.text === name);
+  const label = (task?.identifier ?? []).find((i: any) => i?.system === SPECIMEN_LABEL_SYSTEM)?.value;
+  const lines = [
+    { label: "Specimen ID", value: label ?? task?.focus?.reference ?? "—" },
+    { label: "Status", value: task?.businessStatus?.text ?? "—" },
+  ];
+  if (task?.status === "rejected") {
+    lines.push({ label: "Rejection reason", value: out("rejection-reason")?.valueString ?? task?.statusReason?.text ?? "—" });
+    const on = out("rejected-on")?.valueDateTime;
+    if (on) lines.push({ label: "Rejected on", value: String(on) });
+    return lines;
+  }
+  lines.push({ label: "Result", value: out("result")?.valueString ?? observation?.valueString ?? "—" });
+  if (observation?.effectiveDateTime) lines.push({ label: "Result date", value: String(observation.effectiveDateTime) });
+  for (const c of observation?.component ?? []) lines.push({ label: c?.code?.text ?? "Test", value: c?.valueString || "—" });
+  return lines;
 }
 
 export function taskChanged(existing: any, next: any): boolean {
