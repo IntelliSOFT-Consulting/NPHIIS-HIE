@@ -19,6 +19,10 @@ export const PAGE_META: Record<
     subtitle: 'Counties, sub-counties, wards, facilities',
   },
   '/lab': { title: 'Lab', subtitle: 'Submit results and manage bulk uploads' },
+  '/specimens': {
+    title: 'Specimens',
+    subtitle: 'VHF specimens sent to NPHL, their status and lab results',
+  },
   '/rumours': {
     title: 'Rumours',
     subtitle: 'Set High / Medium / Low priority on rumour reports',
@@ -78,7 +82,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-surface flex">
-      <aside className="hidden md:flex md:flex-col w-64 max-h-[calc(100vh-2rem)] bg-white border-r border-nphi-100/60 m-4 rounded-3xl shadow-card">
+      <aside className="hidden md:flex md:flex-col w-64 shrink-0 sticky top-4 self-start h-[calc(100vh-2rem)] bg-white border-r border-nphi-100/60 m-4 rounded-3xl shadow-card">
         <div className="px-5 pt-5 pb-4 border-b border-nphi-100/60">
           <div className="flex items-center gap-3">
             <div className="relative h-10 w-10 rounded-xl overflow-hidden bg-white ring-1 ring-nphi-100">

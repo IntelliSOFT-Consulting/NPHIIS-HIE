@@ -70,6 +70,9 @@ export const FEATURES = {
     "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER",
   ],
   LAB_ACCESS: LAB_ROLES,
+  // Specimens hie-auth submitted to NPHL, with their status and results.
+  // Not location-scoped, so only lab and national roles see it.
+  SPECIMENS_VIEW: [...LAB_ROLES, "NATIONAL_FOCAL_PERSON", "NATIONAL_VIEWER"],
   LAB_NATIONAL_SCOPE: ["NATIONAL_LAB", "ADMINISTRATOR", "SUPERUSER"],
   SUBSCRIPTION_LOGS_VIEW: ["ADMINISTRATOR", "SUPERUSER"],
 } as const;
