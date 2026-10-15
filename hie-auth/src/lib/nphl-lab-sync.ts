@@ -11,13 +11,17 @@ import {
   TASK_CODE,
   TASK_CODE_SYSTEM,
   TaskState,
+  buildResultDiagnosticReport,
   buildResultObservation,
   buildSpecimenTask,
   buildSurveillancePayload,
+  buildTestObservations,
   isVhfCaseEncounter,
   notifiableOutcome,
   parseLabUpdates,
+  resultFromObservation,
   surveillanceEntryState,
+  reportChanged,
   resultChanged,
   resultObservationIdForSpecimen,
   specimenCaseEncounterId,
@@ -26,6 +30,7 @@ import {
   taskChanged,
   taskIdForSpecimen,
   taskPayloadHash,
+  taskWithLabNote,
 } from "./nphl-lab";
 import { notifySpecimenOutcome } from "./nphl-result-notification";
 
@@ -144,14 +149,33 @@ async function updateSpecimenLabStatus(specimen: any, task: any): Promise<void> 
   console.error(`[NPHL] Could not update lab status on Specimen/${specimen.id}`);
 }
 
-/** Writes the result Observation and the Task for one specimen; skips writes that change nothing. */
+/**
+ * Writes a specimen's result: one Observation per test, the overall Observation (hasMember the
+ * tests), then the DiagnosticReport listing them all. Referenced resources are written first.
+ */
+async function writeResult(
+  specimen: any,
+  caseEncounterId: string,
+  result: NphlResult,
+): Promise<{ observation: any; resultReportId: string }> {
+  for (const test of buildTestObservations({ specimen, caseEncounterId, result })) {
+    if (resultChanged(await getResource(`/Observation/${test.id}`), test)) await putResource(test);
+  }
+  const observation = buildResultObservation({ specimen, caseEncounterId, result });
+  if (resultChanged(await getResource(`/Observation/${observation.id}`), observation)) await putResource(observation);
+  const report = buildResultDiagnosticReport({ specimen, caseEncounterId, result });
+  if (reportChanged(await getResource(`/DiagnosticReport/${report.id}`), report)) await putResource(report);
+  return { observation, resultReportId: report.id };
+}
+
+/** Writes the result Observations, DiagnosticReport and Task for one specimen; skips writes that change nothing. */
 async function recordSpecimenState(
   specimen: any,
   caseEncounterId: string,
   state: TaskState,
-  payloadHash?: string,
-  existingTask?: any,
+  opts: { payloadHash?: string; existingTask?: any; labNumber?: string } = {},
 ): Promise<SpecimenSyncOutcome> {
+  const { payloadHash, existingTask, labNumber } = opts;
   const existing = existingTask !== undefined ? existingTask : await getResource(`/Task/${taskIdForSpecimen(specimen.id)}`);
 
   // Never undo recorded progress: a failed re-post after a successful one, or a response
@@ -160,12 +184,19 @@ async function recordSpecimenState(
   const existingHasResult = existingCode === "preliminary-result" || existingCode === "final-result";
   // A rejection is final too: only a result from the lab replaces it.
   const existingRejected = existing?.status === "rejected";
+  // The lab has said the specimen arrived or is being tested; NPHL's POST does not know that yet.
+  const existingAtLab = existingCode === "received-at-lab" || existingCode === "in-testing";
   const newHasResult = state.kind === "submitted" && !!state.result?.result;
   const failedAfterSubmit =
     (state.kind === "submission-failed" || state.kind === "awaiting-epid") &&
     ["in-progress", "completed", "rejected"].includes(existing?.status);
-  const noResultAfterOutcome = state.kind === "submitted" && !newHasResult && (existingHasResult || existingRejected);
-  if (existing && (failedAfterSubmit || noResultAfterOutcome)) {
+  const noResultAfterOutcome =
+    state.kind === "submitted" && !newHasResult && (existingHasResult || existingRejected || existingAtLab);
+  // Progress messages can arrive late: never step back from an outcome, or from testing to received.
+  const progressAfterOutcome =
+    state.kind === "lab-progress" &&
+    (existingHasResult || existingRejected || (state.progress.stage === "received" && existingCode === "in-testing"));
+  if (existing && (failedAfterSubmit || noResultAfterOutcome || progressAfterOutcome)) {
     return {
       specimenId: specimen.id,
       label: specimenLabel(specimen).value,
@@ -175,15 +206,14 @@ async function recordSpecimenState(
   }
 
   let resultObservationId: string | undefined;
+  let resultReportId: string | undefined;
   let observation: any;
   if (state.kind === "submitted" && state.result?.result) {
-    observation = buildResultObservation({ specimen, caseEncounterId, result: state.result });
-    const current = await getResource(`/Observation/${observation.id}`);
-    if (resultChanged(current, observation)) await putResource(observation);
+    ({ observation, resultReportId } = await writeResult(specimen, caseEncounterId, state.result));
     resultObservationId = resultObservationIdForSpecimen(specimen.id);
   }
 
-  const task = buildSpecimenTask({ existing, specimen, caseEncounterId, state, resultObservationId, payloadHash });
+  const task = buildSpecimenTask({ existing, specimen, caseEncounterId, state, resultObservationId, resultReportId, payloadHash, labNumber });
   if (taskChanged(existing, task)) await putResource(task);
   // Our Specimen write re-fires the Specimen subscription; the case then has an unchanged
   // payload hash and is not re-posted. A failure here never fails the sync.
@@ -263,7 +293,7 @@ export async function syncCaseToNphl(
     console.error(`[NPHL] Case ${caseEncounterId}: ${response.error}`);
     for (const [i, s] of specimens.entries()) {
       outcomes.push(
-        await recordSpecimenState(s, caseEncounterId, { kind: "submission-failed", error: response.error }, undefined, existingTasks[i]),
+        await recordSpecimenState(s, caseEncounterId, { kind: "submission-failed", error: response.error }, { existingTask: existingTasks[i] }),
       );
     }
     return { kind: "synced", caseEncounterId, submitted: false, specimens: outcomes };
@@ -274,7 +304,7 @@ export async function syncCaseToNphl(
   );
   for (const [i, s] of specimens.entries()) {
     const state = states.get(specimenLabel(s).value) ?? { kind: "submitted", result: null };
-    outcomes.push(await recordSpecimenState(s, caseEncounterId, state, payloadHash, existingTasks[i]));
+    outcomes.push(await recordSpecimenState(s, caseEncounterId, state, { payloadHash, existingTask: existingTasks[i] }));
   }
   return { kind: "synced", caseEncounterId, submitted: true, specimens: outcomes };
 }
@@ -407,37 +437,109 @@ export async function pollOpenNphlTasks(): Promise<{ cases: number; errors: numb
   }
 }
 
-export type PushedUpdateOutcome = { specimenId: string; kind?: LabUpdate["kind"]; matched: boolean; status?: string; businessStatus?: string; error?: string };
+/**
+ * Results stored before the DiagnosticReport and per-test Observations existed: rebuilds them
+ * from each stored result Observation and links the report from the Task. Tasks that already
+ * have a result-report output are skipped, so running it again does nothing.
+ */
+export async function backfillResultReports(): Promise<{ tasks: number; backfilled: number; errors: number }> {
+  const tasks = await searchAll(`/Task?code=${encodeURIComponent(`${TASK_CODE_SYSTEM}|${TASK_CODE}`)}&_count=200`);
+  const out = (t: any, name: string) => (t.output ?? []).find((o: any) => o?.type?.text === name);
+  let backfilled = 0;
+  let errors = 0;
+  for (const task of tasks) {
+    const obsRef = out(task, "result-observation")?.valueReference?.reference;
+    if (!obsRef || out(task, "result-report")) continue;
+    try {
+      const [specimen, stored] = await Promise.all([getResource(`/${task.focus?.reference}`), getResource(`/${obsRef}`)]);
+      const caseEncounterId = task.encounter?.reference?.split("/")[1];
+      const result = stored && resultFromObservation(stored);
+      if (!specimen || !caseEncounterId || !result) continue;
+      const { resultReportId } = await writeResult(specimen, caseEncounterId, result);
+      await putResource({
+        ...task,
+        output: [...task.output, { type: { text: "result-report" }, valueReference: { reference: `DiagnosticReport/${resultReportId}` } }],
+      });
+      backfilled++;
+    } catch (e) {
+      errors++;
+      console.error(`[NPHL] Report backfill failed for ${task.id}:`, e);
+    }
+  }
+  return { tasks: tasks.length, backfilled, errors };
+}
 
-/** Applies results and rejections pushed by the lab system, matched to Tasks by the specimen tube label. */
+export type PushedUpdateOutcome = {
+  specimenId: string;
+  kind?: LabUpdate["kind"];
+  matched: boolean;
+  /** The ID the update matched on, when it was not specimenId. */
+  matchedOn?: string;
+  status?: string;
+  businessStatus?: string;
+  error?: string;
+};
+
+const taskSearch = (label: string) =>
+  `/Task?identifier=${encodeURIComponent(`${SPECIMEN_LABEL_SYSTEM}|${label}`)}&code=${encodeURIComponent(`${TASK_CODE_SYSTEM}|${TASK_CODE}`)}`;
+
+/** Tasks whose tube label is the update's specimen ID, else its first alternative ID that matches. */
+async function tasksForUpdate(update: LabUpdate): Promise<{ tasks: any[]; matchedOn?: string }> {
+  for (const id of [update.specimenId, ...(update.altIds ?? [])]) {
+    const tasks = await searchAll(taskSearch(id), 1);
+    if (tasks.length) return { tasks, ...(id !== update.specimenId ? { matchedOn: id } : {}) };
+  }
+  return { tasks: [] };
+}
+
+function stateForUpdate(update: Exclude<LabUpdate, { kind: "note" }>): TaskState {
+  switch (update.kind) {
+    case "rejected":
+      return { kind: "rejected", rejection: update.rejection };
+    case "progress":
+      return { kind: "lab-progress", progress: update.progress };
+    case "result":
+      return { kind: "submitted", result: update.result };
+  }
+}
+
+/**
+ * Applies what the lab system sends (results, rejections, progress and notes), matched to Tasks
+ * by the specimen tube label.
+ */
 export async function applyLabUpdates(updates: LabUpdate[]): Promise<PushedUpdateOutcome[]> {
   const out: PushedUpdateOutcome[] = [];
   for (const update of updates) {
+    const base = { specimenId: update.specimenId, kind: update.kind };
     try {
-      const tasks = await searchAll(
-        `/Task?identifier=${encodeURIComponent(`${SPECIMEN_LABEL_SYSTEM}|${update.specimenId}`)}&code=${encodeURIComponent(`${TASK_CODE_SYSTEM}|${TASK_CODE}`)}`,
-        1,
-      );
+      const { tasks, matchedOn } = await tasksForUpdate(update);
       if (!tasks.length) {
-        out.push({ specimenId: update.specimenId, matched: false, error: "No specimen with this ID has been submitted" });
+        out.push({ ...base, matched: false, error: "No specimen with this ID has been submitted" });
         continue;
       }
       for (const task of tasks) {
+        const matched = { ...base, matched: true, ...(matchedOn ? { matchedOn } : {}) };
+        if (update.kind === "note") {
+          const next = taskWithLabNote(task, update.note);
+          if (next) await putResource(next);
+          const t = next ?? task;
+          out.push({ ...matched, status: t.status, businessStatus: t.businessStatus?.coding?.[0]?.code });
+          continue;
+        }
         const specimen = await getResource(`/${task.focus?.reference}`);
         const caseEncounterId = task.encounter?.reference?.split("/")[1];
         if (!specimen || !caseEncounterId) {
-          out.push({ specimenId: update.specimenId, matched: false, error: "Task has no specimen or case" });
+          out.push({ ...base, matched: false, error: "Task has no specimen or case" });
           continue;
         }
-        const state: TaskState =
-          update.kind === "rejected"
-            ? { kind: "rejected", rejection: update.rejection }
-            : { kind: "submitted", result: update.result };
-        const o = await recordSpecimenState(specimen, caseEncounterId, state);
-        out.push({ specimenId: update.specimenId, kind: update.kind, matched: true, status: o.status, businessStatus: o.businessStatus });
+        const o = await recordSpecimenState(specimen, caseEncounterId, stateForUpdate(update), {
+          existingTask: task,
+          labNumber: update.labNumber,
+        });
+        out.push({ ...matched, status: o.status, businessStatus: o.businessStatus });
       }
     } catch (e) {
-      out.push({ specimenId: update.specimenId, matched: false, error: String(e) });
+      out.push({ ...base, matched: false, error: String(e) });
     }
   }
   return out;
@@ -508,7 +610,9 @@ export async function pollLabStagingResults(): Promise<
         .map((t) => (t.identifier ?? []).find((i: any) => i?.system === SPECIMEN_LABEL_SYSTEM)?.value)
         .filter(Boolean),
     );
-    const updates = parseLabUpdates(fetched.rows).filter((u) => openLabels.has(u.specimenId));
+    const updates = parseLabUpdates(fetched.rows).filter(
+      (u) => openLabels.has(u.specimenId) || (u.altIds ?? []).some((id) => openLabels.has(id)),
+    );
     const outcomes = updates.length ? await applyLabUpdates(updates) : [];
     return {
       rows: fetched.rows.length,

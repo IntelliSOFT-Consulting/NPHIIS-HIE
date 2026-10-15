@@ -25,6 +25,8 @@ const STATUS_BADGE: Record<SpecimenStatus, string> = {
   'awaiting-epid': 'bg-gray-100 text-gray-700',
   'submission-failed': 'bg-accent-50 text-accent-700',
   'awaiting-result': 'bg-sky-100 text-sky-800',
+  'received-at-lab': 'bg-indigo-100 text-indigo-800',
+  'in-testing': 'bg-violet-100 text-violet-800',
   'preliminary-result': 'bg-amber-100 text-amber-800',
   'final-result': 'bg-emerald-100 text-emerald-800',
   'specimen-rejected': 'bg-accent-50 text-accent-700',

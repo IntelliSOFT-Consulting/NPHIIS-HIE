@@ -147,7 +147,9 @@ Create this file from scratch. Required variables:
 | `NPHL_SURVEILLANCE_API_KEY` | NPHL Surveillance Data API key (from helpdesk@nphl.go.ke). Also enables the result poll |
 | `NPHL_VHF_LAB_TESTS` | Optional; tests requested per specimen, comma-separated. Defaults to `RT-PCR`. Keep stable: NPHL de-duplicates on the test set |
 | `NPHL_POLL_CRON_SCHEDULE` | Optional; defaults to `*/30 * * * *`. Set `NPHL_POLL_CRON_ENABLED=false` to stop polling |
-| `LAB_RESULTS_API_KEY` | Key the lab system sends to `POST /lab/results` (`x-api-key` or `Bearer`) |
+| `LAB_RESULTS_API_KEY` | Key the lab system sends to `POST /lab/results` (`x-api-key` or `Bearer`). Comma-separate two keys to rotate |
+| `LAB_RESULTS_HMAC_SECRET` | Optional; when set, every lab push must be signed (see §7.2 *Securing lab pushes*) |
+| `LAB_RESULTS_SIGNATURE_TOLERANCE_SECONDS` | Optional; how far `x-lab-timestamp` may be from now. Defaults to `300` |
 | `NPHL_SYNC_DEBOUNCE_MS` | Optional; quiet window before a case is posted after a Specimen callback. Defaults to `15000` |
 | `NPHL_MAX_CONCURRENT` | Optional; most NPHL calls in flight at once, across subscription, poll and manual. Defaults to `2` |
 | `NPHL_POLL_MAX_CASES` / `NPHL_POLL_MAX_AGE_DAYS` | Optional; poll at most this many cases per run, only Tasks authored in the last N days. Default `200` / `60` |
@@ -443,6 +445,52 @@ proxy) with `LAB_RESULTS_API_KEY` in `x-api-key`. Updates are matched on the spe
 keyed by `specimenIdentifier`) are also accepted; a row whose `status` or `conclusion` says rejected rejects
 the specimen. The response lists each update with `matched` and the Task status it produced. A later
 re-post to NPHL without a result never overwrites a recorded result or rejection.
+
+**Lab results endpoint.** `POST /lab/results` takes everything the lab system (LIMS) sends about a submitted specimen,
+as an array or `{ "data": [...] }`. Each message has `messageType` and the specimen's `specimenIdentifier`
+(`message_type` / `specimen_id` also work):
+
+| `messageType` | Effect on the specimen's Task | Other fields |
+| --- | --- | --- |
+| `received` | `in-progress` / `received-at-lab` | `date`, `laboratory`, `caseIdentifier` (lab number) |
+| `in-testing` | `in-progress` / `in-testing` | `date`, `laboratory` |
+| `result` (or none) | `preliminary-result` / `final-result` | a line-list row or a `specimen_id` result entry (above) |
+| `rejected` | `rejected` / `specimen-rejected` | `rejection_reason`, `date_rejected`, `laboratory` |
+| `note` | adds a note to the Task (once per text) | `text`, `laboratory`, `date` |
+
+```json
+{
+  "data": [
+    { "messageType": "received", "specimenIdentifier": "2261733", "caseIdentifier": "NVRL/1051/26",
+      "date": "2026-10-15T08:10:00+03:00", "laboratory": "National Virology Reference Laboratory (NVRL)" },
+    { "messageType": "note", "specimenIdentifier": "2261733", "text": "Volume low; please send a repeat sample" },
+    { "messageType": "result", "specimenIdentifier": "2261733", "caseIdentifier": "NVRL/1051/26", "testName": "EVD",
+      "codeText": "Ebola Virus", "componentCode": "86518-8", "conclusion": "Absent", "valueCode": "LA9634-2",
+      "effectiveDateTime": "2026-10-15", "testingLabName": "National Virology Reference Laboratory (NVRL)" }
+  ]
+}
+```
+
+A specimen is matched on its tube label, then on `orderIdentifier` if the lab sends one (ask the lab to put the ID we
+submitted there when the tube barcode differs). `caseIdentifier` is kept on the Task as the lab number
+(`http://nphiis.health.go.ke/fhir/identifiers/nphl-lab-number`), and LOINC `componentCode`s are added to the test
+Observations. Progress never steps a specimen back: `received` after `in-testing`, or either after a result or
+rejection, is ignored. The response lists each update with `matched` (and `matchedOn` when it matched on the order
+identifier) and the Task status it produced, plus `invalid`: messages that could not be used, by their index in the
+batch. Only a batch with no usable message gets `400`. Each call is logged as route `lab-results-push`.
+
+**Securing lab pushes.** The API key is checked before the body is read. When `LAB_RESULTS_HMAC_SECRET` is set,
+each request must also carry `x-lab-timestamp` (Unix seconds or ISO 8601, within
+`LAB_RESULTS_SIGNATURE_TOLERANCE_SECONDS` of now) and `x-lab-signature: sha256=<hex>`, the HMAC-SHA256 of
+`<timestamp>.<raw request body>` with the secret. An altered body or an old captured request is refused with `401`.
+Applying the same message twice changes nothing. Share the key and secret with the lab out of band, and only over HTTPS.
+
+```bash
+TS=$(date +%s); BODY='{"data":[{"messageType":"in-testing","specimenIdentifier":"2261733"}]}'
+SIG=$(printf '%s.%s' "$TS" "$BODY" | openssl dgst -sha256 -hmac "$LAB_RESULTS_HMAC_SECRET" -hex | sed 's/^.* //')
+curl -X POST https://<API_HOST>/api/lab/results -H 'Content-Type: application/json' \
+  -H "x-api-key: $LAB_RESULTS_API_KEY" -H "x-lab-timestamp: $TS" -H "x-lab-signature: sha256=$SIG" -d "$BODY"
+```
 
 **Load limits.** A Specimen callback only queues the case and returns at once, so HAPI never waits on NPHL
 or retries because of it. Callbacks for one case within `NPHL_SYNC_DEBOUNCE_MS` become one post, a case
