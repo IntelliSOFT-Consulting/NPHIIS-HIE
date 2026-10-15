@@ -141,6 +141,20 @@ Create this file from scratch. Required variables:
 | `SMTP_PASS` | SMTP password |
 | `SMTP_FROM` | Sender address for notification emails |
 | `ENCOUNTER_BACKFILL_CRON_SCHEDULE` | Optional; defaults to `0 2 * * 0` (weekly Sun 02:00 UTC) |
+| `FHIR_SPECIMEN_SUBSCRIPTION_ID` | e.g. `nphl-specimen-subscription` |
+| `FHIR_SPECIMENS_SUBSCRIPTION_CALLBACK_URL` | `http://hie-auth:3000/subscriptions/specimens/notifications` |
+| `NPHL_SURVEILLANCE_API_URL` | Optional; defaults to `https://data-apis.nphl.go.ke` |
+| `NPHL_SURVEILLANCE_API_KEY` | NPHL Surveillance Data API key (from helpdesk@nphl.go.ke). Also enables the result poll |
+| `NPHL_VHF_LAB_TESTS` | Optional; tests requested per specimen, comma-separated. Defaults to `RT-PCR`. Keep stable: NPHL de-duplicates on the test set |
+| `NPHL_POLL_CRON_SCHEDULE` | Optional; defaults to `*/30 * * * *`. Set `NPHL_POLL_CRON_ENABLED=false` to stop polling |
+| `LAB_RESULTS_API_KEY` | Key the lab system sends to `POST /lab/results` (`x-api-key` or `Bearer`) |
+| `NPHL_SYNC_DEBOUNCE_MS` | Optional; quiet window before a case is posted after a Specimen callback. Defaults to `15000` |
+| `NPHL_MAX_CONCURRENT` | Optional; most NPHL calls in flight at once, across subscription, poll and manual. Defaults to `2` |
+| `NPHL_POLL_MAX_CASES` / `NPHL_POLL_MAX_AGE_DAYS` | Optional; poll at most this many cases per run, only Tasks authored in the last N days. Default `200` / `60` |
+| `LAB_STAGING_API_KEY` | NPHL lab staging API key. Enables the pull of ready results from `GET /list` |
+| `LAB_STAGING_API_URL` | Optional; defaults to `https://lab-staging-api.nphl.go.ke` |
+| `LAB_STAGING_LOOKBACK_DAYS` | Optional; pull rows with a test date in the last N days. Defaults to `14` |
+| `LAB_STAGING_POLL_CRON_SCHEDULE` | Optional; defaults to `15,45 * * * *`. Set `LAB_STAGING_POLL_CRON_ENABLED=false` to stop it |
 
 ### 3.3 `keycloak/.env`
 
@@ -372,12 +386,86 @@ After updating the client secret, restart hie-auth:
 
 ### 7.2 FHIR Subscriptions
 
-`hie-auth` relies on two active FHIR subscriptions being present in HAPI FHIR:
+`hie-auth` relies on these active FHIR subscriptions being present in HAPI FHIR:
 
 | Subscription | Criteria | Endpoint |
 | --- | --- | --- |
 | EPID auto-assignment | `Encounter?` | `http://hie-auth:3000/subscriptions/encounter` |
 | AFP follow-up | `Observation?code=502488184403` | `http://hie-auth:3000/subscriptions/observation` |
+| NPHL specimen submission | `Specimen?` | `http://hie-auth:3000/subscriptions/specimens/notifications` |
+
+#### NPHL specimen submission (VHF)
+
+When a Specimen syncs in, hie-auth posts its VHF case, with every specimen on that case, to the NPHL
+Surveillance Data API (`POST /v1/surveillance`). Each specimen gets a Task (`Task/nphl-<specimen id>`,
+code `nphl-specimen-submission`) that tracks it:
+
+| Task status | businessStatus | Meaning |
+| --- | --- | --- |
+| `on-hold` | `awaiting-epid` | Case has no EPID yet; retried by the poll |
+| `requested` | `submission-failed` | NPHL call failed (`statusReason` has the error); retried by the poll |
+| `in-progress` | `awaiting-result` | Accepted by NPHL; no result yet |
+| `in-progress` | `preliminary-result` | Preliminary result written to `Observation/nphl-result-<specimen id>` |
+| `completed` | `final-result` | Final result received |
+| `rejected` | `specimen-rejected` | Lab rejected the specimen; reason in `statusReason` and `output` |
+
+Results arrive three ways: the poll re-posts open cases (NPHL returns current results in the POST response),
+the lab staging pull reads `GET https://lab-staging-api.nphl.go.ke/list` (below), and the lab system pushes results and rejections to `POST /lab/results` (behind `/api/` or `/auth/` on the
+proxy) with `LAB_RESULTS_API_KEY` in `x-api-key`. Updates are matched on the specimen tube label
+(`Task.identifier` `http://nphiis.health.go.ke/fhir/identifiers/specimen-id`). The body is an array or
+`{ "data": [...] }`:
+
+```json
+{
+  "data": [
+    {
+      "specimen_id": "KEN-KER-KIE-2026-VHF-001-S1",
+      "status": "final",
+      "laboratory_result": "Negative",
+      "laboratory_result_narration": [
+        { "test_name": "EVD", "test_method": "RT-PCR", "result": "Negative", "result_type": "Final" }
+      ],
+      "date_of_laboratory_result": "2026-10-15T09:30:00+03:00",
+      "other_laboratory_facility": "National Virology Reference Laboratory (NVRL)"
+    },
+    {
+      "specimen_id": "KEN-KER-KIE-2026-VHF-001-S2",
+      "status": "rejected",
+      "rejection_reason": "Sample haemolysed",
+      "date_rejected": "2026-10-15",
+      "other_laboratory_facility": "National Virology Reference Laboratory (NVRL)"
+    }
+  ]
+}
+```
+
+`status` is `preliminary`, `final` or `rejected`. Lab line-list rows (as lab-staging-api `/list` returns them,
+keyed by `specimenIdentifier`) are also accepted; a row whose `status` or `conclusion` says rejected rejects
+the specimen. The response lists each update with `matched` and the Task status it produced. A later
+re-post to NPHL without a result never overwrites a recorded result or rejection.
+
+**Load limits.** A Specimen callback only queues the case and returns at once, so HAPI never waits on NPHL
+or retries because of it. Callbacks for one case within `NPHL_SYNC_DEBOUNCE_MS` become one post, a case
+never syncs twice in parallel, and a case is not re-posted on a callback when nothing NPHL would see has
+changed (the hash of the last accepted payload is on the Task). The queued run is logged as route
+`nphl-case-sync`. hie-auth writes only Tasks and Observations coded `nphl-lab-result`, which match no
+subscription, so it cannot trigger itself.
+
+**Lab staging pull.** With `LAB_STAGING_API_KEY` set, hie-auth reads `GET /list?dateFrom=<today − LAB_STAGING_LOOKBACK_DAYS>`
+every 30 minutes and applies the rows whose `specimenIdentifier` equals the tube label of a specimen that is still open
+(`requested`, `in-progress` or `on-hold`, authored in the last `NPHL_POLL_MAX_AGE_DAYS`). Rows for other specimens are
+ignored. Line-list rows carry no preliminary flag, so a matched result is recorded as final. Run it by hand with
+`POST /subscriptions/specimens/lab-staging-pull` (internal API key or admin bearer); the response gives rows read,
+open specimens, updates found and specimens updated.
+
+**Emails.** When a specimen's Task first reaches `preliminary-result`, `final-result` or `specimen-rejected`, by any of the
+three routes, the practitioner who submitted the case is emailed (if they have notifications enabled and an email in
+Keycloak). Each outcome is sent once per specimen, tracked as a `LAB_RESULT` notification keyed
+`nphl-<specimen id>:<outcome>`. Needs the SMTP settings; a failed email is recorded on the notification and does not
+block the result being written.
+
+Re-submit one case by hand: `POST /subscriptions/specimens/nphl-sync` with `{ "specimenId": "…" }` or
+`{ "encounterId": "…" }` (internal API key or admin bearer).
 
 Verify they exist:
 

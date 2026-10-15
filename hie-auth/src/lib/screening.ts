@@ -24,6 +24,10 @@ export const SCREENING_IDENTIFIER_SYSTEM = `${BASE}/identifier/screening-patient
 export const SCREENING_OUTCOME_SYSTEM = `${BASE}/CodeSystem/screening-outcome`;
 export const SYMPTOM_SYSTEM = `${BASE}/CodeSystem/screening-symptom`;
 
+/** Screening No. on the Patient, in the shape the mobile app writes and searches on. */
+export const SCREENING_NUMBER_SYSTEM = "vhf-screening-number";
+export const SCREENING_NUMBER_TYPE_SYSTEM = "vhf-screened";
+
 export const SCREENING_OUTCOMES = ["cleared", "referred", "suspected"] as const;
 export const POINT_OF_ENTRY_TYPES = ["airport", "seaport", "border", "facility", "community"] as const;
 
@@ -47,6 +51,8 @@ export const SYMPTOM_CODES = [
 
 export type ScreeningPayload = {
     screeningId: string;
+    /** Human-readable Screening No. (e.g. SCR-2026-40560); defaults to screeningId. */
+    screeningNumber?: string;
     screenedAt?: string;
     outcome?: (typeof SCREENING_OUTCOMES)[number];
     pointOfEntry?: { name: string; type?: (typeof POINT_OF_ENTRY_TYPES)[number]; locationId?: string };
@@ -95,6 +101,8 @@ export function validateScreeningPayload(
     if (!isObj(body)) return { ok: false, errors: ["body must be a JSON object"] };
 
     if (!isStr(body.screeningId)) errors.push("screeningId is required (client-generated unique id, used for idempotency)");
+    if (body.screeningNumber != null && !isStr(body.screeningNumber))
+        errors.push("screeningNumber must be a non-empty string when given");
     if (body.screenedAt != null && !(isStr(body.screenedAt) && DATETIME_RE.test(body.screenedAt)))
         errors.push("screenedAt must be an ISO 8601 date/datetime");
     if (body.outcome != null && !(SCREENING_OUTCOMES as readonly string[]).includes(body.outcome))
@@ -182,6 +190,17 @@ export function buildScreeningIdentifier(type: IdentificationType, value: string
     };
 }
 
+export function buildScreeningNumberIdentifier(screeningNumber: string) {
+    return {
+        type: {
+            coding: [{ system: SCREENING_NUMBER_TYPE_SYSTEM, code: SCREENING_NUMBER_TYPE_SYSTEM, display: "VHF Screening" }],
+            text: "Screening No.",
+        },
+        system: SCREENING_NUMBER_SYSTEM,
+        value: screeningNumber.trim(),
+    };
+}
+
 /** True when the Patient already carries this identification type + number (on any system). */
 export function patientHasIdentifier(patient: any, type: IdentificationType, value: string): boolean {
     const code = identificationTypeCode(type);
@@ -193,11 +212,14 @@ export function patientHasIdentifier(patient: any, type: IdentificationType, val
     });
 }
 
-export function buildScreenedPatient(p: ScreeningPayload["patient"]) {
+export function buildScreenedPatient(p: ScreeningPayload["patient"], screeningNumber?: string) {
     const patient: Record<string, any> = {
         resourceType: "Patient",
         meta: { profile: [SCREENED_PATIENT_PROFILE], tag: [SCREENING_TAG] },
-        identifier: p.identifiers.map((i) => buildScreeningIdentifier(i.type, i.value)),
+        identifier: [
+            ...(screeningNumber?.trim() ? [buildScreeningNumberIdentifier(screeningNumber)] : []),
+            ...p.identifiers.map((i) => buildScreeningIdentifier(i.type, i.value)),
+        ],
     };
     if (p.givenNames?.length || p.familyName) {
         patient.name = [
@@ -253,6 +275,7 @@ export function mergeIntoExistingPatient(existing: any, incoming: Record<string,
     for (const key of ["name", "gender", "birthDate", "telecom", "address"]) {
         if (merged[key] == null && incoming[key] != null) merged[key] = incoming[key];
     }
+    // A patient screened again keeps each earlier Screening No. and gains the new one.
     const missing = (incoming.identifier ?? []).filter(
         (inc: any) =>
             !(existing.identifier ?? []).some(

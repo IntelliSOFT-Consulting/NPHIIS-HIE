@@ -1,0 +1,52 @@
+{
+  "resourceType": "Specimen",
+  "id": "6b1f8e2a-3c4d-4e5f-9a0b-1c2d3e4f5a6b",
+  "identifier": [
+    {
+      "system": "http://nphiis.health.go.ke/fhir/identifiers/specimen-id",
+      "value": "KEN-KER-KIE-2026-VHF-001-S1"
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/workflow-encounter",
+      "valueReference": {
+        "reference": "Encounter/4e42232c-df7c-4795-85b8-73b88eedcadd"
+      }
+    },
+    {
+      "url": "http://example.org/fhir/StructureDefinition/specimen-managingLocation",
+      "valueReference": {
+        "reference": "Location/600528",
+        "display": "KABULA A COMMUNITY HEALTH UNIT"
+      }
+    }
+  ],
+  "status": "available",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v2-0487",
+        "code": "BLD",
+        "display": "Whole blood"
+      },
+      {
+        "system": "specimen-details",
+        "code": "vhf-sample-type",
+        "display": "Blood"
+      }
+    ],
+    "text": "Blood"
+  },
+  "subject": {
+    "reference": "Patient/ee0ccede-8c47-47e7-9354-8baf367142e7"
+  },
+  "collection": {
+    "collectedDateTime": "2026-10-14T08:30:00+03:00"
+  },
+  "note": [
+    {
+      "text": "Transport: Air; Sent to laboratory: 2026-10-14T10:00:00+03:00"
+    }
+  ]
+}
