@@ -89,8 +89,25 @@ const createFollowUpFHIRSubscription = async () => {
     );
 }
 
+const createSpecimenFHIRSubscription = async () => {
+    let FHIR_SPECIMEN_SUBSCRIPTION_ID = process.env['FHIR_SPECIMEN_SUBSCRIPTION_ID'];
+    let FHIR_SPECIMENS_SUBSCRIPTION_CALLBACK_URL = process.env['FHIR_SPECIMENS_SUBSCRIPTION_CALLBACK_URL'];
+
+    if (!FHIR_SPECIMEN_SUBSCRIPTION_ID || !FHIR_SPECIMENS_SUBSCRIPTION_CALLBACK_URL) {
+        console.log('Missing environment variables for Specimen subscription');
+        return;
+    }
+
+    await createSubscription(
+        FHIR_SPECIMEN_SUBSCRIPTION_ID,
+        FHIR_SPECIMENS_SUBSCRIPTION_CALLBACK_URL,
+        `Specimen?`
+    );
+}
+
 export let createFHIRSubscription = async () => {
     await deleteAllSubscriptions();
     await createEpidFHIRSubscription();
     await createFollowUpFHIRSubscription();
+    await createSpecimenFHIRSubscription();
 }

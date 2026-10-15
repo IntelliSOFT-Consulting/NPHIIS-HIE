@@ -13,6 +13,7 @@ import {
   ArrowPathIcon,
   BellAlertIcon,
   ChatBubbleLeftEllipsisIcon,
+  EyeDropperIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
 
@@ -66,6 +67,12 @@ export default function Navigation() {
     { name: 'Users', href: '/users', icon: UsersIcon, visible: can('USERS_MANAGE') },
     { name: 'Locations', href: '/locations', icon: MapPinIcon, visible: true },
     { name: 'Lab', href: '/lab', icon: BeakerIcon, visible: can('LAB_ACCESS') },
+    {
+      name: 'Specimens',
+      href: '/specimens',
+      icon: EyeDropperIcon,
+      visible: can('SPECIMENS_VIEW'),
+    },
     {
       name: 'Rumours',
       href: '/rumours',
