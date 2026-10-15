@@ -61,6 +61,38 @@ export async function searchAll<T>(url: string, token: string): Promise<T[]> {
   return out;
 }
 
+/**
+ * Like `searchAll`, but also returns the `_include`d resources, keyed by
+ * "Type/id" so callers can resolve references.
+ */
+export async function searchAllWithIncludes<T>(
+  url: string,
+  token: string,
+): Promise<{ matches: T[]; included: Map<string, any> }> {
+  const matches: T[] = [];
+  const included = new Map<string, any>();
+  let next: string | undefined = url;
+  for (let page = 0; next; page++) {
+    if (page === MAX_PAGES) throw new FhirSearchTooLargeError(url);
+    const res = await fetch(next, { headers: fhirHeaders(token), cache: "no-store" });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`FHIR search failed (${res.status}): ${body.slice(0, 300)}`);
+    }
+    const bundle = (await res.json()) as SearchBundle<any>;
+    for (const e of bundle.entry ?? []) {
+      if (!e.resource) continue;
+      if (e.search?.mode === "include") {
+        included.set(`${e.resource.resourceType}/${e.resource.id}`, e.resource);
+      } else {
+        matches.push(e.resource);
+      }
+    }
+    next = nextPageUrl(bundle);
+  }
+  return { matches, included };
+}
+
 export function chunk<T>(items: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
