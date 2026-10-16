@@ -26,6 +26,7 @@ import {
 import EditUserForm from './EditUserForm';
 import PasswordResetModal from './PasswordResetModal';
 import DeleteUserModal from './DeleteUserModal';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/pagination';
 // import Notification, { useNotification } from './Notification';
 
 interface UserListProps {
@@ -48,7 +49,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   
@@ -494,10 +495,11 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                   }}
                   className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
+                  {PAGE_SIZES.map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>

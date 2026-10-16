@@ -62,6 +62,32 @@ export async function searchAll<T>(url: string, token: string): Promise<T[]> {
 }
 
 /**
+ * One page of a search plus the total match count. Sent as a POST `_search` so
+ * long `_id` lists don't overflow the URL.
+ */
+export async function searchPage<T>(
+  resourceType: string,
+  params: URLSearchParams,
+  token: string,
+): Promise<{ resources: T[]; total: number }> {
+  const res = await fetch(`${FHIR_BASE_URL}/${resourceType}/_search`, {
+    method: "POST",
+    headers: { ...fhirHeaders(token), "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`FHIR search failed (${res.status}): ${body.slice(0, 300)}`);
+  }
+  const bundle = (await res.json()) as SearchBundle<T> & { total?: number };
+  const resources = (bundle.entry ?? [])
+    .filter((e) => e.resource && e.search?.mode !== "include")
+    .map((e) => e.resource as T);
+  return { resources, total: bundle.total ?? resources.length };
+}
+
+/**
  * Like `searchAll`, but also returns the `_include`d resources, keyed by
  * "Type/id" so callers can resolve references.
  */
@@ -91,6 +117,24 @@ export async function searchAllWithIncludes<T>(
     next = nextPageUrl(bundle);
   }
   return { matches, included };
+}
+
+/** `fn` over every item, at most `limit` at a time, results in input order. */
+export async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      out[i] = await fn(items[i]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
 }
 
 export function chunk<T>(items: T[], size: number): T[][] {

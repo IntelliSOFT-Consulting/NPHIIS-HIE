@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { callbackLogsApi, getAccessToken } from '@/lib/api';
 import type { CallbackLog } from '@/types/callback-log';
 import Spinner from '@/components/ui/Spinner';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/pagination';
 
 const ROUTE_OPTIONS: { value: string; label: string }[] = [
   { value: '', label: 'All routes' },
@@ -63,7 +64,7 @@ export default function CallbackLogList() {
   const [route, setRoute] = useState('');
   const [resourceType, setResourceType] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
   const [selectedLog, setSelectedLog] = useState<CallbackLog | null>(null);
@@ -303,7 +304,7 @@ export default function CallbackLogList() {
                   }}
                   className="rounded-lg border border-nphi-100 py-1.5 px-2 bg-white"
                 >
-                  {[10, 25, 50, 100].map((n) => (
+                  {PAGE_SIZES.map((n) => (
                     <option key={n} value={n}>
                       {n}
                     </option>
