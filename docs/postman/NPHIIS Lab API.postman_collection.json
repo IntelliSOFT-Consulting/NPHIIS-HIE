@@ -1,0 +1,843 @@
+{
+	"info": {
+		"_postman_id": "ddd217b7-aaec-57ce-bbda-571f4a4ee8e2",
+		"name": "NPHIIS Lab API",
+		"description": "Everything lab: results the lab system (LIMS) sends to NPHIIS (hie-auth `POST /lab/results`), staff pulling results, and the NPHL submission operations.\n\n## LIMS: POST /lab/results\n\nOne endpoint takes everything the lab sends about a specimen submitted to NPHL, as an array or `{ \"data\": [...] }`. Each message has `messageType` and the specimen's `specimenIdentifier` (`message_type` / `specimen_id` also work):\n\n| messageType | Effect on the specimen |\n|---|---|\n| `result` (or none) | Preliminary or final result: Observations, DiagnosticReport, Task `preliminary-result` / `final-result`; submitter emailed |\n| `rejected` | Task `specimen-rejected`, Specimen `unsatisfactory`; submitter emailed |\n| `received` | Task `received-at-lab` |\n| `in-testing` | Task `in-testing` |\n| `note` | Note added to the Task |\n\nA specimen is matched on its tube label (the ID it was submitted to NPHL with), then on `orderIdentifier` if sent. Progress never steps back: `received` after `in-testing`, or either after a result or rejection, is ignored. Sending the same message twice changes nothing.\n\n**Auth:** `x-api-key: {{labApiKey}}`. When the server has `LAB_RESULTS_HMAC_SECRET`, set `{{hmacSecret}}` and the collection signs each request (`x-lab-timestamp`, `x-lab-signature`); a timestamp more than 5 minutes off is refused.\n\n| Status | Meaning |\n|---|---|\n| 200 | Processed. `results[]`: per update `matched`, `matchedOn`, `status`, `businessStatus`. `invalid[]`: unusable messages by `index` |\n| 400 | No usable message; `invalid[]` says why |\n| 401 | Wrong key, or missing/invalid/stale signature |\n| 503 | `LAB_RESULTS_API_KEY` not configured on the server |\n\nSet `{{specimenId}}` to the tube label of a specimen that has been submitted to NPHL.\n\n## Operations (`/subscriptions/specimens/*`)\nAuth: `X-Internal-Api-Key: {{internalApiKey}}` (`INTERNAL_SUBSCRIPTION_API_KEY`), or a Bearer token of an ADMINISTRATOR / SUPERUSER. Each call is logged in the admin callback log.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "LIMS - POST /lab/results",
+			"description": "Calls from the lab system. Auth: `x-api-key: {{labApiKey}}` (or `Authorization: Bearer`). Signed automatically when `{{hmacSecret}}` is set.",
+			"auth": {
+				"type": "apikey",
+				"apikey": [
+					{
+						"key": "key",
+						"value": "x-api-key",
+						"type": "string"
+					},
+					{
+						"key": "value",
+						"value": "{{labApiKey}}",
+						"type": "string"
+					},
+					{
+						"key": "in",
+						"value": "header",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Signs the request when hmacSecret is set (the server requires it when LAB_RESULTS_HMAC_SECRET is set):",
+							"// x-lab-signature = sha256=<hex HMAC-SHA256 of \"<timestamp>.<raw body>\">.",
+							"const secret = pm.collectionVariables.get(\"hmacSecret\");",
+							"if (secret && pm.request.body && pm.request.body.raw !== undefined) {",
+							"  const ts = Math.floor(Date.now() / 1000).toString();",
+							"  const body = pm.variables.replaceIn(pm.request.body.raw);",
+							"  pm.request.body.raw = body;",
+							"  const sig = CryptoJS.HmacSHA256(ts + \".\" + body, secret).toString(CryptoJS.enc.Hex);",
+							"  pm.request.headers.upsert({ key: \"x-lab-timestamp\", value: ts });",
+							"  pm.request.headers.upsert({ key: \"x-lab-signature\", value: \"sha256=\" + sig });",
+							"}"
+						]
+					}
+				}
+			],
+			"item": [
+				{
+					"name": "Results",
+					"item": [
+						{
+							"name": "Result - lab line-list rows",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "The lab's line-list shape, as lab-staging `GET /list` returns it: one row per test, grouped per specimen. `conclusion` Absent/Present (or Negative/Positive, or LOINC `valueCode` LA9634-2 / LA9633-4). Any positive test makes the specimen positive. Rows carry no preliminary flag, so the result is recorded as final. `caseIdentifier` is kept on the Task as the lab number; `componentCode` is added to the test Observations as LOINC.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"subjectIdentifier\": \"NVRL/1051/26\",\n      \"caseIdentifier\": \"NVRL/1051/26\",\n      \"identifier\": \"10175\",\n      \"orderIdentifier\": \"\",\n      \"specimenIdentifier\": \"{{specimenId}}\",\n      \"specimenType\": \"Blood\",\n      \"collectDate\": \"2026-10-14\",\n      \"performerMFL\": \"13080\",\n      \"effectiveDateTime\": \"2026-10-15\",\n      \"code\": \"86518-8\",\n      \"testName\": \"EVD\",\n      \"codeText\": \"Ebola Virus\",\n      \"componentCode\": \"86518-8\",\n      \"value\": null,\n      \"unit\": \"NONE\",\n      \"conclusion\": \"Absent\",\n      \"valueCode\": \"LA9634-2\",\n      \"testingLabCode\": \"20580\",\n      \"testingLabName\": \"National Virology Reference Laboratory (NVRL)\"\n    },\n    {\n      \"subjectIdentifier\": \"NVRL/1051/26\",\n      \"caseIdentifier\": \"NVRL/1051/26\",\n      \"identifier\": \"10175\",\n      \"orderIdentifier\": \"\",\n      \"specimenIdentifier\": \"{{specimenId}}\",\n      \"specimenType\": \"Blood\",\n      \"collectDate\": \"2026-10-14\",\n      \"performerMFL\": \"13080\",\n      \"effectiveDateTime\": \"2026-10-15\",\n      \"code\": \"86574-1\",\n      \"testName\": \"MARBUG\",\n      \"codeText\": \"Marburg Virus\",\n      \"componentCode\": \"86574-1\",\n      \"value\": null,\n      \"unit\": \"NONE\",\n      \"conclusion\": \"Absent\",\n      \"valueCode\": \"LA9634-2\",\n      \"testingLabCode\": \"20580\",\n      \"testingLabName\": \"National Virology Reference Laboratory (NVRL)\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+											"const r = pm.response.json();",
+											"pm.test(\"every update matched a submitted specimen\", () => pm.expect(r.results.filter((o) => !o.matched)).to.eql([]));",
+											"pm.test(\"final result\", () => pm.expect(r.results[0].businessStatus).to.eql(\"final-result\"));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Result - specimen_id entry (preliminary)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "The NPHL surveillance response shape, keyed by `specimen_id`. `status` is `preliminary` or `final`.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"messageType\": \"result\",\n      \"specimen_id\": \"{{specimenId}}\",\n      \"status\": \"preliminary\",\n      \"laboratory_result\": \"Negative\",\n      \"laboratory_result_narration\": [\n        {\n          \"test_name\": \"EVD\",\n          \"test_method\": \"RT-PCR\",\n          \"result\": \"Negative\",\n          \"result_type\": \"Preliminary\",\n          \"code\": \"86518-8\"\n        }\n      ],\n      \"date_of_laboratory_result\": \"2026-10-15T09:30:00+03:00\",\n      \"other_laboratory_facility\": \"National Virology Reference Laboratory (NVRL)\",\n      \"caseIdentifier\": \"NVRL/1051/26\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+											"const r = pm.response.json();",
+											"pm.test(\"every update matched a submitted specimen\", () => pm.expect(r.results.filter((o) => !o.matched)).to.eql([]));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Rejected",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "Rejects the specimen: Task `rejected` / `specimen-rejected`, Specimen `unsatisfactory`, and the case submitter is emailed once. Only a later result replaces a rejection.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"messageType\": \"rejected\",\n      \"specimenIdentifier\": \"{{specimenId}}\",\n      \"rejection_reason\": \"Sample haemolysed\",\n      \"date_rejected\": \"2026-10-15\",\n      \"laboratory\": \"National Virology Reference Laboratory (NVRL)\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+											"const r = pm.response.json();",
+											"pm.test(\"every update matched a submitted specimen\", () => pm.expect(r.results.filter((o) => !o.matched)).to.eql([]));",
+											"pm.test(\"rejected\", () => pm.expect(r.results[0].businessStatus).to.eql(\"specimen-rejected\"));"
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Progress and notes",
+					"item": [
+						{
+							"name": "Received at lab",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "The specimen reached the lab. Task `in-progress` / `received-at-lab`. Ignored if the specimen is already in testing, has a result or was rejected.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"messageType\": \"received\",\n      \"specimenIdentifier\": \"{{specimenId}}\",\n      \"caseIdentifier\": \"NVRL/1051/26\",\n      \"date\": \"2026-10-15T08:10:00+03:00\",\n      \"laboratory\": \"National Virology Reference Laboratory (NVRL)\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+											"const r = pm.response.json();",
+											"pm.test(\"every update matched a submitted specimen\", () => pm.expect(r.results.filter((o) => !o.matched)).to.eql([]));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Testing in progress",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "Testing started. Task `in-progress` / `in-testing`. Ignored once there is a result or rejection.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"messageType\": \"in-testing\",\n      \"specimenIdentifier\": \"{{specimenId}}\",\n      \"date\": \"2026-10-15T11:00:00+03:00\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+											"const r = pm.response.json();",
+											"pm.test(\"every update matched a submitted specimen\", () => pm.expect(r.results.filter((o) => !o.matched)).to.eql([]));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Note",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "Free text for the people following the specimen, added to the Task's notes. The same text from the same lab is added once.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"messageType\": \"note\",\n      \"specimenIdentifier\": \"{{specimenId}}\",\n      \"text\": \"Volume low; please send a repeat sample\",\n      \"laboratory\": \"National Virology Reference Laboratory (NVRL)\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+											"const r = pm.response.json();",
+											"pm.test(\"every update matched a submitted specimen\", () => pm.expect(r.results.filter((o) => !o.matched)).to.eql([]));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Mixed batch",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "Several messages in one call, applied in order: progress and notes first, then results and rejections.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"messageType\": \"received\",\n      \"specimenIdentifier\": \"{{specimenId}}\",\n      \"laboratory\": \"NVRL\"\n    },\n    {\n      \"messageType\": \"in-testing\",\n      \"specimenIdentifier\": \"{{specimenId}}\"\n    },\n    {\n      \"subjectIdentifier\": \"NVRL/1051/26\",\n      \"caseIdentifier\": \"NVRL/1051/26\",\n      \"identifier\": \"10175\",\n      \"orderIdentifier\": \"\",\n      \"specimenIdentifier\": \"{{specimenId}}\",\n      \"specimenType\": \"Blood\",\n      \"collectDate\": \"2026-10-14\",\n      \"performerMFL\": \"13080\",\n      \"effectiveDateTime\": \"2026-10-15\",\n      \"code\": \"86518-8\",\n      \"testName\": \"EVD\",\n      \"codeText\": \"Ebola Virus\",\n      \"componentCode\": \"86518-8\",\n      \"value\": null,\n      \"unit\": \"NONE\",\n      \"conclusion\": \"Absent\",\n      \"valueCode\": \"LA9634-2\",\n      \"testingLabCode\": \"20580\",\n      \"testingLabName\": \"National Virology Reference Laboratory (NVRL)\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+											"const r = pm.response.json();",
+											"pm.test(\"every update matched a submitted specimen\", () => pm.expect(r.results.filter((o) => !o.matched)).to.eql([]));"
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Errors",
+					"item": [
+						{
+							"name": "Invalid messages (400)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "No usable message: `400` with `invalid[]` giving each message's `index` and `error`. In a batch with some usable messages, the call returns `200` and lists the bad ones in `invalid`.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"messageType\": \"teleport\",\n      \"specimenIdentifier\": \"X\"\n    },\n    {\n      \"messageType\": \"received\"\n    },\n    {\n      \"messageType\": \"note\",\n      \"specimenIdentifier\": \"X\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"400\", () => pm.response.to.have.status(400));",
+											"pm.test(\"lists each invalid message\", () => pm.expect(pm.response.json().invalid).to.have.length(3));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Unknown specimen (unmatched)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "A specimen ID that matches no submitted specimen: `200`, with `matched: false` for that update.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"messageType\": \"in-testing\",\n      \"specimenIdentifier\": \"NOT-SUBMITTED-123\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"200\", () => pm.response.to.have.status(200));",
+											"pm.test(\"unmatched\", () => pm.expect(pm.response.json().results[0].matched).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Wrong API key (401)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_HOST}}/lab/results",
+									"host": [
+										"{{API_HOST}}"
+									],
+									"path": [
+										"lab",
+										"results"
+									]
+								},
+								"description": "A wrong key is refused before the body is read.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"data\": [\n    {\n      \"messageType\": \"in-testing\",\n      \"specimenIdentifier\": \"{{specimenId}}\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "apikey",
+									"apikey": [
+										{
+											"key": "key",
+											"value": "x-api-key",
+											"type": "string"
+										},
+										{
+											"key": "value",
+											"value": "wrong-key",
+											"type": "string"
+										},
+										{
+											"key": "in",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"401\", () => pm.response.to.have.status(401));"
+										]
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Staff",
+			"description": "Admin portal users with specimen tracking access (Bearer JWT from Login).",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{API_HOST}}/provider/login",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"provider",
+								"login"
+							]
+						},
+						"description": "Saves `access_token` to `{{token}}`.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"idNumber\": \"{{staffIdNumber}}\",\n  \"password\": \"{{staffPassword}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"auth": {
+							"type": "noauth"
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+									"pm.collectionVariables.set(\"token\", pm.response.json().access_token);"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Pull results now",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/lab/pull",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"lab",
+								"pull"
+							]
+						},
+						"description": "Runs both pulls now instead of waiting for the schedule: re-posts open cases to NPHL and reads ready rows from lab-staging `GET /list`. Needs role ADMINISTRATOR, SUPERUSER, LAB_TECHNICIAN, NATIONAL_LAB, NATIONAL_FOCAL_PERSON or NATIONAL_VIEWER.",
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Operations - NPHL submission",
+			"description": "Re-submit cases to NPHL and pull lab-staging results by hand. Auth: `X-Internal-Api-Key` (or an admin Bearer token).",
+			"auth": {
+				"type": "apikey",
+				"apikey": [
+					{
+						"key": "key",
+						"value": "X-Internal-Api-Key",
+						"type": "string"
+					},
+					{
+						"key": "value",
+						"value": "{{internalApiKey}}",
+						"type": "string"
+					},
+					{
+						"key": "in",
+						"value": "header",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "Re-submit case by specimen",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{API_HOST}}/subscriptions/specimens/nphl-sync",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"subscriptions",
+								"specimens",
+								"nphl-sync"
+							]
+						},
+						"description": "Posts the case this Specimen (FHIR id) belongs to, with all its specimens, to NPHL `POST /v1/surveillance` now, and records each specimen's state from the response.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"specimenId\": \"{{fhirSpecimenId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Re-submit case by encounter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{API_HOST}}/subscriptions/specimens/nphl-sync",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"subscriptions",
+								"specimens",
+								"nphl-sync"
+							]
+						},
+						"description": "Same, by the case Encounter id.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"encounterId\": \"{{caseEncounterId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Pull lab-staging results",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/subscriptions/specimens/lab-staging-pull",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"subscriptions",
+								"specimens",
+								"lab-staging-pull"
+							]
+						},
+						"description": "Reads ready rows from lab-staging `GET /list` now and applies those for open specimens. Returns rows read, open specimens, updates found and matched. `409` if a pull is already running, `502` if the lab-staging API failed."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "API_HOST",
+			"value": "https://dsrfhir.intellisoftkenya.com/api",
+			"type": "default"
+		},
+		{
+			"key": "labApiKey",
+			"value": "",
+			"type": "secret"
+		},
+		{
+			"key": "hmacSecret",
+			"value": "",
+			"type": "secret"
+		},
+		{
+			"key": "specimenId",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "staffIdNumber",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "staffPassword",
+			"value": "",
+			"type": "secret"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "secret"
+		},
+		{
+			"key": "internalApiKey",
+			"value": "",
+			"type": "secret"
+		},
+		{
+			"key": "fhirSpecimenId",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "caseEncounterId",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

@@ -13,18 +13,19 @@ import {
 import { Alert } from './ui/Alert';
 import { Select, TextInput } from './ui/Field';
 import { TableSkeleton } from './ui/Skeleton';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/pagination';
 
 const FILTER_OPTIONS = [
   { value: '', label: 'All statuses' },
   ...SPECIMEN_STATUSES.map((s) => ({ value: s, label: SPECIMEN_STATUS_LABEL[s] })),
 ];
 
-const PAGE_SIZES = [10, 25, 50, 100] as const;
-
 const STATUS_BADGE: Record<SpecimenStatus, string> = {
   'awaiting-epid': 'bg-gray-100 text-gray-700',
   'submission-failed': 'bg-accent-50 text-accent-700',
   'awaiting-result': 'bg-sky-100 text-sky-800',
+  'received-at-lab': 'bg-indigo-100 text-indigo-800',
+  'in-testing': 'bg-violet-100 text-violet-800',
   'preliminary-result': 'bg-amber-100 text-amber-800',
   'final-result': 'bg-emerald-100 text-emerald-800',
   'specimen-rejected': 'bg-accent-50 text-accent-700',
@@ -61,7 +62,7 @@ export default function SpecimensView() {
   const [filter, setFilter] = useState<SpecimenStatus | ''>('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(PAGE_SIZES[1]);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
 
   const load = useCallback(async () => {
     setError(null);

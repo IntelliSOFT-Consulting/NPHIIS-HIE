@@ -1,56 +1,77 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { timingSafeEqual } from 'crypto';
 import { OperationOutcome } from '../lib/utils';
-import { parseLabUpdates } from '../lib/nphl-lab';
+import { parseLabMessages } from '../lib/nphl-lab';
 import { applyLabUpdates, pollLabStagingResults, pollOpenNphlTasks } from '../lib/nphl-lab-sync';
 import { attachSubscriptionAuditLog } from '../lib/subscription-audit';
+import { checkLabApiKey, checkLabSignature } from '../lib/lab-auth';
 import { authenticateUser } from '../lib/middleware';
 import { findKeycloakUser } from '../lib/keycloak';
 import { FhirApi } from '../lib/utils';
 import { resolvePractitionerAssignment } from '../lib/practitioner-role';
 
 const router = express.Router();
-router.use(express.json({ limit: '10mb' }) as any);
 
-/** The lab system authenticates with LAB_RESULTS_API_KEY in x-api-key (or as a Bearer token). */
+/** The lab system's API key, checked before the body is read. See lib/lab-auth. */
 function requireLabApiKey(req: Request, res: Response, next: NextFunction): void {
-  const expected = process.env.LAB_RESULTS_API_KEY?.trim();
-  if (!expected) {
-    res.status(503).json(OperationOutcome('LAB_RESULTS_API_KEY is not configured'));
-    return;
-  }
-  const header = req.headers['x-api-key'];
-  const bearer = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
-  const provided = (Array.isArray(header) ? header[0] : header) ?? bearer ?? '';
-  const a = Buffer.from(String(provided));
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) {
-    res.status(401).json(OperationOutcome('Unauthorized'));
+  const auth = checkLabApiKey(req.headers);
+  if (!auth.ok) {
+    res.status(auth.status).json(OperationOutcome(auth.error));
     return;
   }
   next();
 }
 
+/** Keeps the raw body, which the signature is computed over. */
+const labJson = express.json({
+  limit: '10mb',
+  verify: (req, _res, buf) => {
+    (req as any).rawBody = buf;
+  },
+}) as any;
+
+/** The body signature, when LAB_RESULTS_HMAC_SECRET is set. */
+function requireLabSignature(req: Request, res: Response, next: NextFunction): void {
+  const auth = checkLabSignature(req.headers, (req as any).rawBody);
+  if (!auth.ok) {
+    res.status(auth.status).json(OperationOutcome(auth.error));
+    return;
+  }
+  next();
+}
+
+const fromLab = [requireLabApiKey, labJson, requireLabSignature];
+
 /**
- * Results and rejections from the lab system, matched to submitted specimens by tube label.
- * Body: an array or { data: [...] }; see parseLabUpdates and docs/deployment.md for the shapes.
+ * Everything the lab system sends about submitted specimens: results, rejections, "received"
+ * and "in-testing" progress, and notes, matched to Tasks by the tube label. Body: an array or
+ * { data: [...] }; a message without messageType is a result. See parseLabMessages and
+ * docs/deployment.md. Each message gets an outcome; ones that cannot be used are listed in
+ * `invalid` by their index in the batch.
  */
-router.post('/results', requireLabApiKey, async (req: Request, res: Response) => {
+router.post('/results', ...fromLab, async (req: Request, res: Response) => {
   const start = Date.now();
   attachSubscriptionAuditLog(res, { route: 'lab-results-push', resourceType: 'Task', resourceId: 'batch' }, start);
-  const updates = parseLabUpdates(req.body);
+  const { updates, invalid } = parseLabMessages(req.body);
   if (!updates.length) {
     res.locals.subscriptionOutcome = 'error';
-    res.locals.subscriptionErrorMessage = 'No results or rejections with a specimen ID';
-    return res.status(400).json(OperationOutcome('No results or rejections with a specimen ID'));
+    res.locals.subscriptionErrorMessage = 'No usable messages';
+    res.locals.subscriptionDetail = { received: 0, invalid: invalid.slice(0, 100) };
+    return res.status(400).json({ ...OperationOutcome('No usable messages'), invalid });
   }
   try {
     const outcomes = await applyLabUpdates(updates);
     const unmatched = outcomes.filter((o) => !o.matched);
-    res.locals.subscriptionOutcome = unmatched.length ? 'error' : 'success';
-    res.locals.subscriptionDetail = { received: updates.length, unmatched: unmatched.length };
-    if (unmatched.length) res.locals.subscriptionErrorMessage = `${unmatched.length} update(s) did not match a specimen`;
-    return res.status(200).json({ message: 'Results processed', received: updates.length, results: outcomes });
+    res.locals.subscriptionOutcome = unmatched.length || invalid.length ? 'error' : 'success';
+    res.locals.subscriptionDetail = {
+      received: updates.length,
+      unmatched: unmatched.length,
+      invalid: invalid.slice(0, 100),
+      results: outcomes.slice(0, 200),
+    };
+    if (unmatched.length || invalid.length) {
+      res.locals.subscriptionErrorMessage = `${unmatched.length} update(s) did not match a specimen; ${invalid.length} message(s) invalid`;
+    }
+    return res.status(200).json({ message: 'Results processed', received: updates.length, results: outcomes, invalid });
   } catch (error) {
     console.error('lab results push:', error);
     res.locals.subscriptionOutcome = 'error';

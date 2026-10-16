@@ -13,6 +13,15 @@ import {
 } from "./epid-location-segment";
 import { resolveCountyLocationSegment } from "./county-segment-registry";
 import { conditionCodeForReason } from "./condition-codes";
+import {
+  caseIdIdentifier,
+  CASE_ID_SYSTEM_URI,
+  formatVhfCaseId,
+  getCaseId,
+  vhfCaseIdCounterKey,
+  vhfCaseYear,
+} from "./vhf-case-id";
+import { queueCaseSync } from "./nphl-lab-sync";
 
 /** Serialize EPID mutations per Patient to avoid concurrent double-allocation under subscription races. */
 const epidQueues = new Map<string, Promise<unknown>>();
@@ -96,7 +105,8 @@ function stripNonOfficialTypedEpidFromPatientClone(patient: any): any {
 export type EpidAssignResult =
   | { kind: "success"; encounter: any }
   | { kind: "already_official_epid"; encounterId: string }
-  | { kind: "error"; error: unknown };
+  /** retryable: false when retrying cannot help (e.g. the form never captured a sub-county). */
+  | { kind: "error"; error: unknown; retryable?: boolean };
 
 export type AssignEpidOptions = { notify?: boolean };
 
@@ -116,9 +126,19 @@ export async function assignEpidForEncounter(
     return { kind: "error", error: new Error("Encounter must include resource id") };
   }
 
-  return enqueueEpidAssignmentForPatient(patientId, () =>
-    assignEpidForEncounterLocked(encounterId, opts),
-  );
+  return enqueueEpidAssignmentForPatient(patientId, async () => {
+    const result = await assignEpidForEncounterLocked(encounterId, opts);
+    if (result.kind === "error") return result;
+    try {
+      const encounter = await ensureVhfCaseId(encounterId);
+      if (!encounter) return result;
+      /** Samples synced before the EPID and Case ID existed are on hold; send them now rather than at the next poll. */
+      queueCaseSync(encounterId);
+      return result.kind === "success" ? { kind: "success", encounter } : result;
+    } catch (error) {
+      return { kind: "error", error };
+    }
+  });
 }
 
 async function assignEpidForEncounterLocked(
@@ -213,6 +233,7 @@ async function assignEpidForEncounterLocked(
       error: new Error(
         "Could not resolve country/county/subcounty from Observation a3-sub-county Location chain",
       ),
+      retryable: false,
     };
   }
   const { countryName, countyName, subCountyName } = location;
@@ -348,4 +369,64 @@ async function assignEpidForEncounterLocked(
   }
 
   return { kind: "success", encounter: encounterPut.data };
+}
+
+/** Case ID an Encounter held in an earlier version, e.g. before a mobile re-sync overwrote its identifiers. */
+async function previousCaseId(encounterId: string): Promise<string | undefined> {
+  const history = await FhirApi({ url: `/Encounter/${encounterId}/_history?_count=100` });
+  for (const entry of history.data?.entry ?? []) {
+    const caseId = getCaseId(entry?.resource);
+    if (caseId) return caseId;
+  }
+  return undefined;
+}
+
+/** Adds the Case ID to a resource that lacks one; returns the saved resource. */
+async function putCaseId(resource: any, caseId: string): Promise<any> {
+  const url = `/${resource.resourceType}/${resource.id}`;
+  const identifiers = Array.isArray(resource.identifier) ? resource.identifier : [];
+  const body = {
+    ...resource,
+    identifier: [...identifiers.filter((id: any) => id?.system !== CASE_ID_SYSTEM_URI), caseIdIdentifier(caseId)],
+  };
+  const headers: Record<string, string> = {};
+  if (resource?.meta?.versionId) {
+    headers["If-Match"] = `W/"${resource.meta.versionId}"`;
+  }
+
+  const put = await FhirApi({ url, method: "PUT", data: JSON.stringify(body), headers });
+  if (put.status !== "success") {
+    const detail =
+      put.data?.issue?.[0]?.diagnostics || put.data?.issue?.[0]?.details?.text || JSON.stringify(put.data);
+    throw new Error(`${resource.resourceType} Case ID update failed (${put.statusText}): ${detail}`);
+  }
+  return put.data;
+}
+
+/**
+ * Gives a VHF case its national Case ID, once, on the case Encounter and the Patient; the EPID
+ * is unchanged. Returns the Encounter when it is a VHF case, else undefined.
+ */
+async function ensureVhfCaseId(encounterId: string): Promise<any | undefined> {
+  const encResp = await FhirApi({ url: `/Encounter/${encounterId}` });
+  let encounter = encResp.data;
+  if (conditionCodeForReason(encounter?.reasonCode?.[0]?.coding?.[0]?.code) !== "VHF") return undefined;
+
+  const patientId = encounter?.subject?.reference?.split("/")[1];
+  const patientResp = await FhirApi({ url: `/Patient/${patientId}` });
+  const patient = patientResp.data;
+  if (!patient?.id) throw new Error(`Patient/${patientId} not found for Case ID`);
+
+  let caseId = getCaseId(encounter) ?? (await previousCaseId(encounterId));
+  if (!caseId) {
+    const year = vhfCaseYear(getSystemCreationTimestampValue(patient), encounter?.period?.start);
+    const key = vhfCaseIdCounterKey(year);
+    const seq = await generateCaseId(key.country, key.county, key.subCounty, key.condition);
+    caseId = formatVhfCaseId(year, seq);
+    console.log(`Assigned VHF Case ID ${caseId} to Encounter/${encounterId}`);
+  }
+
+  if (getCaseId(encounter) !== caseId) encounter = await putCaseId(encounter, caseId);
+  if (!getCaseId(patient)) await putCaseId(patient, caseId);
+  return encounter;
 }

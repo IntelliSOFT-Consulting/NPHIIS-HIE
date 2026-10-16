@@ -100,14 +100,16 @@ describe("POST /provider/screenings", () => {
             .mockResolvedValueOnce(ok({ id: "q3" }));
         await post({ ...body, screeningNumber: "SCR-2026-40560" });
         const ids = JSON.parse(fhir.FhirApi.mock.calls[2][0].data).identifier;
-        expect(ids).toContainEqual({
-            type: {
-                coding: [{ system: "vhf-screened", code: "vhf-screened", display: "VHF Screening" }],
-                text: "Screening No.",
-            },
-            system: "vhf-screening-number",
-            value: "SCR-2026-40560",
-        });
+        for (const system of ["vhf-screening-number", "vhf-screened"]) {
+            expect(ids).toContainEqual({
+                type: {
+                    coding: [{ system: "vhf-screened", code: "vhf-screened", display: "VHF Screening" }],
+                    text: "Screening No.",
+                },
+                system,
+                value: "SCR-2026-40560",
+            });
+        }
     });
 
     it("409s when identifiers match several patients", async () => {

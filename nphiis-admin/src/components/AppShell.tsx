@@ -19,6 +19,10 @@ export const PAGE_META: Record<
     subtitle: 'Counties, sub-counties, wards, facilities',
   },
   '/lab': { title: 'Lab', subtitle: 'Submit results and manage bulk uploads' },
+  '/screenings': {
+    title: 'Screening',
+    subtitle: 'Screened travellers and how each was followed up',
+  },
   '/specimens': {
     title: 'Specimens',
     subtitle: 'VHF specimens sent to NPHL, their status and lab results',

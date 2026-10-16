@@ -57,6 +57,11 @@ services:
     image: us-docker.pkg.dev/cloud-build-fhir/fhir-analytics/main:latest
     restart: always
     container_name: pipeline-controller
+    # The image defaults to -Xms2g -Xmx5g, which crowds out everything else on
+    # this host; incremental runs need far less.
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx3g
+    mem_limit: 4g
     volumes:
       - ${PIPELINE_CONFIG}:/app/config:ro
       - ${DWH_ROOT}:/dwh
@@ -77,9 +82,10 @@ services:
       - sbin/start-thriftserver.sh
       - --driver-memory
       # You may need to increase this if your queries/data are too large.
-      - 5g
+      - 2g
     environment:
       - HIVE_SERVER2_THRIFT_PORT=10000
+    mem_limit: 3g
     ports:
       - '10001:10000'
       - '4041:4040'
