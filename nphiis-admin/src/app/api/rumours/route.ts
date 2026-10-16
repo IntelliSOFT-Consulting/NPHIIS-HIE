@@ -7,6 +7,8 @@ import {
 } from "@/lib/server-auth";
 import { canAccess } from "@/lib/roles";
 import { listRumours, rumourScopeFor } from "@/lib/fhir-rumours";
+import { parsePaging } from "@/lib/pagination";
+import { isRumourPriority } from "@/lib/rumours";
 
 export async function GET(req: NextRequest) {
   const session = await verifyToken(req);
@@ -20,9 +22,16 @@ export async function GET(req: NextRequest) {
     return forbidden("Your account has no county or sub-county assigned");
   }
 
+  const params = req.nextUrl.searchParams;
+  const priority = params.get("priority") ?? "";
+  const search = (params.get("q") ?? "").trim();
   try {
-    const rumours = await listRumours(session.raw, scope);
-    return NextResponse.json({ rumours });
+    const result = await listRumours(session.raw, scope, {
+      ...parsePaging(params),
+      ...(search ? { search } : {}),
+      ...(isRumourPriority(priority) || priority === "unset" ? { priority } : {}),
+    });
+    return NextResponse.json(result);
   } catch (err) {
     console.error("[rumours] list failed:", (err as Error).message);
     return NextResponse.json({ error: (err as Error).message }, { status: 502 });

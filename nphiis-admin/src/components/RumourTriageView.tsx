@@ -1,8 +1,9 @@
 'use client';
 
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { ChatBubbleLeftEllipsisIcon } from '@heroicons/react/24/outline';
 import { useAuthedFetch } from '@/lib/auth-context';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/pagination';
 import {
   RUMOUR_PRIORITIES,
   type RumourPriority,
@@ -23,8 +24,6 @@ const FILTER_OPTIONS = [
 
 const PRIORITY_OPTIONS = RUMOUR_PRIORITIES.map((p) => ({ value: p, label: p }));
 
-const PAGE_SIZES = [10, 25, 50, 100] as const;
-
 const BADGE: Record<RumourPriority, string> = {
   High: 'bg-accent-50 text-accent-700',
   Medium: 'bg-amber-100 text-amber-800',
@@ -35,42 +34,58 @@ function formatDate(iso?: string): string {
   return iso ? new Date(iso).toLocaleDateString() : '—';
 }
 
-function matchesSearch(r: RumourReport, term: string): boolean {
-  if (!term) return true;
-  return [r.epid, r.county, r.subCounty, r.ward, r.village, r.rumour, r.harmfulPractice, r.source]
-    .some((v) => v?.toLowerCase().includes(term));
-}
-
 export default function RumourTriageView() {
   const authedFetch = useAuthedFetch();
   const [rumours, setRumours] = useState<RumourReport[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filter, setFilter] = useState<PriorityFilter>('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(PAGE_SIZES[1]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     (async () => {
       try {
-        const res = await authedFetch('/api/rumours');
+        const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+        if (debouncedSearch) query.set('q', debouncedSearch);
+        if (filter) query.set('priority', filter);
+        const res = await authedFetch(`/api/rumours?${query}`);
         const body = await res.json();
         if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
-        if (!cancelled) setRumours(body.rumours as RumourReport[]);
+        if (!cancelled) {
+          setRumours(body.rumours as RumourReport[]);
+          setTotal(body.total as number);
+          setError(null);
+        }
       } catch (e) {
         if (!cancelled) setError((e as Error).message);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setLoaded(true);
+        }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [authedFetch]);
+  }, [authedFetch, page, pageSize, debouncedSearch, filter]);
 
   const setPriority = useCallback(
     async (patientId: string, priority: RumourPriority) => {
@@ -97,18 +112,8 @@ export default function RumourTriageView() {
     [authedFetch],
   );
 
-  const visible = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return rumours.filter(
-      (r) =>
-        (!filter || (r.priority ?? UNSET) === filter) && matchesSearch(r, term),
-    );
-  }, [rumours, filter, search]);
-
-  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize));
-  // Clamp so a page past the end (e.g. after narrowing the search) still shows rows.
-  const page = Math.min(currentPage, totalPages);
-  const pageRows = visible.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const filtered = !!(debouncedSearch || filter);
 
   return (
     <div className="space-y-6">
@@ -119,10 +124,7 @@ export default function RumourTriageView() {
           <TextInput
             placeholder="Search EPID, location, message or source"
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div className="sm:w-56">
@@ -130,23 +132,23 @@ export default function RumourTriageView() {
             value={filter}
             onChange={(v) => {
               setFilter(v as PriorityFilter);
-              setCurrentPage(1);
+              setPage(1);
             }}
             options={FILTER_OPTIONS}
           />
         </div>
       </div>
 
-      {loading ? (
+      {!loaded ? (
         <TableSkeleton rows={6} cols={6} />
       ) : (
-        <div className="card overflow-hidden">
-          {visible.length === 0 ? (
+        <div className={`card overflow-hidden transition-opacity ${loading ? 'opacity-60' : ''}`}>
+          {rumours.length === 0 ? (
             <div className="text-center py-16 px-4">
               <ChatBubbleLeftEllipsisIcon className="mx-auto h-12 w-12 text-gray-300" />
               <p className="mt-3 text-sm font-medium text-nphi-900">No rumour reports</p>
               <p className="mt-1 text-sm text-gray-500">
-                {rumours.length
+                {filtered
                   ? 'Adjust the search or priority filter.'
                   : 'Reports submitted from the mobile Rumor Tracking Tool will appear here.'}
               </p>
@@ -166,7 +168,7 @@ export default function RumourTriageView() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-nphi-100">
-                  {pageRows.map((r) => (
+                  {rumours.map((r) => (
                     <Fragment key={r.patientId}>
                       <tr
                         onClick={() => setExpandedId(expandedId === r.patientId ? null : r.patientId)}
@@ -210,10 +212,10 @@ export default function RumourTriageView() {
         </div>
       )}
 
-      {!loading && visible.length > 0 && (
+      {loaded && total > 0 && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm">
           <div className="text-gray-600">
-            Total <span className="font-semibold text-nphi-900">{visible.length}</span> reports
+            Total <span className="font-semibold text-nphi-900">{total}</span> reports
             <span className="mx-2">·</span>
             Page {page} of {totalPages}
           </div>
@@ -224,7 +226,7 @@ export default function RumourTriageView() {
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
-                  setCurrentPage(1);
+                  setPage(1);
                 }}
                 className="rounded-lg border border-nphi-100 py-1.5 px-2 bg-white"
               >
@@ -237,16 +239,16 @@ export default function RumourTriageView() {
             </label>
             <button
               type="button"
-              disabled={page <= 1}
-              onClick={() => setCurrentPage(page - 1)}
+              disabled={page <= 1 || loading}
+              onClick={() => setPage(page - 1)}
               className="px-3 py-1.5 rounded-lg border border-nphi-100 disabled:opacity-40 hover:bg-gray-50"
             >
               Previous
             </button>
             <button
               type="button"
-              disabled={page >= totalPages}
-              onClick={() => setCurrentPage(page + 1)}
+              disabled={page >= totalPages || loading}
+              onClick={() => setPage(page + 1)}
               className="px-3 py-1.5 rounded-lg border border-nphi-100 disabled:opacity-40 hover:bg-gray-50"
             >
               Next

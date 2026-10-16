@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getAccessToken, notificationLogsApi } from '@/lib/api';
 import type { NotificationLog } from '@/types/notification-log';
 import Spinner from '@/components/ui/Spinner';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/pagination';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All statuses' },
@@ -62,7 +63,7 @@ export default function NotificationLogList() {
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
   const [selectedLog, setSelectedLog] = useState<NotificationLog | null>(null);
@@ -293,7 +294,7 @@ export default function NotificationLogList() {
                   }}
                   className="rounded-lg border border-nphi-100 py-1.5 px-2 bg-white"
                 >
-                  {[10, 25, 50, 100].map((n) => (
+                  {PAGE_SIZES.map((n) => (
                     <option key={n} value={n}>
                       {n}
                     </option>
