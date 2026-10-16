@@ -14,6 +14,7 @@ import { runEpidCorrectionBackfillJob } from '../lib/epid-correction-backfill';
 import { getEpidValueFromEncounter, patientHasOfficialEpid } from '../lib/epid-utils';
 import { isLabResultEncounter, notifyLabResultToCaseSubmitter } from '../lib/lab-result-notification';
 import { scanEncountersMissingEpid } from '../lib/missing-epid-encounters';
+import { backfillScreeningResponses } from '../lib/screening-backfill';
 import { CaseSyncResult, pollLabStagingResults, queueSpecimenSync, syncCaseNow, syncSpecimenToNphl } from '../lib/nphl-lab-sync';
 
 const router = express.Router();
@@ -195,6 +196,36 @@ router.post('/encounters/epid-correction-backfill', requireInternalApiKey, async
     return res.status(200).json({ status: dryRun ? 'dry-run' : 'completed', stats });
   } catch (error) {
     console.error('epid-correction-backfill:', error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
+    return res.status(500).json(OperationOutcome(error));
+  }
+});
+
+/**
+ * Rewrite screening QuestionnaireResponses stored before they used the vhf-case.json linkIds.
+ * Default dry-run (counts what would change). Set `dryRun: false` in body to apply.
+ * Requires X-Internal-Api-Key.
+ */
+router.post('/screenings/vhf-case-backfill', requireInternalApiKey, async (req: Request, res: Response) => {
+  const start = Date.now();
+  attachSubscriptionAuditLog(
+    res,
+    { route: 'screening-vhf-case-backfill', resourceType: 'QuestionnaireResponse', resourceId: 'all' },
+    start,
+  );
+  try {
+    const dryRun = req.body?.dryRun !== false;
+    const stats = await backfillScreeningResponses({ dryRun });
+    if (stats.skippedBecauseAlreadyRunning) {
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = 'Screening backfill already running';
+      return res.status(409).json(OperationOutcome('Screening backfill is already running', 'error'));
+    }
+    res.locals.subscriptionOutcome = 'success';
+    return res.status(200).json({ status: dryRun ? 'dry-run' : 'completed', stats });
+  } catch (error) {
+    console.error('screening-vhf-case-backfill:', error);
     res.locals.subscriptionOutcome = 'error';
     res.locals.subscriptionErrorMessage = String(error);
     return res.status(500).json(OperationOutcome(error));
