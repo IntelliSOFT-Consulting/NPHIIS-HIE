@@ -16,10 +16,7 @@
 
 # Image for building and running tests against the source code of
 # the FHIR Gateway.
-FROM maven:3.8.5-openjdk-11-slim as build
-
-RUN apt-get update && apt-get install -y nodejs npm
-RUN npm cache clean -f && npm install -g n && n stable
+FROM maven:3.9.9-eclipse-temurin-11 as build
 
 WORKDIR /app
 
@@ -32,9 +29,8 @@ COPY exec/pom.xml ./exec/
 COPY license-header.txt .
 COPY pom.xml .
 
-RUN mvn spotless:check
 # Updating license will fail in e2e and there is no point doing it here anyways.
-RUN mvn --batch-mode package -Pstandalone-app -Dlicense.skip=true
+RUN mvn --batch-mode package -Dlicense.skip=true -Dspotless.apply.skip=true
 
 
 # Image for FHIR Gateway binary with configuration knobs as environment vars.
