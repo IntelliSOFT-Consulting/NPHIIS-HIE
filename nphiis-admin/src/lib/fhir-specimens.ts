@@ -1,7 +1,9 @@
 // Specimens hie-auth has submitted to NPHL (hie-auth src/lib/nphl-lab.ts).
 // Each Specimen is tracked by Task/nphl-<specimen id>, whose businessStatus
-// moves from submitted to awaiting result, preliminary, final or rejected;
-// the lab result is Observation/nphl-result-<specimen id>.
+// moves from submitted to awaiting result, preliminary, final or rejected.
+// The lab result is DiagnosticReport/nphl-report-<specimen id>, whose result[]
+// lists the overall Observation/nphl-result-<specimen id> and one Observation
+// per test.
 
 import { FHIR_BASE_URL, chunk, searchAll, searchAllWithIncludes } from "./fhir-search";
 import { type LabTest, type SubmittedSpecimen, isSpecimenStatus } from "./specimens";
@@ -38,12 +40,45 @@ interface Task {
 }
 
 interface ResultObservation {
+  id?: string;
   status?: string;
+  code?: { text?: string; coding?: Array<{ system?: string; code?: string }> };
   specimen?: { reference?: string };
   effectiveDateTime?: string;
   performer?: Array<{ display?: string }>;
   valueString?: string;
   component?: Array<{ code?: { text?: string }; valueString?: string }>;
+}
+
+interface DiagnosticReport {
+  id?: string;
+  status?: string;
+  specimen?: Array<{ reference?: string }>;
+  effectiveDateTime?: string;
+  performer?: Array<{ display?: string }>;
+  result?: Array<{ reference?: string }>;
+  conclusion?: string;
+}
+
+/** A specimen's lab result: the report when there is one, its overall Observation and each test's. */
+export interface LabResult {
+  report?: DiagnosticReport;
+  observation?: ResultObservation;
+  tests?: ResultObservation[];
+}
+
+/** The report's Observations from the search's includes: the overall result, then each test in report order. */
+export function labResultFromReport(report: DiagnosticReport, included: Map<string, any>): LabResult {
+  const observations = (report.result ?? [])
+    .map((r) => included.get(r.reference ?? ""))
+    .filter((o): o is ResultObservation => !!o);
+  const isOverall = (o: ResultObservation) =>
+    o.code?.coding?.some((c) => `${c.system}|${c.code}` === RESULT_CODE) ?? false;
+  return {
+    report,
+    observation: observations.find(isOverall),
+    tests: observations.filter((o) => !isOverall(o)),
+  };
 }
 
 function epidFrom(identifiers: Identifier[] | undefined, officialOnly: boolean): string | undefined {
@@ -75,8 +110,9 @@ function sampleType(specimen: any): string | undefined {
 export function toSubmittedSpecimen(
   task: Task,
   included: Map<string, any>,
-  observation?: ResultObservation,
+  lab: LabResult = {},
 ): SubmittedSpecimen {
+  const { report, observation } = lab;
   const specimen = included.get(task.focus?.reference ?? "");
   const patient = included.get(task.for?.reference ?? "");
   const encounter = included.get(task.encounter?.reference ?? "");
@@ -88,10 +124,14 @@ export function toSubmittedSpecimen(
     task.identifier?.find((i) => i.system === SPECIMEN_LABEL_SYSTEM)?.value ??
     input("specimen-label") ??
     specimenId;
-  const tests: LabTest[] = (observation?.component ?? []).map((c) => ({
-    name: c.code?.text ?? "Test",
-    result: c.valueString ?? "",
-  }));
+  // One Observation per test; results stored before those existed only have components.
+  const tests: LabTest[] = lab.tests?.length
+    ? lab.tests.map((o) => ({ name: o.code?.text ?? "Test", result: o.valueString ?? "" }))
+    : (observation?.component ?? []).map((c) => ({
+        name: c.code?.text ?? "Test",
+        result: c.valueString ?? "",
+      }));
+  const resultStatus = report?.status ?? observation?.status;
 
   return {
     taskId: task.id ?? "",
@@ -111,14 +151,10 @@ export function toSubmittedSpecimen(
     status: isSpecimenStatus(code) ? code : undefined,
     statusText: task.businessStatus?.text,
     statusReason: task.statusReason?.text,
-    result: observation?.valueString ?? output("result")?.valueString,
-    resultType: observation
-      ? observation.status === "final"
-        ? "Final"
-        : "Preliminary"
-      : undefined,
-    resultDate: observation?.effectiveDateTime,
-    testingLab: observation?.performer?.[0]?.display,
+    result: report?.conclusion ?? observation?.valueString ?? output("result")?.valueString,
+    resultType: resultStatus ? (resultStatus === "final" ? "Final" : "Preliminary") : undefined,
+    resultDate: report?.effectiveDateTime ?? observation?.effectiveDateTime,
+    testingLab: (report?.performer ?? observation?.performer)?.[0]?.display,
     tests,
     rejectedBy: output("rejected-by")?.valueString,
     rejectedOn: output("rejected-on")?.valueDateTime,
@@ -141,9 +177,29 @@ export async function listSubmittedSpecimens(token: string): Promise<SubmittedSp
   );
   if (tasks.length === 0) return [];
 
-  const resultBySpecimen = new Map<string, ResultObservation>();
+  const resultBySpecimen = new Map<string, LabResult>();
   const specimenRefs = tasks.map((t) => t.focus?.reference).filter((r): r is string => !!r);
   for (const refs of chunk(specimenRefs, SPECIMENS_PER_RESULT_QUERY)) {
+    const query = new URLSearchParams({
+      code: RESULT_CODE,
+      specimen: refs.join(","),
+      _include: "DiagnosticReport:result",
+      _count: "200",
+    });
+    const { matches: reports, included: observations } =
+      await searchAllWithIncludes<DiagnosticReport>(
+        `${FHIR_BASE_URL}/DiagnosticReport?${query}`,
+        token,
+      );
+    for (const r of reports) {
+      const ref = r.specimen?.[0]?.reference;
+      if (ref) resultBySpecimen.set(ref, labResultFromReport(r, observations));
+    }
+  }
+
+  // A result Observation without its report: written before reports existed and not yet backfilled.
+  const withoutReport = specimenRefs.filter((r) => !resultBySpecimen.has(r));
+  for (const refs of chunk(withoutReport, SPECIMENS_PER_RESULT_QUERY)) {
     const query = new URLSearchParams({
       code: RESULT_CODE,
       specimen: refs.join(","),
@@ -154,7 +210,7 @@ export async function listSubmittedSpecimens(token: string): Promise<SubmittedSp
       token,
     );
     for (const o of observations) {
-      if (o.specimen?.reference) resultBySpecimen.set(o.specimen.reference, o);
+      if (o.specimen?.reference) resultBySpecimen.set(o.specimen.reference, { observation: o });
     }
   }
 

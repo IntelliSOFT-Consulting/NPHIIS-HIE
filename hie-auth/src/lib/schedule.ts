@@ -1,7 +1,7 @@
 import { CronJob } from 'cron';
 import { sendDueNotifications } from './notification';
 import { runEncounterBackfillJob } from './encounter-backfill-job';
-import { pollLabStagingResults, pollOpenNphlTasks } from './nphl-lab-sync';
+import { backfillResultReports, pollLabStagingResults, pollOpenNphlTasks } from './nphl-lab-sync';
 
 // Notification cron job - runs daily at 6:30 AM EAT (3:30 AM UTC)
 // 30 3 * * * = 3:30 AM UTC = 6:30 AM EAT (UTC+3)
@@ -50,6 +50,12 @@ if (process.env.NPHL_SURVEILLANCE_API_KEY && process.env.NPHL_POLL_CRON_ENABLED 
     nphlPollCronJob.start();
     console.log(`NPHL lab result poll started (schedule: ${nphlPollCronSchedule}).`);
 }
+
+// One-off on startup: DiagnosticReport and per-test Observations for results stored before
+// they existed. Skips Tasks that already link a report.
+backfillResultReports()
+    .then((s) => s.backfilled && console.log(`[NPHL] Backfilled ${s.backfilled} lab report(s) (${s.errors} error(s))`))
+    .catch((e) => console.error('[NPHL] Report backfill error:', e));
 
 // NPHL lab staging API: pull results that are ready (GET /list) for specimens still open.
 let labStagingCronJob: CronJob | null = null;

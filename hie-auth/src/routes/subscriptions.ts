@@ -14,6 +14,7 @@ import { runEpidCorrectionBackfillJob } from '../lib/epid-correction-backfill';
 import { getEpidValueFromEncounter, patientHasOfficialEpid } from '../lib/epid-utils';
 import { isLabResultEncounter, notifyLabResultToCaseSubmitter } from '../lib/lab-result-notification';
 import { scanEncountersMissingEpid } from '../lib/missing-epid-encounters';
+import { backfillScreeningResponses } from '../lib/screening-backfill';
 import { CaseSyncResult, pollLabStagingResults, queueSpecimenSync, syncCaseNow, syncSpecimenToNphl } from '../lib/nphl-lab-sync';
 
 const router = express.Router();
@@ -49,8 +50,14 @@ async function assignIdsHandler(
 
     if (result.kind === 'error') {
       console.error(result.error);
-      res.locals.subscriptionOutcome = 'error';
       res.locals.subscriptionErrorMessage = String(result.error);
+      /** A 4xx makes HAPI redeliver ~21 times; only invite that when a retry could succeed. */
+      if (result.retryable === false && options?.alreadyEpidResponse === '200skipped') {
+        res.locals.subscriptionOutcome = 'skipped';
+        res.locals.subscriptionDetail = { kind: 'not_retryable', reason: String(result.error) };
+        return res.status(200).json(OperationOutcome(result.error, 'information'));
+      }
+      res.locals.subscriptionOutcome = 'error';
       return res.status(400).json(OperationOutcome(result.error));
     }
 
@@ -98,6 +105,15 @@ router.put('/encounters/notifications/Encounter/:id', async (req: Request, res: 
       res.locals.subscriptionOutcome = 'skipped';
       return res.status(200).json(
         OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID', 'information')
+      );
+    }
+
+    /** Lab results and contact follow-ups hang off a case Encounter; the EPID belongs to that case. */
+    if (data?.partOf?.reference) {
+      res.locals.subscriptionOutcome = 'skipped';
+      res.locals.subscriptionDetail = { kind: 'child_encounter', partOf: data.partOf.reference };
+      return res.status(200).json(
+        OperationOutcome(`Child of ${data.partOf.reference}; EPIDs are assigned on the case Encounter`, 'information')
       );
     }
 
@@ -180,6 +196,36 @@ router.post('/encounters/epid-correction-backfill', requireInternalApiKey, async
     return res.status(200).json({ status: dryRun ? 'dry-run' : 'completed', stats });
   } catch (error) {
     console.error('epid-correction-backfill:', error);
+    res.locals.subscriptionOutcome = 'error';
+    res.locals.subscriptionErrorMessage = String(error);
+    return res.status(500).json(OperationOutcome(error));
+  }
+});
+
+/**
+ * Rewrite screening QuestionnaireResponses stored before they used the vhf-case.json linkIds.
+ * Default dry-run (counts what would change). Set `dryRun: false` in body to apply.
+ * Requires X-Internal-Api-Key.
+ */
+router.post('/screenings/vhf-case-backfill', requireInternalApiKey, async (req: Request, res: Response) => {
+  const start = Date.now();
+  attachSubscriptionAuditLog(
+    res,
+    { route: 'screening-vhf-case-backfill', resourceType: 'QuestionnaireResponse', resourceId: 'all' },
+    start,
+  );
+  try {
+    const dryRun = req.body?.dryRun !== false;
+    const stats = await backfillScreeningResponses({ dryRun });
+    if (stats.skippedBecauseAlreadyRunning) {
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = 'Screening backfill already running';
+      return res.status(409).json(OperationOutcome('Screening backfill is already running', 'error'));
+    }
+    res.locals.subscriptionOutcome = 'success';
+    return res.status(200).json({ status: dryRun ? 'dry-run' : 'completed', stats });
+  } catch (error) {
+    console.error('screening-vhf-case-backfill:', error);
     res.locals.subscriptionOutcome = 'error';
     res.locals.subscriptionErrorMessage = String(error);
     return res.status(500).json(OperationOutcome(error));

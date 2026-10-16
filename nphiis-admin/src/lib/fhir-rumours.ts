@@ -12,7 +12,7 @@ import {
   isRumourPriority,
 } from "./rumours";
 import type { UserProfile } from "./server-auth";
-import { FHIR_BASE_URL, chunk, fhirHeaders, searchAll } from "./fhir-search";
+import { FHIR_BASE_URL, fhirHeaders, searchAll, searchPage } from "./fhir-search";
 
 const RUMOUR_SYSTEM = "social-listening-and-rumor-tracking-tool";
 export const RUMOUR_PRIORITY_CODE = "rumour-priority";
@@ -37,8 +37,34 @@ const FIELD_CODES = {
   priority: RUMOUR_PRIORITY_CODE,
 } as const;
 
-const PATIENT_PAGE_SIZE = 100;
-const SUBJECTS_PER_OBSERVATION_QUERY = 40;
+// Answers the search box looks in (the same fields the list shows).
+const SEARCH_CODES = [
+  FIELD_CODES.epid,
+  FIELD_CODES.county,
+  FIELD_CODES.subCounty,
+  FIELD_CODES.ward,
+  FIELD_CODES.village,
+  FIELD_CODES.rumour,
+  FIELD_CODES.harmfulPractice,
+  FIELD_CODES.source,
+];
+
+const OBSERVATION_PAGE_SIZE = 1000;
+
+export interface RumourQuery {
+  page: number;
+  pageSize: number;
+  search?: string;
+  /** A priority, or "unset" for reports nobody has prioritised. */
+  priority?: RumourPriority | "unset";
+}
+
+export interface RumourPage {
+  rumours: RumourReport[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 export class RumourNotFoundError extends Error {
   constructor(patientId: string) {
@@ -158,46 +184,98 @@ function toReport(patient: RumourPatient, observations: RumourObservation[]): Ru
   };
 }
 
+const subjectId = (o: RumourObservation) => (o.subject?.reference ?? "").replace(/^Patient\//, "");
+
+/** Reports with an answer containing `term` in one of the searchable fields. */
+async function reportIdsMatching(term: string, token: string): Promise<Set<string>> {
+  const query = new URLSearchParams({
+    code: SEARCH_CODES.join(","),
+    "value-string:contains": term,
+    _elements: "subject",
+    _count: String(OBSERVATION_PAGE_SIZE),
+  });
+  const matches = await searchAll<RumourObservation>(`${FHIR_BASE_URL}/Observation?${query}`, token);
+  return new Set(matches.map(subjectId).filter(Boolean));
+}
+
+/** Each report's current priority (the latest one set); only reports that were ever prioritised. */
+async function currentPriorities(token: string): Promise<Map<string, string | undefined>> {
+  const query = new URLSearchParams({
+    code: FIELD_CODES.priority,
+    _elements: "subject,valueString",
+    _count: String(OBSERVATION_PAGE_SIZE),
+  });
+  const observations = await searchAll<RumourObservation>(`${FHIR_BASE_URL}/Observation?${query}`, token);
+  observations.sort((a, b) => (a.meta?.lastUpdated ?? "").localeCompare(b.meta?.lastUpdated ?? ""));
+  const latest = new Map<string, string | undefined>();
+  for (const o of observations) latest.set(subjectId(o), observationValue(o));
+  return latest;
+}
+
+/**
+ * One page of reports, newest first. Search and the priority filter are resolved to
+ * report ids first (both are small lookups), so only the page's answers are fetched.
+ */
 export async function listRumours(
   token: string,
   scope: RumourScope | null,
-): Promise<RumourReport[]> {
+  query: RumourQuery,
+): Promise<RumourPage> {
+  const { page, pageSize } = query;
+  const empty: RumourPage = { rumours: [], total: 0, page, pageSize };
+
+  const [matching, priorities] = await Promise.all([
+    query.search ? reportIdsMatching(query.search, token) : undefined,
+    query.priority ? currentPriorities(token) : undefined,
+  ]);
+  let only = matching;
+  let exclude: string[] = [];
+  if (priorities) {
+    if (query.priority === "unset") {
+      exclude = Array.from(priorities.keys());
+    } else {
+      const withPriority = Array.from(priorities)
+        .filter(([, p]) => p === query.priority)
+        .map(([id]) => id);
+      only = only ? new Set(withPriority.filter((id) => only!.has(id))) : new Set(withPriority);
+    }
+  }
+  if (only && only.size === 0) return empty;
+
   const params = new URLSearchParams({
     identifier: `${RUMOUR_SYSTEM}|`,
     _sort: "-_lastUpdated",
-    _count: String(PATIENT_PAGE_SIZE),
+    _count: String(pageSize),
+    _offset: String((page - 1) * pageSize),
+    _total: "accurate",
   });
   if (scope?.subCounty) params.set("address-state", scope.subCounty);
   else if (scope?.county) params.set("address-city", scope.county);
+  if (only) params.set("_id", Array.from(only).join(","));
+  if (exclude.length) params.set("_id:not", exclude.join(","));
 
-  const patients = (
-    await searchAll<RumourPatient>(`${FHIR_BASE_URL}/Patient?${params}`, token)
-  ).filter((p) => p.id && inScope(p, scope));
-  if (patients.length === 0) return [];
+  const { resources, total } = await searchPage<RumourPatient>("Patient", params, token);
+  // HAPI matches address names by prefix; drop near-misses so other areas' reports never show.
+  const patients = resources.filter((p) => p.id && inScope(p, scope));
+  if (patients.length === 0) return { ...empty, total };
 
-  const codes = Object.values(FIELD_CODES).join(",");
-  const observationsBySubject = new Map<string, RumourObservation[]>();
-  for (const ids of chunk(patients.map((p) => p.id!), SUBJECTS_PER_OBSERVATION_QUERY)) {
-    const query = new URLSearchParams({
-      subject: ids.map((id) => `Patient/${id}`).join(","),
-      code: codes,
-      _count: "200",
-    });
-    const observations = await searchAll<RumourObservation>(
-      `${FHIR_BASE_URL}/Observation?${query}`,
-      token,
-    );
-    for (const o of observations) {
-      const ref = o.subject?.reference ?? "";
-      const list = observationsBySubject.get(ref) ?? [];
-      list.push(o);
-      observationsBySubject.set(ref, list);
-    }
-  }
+  const observations = await searchAll<RumourObservation>(
+    `${FHIR_BASE_URL}/Observation?${new URLSearchParams({
+      subject: patients.map((p) => `Patient/${p.id}`).join(","),
+      code: Object.values(FIELD_CODES).join(","),
+      _count: String(OBSERVATION_PAGE_SIZE),
+    })}`,
+    token,
+  );
+  const bySubject = new Map<string, RumourObservation[]>();
+  for (const o of observations) bySubject.set(subjectId(o), [...(bySubject.get(subjectId(o)) ?? []), o]);
 
-  return patients
-    .map((p) => toReport(p, observationsBySubject.get(`Patient/${p.id}`) ?? []))
-    .sort((a, b) => (b.reportedAt ?? "").localeCompare(a.reportedAt ?? ""));
+  return {
+    rumours: patients.map((p) => toReport(p, bySubject.get(p.id!) ?? [])),
+    total,
+    page,
+    pageSize,
+  };
 }
 
 export async function setRumourPriority(args: {

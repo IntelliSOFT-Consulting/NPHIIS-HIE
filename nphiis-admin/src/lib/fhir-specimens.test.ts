@@ -2,8 +2,9 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 process.env.FHIR_BASE_URL = "http://hapi.internal:8080/fhir";
 let toSubmittedSpecimen: typeof import("./fhir-specimens").toSubmittedSpecimen;
+let labResultFromReport: typeof import("./fhir-specimens").labResultFromReport;
 beforeAll(async () => {
-  ({ toSubmittedSpecimen } = await import("./fhir-specimens"));
+  ({ toSubmittedSpecimen, labResultFromReport } = await import("./fhir-specimens"));
 });
 
 const included = new Map<string, any>([
@@ -65,11 +66,13 @@ describe("toSubmittedSpecimen", () => {
       },
       included,
       {
-        status: "final",
-        valueString: "Negative",
-        effectiveDateTime: "2026-10-15",
-        performer: [{ display: "NPHL Nairobi" }],
-        component: [{ code: { text: "RT-PCR — Ebola" }, valueString: "Not detected" }],
+        observation: {
+          status: "final",
+          valueString: "Negative",
+          effectiveDateTime: "2026-10-15",
+          performer: [{ display: "NPHL Nairobi" }],
+          component: [{ code: { text: "RT-PCR — Ebola" }, valueString: "Not detected" }],
+        },
       },
     );
     expect(s).toMatchObject({
@@ -86,6 +89,60 @@ describe("toSubmittedSpecimen", () => {
       resultType: "Final",
       testingLab: "NPHL Nairobi",
       tests: [{ name: "RT-PCR — Ebola", result: "Not detected" }],
+    });
+  });
+
+  it("reads the result and each test from the DiagnosticReport", () => {
+    const overall = {
+      resourceType: "Observation",
+      id: "nphl-result-s1",
+      status: "final",
+      code: { coding: [{ system: "http://nphiis.health.go.ke/fhir/CodeSystem/nphl-lab", code: "nphl-lab-result" }] },
+      valueString: "Positive",
+      component: [{ code: { text: "Ebola VIrus — Ebola VIrus" }, valueString: "Positive" }],
+    };
+    const test = (id: string, name: string, value: string) => ({
+      resourceType: "Observation",
+      id,
+      code: { coding: [{ system: "http://nphiis.health.go.ke/fhir/CodeSystem/nphl-lab", code: "nphl-lab-test-result" }], text: name },
+      valueString: value,
+    });
+    const observations = new Map<string, any>([
+      ["Observation/nphl-result-s1", overall],
+      ["Observation/nphl-result-s1-aaaa", test("nphl-result-s1-aaaa", "Ebola VIrus", "Positive")],
+      ["Observation/nphl-result-s1-bbbb", test("nphl-result-s1-bbbb", "Marbug virus", "Negative")],
+    ]);
+    const lab = labResultFromReport(
+      {
+        id: "nphl-report-s1",
+        status: "final",
+        conclusion: "Positive",
+        effectiveDateTime: "2026-10-15T09:11:00Z",
+        performer: [{ display: "NVRL" }],
+        specimen: [{ reference: "Specimen/s1" }],
+        result: [
+          { reference: "Observation/nphl-result-s1" },
+          { reference: "Observation/nphl-result-s1-aaaa" },
+          { reference: "Observation/nphl-result-s1-bbbb" },
+        ],
+      },
+      observations,
+    );
+    expect(lab.observation?.id).toBe("nphl-result-s1");
+    const s = toSubmittedSpecimen(
+      { ...baseTask, businessStatus: { coding: [{ code: "final-result" }] } },
+      included,
+      lab,
+    );
+    expect(s).toMatchObject({
+      result: "Positive",
+      resultType: "Final",
+      resultDate: "2026-10-15T09:11:00Z",
+      testingLab: "NVRL",
+      tests: [
+        { name: "Ebola VIrus", result: "Positive" },
+        { name: "Marbug virus", result: "Negative" },
+      ],
     });
   });
 
