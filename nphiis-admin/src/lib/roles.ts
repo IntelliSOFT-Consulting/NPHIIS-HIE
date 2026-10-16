@@ -73,6 +73,8 @@ export const FEATURES = {
   // Specimens hie-auth submitted to NPHL, with their status and results.
   // Not location-scoped, so only lab and national roles see it.
   SPECIMENS_VIEW: [...LAB_ROLES, "NATIONAL_FOCAL_PERSON", "NATIONAL_VIEWER"],
+  // Screened travellers and their follow-up. Not location-scoped either.
+  SCREENINGS_VIEW: ["ADMINISTRATOR", "SUPERUSER", "NATIONAL_FOCAL_PERSON", "NATIONAL_VIEWER"],
   LAB_NATIONAL_SCOPE: ["NATIONAL_LAB", "ADMINISTRATOR", "SUPERUSER"],
   SUBSCRIPTION_LOGS_VIEW: ["ADMINISTRATOR", "SUPERUSER"],
 } as const;

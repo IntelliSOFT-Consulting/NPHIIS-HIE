@@ -14,6 +14,7 @@ import {
   BellAlertIcon,
   ChatBubbleLeftEllipsisIcon,
   EyeDropperIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
 
@@ -67,6 +68,12 @@ export default function Navigation() {
     { name: 'Users', href: '/users', icon: UsersIcon, visible: can('USERS_MANAGE') },
     { name: 'Locations', href: '/locations', icon: MapPinIcon, visible: true },
     { name: 'Lab', href: '/lab', icon: BeakerIcon, visible: can('LAB_ACCESS') },
+    {
+      name: 'Screening',
+      href: '/screenings',
+      icon: ShieldCheckIcon,
+      visible: can('SCREENINGS_VIEW'),
+    },
     {
       name: 'Specimens',
       href: '/specimens',
