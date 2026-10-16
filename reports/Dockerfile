@@ -5,7 +5,9 @@ RUN apk update && \
     python3 \
     py3-pip \
     build-base \
-    python3-dev
+    python3-dev \
+    openssl \
+    libc6-compat
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

@@ -39,7 +39,10 @@ services:
             SPRING_CONFIG_LOCATION: /hapi/application.yaml
             SPRING_DATASOURCE_PASSWORD: ${HAPI_DB_PASSWORD}
             TZ: Africa/Nairobi
-    
+            # Without an explicit heap the JVM claims 25% of host RAM.
+            JAVA_TOOL_OPTIONS: "-Xmx2g"
+        mem_limit: 3g
+
     hie-auth:
         container_name: hie-auth
         build: 
@@ -105,6 +108,7 @@ services:
         build:
             context: ../fhir-gateway
             dockerfile: Dockerfile
+        image: hie-fhir-gateway:latest
         restart: unless-stopped
         env_file:
             - ../fhir-gateway/.env
