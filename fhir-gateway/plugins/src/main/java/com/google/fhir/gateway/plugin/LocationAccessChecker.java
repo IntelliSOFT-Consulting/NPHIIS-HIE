@@ -148,7 +148,7 @@ public class LocationAccessChecker implements AccessChecker {
         userAccessLevel);
 
     // COUNTRY-level users (ADMINISTRATOR, SUPERUSER) can see everything
-    if (userAccessLevel == RoleBasedAccessScopeResolver.AccessLevel.COUNTRY) {
+    if (isCountryLevel()) {
       logger.debug("COUNTRY-level user, no location filtering applied");
       return LocationTaggingAccessDecision.accessGranted();
     }
@@ -170,6 +170,12 @@ public class LocationAccessChecker implements AccessChecker {
   private AccessDecision processRead(RequestDetailsReader requestDetails) throws IOException {
     String resourceId = FhirUtil.getIdOrNull(requestDetails);
     logger.debug("Processing read request for {}/{}", requestDetails.getResourceName(), resourceId);
+
+    // COUNTRY-level users can read any resource, including ones whose location tag uses another
+    // system (e.g. patient-managingLocation) and operations like Patient/{id}/$everything.
+    if (isCountryLevel()) {
+      return NoOpAccessDecision.accessGranted();
+    }
 
     // Fetch the resource to check its location tags
     String resourcePath = String.format("/%s/%s", requestDetails.getResourceName(), resourceId);
@@ -226,7 +232,7 @@ public class LocationAccessChecker implements AccessChecker {
     logger.debug("Processing PUT request for {}/{}", requestDetails.getResourceName(), resourceId);
 
     // First check if the existing resource (if any) is accessible
-    if (resourceId != null) {
+    if (resourceId != null && !isCountryLevel()) {
       String resourcePath = String.format("/%s/%s", requestDetails.getResourceName(), resourceId);
       Resource existingResource = fetchResource(resourcePath);
       if (existingResource != null && !tagMutator.hasValidLocationTags(existingResource)) {
@@ -261,6 +267,10 @@ public class LocationAccessChecker implements AccessChecker {
     String resourceId = FhirUtil.getIdOrNull(requestDetails);
     logger.debug("Processing PATCH request for {}/{}", requestDetails.getResourceName(), resourceId);
 
+    if (isCountryLevel()) {
+      return NoOpAccessDecision.accessGranted();
+    }
+
     // Fetch the existing resource to validate access
     String resourcePath = String.format("/%s/%s", requestDetails.getResourceName(), resourceId);
     Resource existingResource = fetchResource(resourcePath);
@@ -289,6 +299,10 @@ public class LocationAccessChecker implements AccessChecker {
   private AccessDecision processDelete(RequestDetailsReader requestDetails) throws IOException {
     String resourceId = FhirUtil.getIdOrNull(requestDetails);
     logger.debug("Processing DELETE request for {}/{}", requestDetails.getResourceName(), resourceId);
+
+    if (isCountryLevel()) {
+      return NoOpAccessDecision.accessGranted();
+    }
 
     // Fetch the resource to validate access before deletion
     String resourcePath = String.format("/%s/%s", requestDetails.getResourceName(), resourceId);
@@ -361,6 +375,11 @@ public class LocationAccessChecker implements AccessChecker {
     return LocationTaggingAccessDecision.forBundle(fhirContext, tagMutator);
   }
 
+
+  /** True for ADMINISTRATOR/SUPERUSER, whose jurisdiction is the whole country. */
+  private boolean isCountryLevel() {
+    return userAccessLevel == RoleBasedAccessScopeResolver.AccessLevel.COUNTRY;
+  }
 
   /**
    * Fetches a resource from the FHIR server.
