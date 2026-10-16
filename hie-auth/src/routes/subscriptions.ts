@@ -49,8 +49,14 @@ async function assignIdsHandler(
 
     if (result.kind === 'error') {
       console.error(result.error);
-      res.locals.subscriptionOutcome = 'error';
       res.locals.subscriptionErrorMessage = String(result.error);
+      /** A 4xx makes HAPI redeliver ~21 times; only invite that when a retry could succeed. */
+      if (result.retryable === false && options?.alreadyEpidResponse === '200skipped') {
+        res.locals.subscriptionOutcome = 'skipped';
+        res.locals.subscriptionDetail = { kind: 'not_retryable', reason: String(result.error) };
+        return res.status(200).json(OperationOutcome(result.error, 'information'));
+      }
+      res.locals.subscriptionOutcome = 'error';
       return res.status(400).json(OperationOutcome(result.error));
     }
 
@@ -98,6 +104,15 @@ router.put('/encounters/notifications/Encounter/:id', async (req: Request, res: 
       res.locals.subscriptionOutcome = 'skipped';
       return res.status(200).json(
         OperationOutcome('Patient already has an official id with the system http://hie.org/identifiers/EPID', 'information')
+      );
+    }
+
+    /** Lab results and contact follow-ups hang off a case Encounter; the EPID belongs to that case. */
+    if (data?.partOf?.reference) {
+      res.locals.subscriptionOutcome = 'skipped';
+      res.locals.subscriptionDetail = { kind: 'child_encounter', partOf: data.partOf.reference };
+      return res.status(200).json(
+        OperationOutcome(`Child of ${data.partOf.reference}; EPIDs are assigned on the case Encounter`, 'information')
       );
     }
 
