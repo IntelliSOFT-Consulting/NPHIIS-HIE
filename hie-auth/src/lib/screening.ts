@@ -4,6 +4,7 @@ import {
     identificationTypeCode,
     isIdentificationType,
 } from "./identification-types";
+import { countryCoding } from "./vhf-countries";
 
 const BASE = "http://nphiis.health.go.ke/fhir";
 
@@ -24,9 +25,13 @@ export const SCREENING_IDENTIFIER_SYSTEM = `${BASE}/identifier/screening-patient
 export const SCREENING_OUTCOME_SYSTEM = `${BASE}/CodeSystem/screening-outcome`;
 export const SYMPTOM_SYSTEM = `${BASE}/CodeSystem/screening-symptom`;
 
-/** Screening No. on the Patient, in the shape the mobile app writes and searches on. */
+/**
+ * Screening No. on the Patient. The mobile app writes and searches on the vhf-screening-number
+ * system; the same number is also written under the vhf-screened system.
+ */
 export const SCREENING_NUMBER_SYSTEM = "vhf-screening-number";
 export const SCREENING_NUMBER_TYPE_SYSTEM = "vhf-screened";
+export const SCREENING_NUMBER_SYSTEMS = [SCREENING_NUMBER_SYSTEM, SCREENING_NUMBER_TYPE_SYSTEM];
 
 export const SCREENING_OUTCOMES = ["cleared", "referred", "suspected"] as const;
 export const POINT_OF_ENTRY_TYPES = ["airport", "seaport", "border", "facility", "community"] as const;
@@ -111,6 +116,8 @@ export function validateScreeningPayload(
     if (body.pointOfEntry != null) {
         const p = body.pointOfEntry;
         if (!isObj(p) || !isStr(p.name)) errors.push("pointOfEntry.name is required when pointOfEntry is given");
+        else if (p.locationId != null && !isStr(p.locationId))
+            errors.push("pointOfEntry.locationId must be a non-empty string when given");
         else if (p.type != null && !(POINT_OF_ENTRY_TYPES as readonly string[]).includes(p.type))
             errors.push(`pointOfEntry.type must be one of ${POINT_OF_ENTRY_TYPES.join(", ")}`);
     }
@@ -190,15 +197,15 @@ export function buildScreeningIdentifier(type: IdentificationType, value: string
     };
 }
 
-export function buildScreeningNumberIdentifier(screeningNumber: string) {
-    return {
+export function buildScreeningNumberIdentifiers(screeningNumber: string) {
+    return SCREENING_NUMBER_SYSTEMS.map((system) => ({
         type: {
             coding: [{ system: SCREENING_NUMBER_TYPE_SYSTEM, code: SCREENING_NUMBER_TYPE_SYSTEM, display: "VHF Screening" }],
             text: "Screening No.",
         },
-        system: SCREENING_NUMBER_SYSTEM,
+        system,
         value: screeningNumber.trim(),
-    };
+    }));
 }
 
 /** True when the Patient already carries this identification type + number (on any system). */
@@ -216,8 +223,9 @@ export function buildScreenedPatient(p: ScreeningPayload["patient"], screeningNu
     const patient: Record<string, any> = {
         resourceType: "Patient",
         meta: { profile: [SCREENED_PATIENT_PROFILE], tag: [SCREENING_TAG] },
+        active: true,
         identifier: [
-            ...(screeningNumber?.trim() ? [buildScreeningNumberIdentifier(screeningNumber)] : []),
+            ...(screeningNumber?.trim() ? buildScreeningNumberIdentifiers(screeningNumber) : []),
             ...p.identifiers.map((i) => buildScreeningIdentifier(i.type, i.value)),
         ],
     };
@@ -272,87 +280,236 @@ export function mergeIntoExistingPatient(existing: any, incoming: Record<string,
         profile: profiles.includes(SCREENED_PATIENT_PROFILE) ? profiles : [...profiles, SCREENED_PATIENT_PROFILE],
         tag: hasTag ? tags : [...tags, SCREENING_TAG],
     };
-    for (const key of ["name", "gender", "birthDate", "telecom", "address"]) {
+    for (const key of ["active", "name", "gender", "birthDate", "telecom", "address"]) {
         if (merged[key] == null && incoming[key] != null) merged[key] = incoming[key];
     }
     // A patient screened again keeps each earlier Screening No. and gains the new one.
     const missing = (incoming.identifier ?? []).filter(
         (inc: any) =>
             !(existing.identifier ?? []).some(
-                (ex: any) => ex.value === inc.value && (ex.type?.coding ?? []).some((c: any) => c.code === inc.type.coding[0].code),
+                (ex: any) =>
+                    ex.value === inc.value &&
+                    // Both Screening No. identifiers share type and value; only the system tells them apart.
+                    (!SCREENING_NUMBER_SYSTEMS.includes(inc.system) || ex.system === inc.system) &&
+                    (ex.type?.coding ?? []).some((c: any) => c.code === inc.type.coding[0].code),
             ),
     );
     if (missing.length) merged.identifier = [...(existing.identifier ?? []), ...missing];
     return merged;
 }
 
+type QrItem = { linkId: string; text?: string; answer?: any[]; item?: QrItem[] };
+
+/**
+ * linkIds of the mobile VHF case form (android-fhir nphiis/src/main/assets/vhf-case.json),
+ * so a screening response lines up with, and can prefill, a vhf-case response.
+ */
+export const VHF_CASE_LINK_IDS = {
+    demographics: "vhf-demographics",
+    familyName: "486402457213",
+    givenNames: "873240407472",
+    sex: "929966324957",
+    birthDateKnown: "442636360588",
+    birthDate: "257830485990",
+    idType: "vhf-id-type",
+    idTypeMinor: "vhf-id-type-minor",
+    idNumber: "vhf-national-id",
+    phone: "vhf-phone",
+    currentResidence: "vhf-current-residence",
+    village: "vhf-village",
+    clinical: "vhf-clinical",
+    symptoms: "vhf-symptoms",
+    bleedingSite: "vhf-bleeding-site",
+    symptomsOther: "vhf-symptoms-other",
+    firstOnset: "728034137219",
+    onsetPrefix: "vhf-onset-",
+    travel: "vhf-travel",
+    travelled: "vhf-travelled",
+    originCountry: "vhf-travel-origin-country",
+    originPlace: "vhf-travel-origin-place",
+    departureDate: "vhf-travel-departure-date",
+    stopovers: "vhf-travel-stopovers",
+    destinationCountry: "vhf-travel-destination-country",
+    destinationPlace: "vhf-travel-destination-place",
+    arrivalDate: "vhf-travel-arrival-date",
+} as const;
+
+/** Screening answers with no vhf-case question. */
+export const SCREENING_LINK_IDS = {
+    pointOfEntry: "point-of-entry",
+    temperature: "screening-temperature",
+    travelPurpose: "screening-travel-purpose",
+} as const;
+
+/** vhf-symptoms options, in form order; the codes vhf-onset-<code> is built from. */
+export const VHF_SYMPTOMS: Record<string, string> = {
+    fever: "Fever",
+    headache: "Headache",
+    fatigue: "Fatigue",
+    vomiting: "Vomiting",
+    diarrhea: "Diarrhea",
+    "unexplained-bleeding": "Unexplained bleeding",
+    "muscle-pain": "Muscle pain",
+    other: "Other (specify)",
+};
+
+const SCREENING_TO_VHF_SYMPTOM: Partial<Record<(typeof SYMPTOM_CODES)[number], string>> = {
+    fever: "fever",
+    headache: "headache",
+    fatigue: "fatigue",
+    vomiting: "vomiting",
+    diarrhoea: "diarrhea",
+    bleeding: "unexplained-bleeding",
+    "muscle-pain": "muscle-pain",
+};
+
+/** The vhf-symptoms code a screening symptom is recorded under; anything without its own option is "other". */
+export function vhfSymptomCode(code: (typeof SYMPTOM_CODES)[number]): string {
+    return SCREENING_TO_VHF_SYMPTOM[code] ?? "other";
+}
+
+const SEX_OPTIONS: Record<string, string> = { male: "Male", female: "Female", other: "Other (specify)" };
+const ID_TYPE_OPTIONS: Partial<Record<IdentificationType, { code: string; display: string }>> = {
+    "National ID": { code: "national-id", display: "National ID" },
+    "Birth Certificate": { code: "birth-certificate", display: "Birth certificate" },
+};
+const KENYA = "KE";
+
+const choice = (code: string, display: string) => ({ valueCoding: { code, display } });
+const humanize = (code: string) => code.charAt(0).toUpperCase() + code.slice(1).replace(/-/g, " ");
+const earliest = (dates: Array<string | undefined>) => dates.filter((d): d is string => !!d).sort()[0];
+
+function answered(linkId: string, answer: any | undefined): QrItem[] {
+    return answer == null ? [] : [{ linkId, answer: Array.isArray(answer) ? answer : [answer] }];
+}
+
+function group(linkId: string, items: QrItem[]): QrItem[] {
+    return items.length ? [{ linkId, item: items }] : [];
+}
+
+/** Under 18 on the reference date (vhf-case asks minors for vhf-id-type-minor). */
+function isMinor(birthDate: string, onDate: string): boolean {
+    const [y, rest] = [Number(birthDate.slice(0, 4)), birthDate.slice(4)];
+    return `${y + 18}${rest}` > onDate.slice(0, 10);
+}
+
+function demographicsItems(p: ScreeningPayload["patient"], onDate: string): QrItem[] {
+    const L = VHF_CASE_LINK_IDS;
+    const id = p.identifiers.find((i) => ID_TYPE_OPTIONS[i.type]);
+    const idOption = id && ID_TYPE_OPTIONS[id.type]!;
+    const minor = !!p.birthDate && isMinor(p.birthDate, onDate);
+    return [
+        ...answered(L.familyName, p.familyName ? { valueString: p.familyName } : undefined),
+        ...answered(L.givenNames, p.givenNames?.length ? { valueString: p.givenNames.join(" ") } : undefined),
+        ...answered(L.sex, p.gender && SEX_OPTIONS[p.gender] ? choice(p.gender, SEX_OPTIONS[p.gender]) : undefined),
+        ...answered(L.birthDateKnown, p.birthDate ? choice("known", "Known") : undefined),
+        ...answered(L.birthDate, p.birthDate ? { valueDate: p.birthDate } : undefined),
+        ...answered(minor ? L.idTypeMinor : L.idType, idOption ? choice(idOption.code, idOption.display) : undefined),
+        ...answered(L.idNumber, id ? { valueString: id.value.trim() } : undefined),
+        ...answered(L.phone, p.phone ? { valueString: p.phone } : undefined),
+        ...answered(L.currentResidence, p.address?.text ? { valueString: p.address.text } : undefined),
+        ...answered(L.village, p.address?.village ? { valueString: p.address.village } : undefined),
+    ];
+}
+
+function clinicalItems(ss: NonNullable<ScreeningPayload["signsAndSymptoms"]>): QrItem[] {
+    const L = VHF_CASE_LINK_IDS;
+    // vhf-case has no "asked and denied"; only present symptoms are recorded.
+    const present = (ss.symptoms ?? []).filter((s) => s.present).map((s) => ({ ...s, vhf: vhfSymptomCode(s.code) }));
+    if (!present.length) return [];
+    const codes = Object.keys(VHF_SYMPTOMS).filter((c) => present.some((s) => s.vhf === c));
+    const others = present.filter((s) => s.vhf === "other");
+    const bleedingNote = present.find((s) => s.vhf === "unexplained-bleeding" && s.note)?.note;
+    const otherText = others
+        .map((s) => (s.code === "other" ? s.note ?? "" : `${humanize(s.code)}${s.note ? ` (${s.note})` : ""}`))
+        .filter(Boolean)
+        .join("; ");
+    const firstOnset = earliest(present.map((s) => s.onsetDate));
+    return [
+        ...answered(L.symptoms, codes.map((c) => choice(c, VHF_SYMPTOMS[c]))),
+        ...answered(L.bleedingSite, bleedingNote ? { valueString: bleedingNote } : undefined),
+        ...answered(L.symptomsOther, otherText ? { valueString: otherText } : undefined),
+        ...answered(L.firstOnset, firstOnset ? { valueDate: firstOnset } : undefined),
+        ...codes.flatMap((c) => {
+            const onset = earliest(present.filter((s) => s.vhf === c).map((s) => s.onsetDate));
+            return answered(`${L.onsetPrefix}${c}`, onset ? { valueDate: onset } : undefined);
+        }),
+    ];
+}
+
+type Trip = NonNullable<NonNullable<ScreeningPayload["travelHistory"]>["trips"]>[number];
+
+/** vhf-case holds one trip: the latest arrival (or the last one given); earlier trips go to stopovers. */
+export function mainTrip(trips: Trip[]): { main?: Trip; rest: Trip[] } {
+    if (!trips.length) return { rest: [] };
+    let idx = trips.length - 1;
+    trips.forEach((t, i) => {
+        if (t.arrivalDate && (!trips[idx].arrivalDate || t.arrivalDate > trips[idx].arrivalDate!)) idx = i;
+    });
+    return { main: trips[idx], rest: trips.filter((_, i) => i !== idx) };
+}
+
+function describeTrip(t: Trip): string {
+    const where = [countryCoding(t.country).display, t.city].filter(Boolean).join(", ");
+    const when = [t.departureDate, t.arrivalDate].filter(Boolean).join("–");
+    return when ? `${where} ${when}` : where;
+}
+
+function travelItems(th: NonNullable<ScreeningPayload["travelHistory"]>, pointOfEntry?: string): QrItem[] {
+    const L = VHF_CASE_LINK_IDS;
+    const items = answered(L.travelled, th.hasTravelled ? choice("yes", "Yes") : choice("no", "No"));
+    const { main, rest } = th.hasTravelled ? mainTrip(th.trips ?? []) : { rest: [] };
+    if (!main) return items;
+    const stopovers = rest.map(describeTrip).join("; ");
+    return [
+        ...items,
+        ...answered(L.originCountry, { valueCoding: countryCoding(main.country) }),
+        ...answered(L.originPlace, main.city ? { valueString: main.city } : undefined),
+        ...answered(L.departureDate, main.departureDate ? { valueDate: main.departureDate } : undefined),
+        ...answered(L.stopovers, stopovers ? { valueString: stopovers } : undefined),
+        ...answered(L.destinationCountry, { valueCoding: countryCoding(KENYA) }),
+        ...answered(L.destinationPlace, pointOfEntry ? { valueString: pointOfEntry } : undefined),
+        ...answered(L.arrivalDate, main.arrivalDate ? { valueDate: main.arrivalDate } : undefined),
+    ];
+}
+
 export function buildScreeningQuestionnaireResponse(payload: ScreeningPayload, patientId: string) {
-    const items: any[] = [];
-
-    if (payload.pointOfEntry) {
-        items.push({
-            linkId: "point-of-entry",
-            text: "Point of entry",
-            item: [
-                { linkId: "point-of-entry.name", answer: [{ valueString: payload.pointOfEntry.name }] },
-                ...(payload.pointOfEntry.type
-                    ? [{ linkId: "point-of-entry.type", answer: [{ valueString: payload.pointOfEntry.type }] }]
-                    : []),
-            ],
-        });
-    }
-
-    if (payload.travelHistory) {
-        const th = payload.travelHistory;
-        items.push({
-            linkId: "travel-history",
-            text: "Travel history",
-            item: [
-                { linkId: "travel-history.has-travelled", answer: [{ valueBoolean: th.hasTravelled }] },
-                ...(th.trips ?? []).map((t) => ({
-                    linkId: "travel-history.trip",
-                    text: "Trip",
-                    item: [
-                        { linkId: "travel-history.trip.country", answer: [{ valueString: t.country }] },
-                        ...(t.city ? [{ linkId: "travel-history.trip.city", answer: [{ valueString: t.city }] }] : []),
-                        ...(t.departureDate ? [{ linkId: "travel-history.trip.departure-date", answer: [{ valueDate: t.departureDate }] }] : []),
-                        ...(t.arrivalDate ? [{ linkId: "travel-history.trip.arrival-date", answer: [{ valueDate: t.arrivalDate }] }] : []),
-                        ...(t.purpose ? [{ linkId: "travel-history.trip.purpose", answer: [{ valueString: t.purpose }] }] : []),
-                    ],
-                })),
-            ],
-        });
-    }
-
-    if (payload.signsAndSymptoms) {
-        const ss = payload.signsAndSymptoms;
-        items.push({
-            linkId: "signs-symptoms",
-            text: "Signs and symptoms",
-            item: [
-                ...(ss.temperatureCelsius != null
-                    ? [{ linkId: "signs-symptoms.temperature", answer: [{ valueDecimal: ss.temperatureCelsius }] }]
-                    : []),
-                ...(ss.symptoms ?? []).map((s) => ({
-                    linkId: "signs-symptoms.symptom",
-                    text: s.code,
-                    answer: [
-                        {
-                            valueCoding: { system: SYMPTOM_SYSTEM, code: s.code, display: s.code },
-                            // present=false is kept so "asked and denied" is distinguishable from "not asked"
-                            item: [
-                                { linkId: "signs-symptoms.symptom.present", answer: [{ valueBoolean: s.present }] },
-                                ...(s.onsetDate ? [{ linkId: "signs-symptoms.symptom.onset-date", answer: [{ valueDate: s.onsetDate }] }] : []),
-                                ...(s.note ? [{ linkId: "signs-symptoms.symptom.note", answer: [{ valueString: s.note }] }] : []),
-                            ],
-                        },
-                    ],
-                })),
-            ],
-        });
-    }
-
+    const L = VHF_CASE_LINK_IDS;
     const authored = payload.screenedAt ?? new Date().toISOString();
+    const poe = payload.pointOfEntry;
+    const purpose = payload.travelHistory?.hasTravelled ? mainTrip(payload.travelHistory.trips ?? []).main?.purpose : undefined;
+
+    const items: QrItem[] = [
+        ...group(L.demographics, demographicsItems(payload.patient, authored)),
+        ...group(L.clinical, payload.signsAndSymptoms ? clinicalItems(payload.signsAndSymptoms) : []),
+        ...group(L.travel, payload.travelHistory ? travelItems(payload.travelHistory, poe?.name) : []),
+        ...(poe
+            ? [
+                  {
+                      linkId: SCREENING_LINK_IDS.pointOfEntry,
+                      text: "Point of entry",
+                      item: [
+                          { linkId: "point-of-entry.name", answer: [{ valueString: poe.name }] },
+                          ...(poe.type ? [{ linkId: "point-of-entry.type", answer: [{ valueString: poe.type }] }] : []),
+                          ...(poe.locationId
+                              ? [
+                                    {
+                                        linkId: "point-of-entry.location",
+                                        answer: [{ valueReference: { reference: `Location/${poe.locationId}`, display: poe.name } }],
+                                    },
+                                ]
+                              : []),
+                      ],
+                  },
+              ]
+            : []),
+        ...answered(
+            SCREENING_LINK_IDS.temperature,
+            payload.signsAndSymptoms?.temperatureCelsius != null ? { valueDecimal: payload.signsAndSymptoms.temperatureCelsius } : undefined,
+        ),
+        ...answered(SCREENING_LINK_IDS.travelPurpose, purpose ? { valueString: purpose } : undefined),
+    ];
+
     return {
         resourceType: "QuestionnaireResponse",
         meta: {
@@ -371,4 +528,118 @@ export function buildScreeningQuestionnaireResponse(payload: ScreeningPayload, p
         authored,
         item: items,
     };
+}
+
+/** Demographics for a screening payload, read back from the Patient it created or matched. */
+export function screeningPatientFromResource(patient: any): ScreeningPayload["patient"] {
+    const name = patient?.name?.[0];
+    const address = patient?.address?.[0];
+    const phone = patient?.telecom?.find((t: any) => t?.system === "phone")?.value;
+    const identifiers = (patient?.identifier ?? [])
+        .filter((i: any) => i?.system === SCREENING_IDENTIFIER_SYSTEM && i?.value?.trim())
+        .map((i: any) => ({ type: i.type?.text ?? i.type?.coding?.[0]?.display, value: i.value.trim() }))
+        .filter((i: any) => isIdentificationType(i.type));
+    return {
+        identifiers,
+        ...(name?.family ? { familyName: name.family } : {}),
+        ...(name?.given?.length ? { givenNames: name.given } : {}),
+        ...(patient?.gender ? { gender: patient.gender } : {}),
+        ...(patient?.birthDate ? { birthDate: patient.birthDate } : {}),
+        ...(phone ? { phone } : {}),
+        ...(address?.line?.[0] || address?.text
+            ? { address: { ...(address.line?.[0] ? { village: address.line[0] } : {}), ...(address.text ? { text: address.text } : {}) } }
+            : {}),
+    };
+}
+
+/** Top-level linkIds the screening response used before it followed vhf-case.json. */
+const LEGACY_GROUPS = ["travel-history", "signs-symptoms"];
+
+/** True for a screening response still in the pre-vhf-case shape. */
+export function isLegacyScreeningResponse(qr: any): boolean {
+    const ids: string[] = (qr?.item ?? []).map((i: any) => String(i?.linkId ?? ""));
+    if (ids.some((id) => LEGACY_GROUPS.includes(id))) return true;
+    return !ids.some((id) => id.startsWith("vhf-") || id.startsWith("screening-"));
+}
+
+/** Rebuild the payload a pre-vhf-case screening response was made from; demographics come from the Patient. */
+export function screeningPayloadFromLegacyResponse(qr: any, patient: any): ScreeningPayload {
+    const sub = (linkId: string): any[] => (qr?.item ?? []).find((i: any) => i?.linkId === linkId)?.item ?? [];
+    const val = (items: any[] | undefined, linkId: string): any => {
+        const a = items?.find((i) => i?.linkId === linkId)?.answer?.[0];
+        return a?.valueString ?? a?.valueDate ?? a?.valueDecimal ?? a?.valueBoolean ?? a?.valueReference?.reference;
+    };
+
+    const poe = sub("point-of-entry");
+    const poeName = val(poe, "point-of-entry.name");
+    const poeType = val(poe, "point-of-entry.type");
+    const poeLocation = val(poe, "point-of-entry.location");
+    const travel = sub("travel-history");
+    const ss = sub("signs-symptoms");
+    const hasTravelled = val(travel, "travel-history.has-travelled");
+    const temperature = val(ss, "signs-symptoms.temperature");
+    const outcome = qr?.meta?.tag?.find((t: any) => t?.system === SCREENING_OUTCOME_SYSTEM)?.code;
+
+    const symptoms = ss
+        .filter((i) => i?.linkId === "signs-symptoms.symptom")
+        .map((i) => {
+            const a = i.answer?.[0];
+            const onsetDate = val(a?.item, "signs-symptoms.symptom.onset-date");
+            const note = val(a?.item, "signs-symptoms.symptom.note");
+            return {
+                code: a?.valueCoding?.code ?? i.text,
+                present: val(a?.item, "signs-symptoms.symptom.present") === true,
+                ...(onsetDate ? { onsetDate } : {}),
+                ...(note ? { note } : {}),
+            };
+        })
+        .filter((s) => (SYMPTOM_CODES as readonly string[]).includes(s.code));
+
+    const trips = travel
+        .filter((i) => i?.linkId === "travel-history.trip")
+        .map((t) => {
+            const field = (k: string) => val(t.item, `travel-history.trip.${k}`);
+            return {
+                country: field("country") ?? "",
+                ...(field("city") ? { city: field("city") } : {}),
+                ...(field("departure-date") ? { departureDate: field("departure-date") } : {}),
+                ...(field("arrival-date") ? { arrivalDate: field("arrival-date") } : {}),
+                ...(field("purpose") ? { purpose: field("purpose") } : {}),
+            };
+        })
+        .filter((t) => t.country);
+
+    return {
+        screeningId: qr?.identifier?.value ?? qr?.id,
+        ...(qr?.authored ? { screenedAt: qr.authored } : {}),
+        ...((SCREENING_OUTCOMES as readonly string[]).includes(outcome) ? { outcome } : {}),
+        ...(poeName
+            ? {
+                  pointOfEntry: {
+                      name: poeName,
+                      ...(poeType ? { type: poeType } : {}),
+                      ...(typeof poeLocation === "string" && poeLocation.startsWith("Location/")
+                          ? { locationId: poeLocation.slice("Location/".length) }
+                          : {}),
+                  },
+              }
+            : {}),
+        patient: screeningPatientFromResource(patient),
+        ...(typeof hasTravelled === "boolean" ? { travelHistory: { hasTravelled, ...(trips.length ? { trips } : {}) } } : {}),
+        ...(ss.length
+            ? { signsAndSymptoms: { ...(typeof temperature === "number" ? { temperatureCelsius: temperature } : {}), symptoms } }
+            : {}),
+    };
+}
+
+/**
+ * A pre-vhf-case screening response rewritten with the vhf-case linkIds, keeping its id,
+ * identifier, tags, subject and authored date. Null when there is nothing to change.
+ */
+export function migrateLegacyScreeningResponse(qr: any, patient: any): any | null {
+    if (!isLegacyScreeningResponse(qr)) return null;
+    const patientId = String(qr?.subject?.reference ?? "").replace(/^Patient\//, "");
+    const rebuilt = buildScreeningQuestionnaireResponse(screeningPayloadFromLegacyResponse(qr, patient), patientId);
+    if (JSON.stringify(rebuilt.item) === JSON.stringify(qr?.item ?? [])) return null;
+    return { ...qr, item: rebuilt.item };
 }
