@@ -19,6 +19,7 @@ import Screenings from './routes/screenings'
 import Reports from './routes/reports'
 import Notifications from './routes/notifications'
 import Subscriptions from './routes/subscriptions'
+import PatientActivity from './routes/patient-activity'
 import FHIRProxy from './routes/fhir-proxy'
 import Lab from './routes/lab'
 import { createFHIRSubscription } from './lib/fhir-subscriptions'
@@ -48,6 +49,7 @@ app.use('/provider/screenings', Screenings)
 app.use('/provider', ProviderAuth)
 app.use('/reports', Reports)
 app.use('/notifications', Notifications)
+app.use('/subscriptions/patient-activity', PatientActivity)
 app.use('/subscriptions', Subscriptions)
 app.use('/lab', Lab)
 app.use('/fhir', FHIRProxy)
