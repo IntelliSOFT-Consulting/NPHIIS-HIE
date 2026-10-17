@@ -1,4 +1,5 @@
 import { FhirApi } from "./utils";
+import { patientActivityResourceTypes } from "./patient-activity";
 
 const deleteAllSubscriptions = async () => {
     try {
@@ -25,7 +26,12 @@ const deleteAllSubscriptions = async () => {
     }
 };
 
-const createSubscription = async (subscriptionId: string, callbackUrl: string, criteria: string) => {
+const createSubscription = async (
+    subscriptionId: string,
+    callbackUrl: string,
+    criteria: string,
+    options: { sendDeletes?: boolean } = {}
+) => {
     try {
         let response = await (await FhirApi({ 
             url: `/Subscription/${subscriptionId}`,
@@ -42,7 +48,10 @@ const createSubscription = async (subscriptionId: string, callbackUrl: string, c
                     extension: [{
                         url: 'http://hapifhir.io/fhir/StructureDefinition/subscription-delivery-retry-count',
                         valueInteger: 3
-                    }]
+                    }, ...(options.sendDeletes ? [{
+                        url: 'http://hapifhir.io/fhir/StructureDefinition/subscription-send-delete-messages',
+                        valueBoolean: true
+                    }] : [])]
                 }
             })
         })).data
@@ -105,9 +114,29 @@ const createSpecimenFHIRSubscription = async () => {
     );
 }
 
+/** One Subscription per patient-related type; each bumps the Patient's patient-data-last-updated extension. */
+const createPatientActivitySubscriptions = async () => {
+    let PATIENT_ACTIVITY_SUBSCRIPTION_CALLBACK_URL = process.env['PATIENT_ACTIVITY_SUBSCRIPTION_CALLBACK_URL'];
+
+    if (!PATIENT_ACTIVITY_SUBSCRIPTION_CALLBACK_URL) {
+        console.log('Missing environment variables for Patient activity subscriptions');
+        return;
+    }
+
+    for (const type of patientActivityResourceTypes()) {
+        await createSubscription(
+            `patient-activity-${type.toLowerCase()}`,
+            PATIENT_ACTIVITY_SUBSCRIPTION_CALLBACK_URL,
+            `${type}?`,
+            { sendDeletes: true }
+        );
+    }
+}
+
 export let createFHIRSubscription = async () => {
     await deleteAllSubscriptions();
     await createEpidFHIRSubscription();
     await createFollowUpFHIRSubscription();
     await createSpecimenFHIRSubscription();
+    await createPatientActivitySubscriptions();
 }
