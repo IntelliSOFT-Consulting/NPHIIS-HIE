@@ -1,0 +1,27 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "location_flat_pg",
+  "status": "active",
+  "resource": "Location",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "path": "name",
+          "type": "string"
+        },
+        {
+          "name": "part_of_id",
+          "path": "partOf.getReferenceKey(Location)",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

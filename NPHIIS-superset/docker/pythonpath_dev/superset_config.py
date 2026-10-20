@@ -82,7 +82,14 @@ CACHE_CONFIG = {
     "CACHE_REDIS_PORT": REDIS_PORT,
     "CACHE_REDIS_DB": REDIS_RESULTS_DB,
 }
-DATA_CACHE_CONFIG = CACHE_CONFIG
+# Chart results. Every chart runs its dataset's SQL on the Spark thrift server, and a
+# dashboard sends a dozen at once, so uncached loads take 15-30 s. The warehouse only
+# changes on the pipeline's 2-hourly run, so an hour of caching costs little freshness.
+# Cache keys include the RLS clause, so each area keeps its own entries.
+DATA_CACHE_CONFIG = {
+    **CACHE_CONFIG,
+    "CACHE_DEFAULT_TIMEOUT": int(os.getenv("SUPERSET_DATA_CACHE_TIMEOUT", "3600")),
+}
 THUMBNAIL_CACHE_CONFIG = CACHE_CONFIG
 DASHBOARD_RBAC = True
 
@@ -204,6 +211,7 @@ class CeleryConfig:
         "superset.tasks.scheduler",
         "superset.tasks.thumbnails",
         "superset.tasks.cache",
+        "nphiis_tasks",
     )
     result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_RESULTS_DB}"
     worker_prefetch_multiplier = 1
@@ -216,6 +224,11 @@ class CeleryConfig:
         "reports.prune_log": {
             "task": "reports.prune_log",
             "schedule": crontab(minute=10, hour=0),
+        },
+        # Precomputed VHF tables, just after the data pipeline's 2-hourly run (:00).
+        "nphiis.refresh_analytics_tables": {
+            "task": "nphiis.refresh_analytics_tables",
+            "schedule": crontab(minute=10, hour="*"),
         },
     }
 

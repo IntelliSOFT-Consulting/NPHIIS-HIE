@@ -33,12 +33,20 @@ fhirdata:
   # There is no Questionnaire in our test FHIR server, but it is added to
   # prevent regression of https://github.com/google/fhir-data-pipes/issues/785.
   # TODO: add resource table creation to e2e tests.
-  resourceList: "Patient,Encounter,Observation,Questionnaire,Condition,Practitioner,Location,Organization,Immunization,ServiceRequest,ImmunizationRecommendation,Specimen,MeasureReport,QuestionnaireResponse"
+  # List: VHF contact lists (one per case); Task / DiagnosticReport / Specimen: NPHL specimen
+  # submission and results; PractitionerRole: user roles; Group: earlier contact groups.
+  # A type added here is only complete after a full run (incremental runs fetch changes only).
+  resourceList: "Patient,Encounter,Observation,Questionnaire,Condition,Practitioner,PractitionerRole,Location,Organization,Immunization,ServiceRequest,ImmunizationRecommendation,Specimen,Task,DiagnosticReport,List,Group,MeasureReport,QuestionnaireResponse"
   maxWorkers: 1
   numThreads: 4
   createHiveResourceTables: true
   thriftserverHiveConfig: "config/thriftserver-hive-config_local.json"
   hiveResourceViewsDir: "config/views"
+  # Postgres sink (analytics-postgres) for the dashboards: every full and incremental run
+  # upserts the flattened views in config/view-definitions (one table per view, named after
+  # it; resource types without a view are skipped). Only "Recreate views" drops the tables.
+  sinkDbConfigPath: "config/analytics-postgres-config.json"
+  viewDefinitionsDir: "config/view-definitions"
 # Enable spring boot actuator end points, use "*" to expose all endpoints, or a comma-separated
 # list to expose selected ones
 management:

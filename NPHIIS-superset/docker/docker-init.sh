@@ -32,11 +32,7 @@ if [ ! -x "$SUPERSET_CLI" ]; then
   exit 127
 fi
 
-if [ "$SUPERSET_LOAD_EXAMPLES" = "yes" ]; then
-    STEP_CNT=4
-else
-    STEP_CNT=3
-fi
+STEP_CNT=5
 
 echo_step() {
 cat <<EOF
@@ -75,6 +71,34 @@ echo_step "2" "Complete" "Setting up admin user"
 echo_step "3" "Starting" "Setting up roles and perms"
 "$SUPERSET_CLI" init
 echo_step "3" "Complete" "Setting up roles and perms"
+
+# NPHIIS analytics: datasets, area (RLS) rules, charts and dashboards versioned in
+# docker/nphiis-analytics. Never fails the init, so Superset still starts if the
+# warehouse is not reachable yet; NPHIIS_ANALYTICS_SETUP=no skips it.
+if [ "${NPHIIS_ANALYTICS_SETUP:-yes}" = "yes" ]; then
+    echo_step "4" "Starting" "NPHIIS analytics (VHF contact tracing)"
+    if /app/.venv/bin/python /app/docker/nphiis-analytics/vhf_contacts_setup.py; then
+        echo_step "4" "Complete" "NPHIIS analytics (VHF contact tracing)"
+    else
+        echo "WARNING: NPHIIS analytics setup failed; Superset starts without it. Re-run:"
+        echo "  sudo docker exec superset_app python /app/docker/nphiis-analytics/vhf_contacts_setup.py"
+    fi
+fi
+
+# The VHF datasets on the analytics Postgres (nphiis-analytics/vhf_postgres_setup.py): created
+# alongside the Spark ones; the charts use them when NPHIIS_VHF_SOURCE=postgres (re-applied here
+# because step 4 rewrites the contact-tracing charts for Spark). Never fails the init.
+if [ "${NPHIIS_ANALYTICS_SETUP:-yes}" = "yes" ]; then
+    echo_step "5" "Starting" "NPHIIS analytics on Postgres (VHF)"
+    PG_MODE=""
+    [ "${NPHIIS_VHF_SOURCE:-spark}" = "postgres" ] && PG_MODE="--switch"
+    if /app/.venv/bin/python /app/docker/nphiis-analytics/vhf_postgres_setup.py $PG_MODE; then
+        echo_step "5" "Complete" "NPHIIS analytics on Postgres (VHF)"
+    else
+        echo "WARNING: NPHIIS Postgres analytics setup failed; Superset starts without it. Re-run:"
+        echo "  sudo docker exec superset_app python /app/docker/nphiis-analytics/vhf_postgres_setup.py $PG_MODE"
+    fi
+fi
 
 # if [ "$SUPERSET_LOAD_EXAMPLES" = "yes" ]; then
 #     # Load some data to play with
