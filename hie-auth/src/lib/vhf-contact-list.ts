@@ -150,7 +150,7 @@ export function liveEntryIds(list: any): Set<string> {
 /**
  * The case's contact List. Entries already on [existing] keep their date; contacts no longer
  * linked, or taken off by a user, keep their entry with flag "removed" (List.entry.deleted is
- * only allowed on mode "changes" lists, invariant lst-2).
+ * only allowed on mode "changes" lists, invariant lst-2). [restored]: contacts a user put back.
  */
 export function buildContactList(
   indexEncounter: any,
@@ -158,6 +158,7 @@ export function buildContactList(
   existing: any | null,
   now: string,
   removed: Set<string> = new Set(),
+  restored: Set<string> = new Set(),
 ): any {
   const epid = getEpidValueFromEncounter(indexEncounter);
   const caseId = getCaseId(indexEncounter);
@@ -169,7 +170,8 @@ export function buildContactList(
 
   const entries: any[] = contacts.map((c) => {
     const before = previous.get(c.encounterId);
-    const off = removed.has(c.encounterId) || flagOf(before) === REMOVED;
+    // A contact put back by a user loses its "removed" flag; removal wins if both are asked.
+    const off = removed.has(c.encounterId) || (flagOf(before) === REMOVED && !restored.has(c.encounterId));
     return {
       item: { reference: `Encounter/${c.encounterId}` },
       flag: flag(off ? REMOVED : c.status),
@@ -230,17 +232,25 @@ export type ContactListResult = {
   indexEncounter: any;
   /** epid: null until the contact is converted to a case; contactId: null until its case has an EPID. */
   contacts: Array<ContactFollowUp & { patientId: string; contactId: string | null; epid: string | null; subCounty: string | null }>;
+  /** Contacts still linked to the case but taken off its list by a user (can be put back). */
+  removed: ContactListResult["contacts"];
 };
 
 /**
  * Rebuilds and saves the case's contact List with fresh statuses. [opts.remove]: contact
- * Encounters a user took off the list (kept as deleted entries). [opts.ensureContactId]: gives
+ * Encounters a user took off the list (kept as removed entries); [opts.restore]: removed
+ * contacts a user put back. [opts.ensureContactId]: gives
  * a contact without one its Contact ID (epid-assignment's ensureVhfContactId); null when it
  * cannot be assigned yet.
  */
 export async function upsertContactList(
   indexEncounterId: string,
-  opts: { remove?: string[]; today?: string; ensureContactId?: (encounterId: string) => Promise<string | null> } = {},
+  opts: {
+    remove?: string[];
+    restore?: string[];
+    today?: string;
+    ensureContactId?: (encounterId: string) => Promise<string | null>;
+  } = {},
 ): Promise<ContactListResult> {
   const indexEncounter = (await FhirApi({ url: `/Encounter/${indexEncounterId}`, headers: { "Cache-Control": "no-cache" } })).data;
   if (!isCaseEncounter(indexEncounter)) throw new Error(`Encounter/${indexEncounterId} is not a VHF case record`);
@@ -274,6 +284,7 @@ export async function upsertContactList(
 
   const url = `/List/${contactListId(indexEncounterId)}`;
   const removed = new Set(opts.remove ?? []);
+  const restored = new Set(opts.restore ?? []);
   for (let attempt = 0; attempt < 2; attempt++) {
     const read = await FhirApi({ url, headers: { "Cache-Control": "no-cache" } });
     const existing = read.status === "success" && read.data?.resourceType === "List" ? read.data : null;
@@ -283,12 +294,18 @@ export async function upsertContactList(
       existing,
       new Date().toISOString(),
       removed,
+      restored,
     );
     const headers: Record<string, string> = existing?.meta?.versionId ? { "If-Match": `W/"${existing.meta.versionId}"` } : {};
     const put = await FhirApi({ url, method: "PUT", data: JSON.stringify(list), headers });
     if (put.status === "success") {
       const live = liveEntryIds(put.data?.entry ? put.data : list);
-      return { list: put.data ?? list, indexEncounter, contacts: contacts.filter((c) => live.has(c.encounterId)) };
+      return {
+        list: put.data ?? list,
+        indexEncounter,
+        contacts: contacts.filter((c) => live.has(c.encounterId)),
+        removed: contacts.filter((c) => !live.has(c.encounterId)),
+      };
     }
     if (attempt === 1 || !/precondition/i.test(put.statusText ?? "")) {
       throw new Error(`List ${url} not saved (${put.statusText}): ${JSON.stringify(put.data).slice(0, 300)}`);

@@ -28,8 +28,8 @@ function fail(res: Response, error: unknown, status = 500) {
   return res.status(status).json({ status: "error", error: error instanceof Error ? error.message : String(error) });
 }
 
-async function listResponse(indexEncounterId: string, remove?: string[]) {
-  const result = await upsertContactList(indexEncounterId, { remove, ensureContactId: contactIdOrNull });
+async function listResponse(indexEncounterId: string, changes: { remove?: string[]; restore?: string[] } = {}) {
+  const result = await upsertContactList(indexEncounterId, { ...changes, ensureContactId: contactIdOrNull });
   const index = result.indexEncounter;
   return {
     status: "success",
@@ -42,6 +42,7 @@ async function listResponse(indexEncounterId: string, remove?: string[]) {
     },
     list: result.list,
     contacts: result.contacts,
+    removed: result.removed,
   };
 }
 
@@ -58,11 +59,14 @@ router.get("/case", authenticateUser, async (req: Request, res: Response) => {
   }
 });
 
-/** Rebuilds a case's List now (e.g. after an upload), optionally taking contacts off it. */
+/**
+ * Rebuilds a case's List now (e.g. after an upload). Body { remove?: string[], restore?: string[] }:
+ * contact Encounters to take off the list, or to put back on it.
+ */
 router.post("/lists/:indexEncounterId", authenticateUser, async (req: Request, res: Response) => {
   try {
-    const remove = Array.isArray(req.body?.remove) ? req.body.remove.map(String) : undefined;
-    return res.json(await listResponse(req.params.indexEncounterId, remove));
+    const ids = (v: unknown) => (Array.isArray(v) ? v.map(String) : undefined);
+    return res.json(await listResponse(req.params.indexEncounterId, { remove: ids(req.body?.remove), restore: ids(req.body?.restore) }));
   } catch (e) {
     return fail(res, e);
   }
