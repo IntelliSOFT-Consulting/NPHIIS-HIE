@@ -236,6 +236,7 @@ export const userApi = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
           'Cookie': 'frontend_lang=en_US'
         },
         body: JSON.stringify({

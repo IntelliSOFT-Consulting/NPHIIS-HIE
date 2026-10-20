@@ -44,59 +44,27 @@ function bearer(req: NextRequest): string | null {
   return m?.[1] ?? null;
 }
 
-function isPayloadExpired(payload: { exp?: unknown }): boolean {
-  if (typeof payload.exp !== "number") return false;
-  return payload.exp <= Math.floor(Date.now() / 1000);
-}
-
 export async function verifyToken(
   req: NextRequest,
 ): Promise<VerifiedToken | null> {
   const token = bearer(req);
   if (!token) return null;
 
+  // Fail closed: without Keycloak configured, or if its signing keys can't be
+  // fetched, no token can be verified, so none is accepted.
   const ks = getJwks();
   if (!ks) {
-    // No Keycloak configured — fall back to unverified decode so dev still
-    // works. We still enforce the `exp` claim ourselves; otherwise an
-    // expired JWT slips through and the route ends up returning 403
-    // "Lab access required" because /provider/me 401s and our role lookup
-    // returns empty.
-    try {
-      const [, payload] = token.split(".");
-      const json = JSON.parse(
-        Buffer.from(payload, "base64url").toString("utf8"),
-      );
-      if (isPayloadExpired(json)) {
-        console.warn("[auth] verifyToken: token expired (unverified path)");
-        return null;
-      }
-      return wrap(token, json);
-    } catch {
-      return null;
-    }
+    console.error(
+      "[auth] verifyToken: KEYCLOAK_URL / KEYCLOAK_REALM not set; rejecting all tokens",
+    );
+    return null;
   }
 
   try {
     const { payload } = await jwtVerify(token, ks, { issuer: ISSUER });
     return wrap(token, payload as VerifiedToken["payload"]);
   } catch (err) {
-    const msg = (err as Error).message ?? '';
-    // Signature/claim/expiry failures mean the token is genuinely invalid — reject it.
-    // Network or JWKS-fetch failures are transient; degrade to unverified decode so
-    // a Keycloak blip doesn't lock every user out of the app.
-    if (!msg.includes('signature') && !msg.includes('claim') && !msg.includes('expired')) {
-      console.warn('[auth] JWKS unreachable, falling back to unverified decode:', msg);
-      try {
-        const [, b64] = token.split('.');
-        const json = JSON.parse(Buffer.from(b64, 'base64url').toString('utf8'));
-        if (isPayloadExpired(json)) return null;
-        return wrap(token, json);
-      } catch {
-        return null;
-      }
-    }
-    console.warn('JWT verification failed:', msg);
+    console.warn("[auth] JWT verification failed:", (err as Error).message);
     return null;
   }
 }
