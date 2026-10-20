@@ -54,6 +54,8 @@ export interface HieCaseList {
   indexCase: { encounterId: string; patientId: string | null; epid: string | null; caseId: string | null; caseType: string | null };
   list: { id: string; status: string; entry?: Array<{ item?: { reference?: string }; deleted?: boolean }> };
   contacts: HieContact[];
+  /** Contacts taken off the list by a user (older hie-auth: absent). */
+  removed?: HieContact[];
 }
 
 export class HieAuthError extends Error {
@@ -81,10 +83,17 @@ async function hieAuth<T>(path: string, token: string, init: RequestInit = {}): 
 export const caseListById = (token: string, id: string) =>
   hieAuth<HieCaseList>(`/case?id=${encodeURIComponent(id)}`, token);
 
-export const refreshCaseList = (token: string, indexEncounterId: string, remove?: string[]) =>
+export interface ListChanges {
+  /** Contact Encounters to take off the case's list. */
+  remove?: string[];
+  /** Contact Encounters taken off before, to put back. */
+  restore?: string[];
+}
+
+export const refreshCaseList = (token: string, indexEncounterId: string, changes: ListChanges = {}) =>
   hieAuth<HieCaseList>(`/lists/${encodeURIComponent(indexEncounterId)}`, token, {
     method: "POST",
-    body: JSON.stringify(remove ? { remove } : {}),
+    body: JSON.stringify(changes),
   });
 
 export const contactConverted = (token: string, encounterId: string, indexEncounterId?: string) =>
@@ -120,10 +129,20 @@ export interface BoardContact extends HieContact {
   relationship?: string;
 }
 
+export interface RemovedContact {
+  encounterId: string;
+  name: string;
+  contactId: string | null;
+  phone?: string;
+  exposureDate: string | null;
+}
+
 export interface Board {
   indexCase: HieCaseList["indexCase"] & { name: string };
   listStatus: string;
   contacts: BoardContact[];
+  /** Contacts taken off this case's list, which can be put back. */
+  removed: RemovedContact[];
   /** Contacts living outside the viewer's area (counted, not shown). */
   outsideScope: number;
 }
@@ -173,8 +192,9 @@ async function latestAnswers(encounterIds: string[], codes: string[], token: str
 }
 
 export async function buildBoard(list: HieCaseList, token: string, scope: RumourScope | null): Promise<Board> {
+  const removed = list.removed ?? [];
   const patients = await patientsById(
-    [list.indexCase.patientId ?? "", ...list.contacts.map((c) => c.patientId)],
+    [list.indexCase.patientId ?? "", ...list.contacts.map((c) => c.patientId), ...removed.map((c) => c.patientId)],
     token,
   );
   const answers = await latestAnswers(list.contacts.map((c) => c.encounterId), [L.relationship], token);
@@ -194,6 +214,12 @@ export async function buildBoard(list: HieCaseList, token: string, scope: Rumour
         relationship: answers.get(c.encounterId)?.get(L.relationship),
       };
     }),
+    removed: removed
+      .filter((c) => inContactScope(patients.get(c.patientId), scope))
+      .map((c) => {
+        const p = patients.get(c.patientId);
+        return { encounterId: c.encounterId, name: displayName(p), contactId: c.contactId, phone: p?.telecom?.[0]?.value, exposureDate: c.exposureDate };
+      }),
   };
 }
 
