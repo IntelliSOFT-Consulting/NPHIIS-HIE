@@ -1,7 +1,7 @@
 import express from "express";
 import cors from 'cors'
 import * as dotenv from 'dotenv'
-import { authAccountLimiter, authIpLimiter } from './lib/rate-limit'
+import { authIpLimiter, loginLimiter, resetLimiter } from './lib/rate-limit'
 
 dotenv.config() // Load environment variables
 
@@ -38,7 +38,8 @@ const authPaths = [
   '/provider/login', '/provider/register', '/provider/refresh_token', '/provider/reset-password',
 ];
 app.use(authPaths, authIpLimiter);
-app.use(['/client/login', '/client/reset-password', '/provider/login', '/provider/reset-password'], express.json(), authAccountLimiter);
+app.use(['/client/login', '/provider/login'], express.json(), loginLimiter);
+app.use(['/client/reset-password', '/provider/reset-password'], express.json(), resetLimiter);
 
 app.use((req, res, next) => {
   try {

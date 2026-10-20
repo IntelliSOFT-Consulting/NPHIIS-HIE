@@ -51,7 +51,6 @@ export const sendPasswordResetEmail = async (idNumber: string) => {
         }
         
         let userInfo = await getKeycloakUserById(userData.id);
-        console.log(userInfo);
         
         // Validate that user info and email exist
         if (!userInfo || !userInfo.email) {
@@ -497,7 +496,7 @@ export const sendRegistrationConfirmationEmail = async (email: string, password:
                 <!-- Security Reminder -->
                 <div class="security-reminder">
                     <h3>🔒 Important Security Notice</h3>
-                    <p>For your security, please change your password immediately after your first login. This is a best practice to ensure your account remains secure. Never share your credentials with anyone.</p>
+                    <p>This temporary password expires in ${process.env.TEMP_PASSWORD_TTL_HOURS ?? 72} hours. If it expires, ask your administrator to resend this email. For your security, please change your password immediately after your first login. This is a best practice to ensure your account remains secure. Never share your credentials with anyone.</p>
                 </div>
 
                 <!-- Download Section -->

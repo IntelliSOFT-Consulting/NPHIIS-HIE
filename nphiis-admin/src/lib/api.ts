@@ -19,7 +19,10 @@ export async function fhirFetch(input: string, init: RequestInit = {}): Promise<
   const headers = new Headers(init.headers);
   if (!headers.has('Accept')) headers.set('Accept', 'application/fhir+json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
-  return fetch(input, { ...init, headers });
+  const res = await fetch(input, { ...init, headers });
+  // The proxy only answers 401 for a missing/expired/invalid token.
+  if (res.status === 401 && token) handleUnauthorized();
+  return res;
 }
 
 // Authentication types
@@ -584,8 +587,8 @@ export const handleUnauthorized = (): void => {
   // Clear authentication data
   localStorage.removeItem('nphiis-admin-auth');
   
-  // Redirect to login page
-  window.location.href = '/login';
+  // The login page lives at "/" (there is no /login route).
+  if (window.location.pathname !== '/') window.location.assign('/');
 };
 
 // Authentication API functions
