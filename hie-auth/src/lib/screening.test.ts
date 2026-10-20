@@ -3,10 +3,12 @@ import {
     SCREENING_TAG_CODE,
     buildScreenedPatient,
     buildScreeningQuestionnaireResponse,
+    facilityTypeOf,
     isLegacyScreeningResponse,
     mergeIntoExistingPatient,
     migrateLegacyScreeningResponse,
     patientHasIdentifier,
+    reportingSiteFromLocationInfo,
     validateScreeningPayload,
 } from "./screening";
 import { countryCoding } from "./vhf-countries";
@@ -270,6 +272,62 @@ describe("buildScreeningQuestionnaireResponse", () => {
             display: "Busia One Stop Border Post",
         });
         expect(validateScreeningPayload({ ...valid, pointOfEntry: { ...pointOfEntry, locationId: "" } }).ok).toBe(false);
+    });
+});
+
+describe("reporting site", () => {
+    const info = {
+        county: "47", countyName: "Nairobi",
+        subCounty: "4701", subCountyName: "Embakasi East",
+        ward: "", wardName: "",
+        facility: "12345", facilityName: "JKIA Port Health",
+    };
+    const payload = { ...valid, screenedAt: "2026-10-12T08:30:00Z", pointOfEntry: { name: "JKIA", type: "airport" } } as any;
+    const reportingGroup = (site?: any) =>
+        buildScreeningQuestionnaireResponse(payload, "p-1", site).item.find((i: any) => i.linkId === "151479012557");
+    const sub = (items: any[] | undefined, linkId: string) => items?.find((i: any) => i.linkId === linkId);
+
+    it("is filled from the screener's role and location info", () => {
+        const site = reportingSiteFromLocationInfo("VACCINATOR", info, "Public");
+        const g = reportingGroup(site)!;
+        expect(sub(g.item, "user_role")?.answer).toEqual([{ valueString: "VACCINATOR" }]);
+        expect(sub(g.item, "user_county")?.answer).toEqual([{ valueString: "47" }]);
+        expect(sub(g.item, "user_facility")?.answer).toEqual([{ valueString: "12345" }]);
+        expect(sub(g.item, "user_ward")).toBeUndefined();
+        const level = sub(g.item, "facility_level")!;
+        expect(sub(level.item, "294367770999")?.answer).toEqual([{ valueReference: { reference: "Location/47", display: "Nairobi" } }]);
+        expect(sub(level.item, "819946803677")?.answer).toEqual([
+            { valueReference: { reference: "Location/12345", display: "JKIA Port Health" } },
+        ]);
+        expect(sub(level.item, "438862163919")?.answer).toEqual([{ valueCoding: { code: "Public", display: "Public" } }]);
+        expect(sub(g.item, "vhf-investigation-date")?.answer).toEqual([{ valueDate: "2026-10-12" }]);
+        expect(sub(g.item, "vhf-investigation-location")?.answer?.[0].valueCoding.code).toBe("other");
+        expect(sub(g.item, "vhf-investigation-location-other")?.answer).toEqual([{ valueString: "JKIA" }]);
+    });
+
+    it("goes in the level group of the screener's role; other roles use the national one", () => {
+        const county = reportingGroup(reportingSiteFromLocationInfo("COUNTY_DISEASE_SURVEILLANCE_OFFICER", info))!;
+        expect(sub(sub(county.item, "county_level")?.item, "294367770999_county")).toBeDefined();
+        const other = reportingGroup(reportingSiteFromLocationInfo("POINT_OF_ENTRY_OFFICER", info))!;
+        expect(sub(sub(other.item, "national_level")?.item, "819946803642_national")?.answer?.[0].valueReference.reference).toBe(
+            "Location/4701",
+        );
+    });
+
+    it("is left out when the screener could not be looked up", () => {
+        expect(reportingGroup(undefined)).toBeUndefined();
+    });
+
+    it("survives migrating the response again", () => {
+        const qr = buildScreeningQuestionnaireResponse(payload, "p-1", reportingSiteFromLocationInfo("VACCINATOR", info));
+        expect(isLegacyScreeningResponse(qr)).toBe(false);
+        expect(migrateLegacyScreeningResponse(qr, {})).toBeNull();
+    });
+
+    it("reads the facility type off the Location", () => {
+        expect(facilityTypeOf({ type: [{ coding: [{ code: "faith-based" }] }] })).toBe("Faith Based");
+        expect(facilityTypeOf({ extension: [{ valueString: "Private" }] })).toBe("Private");
+        expect(facilityTypeOf({ type: [{ coding: [{ code: "FACILITY" }] }] })).toBeUndefined();
     });
 });
 
