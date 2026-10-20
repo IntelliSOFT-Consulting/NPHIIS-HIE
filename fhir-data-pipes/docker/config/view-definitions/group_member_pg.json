@@ -1,0 +1,37 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "group_member_pg",
+  "status": "active",
+  "resource": "Group",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "forEach": "member",
+      "column": [
+        {
+          "name": "member_patient_id",
+          "path": "entity.getReferenceKey(Patient)",
+          "type": "string"
+        },
+        {
+          "name": "period_start",
+          "path": "period.start",
+          "type": "string"
+        },
+        {
+          "name": "inactive",
+          "path": "inactive",
+          "type": "boolean"
+        }
+      ]
+    }
+  ]
+}

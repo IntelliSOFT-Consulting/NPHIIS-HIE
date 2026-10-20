@@ -1,0 +1,72 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "task_flat_pg",
+  "status": "active",
+  "resource": "Task",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        },
+        {
+          "name": "code",
+          "path": "code.coding.first().code",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "path": "status",
+          "type": "string"
+        },
+        {
+          "name": "business_status",
+          "path": "businessStatus.coding.first().code",
+          "type": "string"
+        },
+        {
+          "name": "business_status_text",
+          "path": "businessStatus.text",
+          "type": "string"
+        },
+        {
+          "name": "specimen_id",
+          "path": "focus.getReferenceKey(Specimen)",
+          "type": "string"
+        },
+        {
+          "name": "patient_id",
+          "path": "for.getReferenceKey(Patient)",
+          "type": "string"
+        },
+        {
+          "name": "encounter_id",
+          "path": "encounter.getReferenceKey(Encounter)",
+          "type": "string"
+        },
+        {
+          "name": "owner",
+          "path": "owner.display",
+          "type": "string"
+        },
+        {
+          "name": "authored_on",
+          "path": "authoredOn",
+          "type": "string"
+        },
+        {
+          "name": "last_modified",
+          "path": "lastModified",
+          "type": "string"
+        },
+        {
+          "name": "last_updated",
+          "path": "meta.lastUpdated",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

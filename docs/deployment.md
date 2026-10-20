@@ -275,7 +275,15 @@ Starts `nphiis-admin` (Next.js, port 8080).
 ./start-data-pipes.sh
 ```
 
-Starts `pipeline-controller` (port 8090) and `spark-thriftserver` (port 10001).
+Starts `pipeline-controller` (port 8090), `spark-thriftserver` (port 10001) and `analytics-postgres` (the dashboards' Postgres sink; see [Analytics Postgres](#analytics-postgres-vhf-pilot)). Before the first start, create its credentials:
+
+```bash
+cd fhir-data-pipes/docker
+cp analytics-postgres.env.example analytics-postgres.env                     # set both passwords
+cp config/analytics-postgres-config.json.example config/analytics-postgres-config.json  # same POSTGRES_PASSWORD
+```
+
+> `./start-data-pipes.sh` without arguments passes `--remove-orphans`. The compose project is named `docker`, which other stacks on dsrfhir also use (`app`, `icl-careers-db`), so it removes their containers. Start single services instead, e.g. `./start-data-pipes.sh up -d --no-deps analytics-postgres`.
 
 ### Step 5 — Start Apache Superset
 
@@ -523,6 +531,23 @@ curl -sf https://<FHIR_HOST>/hapi/fhir/Subscription | jq '.total'
 
 If missing, POST the subscription resources via the FHIR API or re-trigger the hie-auth startup routine that seeds them.
 
+#### VHF contact tracing
+
+There is no HAPI subscription for contact tracing; hie-auth runs a daily job instead (`VHF_CONTACT_CRON_SCHEDULE`, default `45 2 * * *` = 5:45 EAT; `VHF_CONTACT_CRON_ENABLED=false` turns it off). The job rebuilds each case's contact `List`, promotes contacts converted to cases (Case ID, NPHL sync, case alert), and sends follow-up reminders to the sub-county disease surveillance officer of each contact's residence, escalating missed days to the county officer. Model: https://<FHIR_HOST>/ig/contact-tracing.html.
+
+- **Database migration.** `20261017120000_vhf_contact_follow_up_notifications` adds `Notification.followUpDay` and widens its unique key. The hie-auth image does not run migrations; apply them before starting a new image:
+
+  ```bash
+  sudo docker compose -f hie/docker-compose.yml build hie-auth
+  sudo docker compose -f hie/docker-compose.yml run --rm --no-deps hie-auth npx prisma migrate status
+  sudo docker compose -f hie/docker-compose.yml run --rm --no-deps hie-auth npx prisma migrate deploy
+  sudo docker compose -f hie/docker-compose.yml up -d --no-deps hie-auth
+  ```
+
+  On dsrfhir the four migrations from 2026-02-25 to 2026-06-19 had been applied without being recorded (the schema had them). They were marked applied with `prisma migrate resolve --applied <name>` on 2026-10-17; check `migrate status` before deploying elsewhere.
+- **Run the job now:** `curl -X POST -H 'X-Internal-Api-Key: …' https://<FHIR_HOST>/api/provider/contacts/run-daily?send=true`.
+- **Contacts and case alerts.** A VHF record whose latest `vhf-case-type` is Contact gets its EPID but no Case ID, NPHL submission or case-submission alert until it is converted.
+
 ### 7.3 Superset Datasource and Dashboard Setup (first deployment only)
 
 1. Log in to Superset at `https://<SUPERSET_HOST>`.
@@ -574,6 +599,17 @@ git pull
 git pull
 ./start-admin.sh up -d --build --force-recreate
 ```
+
+### Superset configuration only
+
+`NPHIIS-superset/docker/pythonpath_dev/superset_config.py` and `NPHIIS-superset/docker/.env` are read at startup. After changing either, restart the web app and the worker:
+
+```bash
+git pull
+sudo docker compose -f NPHIIS-superset/docker-compose-non-dev.yml up -d --force-recreate superset superset-worker
+```
+
+`--force-recreate` also picks up `.env` changes; use `restart superset superset-worker` instead when only `superset_config.py` changed. Superset is unavailable for about 30 seconds. Restart `superset-worker-beat` too when the Celery schedule (`beat_schedule`) changed.
 
 ---
 
@@ -726,6 +762,161 @@ Monitor cron job execution in hie-auth logs:
 | pipeline-controller | 8090 | `pipeline-controller:8080` |
 | spark-thriftserver | 10001 | `spark-thriftserver:10000` |
 
+### Superset Dashboard Performance
+
+Every chart, and every dashboard filter dropdown, runs its dataset's SQL on `spark-thriftserver`. Opening a dashboard sends about a dozen queries at once. Spark runs them in turn, so a query that takes 2–5 s alone takes 15–30 s during an uncached dashboard load.
+
+**Chart cache.** Superset keeps chart results in Redis (`superset_cache`, DB 1) for `SUPERSET_DATA_CACHE_TIMEOUT` seconds (default `3600`; set in `NPHIIS-superset/docker/.env`). The warehouse only changes on the pipeline's 2-hourly incremental run (`incrementalSchedule` in `fhir-data-pipes/docker/config/application.yaml`), so charts lag the warehouse by at most this long. Cache entries are per row-level-security clause, so each county, sub-county and facility has its own and the first load for each area after expiry is still slow. Other Superset caches stay at 300 s. To apply a change, see [Superset configuration only](#superset-configuration-only).
+
+**Show new data immediately** (e.g. after a manual pipeline run) by clearing the cache:
+
+```bash
+sudo docker exec superset_cache sh -c "redis-cli -n 1 --scan --pattern 'superset_*' | xargs -r redis-cli -n 1 DEL"
+```
+
+**Find slow queries.** The Spark UI is on host port `4041` (SQL / JDBC tabs). To list the slowest recent queries:
+
+```bash
+sudo docker exec spark-thriftserver python3 -c '
+import json, urllib.request as u
+a = json.load(u.urlopen("http://localhost:4040/api/v1/applications"))[0]["id"]
+q = json.load(u.urlopen(f"http://localhost:4040/api/v1/applications/{a}/sql?details=false&length=1000"))
+for x in sorted(q, key=lambda x: -x["duration"])[:15]:
+    print(x["submissionTime"][:19], round(x["duration"] / 1000, 1), "s", x["description"][:100].replace("\n", " "))'
+```
+
+A query that is slow alone points to its dataset SQL. One that is only slow inside a burst of other queries means Spark is overloaded: check its memory (`sudo docker stats spark-thriftserver`; `--driver-memory` and `mem_limit` are in `fhir-data-pipes/docker/compose-controller-spark-sql-released.yaml`).
+
+**Precomputed VHF tables.** The VHF line list, transmission tree and contact datasets pivot every Observation. Rather than doing that for every chart, `NPHIIS-superset/docker/nphiis-analytics/refresh_tables.py` builds them into Spark tables (`nphiis_vhf_line_list`, `nphiis_vhf_transmission_tree`, `nphiis_vhf_contacts`), and the Superset datasets read those tables. "VHF County Map" joins the line-list table to the county boundaries. The SQL is versioned in `nphiis-analytics/datasets/`; edit it there, not in Superset.
+
+- **When:** hourly at :10 by the Superset Celery beat (task `nphiis.refresh_analytics_tables`), shortly after the pipeline's 2-hourly run; also at every deployment (Superset init step 4, `vhf_contacts_setup.py`, which also points the datasets at the tables).
+- **Freshness:** new pipeline data reaches the VHF dashboards within about 10 minutes, plus the chart cache. Columns based on today's date (contact status, "Seen Recently") are fixed at build time, so they lag by up to 10 minutes after midnight.
+- **Rebuild now:** `sudo docker exec superset_app python /app/docker/nphiis-analytics/refresh_tables.py`, then clear the chart cache (above).
+- **Check the hourly job:** `sudo docker logs superset_worker 2>&1 | grep refresh_analytics_tables`.
+- **How a rebuild works:** each run writes new `<name>__<UTC timestamp>` tables, points the `<name>` view at them and keeps the previous build; older builds are dropped. A failed build leaves the view on the last good one.
+- If the tables are missing (e.g. the Spark volume `docker_spark_vol_single` was deleted), the VHF dashboards fail until a rebuild runs.
+
+**Spark "Cannot call methods on a stopped SparkContext".** Every query fails with this after the thrift server's driver runs out of memory (`OutOfMemoryError` in `sudo docker logs spark-thriftserver`). The container keeps running and its health check stays green, so it does not restart itself. Recreate it:
+
+```bash
+sudo docker compose -f fhir-data-pipes/docker/compose-controller-spark-sql-released.yaml up -d --no-deps --force-recreate spark
+```
+
+The `spark.ui.retained*` and `spark.sql.ui.retainedExecutions` settings in that compose file limit how much query history the driver keeps; the defaults filled the 2 GB heap on 2026-10-18.
+
+### Analytics Postgres (VHF pilot)
+
+The VHF dashboards are being moved from Spark to Postgres: Spark's thrift server answers a dashboard's dozen parallel queries one after another (15–30 s), Postgres in parallel (well under a second). Spark stays for the other dashboards until they move too; the pipeline writes Parquet itself and does not need Spark.
+
+**Data flow.** Every pipeline run (full and incremental) also upserts flattened views into the `fhir_analytics` database on `analytics-postgres`: `fhir-data-pipes/docker/config/application.yaml` sets `sinkDbConfigPath` and `viewDefinitionsDir`, and `config/view-definitions/*.json` (SQL-on-FHIR ViewDefinitions) define the tables, one per view, named after it:
+
+| Table | One row per |
+| --- | --- |
+| `patient_flat_pg`, `patient_identifier_pg` | Patient; Patient identifier |
+| `encounter_flat_pg`, `observation_flat_pg` | Encounter; Observation (form answers, coded by linkId) |
+| `questionnaire_response_flat_pg`, `questionnaire_response_answer_pg` | QuestionnaireResponse; answer at any depth |
+| `location_flat_pg`, `location_type_pg` | Location; Location type |
+| `list_flat_pg`, `list_entry_pg` | VHF contact list (one per case); contact on it, with its status flag |
+| `specimen_flat_pg`, `task_flat_pg`, `diagnostic_report_flat_pg`, `diagnostic_report_result_pg` | NPHL specimen; submission task; result report; result Observation |
+| `practitioner_role_pg` | User role (nphiis-roles) and its location |
+| `group_flat_pg`, `group_member_pg` | Contact group (earlier model); member |
+
+`List`, `Task`, `DiagnosticReport`, `PractitionerRole` and `Group` were added to `resourceList` on 2026-10-18. A type added there is only complete after a **full run** (incremental runs fetch changes only): `curl -X POST 'http://localhost:8090/run?runMode=FULL'` on the host, then check `curl http://localhost:8090/status`. Rows are replaced by resource id, so incremental runs only rewrite what changed. Missing values arrive as `''`; timestamps are ISO text (the SQL casts them).
+
+**`meta.lastUpdated` is East Africa Time labelled UTC** in Parquet, Spark and Postgres alike: HAPI stores EAT without a zone and the pipeline's HAPI_JDBC fetch reads it as UTC (e.g. HAPI's `14:29:43+03:00` arrives as `14:29:43+00:00`). Dates taken from it ("Date Reported") are therefore Kenyan dates; compare HAPI's `hfj_resource.res_updated` with EAT times. The controller's **Recreate views** action drops and rebuilds these tables.
+
+**Changing the pipeline config** (`resourceList`, the sink, view definitions): the controller reads `application.yaml` and the view definitions only at start-up. Recreate it while it is idle (`curl http://localhost:8090/status` shows `"IDLE"`), outside the 2-hourly runs (:00 UTC, even hours):
+
+```bash
+sudo docker compose -f fhir-data-pipes/docker/compose-controller-spark-sql-released.yaml up -d --no-deps --force-recreate pipeline-controller
+curl -X POST 'http://localhost:8090/run?runMode=FULL'   # only when resourceList gained a type
+```
+
+**Spark view warning after adding PractitionerRole.** The first full run logged `Error while executing SQL in config/views/PractitionerRole_flat.sql: Table or view not found: PractitionerRole`. The controller runs every `config/views` file whose name starts with a resource type, so this one also ran for `Practitioner`, before the PractitionerRole table existed; it succeeded on the PractitionerRole pass and later runs find the table. Harmless.
+
+**Checking that incremental runs reach Postgres.** Compare what HAPI changed since a run's start with the sink. HAPI's `res_updated` is East Africa Time (see above), so give the cutoff in EAT:
+
+```bash
+# Resources HAPI changed since 14:51 EAT (11:51 UTC)
+sudo docker exec hapi-fhir-postgres psql -U postgres -d hapi -c "
+  SELECT r.res_type, COALESCE(f.forced_id, r.res_id::text) AS id, r.res_updated
+  FROM hfj_resource r LEFT JOIN hfj_forced_id f ON f.resource_pid = r.res_id
+  WHERE r.res_updated > '2026-10-18 14:51:27' AND r.res_deleted_at IS NULL ORDER BY r.res_updated"
+# After the next run: each should be in its table with that lastUpdated (same wall time, labelled +00:00)
+sudo docker exec analytics-postgres psql -U analytics -d fhir_analytics -c "
+  SELECT id, last_updated FROM observation_flat_pg ORDER BY NULLIF(last_updated, '')::timestamptz DESC LIMIT 10"
+```
+
+**Rollout record**
+
+| When (2026-10-18, UTC) | Step | Result |
+| --- | --- | --- |
+| 11:01 | `analytics-postgres` started; sink loaded from the 10:00 snapshot | Row counts equal the warehouse (134,013 Observations, 4,849 Patients, 4,856 Encounters, 27,978 Locations) |
+| 11:30–11:40 | VHF datasets ported, Superset datasets "… (Postgres)" created (ids 138–141), `--check`, `--compare` | All 29 VHF charts run on Postgres; 14 identical, 15 differ by the one Busia record (see Known differences) |
+| 11:50 | Controller recreated with the sink and the added resource types | Started cleanly |
+| 11:51–11:55 | Full run | New snapshot with List, Task, DiagnosticReport, PractitionerRole, Group; sink upserted, no duplicates |
+| 12:00 | Scheduled incremental run | Clean, but HAPI had no changes since the full run, so nothing was written: **incremental updates of the sink are not yet confirmed by live data** |
+| 12:02–12:05 | Sink tables rebuilt from HAPI with timestamps as text (`--recreateSinkTables`, then `00_setup.sql`) | Same rows; comparison unchanged; dataset queries 0.3–0.6 s |
+
+**Still to do**
+
+1. Confirm an incremental run with live changes (the check above) after the next edit in HAPI.
+2. `vhf_postgres_setup.py --switch`, then `NPHIIS_VHF_SOURCE=postgres` in `NPHIIS-superset/docker/.env`; reload both VHF dashboards and check the area-scoped views (county, sub-county, facility users and the admin portal embeds).
+3. Measles, AFP and mpox datasets, in that order; then decide whether Spark can be retired.
+
+**Datasets.** `NPHIIS-superset/docker/nphiis-analytics/postgres/*.sql` are the VHF datasets in Postgres SQL (`-- @include` embeds one in another); `00_setup.sql` holds the helper functions (schema `nphiis`), indexes, the read-only login's grants and database settings (`jit = off`: JIT compilation cost seconds per query). Superset reads them as plain queries, so the dashboards follow each pipeline run with nothing to refresh. `vhf_postgres_setup.py` (Superset init step 5) creates the database connection "NPHIIS Analytics (Postgres)" (`ANALYTICS_DB_URI` in `NPHIIS-superset/docker/.env`, login `superset_ro`) and a "<name> (Postgres)" twin of each Spark VHF dataset, with the same column settings, metrics and row-level security rules.
+
+```bash
+# Apply 00_setup.sql (after a new database, or after editing it)
+sudo docker exec -i analytics-postgres psql -U analytics -d fhir_analytics < NPHIIS-superset/docker/nphiis-analytics/postgres/00_setup.sql
+# First time: the read-only login (password = ANALYTICS_RO_PASSWORD), then 00_setup.sql again for its grants
+sudo docker exec -it analytics-postgres psql -U analytics -d fhir_analytics -c "CREATE ROLE superset_ro LOGIN PASSWORD '<password>'"
+
+S="sudo docker exec superset_app python /app/docker/nphiis-analytics/vhf_postgres_setup.py"
+$S --check     # every VHF chart's metrics and filters run on Postgres
+$S --compare   # each chart's numbers on Spark and on Postgres
+$S --switch    # charts + dashboard filters to Postgres (Spark settings saved in superset_home)
+$S --revert    # back to Spark
+```
+
+After `--switch`, set `NPHIIS_VHF_SOURCE=postgres` in `NPHIIS-superset/docker/.env` so deployments keep the charts on Postgres.
+
+**Known differences from Spark** (2026-10-18 comparison: line list 862 rows × 61 columns, tree 800 nodes, contacts 788 rows): where several answers share one `lastUpdated` (a record re-saved at once), Postgres takes the answer with the latest `issued` time; Spark picked one arbitrarily. One Busia record differs for this reason (Spark: contact; Postgres: confirmed case), which moves several VHF counts by one.
+
+**Load the sink without waiting for a run** (a new database, or after changing a view definition). From HAPI directly, for every resource type that has a view (the same read-only queries the controller runs):
+
+```bash
+cd fhir-data-pipes/docker
+sudo docker run --rm --network cloudbuild --memory 3g -v "$PWD/config:/app/config:ro" \
+  -e FLINK_CONF_DIR=/app/config --entrypoint java us-docker.pkg.dev/cloud-build-fhir/fhir-analytics/main:latest \
+  -Xmx2g -Dloader.main=com.google.fhir.analytics.FhirEtl -cp /app/controller-bundled.jar \
+  org.springframework.boot.loader.launch.PropertiesLauncher --runner=FlinkRunner \
+  --fhirFetchMode=HAPI_JDBC --fhirDatabaseConfigPath=/app/config/hapi-postgres-config_local.json \
+  --fhirServerUrl=http://hapi-fhir-jpa:8080/fhir \
+  --resourceList=Patient,Encounter,Observation,Location,QuestionnaireResponse,List,Task,DiagnosticReport,Specimen,PractitionerRole,Group \
+  --sinkDbConfigPath=/app/config/analytics-postgres-config.json --viewDefinitionsDir=/app/config/view-definitions \
+  --outputParquetPath=
+sudo docker exec analytics-postgres psql -U analytics -d fhir_analytics -c ANALYZE
+```
+
+It takes about 2.5 minutes. Run it between the controller's runs. Or from a Parquet snapshot (only the types that snapshot holds):
+
+```bash
+cd fhir-data-pipes/docker
+SNAP=$(ls -d dwh/controller_DWH_TIMESTAMP_* | sort | tail -1 | xargs basename)
+sudo docker run --rm --network cloudbuild --memory 3g -v "$PWD/dwh:/dwh:ro" -v "$PWD/config:/app/config:ro" \
+  -e FLINK_CONF_DIR=/app/config --entrypoint java us-docker.pkg.dev/cloud-build-fhir/fhir-analytics/main:latest \
+  -Xmx2g -Dloader.main=com.google.fhir.analytics.FhirEtl -cp /app/controller-bundled.jar \
+  org.springframework.boot.loader.launch.PropertiesLauncher --runner=FlinkRunner \
+  --fhirFetchMode=PARQUET --parquetInputDwhRoot=/dwh/$SNAP \
+  --resourceList=Patient,Encounter,Observation,Location,QuestionnaireResponse,List,Task,DiagnosticReport,Specimen,PractitionerRole,Group \
+  --sinkDbConfigPath=/app/config/analytics-postgres-config.json --viewDefinitionsDir=/app/config/view-definitions \
+  --outputParquetPath=
+sudo docker exec analytics-postgres psql -U analytics -d fhir_analytics -c ANALYZE
+```
+
+Use `--runner=FlinkRunner`: Beam's default runner keeps everything in memory and ran out at 1.5 GB. Add `--recreateSinkTables=true` after changing a view definition's columns (then re-apply `00_setup.sql` for the indexes and grants).
+
 ### Environment File Summary
 
 | File | Template |
@@ -734,3 +925,6 @@ Monitor cron job execution in hie-auth logs:
 | `hie-auth/.env` | No template — see [Section 3.2](#32-hie-authenv) |
 | `keycloak/.env` | No template — see [Section 3.3](#33-keycloakenv) |
 | `fhir-gateway/.env` | No template — see [Section 3.4](#34-fhir-gatewayenv) |
+| `NPHIIS-superset/docker/.env` | `NPHIIS-superset/docker/.env.example` (chart cache: [Superset Dashboard Performance](#superset-dashboard-performance); `ANALYTICS_DB_URI`, `NPHIIS_VHF_SOURCE`: [Analytics Postgres](#analytics-postgres-vhf-pilot)) |
+| `fhir-data-pipes/docker/analytics-postgres.env` | `fhir-data-pipes/docker/analytics-postgres.env.example` |
+| `fhir-data-pipes/docker/config/analytics-postgres-config.json` | `….json.example` (same password as `POSTGRES_PASSWORD` above) |

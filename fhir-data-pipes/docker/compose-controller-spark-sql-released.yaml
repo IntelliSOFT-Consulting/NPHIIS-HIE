@@ -73,6 +73,8 @@ services:
     depends_on:
       spark:
         condition: service_healthy
+      analytics-postgres:
+        condition: service_healthy
 
   spark:
     image: docker.io/bitnami/spark:3.3
@@ -83,6 +85,17 @@ services:
       - --driver-memory
       # You may need to increase this if your queries/data are too large.
       - 2g
+      # The Spark UI keeps every recent query's plan in the driver heap. With Superset's
+      # long dataset SQL the defaults (1000 queries) filled the 2g heap and stopped the
+      # SparkContext (OutOfMemoryError in spark-listener-group-appStatus, 2026-10-18).
+      - --conf
+      - spark.sql.ui.retainedExecutions=100
+      - --conf
+      - spark.ui.retainedJobs=200
+      - --conf
+      - spark.ui.retainedStages=200
+      - --conf
+      - spark.sql.maxPlanStringLength=100000
     environment:
       - HIVE_SERVER2_THRIFT_PORT=10000
     mem_limit: 3g
@@ -109,8 +122,29 @@ services:
       timeout: 60s
 
 
+  # Postgres sink for the flattened FHIR views (config/view-definitions); Superset queries
+  # it instead of Spark for the migrated dashboards. Credentials: analytics-postgres.env
+  # (from analytics-postgres.env.example) and config/analytics-postgres-config.json.
+  analytics-postgres:
+    image: postgres:16-alpine
+    restart: always
+    container_name: analytics-postgres
+    env_file:
+      - analytics-postgres.env
+    mem_limit: 1g
+    volumes:
+      - analytics_pg_data:/var/lib/postgresql/data
+    networks:
+      - cloudbuild
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 10
+
 volumes:
   spark_vol_single:
+  analytics_pg_data:
 
 networks:
   cloudbuild:

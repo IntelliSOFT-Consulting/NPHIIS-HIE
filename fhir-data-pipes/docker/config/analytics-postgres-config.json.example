@@ -1,0 +1,9 @@
+{
+  "jdbcDriverClass": "org.postgresql.Driver",
+  "databaseService": "postgresql",
+  "databaseHostName": "analytics-postgres",
+  "databasePort": "5432",
+  "databaseUser": "analytics",
+  "databasePassword": "change-me",
+  "databaseName": "fhir_analytics"
+}

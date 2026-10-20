@@ -1,0 +1,62 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "specimen_flat_pg",
+  "status": "active",
+  "resource": "Specimen",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        },
+        {
+          "name": "patient_id",
+          "path": "subject.getReferenceKey(Patient)",
+          "type": "string"
+        },
+        {
+          "name": "type_code",
+          "path": "type.coding.first().code",
+          "type": "string"
+        },
+        {
+          "name": "type_text",
+          "path": "type.text",
+          "type": "string"
+        },
+        {
+          "name": "accession",
+          "path": "accessionIdentifier.value",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "path": "status",
+          "type": "string"
+        },
+        {
+          "name": "collected",
+          "path": "collection.collected.ofType(dateTime)",
+          "type": "string"
+        },
+        {
+          "name": "received",
+          "path": "receivedTime",
+          "type": "string"
+        },
+        {
+          "name": "managing_location_id",
+          "path": "meta.tag.where(system.endsWith('managingLocation')).code.first()",
+          "type": "string"
+        },
+        {
+          "name": "last_updated",
+          "path": "meta.lastUpdated",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}
