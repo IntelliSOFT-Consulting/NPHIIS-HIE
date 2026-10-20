@@ -978,6 +978,47 @@ export const checkClientProtocolMappers = async () => {
   }
 };
 
+// Access tokens last 30 minutes unless KC_ACCESS_TOKEN_LIFESPAN_SECONDS says otherwise.
+const ACCESS_TOKEN_LIFESPAN_SECONDS = Number(process.env.KC_ACCESS_TOKEN_LIFESPAN_SECONDS) || 30 * 60;
+
+export const checkAccessTokenLifespan = async () => {
+  try {
+    const accessToken = (await getKeycloakAdminToken()).access_token;
+    if (!accessToken) {
+      console.error("checkAccessTokenLifespan: failed to obtain admin token");
+      return;
+    }
+    const headers = { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" };
+    const realmUrl = `${KC_BASE_URL}/admin/realms/${KC_REALM}`;
+
+    const realmRes = await fetch(realmUrl, { headers });
+    if (!realmRes.ok) {
+      console.error(`checkAccessTokenLifespan: failed to read realm: ${realmRes.status}`);
+      return;
+    }
+    const realm = await realmRes.json();
+    if (realm.accessTokenLifespan === ACCESS_TOKEN_LIFESPAN_SECONDS) return;
+
+    // Keycloak only updates the fields sent, so a partial body is safe.
+    const updateRes = await fetch(realmUrl, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({ accessTokenLifespan: ACCESS_TOKEN_LIFESPAN_SECONDS }),
+    });
+    if (updateRes.ok) {
+      console.log(
+        `Access token lifespan for realm ${KC_REALM}: ${realm.accessTokenLifespan}s -> ${ACCESS_TOKEN_LIFESPAN_SECONDS}s`
+      );
+    } else {
+      const text = await updateRes.text().catch(() => "");
+      console.error(`checkAccessTokenLifespan: failed to update realm: ${updateRes.status} ${text}`);
+    }
+  } catch (error) {
+    console.error("Error checking access token lifespan:", error);
+  }
+};
+
 checkUserProfileAttributes();
 checkUserRoles();
 checkClientProtocolMappers();
+checkAccessTokenLifespan();
