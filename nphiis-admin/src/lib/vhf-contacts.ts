@@ -588,3 +588,74 @@ export function buildConversionBundle(
 export function addDays(day: string, n: number): string {
   return new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 }
+
+/* ── Backfill ──────────────────────────────────────────────────────────── */
+
+/** A saved VHF case response, as read back from the server. */
+export interface SavedResponse extends Record<string, unknown> {
+  resourceType: "QuestionnaireResponse";
+  id: string;
+  authored?: string;
+  subject?: { reference?: string };
+  encounter?: { reference?: string };
+  author?: { reference?: string };
+  extension?: Array<{ url?: string; valueReference?: { reference?: string; display?: string } }>;
+  item?: QrItem[];
+}
+
+const CASE_ORDER = new Map(Array.from(CASE_ITEMS.keys()).map((id, i) => [id, i]));
+
+/** [extra] merged into [items]: groups merge by linkId, answered questions are kept, form order. */
+function mergeItems(items: QrItem[], extra: QrItem[]): QrItem[] {
+  const out = items.map((i) => ({ ...i }));
+  for (const e of extra) {
+    const same = out.find((i) => i.linkId === e.linkId);
+    if (!same) out.push(e);
+    else if (same.item && e.item) same.item = mergeItems(same.item, e.item);
+  }
+  return out.sort((a, b) => (CASE_ORDER.get(a.linkId) ?? Infinity) - (CASE_ORDER.get(b.linkId) ?? Infinity));
+}
+
+function answeredIds(items?: QrItem[], into = new Set<string>()): Set<string> {
+  for (const i of items ?? []) {
+    if (i.answer?.length) into.add(i.linkId);
+    answeredIds(i.item, into);
+    for (const a of i.answer ?? []) answeredIds(a.item, into);
+  }
+  return into;
+}
+
+/**
+ * The Reporting Site for a contact saved without one (the portal's upload before it filled
+ * the site): the response with the missing answers added, plus their Observations.
+ * Answers already in the response are left alone. Null when nothing is missing.
+ */
+export function reportingSiteBackfill(qr: SavedResponse, site: ReportingSite | undefined): TransactionBundle | null {
+  const authored = qr.authored ? new Date(qr.authored) : new Date();
+  const answered = answeredIds(qr.item);
+  const answers = Object.fromEntries(
+    Object.entries(reportingAnswers(site, authored)).filter(([id]) => !answered.has(id)),
+  ) as Answers;
+  if (!Object.keys(answers).length) return null;
+  const encounterId = qr.encounter?.reference?.split("/")[1];
+  const patientId = qr.subject?.reference?.split("/")[1];
+  if (!encounterId || !patientId) return null;
+  const managing = qr.extension?.find((e) => e.url?.endsWith("questionnaire-managingLocation"))?.valueReference;
+  const facilityId = managing?.reference?.split("/")[1];
+  const ctx: Ctx = {
+    patientId,
+    encounterId,
+    practitionerId: qr.author?.reference?.split("/")[1],
+    facility: facilityId ? { id: facilityId, name: managing?.display ?? facilityId } : undefined,
+    now: authored,
+  };
+  const updated = { ...qr, item: mergeItems(qr.item ?? [], responseItems(CASE_FORM, answers)) };
+  return {
+    resourceType: "Bundle",
+    type: "transaction",
+    entry: [
+      put(updated as SavedResponse & { resourceType: string; id: string }),
+      ...observations(CASE_FORM, answers, ctx, `${encounterId}|reporting-site`),
+    ],
+  };
+}
