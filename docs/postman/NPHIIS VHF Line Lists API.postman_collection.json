@@ -1,0 +1,1248 @@
+{
+  "info": {
+    "_postman_id": "721f5f80-d14c-4473-b9f2-a860e2bbc6c2",
+    "name": "NPHIIS VHF Line Lists API",
+    "description": "VHF line lists from hie-auth, read from the analytics Postgres: the same rows and columns as the Superset VHF datasets.\n\n| Endpoint | Rows | Date filter on |\n|---|---|---|\n| `GET /reports/vhf/line-list` | Cases and contacts, one per VHF record (Superset \"VHF Line List\") | Date Reported |\n| `GET /reports/vhf/contacts` | Contacts with their 21-day follow-up (Superset \"vhf_contacts\") | contact_date |\n\n**Auth.** Either a Keycloak bearer token (run **Auth > Login**; the token lasts 30 minutes, then **Auth > Refresh Token**), which returns only the rows in the user's area, as in Superset; or, for partner systems, either a client credentials token from `POST /reports/vhf/token` (a Keycloak client listed in the server's `REPORTS_CLIENT_IDS`; see **System access (client credentials)**) or `X-Api-Key: {{reportsApiKey}}` (see **System access (API key)**). Both return every area. A client credentials token works on these report endpoints only.\n\n**Query parameters** (all optional)\n\n| Parameter | Values |\n|---|---|\n| `period` | `today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `this_year`, `last_year`, `last_<N>_days`, `yyyy`, `yyyy-mm`, `yyyy-mm-dd`, `yyyy-Www`. Kenya dates; weeks run Monday to Sunday. |\n| `from`, `to` | `yyyy-mm-dd`, inclusive. Not together with `period`. |\n| `recordType` | `Case` or `Contact` (line-list only) |\n| `status` | Contacts only: `active` (inside 21 days), `flagged` (reported symptoms), `lost` (3+ days missed), `completed` (21 days done), `converted` (became a case) |\n| `format` | `json` (default) or `csv` |\n| `limit`, `offset` | Paging: `limit` 1-50000 (default 5000), `offset` default 0 |\n\n**JSON response:** `{ status, period, from, to, dateField, total, limit, offset, count, columns, rows }`, where `total` is the full count and `rows` is this page. **CSV:** a file download with the full count in the `X-Total-Count` header.\n\n| Status | Meaning |\n|---|---|\n| 200 | Rows returned |\n| 400 | Bad parameter; `error` says which |\n| 401 | Missing, invalid or expired token / wrong API key |\n| 403 | User not found |\n| 503 | Line lists not configured on this server (`ANALYTICS_DB_URL` unset) |\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{API_HOST}}/provider/login",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "login"
+              ]
+            },
+            "description": "Log in as an NPHIIS user. Saves `access_token` to `{{token}}` and `refresh_token` to `{{refresh_token}}`. The token lasts 30 minutes.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idNumber\": \"{{idNumber}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const t = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", t.access_token);",
+                  "pm.collectionVariables.set(\"refresh_token\", t.refresh_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{API_HOST}}/provider/refresh_token",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "refresh_token"
+              ]
+            },
+            "description": "Exchange `{{refresh_token}}` for a new token pair.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const t = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", t.access_token);",
+                  "pm.collectionVariables.set(\"refresh_token\", t.refresh_token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Line List (cases and contacts)",
+      "description": "`GET /reports/vhf/line-list`: one row per VHF record, the same rows and columns as the Superset **VHF Line List** dataset. `period` / `from` / `to` filter on **Date Reported**.",
+      "item": [
+        {
+          "name": "Cases this month",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?recordType=Case&period=this_month",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "recordType",
+                  "value": "Case",
+                  "description": "Case or Contact (line-list only)"
+                },
+                {
+                  "key": "period",
+                  "value": "this_month",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                },
+                {
+                  "key": "from",
+                  "value": "",
+                  "description": "yyyy-mm-dd, inclusive. Not with period.",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "",
+                  "description": "yyyy-mm-dd, inclusive. Not with period.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Confirmed, probable and suspected cases reported this month."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contacts last week",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?recordType=Contact&period=last_week",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "recordType",
+                  "value": "Contact",
+                  "description": "Case or Contact (line-list only)"
+                },
+                {
+                  "key": "period",
+                  "value": "last_week",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                }
+              ]
+            },
+            "description": "Contact records reported last week (Monday to Sunday)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "All records, last 30 days",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?period=last_30_days",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "last_30_days",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                }
+              ]
+            },
+            "description": "Cases and contacts reported in the last 30 days, today included."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Date range (from/to)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?from=2026-10-01&to=2026-10-20&recordType=Case",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-10-01",
+                  "description": "yyyy-mm-dd, inclusive. Not with period."
+                },
+                {
+                  "key": "to",
+                  "value": "2026-10-20",
+                  "description": "yyyy-mm-dd, inclusive. Not with period."
+                },
+                {
+                  "key": "recordType",
+                  "value": "Case",
+                  "description": "Case or Contact (line-list only)"
+                }
+              ]
+            },
+            "description": "Explicit range, both ends inclusive. Either end may be left out."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ISO week",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?period=2026-W43",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "2026-W43",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                }
+              ]
+            },
+            "description": "One ISO week, Monday to Sunday."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paged (page 2 of 100)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?period=this_year&limit=100&offset=100",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "this_year",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                },
+                {
+                  "key": "limit",
+                  "value": "100",
+                  "description": "Rows per page, 1-50000 (default 5000)"
+                },
+                {
+                  "key": "offset",
+                  "value": "100",
+                  "description": "Rows to skip (default 0)"
+                }
+              ]
+            },
+            "description": "Rows 101-200. `total` in the response is the full count, for working out the pages."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cases this month (CSV)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?recordType=Case&period=this_month&format=csv",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "recordType",
+                  "value": "Case",
+                  "description": "Case or Contact (line-list only)"
+                },
+                {
+                  "key": "period",
+                  "value": "this_month",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                },
+                {
+                  "key": "format",
+                  "value": "csv",
+                  "description": "json (default) or csv"
+                }
+              ]
+            },
+            "description": "Same rows as a CSV download (Send and Download). `X-Total-Count` holds the full count."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"is CSV\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/csv\"));",
+                  "console.log(`X-Total-Count: ${pm.response.headers.get(\"X-Total-Count\")}`);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Contacts (21-day follow-up)",
+      "description": "`GET /reports/vhf/contacts`: one row per contact with their 21-day follow-up, the same as the Superset **vhf_contacts** dataset. `period` / `from` / `to` filter on **contact_date**.",
+      "item": [
+        {
+          "name": "Under follow-up",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?status=active&period=last_21_days",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active",
+                  "description": "active | flagged | lost | completed | converted (contacts only)"
+                },
+                {
+                  "key": "period",
+                  "value": "last_21_days",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                }
+              ]
+            },
+            "description": "Contacts still inside their 21 days, followed up recently."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Flagged",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?status=flagged",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "flagged",
+                  "description": "active | flagged | lost | completed | converted (contacts only)"
+                }
+              ]
+            },
+            "description": "Contacts who have reported symptoms during follow-up."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lost to follow-up",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?status=lost&period=this_month",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "lost",
+                  "description": "active | flagged | lost | completed | converted (contacts only)"
+                },
+                {
+                  "key": "period",
+                  "value": "this_month",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                }
+              ]
+            },
+            "description": "Contacts with 3 or more days missed in their follow-up, by contact date this month."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Converted to cases",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?status=converted&period=this_year",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "converted",
+                  "description": "active | flagged | lost | completed | converted (contacts only)"
+                },
+                {
+                  "key": "period",
+                  "value": "this_year",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                }
+              ]
+            },
+            "description": "Contacts who became cases."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "All contacts, date range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?from=2026-10-01&to=2026-10-20",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-10-01",
+                  "description": "yyyy-mm-dd, inclusive. Not with period."
+                },
+                {
+                  "key": "to",
+                  "value": "2026-10-20",
+                  "description": "yyyy-mm-dd, inclusive. Not with period."
+                }
+              ]
+            },
+            "description": "Every status, by contact date."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Follow-up list (CSV)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?period=last_21_days&format=csv",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "last_21_days",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                },
+                {
+                  "key": "format",
+                  "value": "csv",
+                  "description": "json (default) or csv"
+                }
+              ]
+            },
+            "description": "CSV download (Send and Download)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"is CSV\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/csv\"));",
+                  "console.log(`X-Total-Count: ${pm.response.headers.get(\"X-Total-Count\")}`);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System access (client credentials)",
+      "description": "A partner system logs in with its own Keycloak client (Client authentication and Service accounts roles on) whose ID is in the server's `REPORTS_CLIENT_IDS`. Set `{{clientId}}` and `{{clientSecret}}`, run **Get token**, then the other requests use `{{systemToken}}`. The token lasts 30 minutes, sees all areas, and is refused everywhere except `/reports/vhf/*`.",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{systemToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Get token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/token",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "token"
+              ],
+              "query": []
+            },
+            "description": "Client credentials grant. Body as form fields or JSON (`client_id`, `client_secret`), or HTTP Basic. Saves `access_token` to `{{systemToken}}`. 401 for a wrong secret or a client not in `REPORTS_CLIENT_IDS`.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "{{clientId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{clientSecret}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"systemToken\", pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Line list (client token)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?recordType=Case&period=this_month",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "recordType",
+                  "value": "Case"
+                },
+                {
+                  "key": "period",
+                  "value": "this_month"
+                }
+              ]
+            },
+            "description": "Cases reported this month, every area."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contacts (client token)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?status=active&period=last_21_days",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                },
+                {
+                  "key": "period",
+                  "value": "last_21_days"
+                }
+              ]
+            },
+            "description": "Contacts under follow-up, every area."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "403 - client token on another API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/me",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "me"
+              ],
+              "query": []
+            },
+            "description": "The same token is refused outside the reports."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"refused\", () => pm.expect(pm.response.code).to.be.oneOf([401, 403, 404]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System access (API key)",
+      "description": "For systems pulling the line lists. Sends `X-Api-Key: {{reportsApiKey}}` (the server's `REPORTS_API_KEY`) instead of a bearer token, and sees **all areas**. Unset on the server = these return 401.",
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "X-Api-Key",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "{{reportsApiKey}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Line list (API key)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?period=this_month",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "this_month",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                }
+              ]
+            },
+            "description": "All cases and contacts reported this month, every area."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contacts (API key, CSV)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?period=last_21_days&format=csv",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "last_21_days",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                },
+                {
+                  "key": "format",
+                  "value": "csv",
+                  "description": "json (default) or csv"
+                }
+              ]
+            },
+            "description": "Contacts by contact date in the last 21 days, every area, as CSV."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"is CSV\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/csv\"));",
+                  "console.log(`X-Total-Count: ${pm.response.headers.get(\"X-Total-Count\")}`);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Errors",
+      "item": [
+        {
+          "name": "400 - unknown period",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?period=fortnight",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "fortnight",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                }
+              ]
+            },
+            "description": "Lists the accepted periods in `error`."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"explains the problem\", () => pm.expect(pm.response.json().error).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 - period with from",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?period=this_month&from=2026-10-01",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "this_month",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                },
+                {
+                  "key": "from",
+                  "value": "2026-10-01",
+                  "description": "yyyy-mm-dd, inclusive. Not with period."
+                }
+              ]
+            },
+            "description": "Use period or from/to, not both."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"explains the problem\", () => pm.expect(pm.response.json().error).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 - bad status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?status=pending",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "active | flagged | lost | completed | converted (contacts only)"
+                }
+              ]
+            },
+            "description": "`status` must be active, flagged, lost, completed or converted."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"explains the problem\", () => pm.expect(pm.response.json().error).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "401 - no token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/line-list?period=today",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "line-list"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "today",
+                  "description": "today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year, last_<N>_days, yyyy, yyyy-mm, yyyy-mm-dd or yyyy-Www. Kenya dates; weeks run Monday to Sunday. Not with from/to."
+                }
+              ]
+            },
+            "description": "No bearer token and no API key.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "API_HOST",
+      "value": "https://dsrfhir.intellisoftkenya.com/api",
+      "type": "default"
+    },
+    {
+      "key": "idNumber",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "password",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "reportsApiKey",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "clientId",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "clientSecret",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "systemToken",
+      "value": "",
+      "type": "secret"
+    }
+  ]
+}
