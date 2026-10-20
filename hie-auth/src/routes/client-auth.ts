@@ -2,11 +2,20 @@ import express, { Request, Response } from "express";
 import { FhirApi  } from "../lib/utils";
 import { getKeycloakUserToken, registerKeycloakUser, getCurrentUserInfo, findKeycloakUser, updateUserProfile, deleteResetCode, updateUserPassword, validateResetCode } from './../lib/keycloak'
 import { sendPasswordResetEmail } from "../lib/email";
+import { handleResetRequest } from "../lib/password-reset-request";
 
 const router = express.Router();
 router.use(express.json());
 
+/**
+ * Patient self-registration. Off unless CLIENT_SELF_REGISTRATION_ENABLED=true.
+ * The patient must be found by ID number AND carry the secret code as one of
+ * their identifiers.
+ */
 router.post("/register", async (req: Request, res: Response) => {
+    if (process.env.CLIENT_SELF_REGISTRATION_ENABLED !== "true") {
+        return res.status(404).json({ status: "error", error: "Not found" });
+    }
     try {
         // get id number and the unique secret code
         let {secretCode, idNumber, password, email, phone} = req.body;
@@ -15,10 +24,15 @@ router.post("/register", async (req: Request, res: Response) => {
             res.json({ status: "error", error: "secretCode, idNumber and password are required" });
             return;
         }
-        let response: any = await FhirApi({url:`/Patient?identifier=${secretCode},${idNumber}`});
-        if(response.data?.entry || response.data?.count){ // Patient is found
-            let patient = response.data.entry[0].resource;
-            console.log(patient);
+        idNumber = String(idNumber).trim();
+        secretCode = String(secretCode).trim();
+        // Look up by ID number only. (A comma in a FHIR search means OR, so the
+        // old `identifier=<code>,<id>` matched on the ID number alone.)
+        let response: any = await FhirApi({url:`/Patient?identifier=${encodeURIComponent(idNumber)}`});
+        const entries: any[] = response.data?.entry ?? [];
+        const patient = entries.length === 1 ? entries[0].resource : null;
+        const hasCode = (patient?.identifier ?? []).some((i: any) => String(i?.value ?? '') === secretCode);
+        if(patient && hasCode){
             // register patient/client user on Keycloak
             let keycloakUser = await registerKeycloakUser(idNumber, email, phone, patient.name[0].family, patient.name[0].given.join(' '), password, patient.id);
             if(!keycloakUser){
@@ -194,32 +208,7 @@ router.post('/reset-password', async (req: Request, res: Response) => {
 });
 
 
-router.get('/reset-password', async (req: Request, res: Response) => {
-    try {
-        let {idNumber, email} = req.query;
-        let userInfo = await findKeycloakUser(String(idNumber));
-        if (userInfo.email !== email){
-            res.statusCode = 400;
-            res.json({status:"error", error:"Failed to initiate password reset. Invalid account details."})
-            return; 
-        }
-        idNumber = String(idNumber);
-        let resp = await sendPasswordResetEmail(idNumber);
-        if (!resp){
-            res.statusCode = 400;
-            res.json({status:"error", error:"Failed to initiate password reset. Try again."})
-            return;
-        }
-        res.statusCode = 200;
-        res.json({status:"success", response:"Check your email for the password reset code sent."})
-        return;
-    } catch (error) {
-        console.error(error);
-        res.statusCode = 401;
-        res.json({ error: "Failed to initiate password reset", status:"error" });
-        return;
-    }
-});
+router.get('/reset-password', handleResetRequest);
 
 
 export default router

@@ -86,3 +86,12 @@ model FhirSubscriptionCallbackLog {
   detail       Json?
   durationMs   Int?
 }
+
+/// Counters for login / password-reset rate limits, shared by every hie-auth instance.
+model RateLimit {
+  key     String   @id
+  hits    Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}

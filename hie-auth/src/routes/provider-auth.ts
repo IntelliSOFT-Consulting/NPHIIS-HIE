@@ -1,7 +1,8 @@
+import { randomInt } from "crypto";
 import { randomBytes } from "node:crypto";
 import express, { Request, Response, NextFunction } from "express";
 import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
-import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken, deleteKeycloakUser, setFirstLoginComplete, setFirstLoginPending, setKeycloakUserAttributes, validateBearerToken, validateUserAuthentication } from './../lib/keycloak'
+import { isTempPasswordExpired, deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUsers, registerKeycloakUser, updateUserPassword, updateUserProfile, validateResetCode, refreshToken, deleteKeycloakUser, setFirstLoginComplete, setFirstLoginPending, setKeycloakUserAttributes, validateBearerToken, validateUserAuthentication } from './../lib/keycloak'
 import { authenticateUser } from "../lib/middleware";
 import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../lib/email";
 import { getSupersetGuestToken } from "../lib/superset";
@@ -13,6 +14,7 @@ import { getApplicationRoles, isValidApplicationRole } from "../lib/roles";
 import { lookupClientRegistryPatient } from "../lib/client-registry";
 import { lookupIprsPatient } from "../lib/iprs";
 import { IdentificationType, isIdentificationType } from "../lib/identification-types";
+import { handleResetRequest } from "../lib/password-reset-request";
 import {
     mapCrResponseToPatient,
     mapIprsResponseToPatient,
@@ -43,12 +45,12 @@ router.get("/roles", async (_req: Request, res: Response) => {
 
 
 
-// Optimized password generation with cached character set (alphanumeric only)
+// Temporary passwords: alphanumeric, from a cryptographically secure source.
 const PASSWORD_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const generatePassword = (length: number): string => {
     const result = new Array(length);
     for (let i = 0; i < length; i++) {
-        result[i] = PASSWORD_CHARS.charAt(Math.floor(Math.random() * PASSWORD_CHARS.length));
+        result[i] = PASSWORD_CHARS.charAt(randomInt(PASSWORD_CHARS.length));
     }
     return result.join('');
 };
@@ -238,6 +240,9 @@ router.post("/login", async (req: Request, res: Response) => {
         }
 
         const isFirstLogin = userInfo.attributes?.firstLogin?.[0] === "true";
+        if (isTempPasswordExpired(userInfo)) {
+            return res.status(401).json({ status: "error", error: "Your temporary password has expired. Ask your administrator to resend your welcome email." });
+        }
 
         return res.status(200).json({ ...token, firstLogin: isFirstLogin, status: "success" });
     }
@@ -520,6 +525,9 @@ router.post('/reset-password', async (req: Request, res: Response) => {
             if (!tokenResp || tokenResp.error) {
                 return res.status(401).json({ error: "Invalid temporary password provided", status: "error" });
             }
+            if (isTempPasswordExpired(await findKeycloakUser(idNumber))) {
+                return res.status(401).json({ error: "Your temporary password has expired. Ask your administrator to resend your welcome email.", status: "error" });
+            }
             let resp = await updateUserPassword(idNumber, password);
             if (!resp) {
                 return res.status(401).json({ error: "Failed to update new password. Try again", status: "error" });
@@ -539,32 +547,7 @@ router.post('/reset-password', async (req: Request, res: Response) => {
 });
 
 
-router.get('/reset-password', async (req: Request, res: Response) => {
-    try {
-        let { idNumber, email } = req.query;
-        let userInfo = await findKeycloakUser(String(idNumber));
-        
-        // Validate user exists
-        if (!userInfo) {
-            return res.status(400).json({ status: "error", error: "User not found" });
-        }
-        
-        // Validate email matches user's email
-        if (userInfo.email !== email) {
-            return res.status(400).json({ status: "error", error: "Failed to initiate password reset. Invalid account details." });
-        }
-        
-        idNumber = String(idNumber);
-        let resp = await sendPasswordResetEmail(idNumber);
-        if (!resp) {
-            return res.status(400).json({ status: "error", error: "Failed to initiate password reset. Try again." })
-        }
-        return res.status(200).json({ status: "success", response: "Check your email for the password reset code sent." })
-    } catch (error) {
-        console.error(error);
-        return res.status(401).json({ error: "Failed to initiate password reset", status: "error" });
-    }
-});
+router.get('/reset-password', handleResetRequest);
 
 router.post('/welcome-email', authenticateUser, async (req: Request, res: Response) => {
     try {
