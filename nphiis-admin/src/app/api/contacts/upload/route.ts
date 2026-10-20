@@ -45,7 +45,7 @@ const Upload = z.object({
   commit: z.boolean().default(false),
 });
 
-export type UploadAction = "create" | "link-existing" | "exists" | "skip";
+export type UploadAction = "create" | "link-existing" | "restore" | "exists" | "skip";
 
 export interface UploadRowResult {
   rowNumber: number;
@@ -87,6 +87,8 @@ export async function POST(req: NextRequest) {
       disease: await caseDisease(indexEncounterId, s.token),
     };
     const onList = new Set(list.contacts.map((c) => c.encounterId));
+    // Taken off this case's list before: saving puts them back.
+    const offList = new Set((list.removed ?? []).map((c) => c.encounterId));
     const facility = s.profile.locationInfo?.facility
       ? { id: s.profile.locationInfo.facility, name: s.profile.locationInfo.facilityName ?? s.profile.locationInfo.facility }
       : undefined;
@@ -108,9 +110,12 @@ export async function POST(req: NextRequest) {
       if (onList.has(ids.encounterId)) {
         return { result: { rowNumber: row.rowNumber, name, action: "exists", residence, problems } };
       }
+      if (offList.has(ids.encounterId)) {
+        return { result: { rowNumber: row.rowNumber, name, action: "restore", residence, problems }, input };
+      }
       const same = await findSamePerson(row, s.token);
       if (same) {
-        const action: UploadAction = onList.has(same.encounterId) ? "exists" : "link-existing";
+        const action: UploadAction = onList.has(same.encounterId) ? "exists" : offList.has(same.encounterId) ? "restore" : "link-existing";
         return {
           result: { rowNumber: row.rowNumber, name, action, residence, problems, existingName: same.name },
           existing: same,
@@ -131,6 +136,9 @@ export async function POST(req: NextRequest) {
 
     if (commit) {
       const site = await reportingSite(s.profile, s.token);
+      const restore = plans
+        .filter((p) => p.result.action === "restore")
+        .map((p) => p.existing?.encounterId ?? contactIds(index, p.input!).encounterId);
       await mapWithConcurrency(plans, 3, async (p) => {
         if (!p.input || (p.result.action !== "create" && p.result.action !== "link-existing")) return;
         try {
@@ -144,7 +152,8 @@ export async function POST(req: NextRequest) {
           p.result.error = (err as Error).message;
         }
       });
-      const refreshed = await refreshCaseList(s.token, indexEncounterId);
+      const refreshed = await refreshCaseList(s.token, indexEncounterId, { restore });
+      for (const p of plans) if (p.result.action === "restore") p.result.saved = true;
       return NextResponse.json({
         results: plans.map((p) => p.result),
         board: await buildBoard(refreshed, s.token, s.scope),

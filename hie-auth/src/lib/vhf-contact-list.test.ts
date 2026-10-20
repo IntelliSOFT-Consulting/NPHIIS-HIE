@@ -62,6 +62,17 @@ describe("buildContactList", () => {
     // A contact taken off stays off when the list is rebuilt.
     const again = buildContactList(index, [{ encounterId: "e3", status: "active" }], list, NOW);
     expect(flag(again.entry.find((e: any) => e.item.reference === "Encounter/e3"))).toBe("removed");
+
+    // Put back: the contact's status and original date return.
+    const back = buildContactList(index, [{ encounterId: "e3", status: "flagged" }], again, NOW, new Set(), new Set(["e3"]));
+    const e3 = back.entry.find((e: any) => e.item.reference === "Encounter/e3");
+    expect(flag(e3)).toBe("flagged");
+    expect(e3.date).toBe("2026-10-17");
+    // An unlinked contact cannot be put back (it is no longer a contact of the case).
+    expect(flag(back.entry.find((e: any) => e.item.reference === "Encounter/e2"))).toBe("removed");
+    // Removing wins when both are asked.
+    const both = buildContactList(index, [{ encounterId: "e3", status: "active" }], again, NOW, new Set(["e3"]), new Set(["e3"]));
+    expect(flag(both.entry[0])).toBe("removed");
   });
 
   it("is retired once every contact's follow up has ended", () => {
