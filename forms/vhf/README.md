@@ -7,6 +7,7 @@ This folder holds the merged specification that the VHF Questionnaires are gener
 | `fields.csv` | One row per question: the form it belongs to, its group, linkId, text, type, whether it is required or repeats, its option list, its enableWhen rule, constraints, calculation, which source it came from, the original dictionary field, and notes |
 | `options.csv` | Answer options, grouped by `value_set`. The `source` column says where each option came from. |
 | `platform/afp-case.json` | A pinned copy of the mobile asset from `android-fhir` @ `jk-surveillance` (`112e8c1`). The reporting-site block and the location pickers are copied from it. |
+| `platform/vhf-case.json`, `platform/vhf-contact-follow-up.json`, `platform/vhf-contact-monitoring.json` | Pinned copies of the mobile VHF forms from `android-fhir` @ `jk-surveillance` (`79b3282`, 2026-10-17). **These are the linkIds stored data uses** (`vhf-case-type`, `vhf-source-case-epid`, `vhf-contact-date`, `vhf-follow-up-day`, ...); the generated `out/` forms have drifted from them. hie-auth and nphiis-admin contact tracing read and write these linkIds. |
 | `out/*.json` | **Generated** Questionnaires. Do not edit them by hand. |
 
 Regenerate and test:
