@@ -6,6 +6,7 @@ import {
   buildFollowUpBundle,
   contactIds,
   creationStamp,
+  reportingSiteBackfill,
   responseItems,
   CASE_FORM,
   uuidv5,
@@ -194,5 +195,40 @@ describe("reporting site of an uploaded contact", () => {
     const ids = group(qrOf(undefined)).map((i: any) => i.linkId);
     expect(ids.some((id: string) => id.startsWith("user_") || id.endsWith("_level"))).toBe(false);
     expect(ids).toContain("vhf-investigation-date");
+  });
+});
+
+describe("reporting site backfill", () => {
+  // A contact as the portal saved it before it filled the site: no reporting answers.
+  const saved = () => {
+    const qr = of(buildContactBundle(index, jane, { practitionerId: "u1", facility, now: NOW }).entry as Entry[], "QuestionnaireResponse")[0];
+    const group = qr.item.find((i: any) => i.linkId === "151479012557");
+    group.item = group.item.filter((i: any) => !["vhf-investigation-date", "vhf-investigation-location"].includes(i.linkId));
+    return qr;
+  };
+  const site: ReportingSite = { role: "COUNTY_DISEASE_SURVEILLANCE_OFFICER", county: { id: "47", name: "NAIROBI" } };
+
+  it("adds the site in form order and keeps the answers already there", () => {
+    const bundle = reportingSiteBackfill(saved(), site)!;
+    const qr = of(bundle.entry as Entry[], "QuestionnaireResponse")[0];
+    const ids = qr.item[0].item.map((i: any) => i.linkId);
+    expect(ids).toEqual(["user_role", "user_county", "county_level", "vhf-disease", "vhf-investigation-date", "vhf-investigation-location", "vhf-case-type", "vhf-source-case-epid"]);
+    expect(qr.item[0].item[2].item).toEqual([{ linkId: "294367770999_county", text: "County", answer: [{ valueReference: { reference: "Location/47", display: "NAIROBI" } }] }]);
+    expect(qr.item.map((i: any) => i.linkId)).toEqual(saved().item.map((i: any) => i.linkId));
+    expect(qr.item[0].item[4].answer).toEqual([{ valueDate: "2026-10-17" }]);
+  });
+
+  it("writes one Observation per added answer, on the contact's encounter", () => {
+    const entries = reportingSiteBackfill(saved(), site)!.entry as Entry[];
+    const codes = of(entries, "Observation").map((o) => o.code.coding[0].code).sort();
+    expect(codes).toEqual(["294367770999_county", "user_county", "user_role", "vhf-investigation-date", "vhf-investigation-location"].sort());
+    const ids = contactIds(index, jane);
+    expect(obsValue(entries, "user_role").encounter.reference).toBe(`Encounter/${ids.encounterId}`);
+    expect(obsValue(entries, "user_role").performer).toEqual([{ reference: "Practitioner/u1" }]);
+  });
+
+  it("is a no-op once the site is there", () => {
+    const qr = of(reportingSiteBackfill(saved(), site)!.entry as Entry[], "QuestionnaireResponse")[0];
+    expect(reportingSiteBackfill(qr, site)).toBeNull();
   });
 });
