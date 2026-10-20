@@ -442,13 +442,131 @@ function travelItems(th: NonNullable<ScreeningPayload["travelHistory"]>, pointOf
     ];
 }
 
-export function buildScreeningQuestionnaireResponse(payload: ScreeningPayload, patientId: string) {
+/* ── Reporting site ──────────────────────────────────────────────────────── */
+
+export const FACILITY_TYPES = ["Public", "Private", "Faith Based"] as const;
+export type FacilityType = (typeof FACILITY_TYPES)[number];
+
+export type Place = { id: string; name: string };
+
+/** Where a screening was reported from: the screener's role and assigned location. */
+export interface ReportingSite {
+    role?: string;
+    county?: Place;
+    subCounty?: Place;
+    ward?: Place;
+    facility?: Place;
+    facilityType?: FacilityType;
+}
+
+/** vhf-case.json "Reporting Site" group, filled the way mobile prefills it from the user. */
+export const REPORTING_LINK_IDS = {
+    group: "151479012557",
+    userRole: "user_role",
+    userFacility: "user_facility",
+    userWard: "user_ward",
+    userSubCounty: "user_sub_county",
+    userCounty: "user_county",
+    county: "294367770999",
+    subCounty: "819946803642",
+    ward: "819943434",
+    facility: "819946803677",
+    facilityType: "438862163919",
+    investigationDate: "vhf-investigation-date",
+    investigationLocation: "vhf-investigation-location",
+    investigationLocationOther: "vhf-investigation-location-other",
+} as const;
+
+/** The level group the form shows for each role (its enableWhen on user_role), and its linkId suffix. */
+const REPORTING_LEVELS: Record<string, { group: string; suffix: string }> = {
+    VACCINATOR: { group: "facility_level", suffix: "" },
+    SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER: { group: "sub_county_level", suffix: "_sub_county" },
+    COUNTY_DISEASE_SURVEILLANCE_OFFICER: { group: "county_level", suffix: "_county" },
+    ADMINISTRATOR: { group: "national_level", suffix: "_national" },
+};
+
+/** vhf-investigation-location for a point-of-entry type. */
+const INVESTIGATION_LOCATION: Record<string, [string, string]> = {
+    facility: ["health-facility", "Health facility"],
+    community: ["community", "Community"],
+};
+
+/** The Reporting Site group: screener role and location, date and place of the screening. */
+export function reportingSiteItems(
+    site: ReportingSite | undefined,
+    screenedAt: string,
+    poe?: ScreeningPayload["pointOfEntry"],
+): QrItem[] {
+    const R = REPORTING_LINK_IDS;
+    const ref = (p?: Place) => (p ? { valueReference: { reference: `Location/${p.id}`, display: p.name } } : undefined);
+    const str = (v?: string) => (v ? { valueString: v } : undefined);
+    // Other roles have no group of their own; the national one takes any location.
+    const level = REPORTING_LEVELS[site?.role ?? ""] ?? REPORTING_LEVELS.ADMINISTRATOR;
+    const where = poe?.type ? INVESTIGATION_LOCATION[poe.type] : undefined;
+    return group(R.group, [
+        ...answered(R.userRole, str(site?.role)),
+        ...answered(R.userFacility, str(site?.facility?.id)),
+        ...answered(R.userWard, str(site?.ward?.id)),
+        ...answered(R.userSubCounty, str(site?.subCounty?.id)),
+        ...answered(R.userCounty, str(site?.county?.id)),
+        ...group(level.group, [
+            ...answered(R.county + level.suffix, ref(site?.county)),
+            ...answered(R.subCounty + level.suffix, ref(site?.subCounty)),
+            ...answered(R.ward + level.suffix, ref(site?.ward)),
+            ...answered(R.facility + level.suffix, ref(site?.facility)),
+            ...answered(R.facilityType + level.suffix, site?.facilityType ? choice(site.facilityType, site.facilityType) : undefined),
+        ]),
+        ...answered(R.investigationDate, { valueDate: screenedAt.slice(0, 10) }),
+        ...(poe
+            ? [
+                  ...answered(R.investigationLocation, where ? choice(...where) : choice("other", "Other (specify)")),
+                  ...answered(R.investigationLocationOther, where ? undefined : { valueString: poe.name }),
+              ]
+            : []),
+    ]);
+}
+
+/** "Public" / "Private" / "Faith Based" when a facility Location says so (its type or an extension). */
+export function facilityTypeOf(location: any): FacilityType | undefined {
+    const key = (w: unknown) => String(w ?? "").trim().toLowerCase().replace(/[\s_-]+/g, " ");
+    const words = [
+        ...(location?.type ?? []).flatMap((t: any) => [t?.text, ...(t?.coding ?? []).flatMap((c: any) => [c?.code, c?.display])]),
+        ...(location?.extension ?? []).flatMap((e: any) => [
+            e?.valueString,
+            e?.valueCoding?.code,
+            e?.valueCoding?.display,
+            e?.valueCodeableConcept?.text,
+        ]),
+    ].map(key);
+    return FACILITY_TYPES.find((t) => words.includes(key(t)));
+}
+
+/** The screener's reporting site from their role and location info (hie-auth buildLocationInfo). */
+export function reportingSiteFromLocationInfo(
+    role: string | undefined,
+    info: Partial<Record<"county" | "countyName" | "subCounty" | "subCountyName" | "ward" | "wardName" | "facility" | "facilityName", string>> | undefined,
+    facilityType?: FacilityType,
+): ReportingSite {
+    const place = (id?: string, name?: string): Place | undefined => (id ? { id, name: name || id } : undefined);
+    const facility = place(info?.facility, info?.facilityName);
+    return {
+        ...(role ? { role } : {}),
+        ...(info?.county ? { county: place(info.county, info.countyName) } : {}),
+        ...(info?.subCounty ? { subCounty: place(info.subCounty, info.subCountyName) } : {}),
+        ...(info?.ward ? { ward: place(info.ward, info.wardName) } : {}),
+        ...(facility ? { facility } : {}),
+        ...(facility && facilityType ? { facilityType } : {}),
+    };
+}
+
+export function buildScreeningQuestionnaireResponse(payload: ScreeningPayload, patientId: string, site?: ReportingSite) {
     const L = VHF_CASE_LINK_IDS;
     const authored = payload.screenedAt ?? new Date().toISOString();
     const poe = payload.pointOfEntry;
     const purpose = payload.travelHistory?.hasTravelled ? mainTrip(payload.travelHistory.trips ?? []).main?.purpose : undefined;
 
     const items: QrItem[] = [
+        ...(site ? reportingSiteItems(site, authored, poe) : []),
         ...group(L.demographics, demographicsItems(payload.patient, authored)),
         ...group(L.clinical, payload.signsAndSymptoms ? clinicalItems(payload.signsAndSymptoms) : []),
         ...group(L.travel, payload.travelHistory ? travelItems(payload.travelHistory, poe?.name) : []),
@@ -528,7 +646,7 @@ const LEGACY_GROUPS = ["travel-history", "signs-symptoms"];
 export function isLegacyScreeningResponse(qr: any): boolean {
     const ids: string[] = (qr?.item ?? []).map((i: any) => String(i?.linkId ?? ""));
     if (ids.some((id) => LEGACY_GROUPS.includes(id))) return true;
-    return !ids.some((id) => id.startsWith("vhf-") || id.startsWith("screening-"));
+    return !ids.some((id) => id.startsWith("vhf-") || id.startsWith("screening-") || id === REPORTING_LINK_IDS.group);
 }
 
 /** Rebuild the payload a pre-vhf-case screening response was made from; demographics come from the Patient. */
@@ -609,6 +727,9 @@ export function migrateLegacyScreeningResponse(qr: any, patient: any): any | nul
     if (!isLegacyScreeningResponse(qr)) return null;
     const patientId = String(qr?.subject?.reference ?? "").replace(/^Patient\//, "");
     const rebuilt = buildScreeningQuestionnaireResponse(screeningPayloadFromLegacyResponse(qr, patient), patientId);
-    if (JSON.stringify(rebuilt.item) === JSON.stringify(qr?.item ?? [])) return null;
-    return { ...qr, item: rebuilt.item };
+    // Keep a Reporting Site the response already has (legacy ones have none to rebuild from).
+    const site = (qr?.item ?? []).filter((i: any) => i?.linkId === REPORTING_LINK_IDS.group);
+    const item = [...site, ...rebuilt.item];
+    if (JSON.stringify(item) === JSON.stringify(qr?.item ?? [])) return null;
+    return { ...qr, item };
 }
