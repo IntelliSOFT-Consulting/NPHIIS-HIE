@@ -67,10 +67,11 @@ export const processAfpObservation = async (observation: any) => {
 
   let notification = await prisma.notification.findUnique({
     where: {
-      practitionerId_encounterId_type: {
+      practitionerId_encounterId_type_followUpDay: {
         practitionerId,
         encounterId,
         type: NotificationType.AFP_FOLLOW_UP,
+        followUpDay: -1,
       },
     },
   });
@@ -190,10 +191,11 @@ export async function notifyCaseSubmissionIfEnabled(
 
   const compositeWhere = (practitionerId: string) =>
     ({
-      practitionerId_encounterId_type: {
+      practitionerId_encounterId_type_followUpDay: {
         practitionerId,
         encounterId,
         type: NotificationType.CASE_SUBMISSION,
+        followUpDay: -1,
       },
     }) as const;
 

@@ -7,6 +7,7 @@ import { requireInternalApiKey } from '../middleware/internal-api-key';
 import { requireInternalApiKeyOrAdminBearer } from '../middleware/internal-api-key-or-admin';
 import { authenticateUser } from '../lib/middleware';
 import { findKeycloakUser } from '../lib/keycloak';
+import { isAdminPractitioner } from '../lib/practitioner-role';
 import { prisma } from '../lib/prisma';
 import { orderEncounterIdsByV1 } from '../lib/fhir-resource-history';
 import { runEncounterBackfillJob } from '../lib/encounter-backfill-job';
@@ -522,7 +523,13 @@ router.post('/observations/afp-follow-up', async (req: Request, res: Response) =
 
 const VALID_OUTCOMES = ['success', 'error', 'skipped'] as const;
 const VALID_NOTIFICATION_STATUSES = ['PENDING', 'SENT', 'FAILED'] as const;
-const VALID_NOTIFICATION_TYPES = ['AFP_FOLLOW_UP', 'CASE_SUBMISSION', 'LAB_RESULT'] as const;
+const VALID_NOTIFICATION_TYPES = [
+  'AFP_FOLLOW_UP',
+  'CASE_SUBMISSION',
+  'LAB_RESULT',
+  'VHF_CONTACT_FOLLOW_UP',
+  'VHF_CONTACT_MISSED',
+] as const;
 
 async function requireAdminFromRequest(req: Request, res: Response): Promise<boolean> {
   const currentUser = (req as any).user;
@@ -536,12 +543,7 @@ async function requireAdminFromRequest(req: Request, res: Response): Promise<boo
     res.status(404).json({ status: 'error', error: 'Practitioner not found' });
     return false;
   }
-  const practitionerRole =
-    practitioner?.extension?.length > 0
-      ? practitioner.extension[1]?.valueString
-      : 'ADMINISTRATOR';
-
-  if (practitionerRole !== 'ADMINISTRATOR' && practitionerRole !== 'SUPERUSER') {
+  if (!(await isAdminPractitioner(kcUser.id, practitioner))) {
     res.status(403).json({ status: 'error', error: 'Administrator access required' });
     return false;
   }

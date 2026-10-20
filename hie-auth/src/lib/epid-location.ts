@@ -4,7 +4,7 @@ export const COUNTY_CODE = "COUNTY";
 
 type FhirApiLike = (params: { url: string }) => Promise<{ data?: any }>;
 
-function locationHasType(location: any, expectedTypeCode: string): boolean {
+export function locationHasType(location: any, expectedTypeCode: string): boolean {
   const codings = location?.type?.[0]?.coding;
   if (!Array.isArray(codings)) return false;
   return codings.some(
