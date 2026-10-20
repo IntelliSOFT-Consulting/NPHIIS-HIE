@@ -11,6 +11,7 @@ import ProviderAuth from './routes/provider-auth'
 import Screenings from './routes/screenings'
 import Contacts from './routes/contacts'
 import Reports from './routes/reports'
+import VhfLineLists from './routes/vhf-line-lists'
 import Notifications from './routes/notifications'
 import Subscriptions from './routes/subscriptions'
 import PatientActivity from './routes/patient-activity'
@@ -56,6 +57,7 @@ app.use('/client', ClientAuth)
 app.use('/provider/screenings', Screenings)
 app.use('/provider/contacts', Contacts)
 app.use('/provider', ProviderAuth)
+app.use('/reports/vhf', VhfLineLists)
 app.use('/reports', Reports)
 app.use('/notifications', Notifications)
 app.use('/subscriptions/patient-activity', PatientActivity)
