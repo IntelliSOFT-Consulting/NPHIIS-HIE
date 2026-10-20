@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { FhirApi } from '../lib/utils';
 import { findKeycloakUser, validateBearerToken, validateUserAuthentication } from '../lib/keycloak';
-import { getRoleFromPractitioner } from '../lib/practitioner-role';
+import { isAdminPractitioner } from '../lib/practitioner-role';
 
 function internalApiKeyMatches(req: Request): boolean {
   const expected = process.env.INTERNAL_SUBSCRIPTION_API_KEY;
@@ -46,8 +46,7 @@ export async function requireInternalApiKeyOrAdminBearer(
   }
 
   const practitioner = (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
-  const role = getRoleFromPractitioner(practitioner) ?? 'ADMINISTRATOR';
-  if (role !== 'ADMINISTRATOR' && role !== 'SUPERUSER') {
+  if (!(await isAdminPractitioner(userInfo.id, practitioner))) {
     return res.status(403).json({ status: 'error', error: 'Administrator access required' });
   }
 

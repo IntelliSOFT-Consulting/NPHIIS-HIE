@@ -99,8 +99,8 @@ async function requirePullRole(req: Request, res: Response, next: NextFunction):
       return;
     }
     const practitioner = (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
-    const role = (await resolvePractitionerAssignment(userInfo.id, practitioner))?.role ?? 'ADMINISTRATOR';
-    if (!PULL_ROLES.has(role.toUpperCase())) {
+    const role = (await resolvePractitionerAssignment(userInfo.id, practitioner))?.role;
+    if (!role || !PULL_ROLES.has(role.toUpperCase())) {
       res.status(403).json(OperationOutcome('Specimen tracking access required'));
       return;
     }

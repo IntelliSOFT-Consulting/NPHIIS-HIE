@@ -2,3 +2,5 @@ fsh-generated/
 node_modules/
 output/
 input-cache/
+temp/
+template/

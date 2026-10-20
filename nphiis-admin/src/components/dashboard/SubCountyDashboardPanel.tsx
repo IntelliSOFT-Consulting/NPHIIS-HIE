@@ -33,7 +33,7 @@ export default function SubCountyDashboardPanel() {
       </div>
 
       <ReportsSection
-        subtitle={`MOH 502 / MOH 505 scoped to ${subCountyName}`}
+        subtitle={`VHF, IDSR and AFP dashboards for ${subCountyName}`}
       />
     </div>
   );

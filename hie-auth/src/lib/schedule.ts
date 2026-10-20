@@ -1,5 +1,6 @@
 import { CronJob } from 'cron';
 import { sendDueNotifications } from './notification';
+import { runVhfContactDailyJob, sendVhfContactReminders } from './vhf-contact-reminders';
 import { runEncounterBackfillJob } from './encounter-backfill-job';
 import { backfillResultReports, pollLabStagingResults, pollOpenNphlTasks } from './nphl-lab-sync';
 
@@ -14,6 +15,23 @@ const notificationCronJob = new CronJob(notificationCronSchedule, async () => {
 notificationCronJob.start();
 
 console.log('Notification cron job started (runs daily at 6:30 AM EAT).');
+
+// VHF contact follow-up: rebuild contact Lists, promote converted contacts, queue and send reminders.
+// Default 5:45 AM EAT (2:45 AM UTC), before officers start the day's follow ups.
+const vhfContactCronSchedule = process.env.VHF_CONTACT_CRON_SCHEDULE || '45 2 * * *';
+const vhfContactCronJob =
+    process.env.VHF_CONTACT_CRON_ENABLED === 'false'
+        ? null
+        : new CronJob(vhfContactCronSchedule, async () => {
+              try {
+                  await runVhfContactDailyJob();
+                  await sendVhfContactReminders();
+              } catch (e) {
+                  console.error('[VhfContacts] Cron error:', e);
+              }
+          });
+vhfContactCronJob?.start();
+if (vhfContactCronJob) console.log(`VHF contact follow-up cron started (schedule: ${vhfContactCronSchedule}).`);
 
 // Full Encounter backfill: EPID assignment + AFP follow-up observations (optional cron)
 let encounterBackfillCronJob: CronJob | null = null;
@@ -81,5 +99,6 @@ process.on('SIGINT', () => {
     encounterBackfillCronJob?.stop();
     nphlPollCronJob?.stop();
     labStagingCronJob?.stop();
+    vhfContactCronJob?.stop();
     process.exit();
 });

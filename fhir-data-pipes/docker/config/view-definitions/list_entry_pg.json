@@ -1,0 +1,42 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "list_entry_pg",
+  "status": "active",
+  "resource": "List",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "forEach": "entry",
+      "column": [
+        {
+          "name": "item_encounter_id",
+          "path": "item.getReferenceKey(Encounter)",
+          "type": "string"
+        },
+        {
+          "name": "item_patient_id",
+          "path": "item.getReferenceKey(Patient)",
+          "type": "string"
+        },
+        {
+          "name": "flag",
+          "path": "flag.coding.first().code",
+          "type": "string"
+        },
+        {
+          "name": "entry_date",
+          "path": "date",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

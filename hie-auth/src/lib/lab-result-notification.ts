@@ -266,10 +266,11 @@ export async function notifyLabResultToCaseSubmitter(
     formatLabResultLinesForPush(resultLines);
 
   const compositeWhere = {
-    practitionerId_encounterId_type: {
+    practitionerId_encounterId_type_followUpDay: {
       practitionerId,
       encounterId: labEncounterId,
       type: NotificationType.LAB_RESULT,
+      followUpDay: -1,
     },
   };
 

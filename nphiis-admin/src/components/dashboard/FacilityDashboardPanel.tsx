@@ -31,7 +31,7 @@ export default function FacilityDashboardPanel() {
         </p>
       </div>
 
-      <ReportsSection subtitle={`MOH 502 / MOH 505 scoped to ${facilityName}`} />
+      <ReportsSection subtitle={`VHF, IDSR and AFP dashboards for ${facilityName}`} />
     </div>
   );
 }

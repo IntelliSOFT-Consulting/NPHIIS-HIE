@@ -37,10 +37,12 @@ model Notification {
   failureReason       String?
   /** Set when immediate-alert SMTP succeeded; prevents duplicate email on FCM retry (`CASE_SUBMISSION`, `LAB_RESULT`). */
   caseSubmissionEmailSentAt DateTime?
+  /** VHF contact follow-up day (1-21) a reminder is for; -1 for every other type (one row each). */
+  followUpDay         Int                  @default(-1)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
-  @@unique([practitionerId, encounterId, type])
+  @@unique([practitionerId, encounterId, type, followUpDay])
 }
 
 model NotificationRecipient {
@@ -61,6 +63,8 @@ enum NotificationType {
   AFP_FOLLOW_UP
   CASE_SUBMISSION
   LAB_RESULT
+  VHF_CONTACT_FOLLOW_UP
+  VHF_CONTACT_MISSED
 }
 
 enum SubscriptionCallbackOutcome {

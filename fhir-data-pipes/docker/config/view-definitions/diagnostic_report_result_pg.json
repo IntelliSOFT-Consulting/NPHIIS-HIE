@@ -1,0 +1,27 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "diagnostic_report_result_pg",
+  "status": "active",
+  "resource": "DiagnosticReport",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "forEach": "result",
+      "column": [
+        {
+          "name": "observation_id",
+          "path": "getReferenceKey(Observation)",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}
