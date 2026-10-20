@@ -5,10 +5,10 @@ import { useAuth } from '@/lib/auth-context';
 import SupersetDashboard from '../SupersetDashboard';
 
 interface ReportTab {
-  id: 'idsr_cbs' | 'afp';
+  id: 'vhf' | 'vhf_contacts' | 'idsr_cbs' | 'afp';
   label: string;
   dashboardId: string;
-  feature: 'REPORTS_VIEW_IDSR';
+  feature: 'REPORTS_VIEW_IDSR' | 'VHF_REPORTS' | 'VHF_CONTACTS';
 }
 
 const SUPERSET_URL = process.env.NEXT_PUBLIC_SUPERSET_URL ?? '';
@@ -19,26 +19,43 @@ const IDSR_CBS_DASHBOARD_ID =
 
 const AFP_DASHBOARD_ID = process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_AFP ?? '';
 
+// Embed ids fixed by the Superset setup (NPHIIS-superset/docker/nphiis-analytics).
+const VHF_DASHBOARD_ID =
+  process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_VHF ?? 'f7c7ba20-bbfb-57f8-ab96-a7e44eb07da7';
+const VHF_CONTACTS_DASHBOARD_ID =
+  process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_VHF_CONTACTS ?? '5f9bceb6-0753-5dd0-8217-7f78abdad7a1';
+
 interface ReportsSectionProps {
   title?: string;
   subtitle?: string;
   height?: string;
 }
 
-// Reusable reports block for dashboards. The IDSR Case-Based Surveillance
-// dashboard already contains MOH 503 / MOH 502 (AFP, Measles) tabs
-// internally, so we only render that single embedded entry here. Renders
+// Reusable reports block for dashboards: the VHF dashboards first, then IDSR
+// Case-Based Surveillance (which contains the MOH 503 / MOH 502 tabs) and AFP. Renders
 // nothing when the user has no report access, so panels can drop it in
 // unconditionally.
 export default function ReportsSection({
   title = 'Reports',
-  subtitle = 'IDSR Case-Based Surveillance — MOH 503 and MOH 502 forms',
+  subtitle = 'VHF, IDSR Case-Based Surveillance and AFP dashboards',
   height = '70vh',
 }: ReportsSectionProps) {
   const { can } = useAuth();
 
   const tabs = useMemo<ReportTab[]>(
     () => [
+      {
+        id: 'vhf',
+        label: 'VHF / Ebola Surveillance',
+        dashboardId: VHF_DASHBOARD_ID,
+        feature: 'VHF_REPORTS',
+      },
+      {
+        id: 'vhf_contacts',
+        label: 'VHF Contact Tracing',
+        dashboardId: VHF_CONTACTS_DASHBOARD_ID,
+        feature: 'VHF_CONTACTS',
+      },
       {
         id: 'idsr_cbs',
         label: 'IDSR Case-Based Surveillance',

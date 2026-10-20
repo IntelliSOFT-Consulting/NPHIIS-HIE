@@ -5,7 +5,7 @@ import {
   unauthorized,
   verifyToken,
 } from '@/lib/server-auth';
-import { buildRlsClauses } from '@/lib/superset-rls';
+import { buildDatasetRlsClauses, type RlsDataset } from '@/lib/superset-rls';
 import { canAccess } from '@/lib/roles';
 
 const SUPERSET_URL = process.env.SUPERSET_URL?.replace(/\/$/, '');
@@ -52,6 +52,37 @@ async function supersetLogin(): Promise<{ access: string; csrf: string; cookie: 
   return { access: access_token, csrf, cookie };
 }
 
+/**
+ * The datasets of the embedded dashboard [embedUuid] with their columns, so each gets a
+ * clause it can run. Null when Superset cannot say (the clauses then apply to all datasets).
+ */
+async function dashboardDatasets(embedUuid: string, access: string): Promise<RlsDataset[] | null> {
+  try {
+    const headers = { Authorization: `Bearer ${access}` };
+    const embedRes = await fetch(`${SUPERSET_URL}/api/v1/embedded_dashboard/${encodeURIComponent(embedUuid)}`, { headers });
+    if (!embedRes.ok) return null;
+    const dashboardId = (await embedRes.json())?.result?.dashboard_id;
+    if (dashboardId == null) return null;
+    const dsRes = await fetch(`${SUPERSET_URL}/api/v1/dashboard/${dashboardId}/datasets`, { headers });
+    if (!dsRes.ok) return null;
+    const ids = (((await dsRes.json())?.result ?? []) as Array<{ id: number }>).map((d) => d.id);
+    // The dashboard listing returns only some columns; each dataset's own record has them all.
+    const q = encodeURIComponent('(columns:!(columns.column_name))');
+    const datasets = await Promise.all(
+      ids.map(async (id) => {
+        const res = await fetch(`${SUPERSET_URL}/api/v1/dataset/${id}?q=${q}`, { headers });
+        if (!res.ok) throw new Error(`dataset ${id}: ${res.status}`);
+        const cols = ((await res.json())?.result?.columns ?? []) as Array<{ column_name: string }>;
+        return { id, columns: cols.map((c) => c.column_name) };
+      }),
+    );
+    return datasets;
+  } catch (err) {
+    console.warn('Superset dashboard datasets lookup failed:', (err as Error).message);
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const session = await verifyToken(req);
   if (!session) return unauthorized();
@@ -68,7 +99,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { access, csrf, cookie } = await supersetLogin();
-    const rls = buildRlsClauses(roles, session.locationInfo);
+    const rls = buildDatasetRlsClauses(roles, session.locationInfo, await dashboardDatasets(dashboardId, access));
 
     const guestRes = await fetch(`${SUPERSET_URL}/api/v1/security/guest_token/`, {
       method: 'POST',

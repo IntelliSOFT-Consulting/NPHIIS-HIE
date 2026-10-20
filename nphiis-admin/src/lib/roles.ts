@@ -69,6 +69,24 @@ export const FEATURES = {
     "COUNTY_DISEASE_SURVEILLANCE_OFFICER",
     "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER",
   ],
+  // Embedded VHF / Ebola dashboards. National viewers are limited to MOH 505 reports.
+  VHF_REPORTS: [
+    "ADMINISTRATOR",
+    "SUPERUSER",
+    "NATIONAL_FOCAL_PERSON",
+    "COUNTY_DISEASE_SURVEILLANCE_OFFICER",
+    "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER",
+    "FACILITY_SURVEILLANCE_FOCAL_PERSON",
+  ],
+  // VHF contact tracing: contact lists, daily follow up, line-list upload.
+  // County and sub-county officers only see contacts living in their area.
+  VHF_CONTACTS: [
+    "ADMINISTRATOR",
+    "SUPERUSER",
+    "NATIONAL_FOCAL_PERSON",
+    "COUNTY_DISEASE_SURVEILLANCE_OFFICER",
+    "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER",
+  ],
   LAB_ACCESS: LAB_ROLES,
   // Specimens hie-auth submitted to NPHL, with their status and results.
   // Not location-scoped, so only lab and national roles see it.
