@@ -883,6 +883,13 @@ After `--switch`, set `NPHIIS_VHF_SOURCE=postgres` in `NPHIIS-superset/docker/.e
 
 **Known differences from Spark** (2026-10-18 comparison: line list 862 rows × 61 columns, tree 800 nodes, contacts 788 rows): where several answers share one `lastUpdated` (a record re-saved at once), Postgres takes the answer with the latest `issued` time; Spark picked one arbitrarily. One Busia record differs for this reason (Spark: contact; Postgres: confirmed case), which moves several VHF counts by one.
 
+**Line lists over the API.** hie-auth serves the same rows as the "VHF Line List" and "vhf_contacts" datasets: `GET /reports/vhf/line-list` (cases and contacts; `recordType=Case|Contact`) and `GET /reports/vhf/contacts` (21-day follow-up; `status=active|flagged|lost|completed|converted`), through nginx at `/api/reports/vhf/...`. Both take `period` (`today`, `this_week`, `last_week`, `this_month`, `last_month`, `last_30_days`, `2026-10`, `2026-W43`, …) or `from`/`to` (yyyy-mm-dd, inclusive) on the date reported / date of contact, `format=json|csv`, `limit` (default 5000, max 50000) and `offset`. A Keycloak bearer token sees the user's area, as in Superset; `X-Api-Key: $REPORTS_API_KEY` sees all areas. They need `ANALYTICS_DB_URL` in `hie-auth/.env` (the `superset_ro` login). The SQL is a copy in `hie-auth/sql/vhf/`; after editing a dataset here, copy it there too (`vhf-line-lists.test.ts` fails until you do).
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" "https://<host>/api/reports/vhf/line-list?recordType=Case&period=this_month"
+curl -H "X-Api-Key: $REPORTS_API_KEY" -o contacts.csv "https://<host>/api/reports/vhf/contacts?period=last_21_days&format=csv"
+```
+
 **Load the sink without waiting for a run** (a new database, or after changing a view definition). From HAPI directly, for every resource type that has a view (the same read-only queries the controller runs):
 
 ```bash
