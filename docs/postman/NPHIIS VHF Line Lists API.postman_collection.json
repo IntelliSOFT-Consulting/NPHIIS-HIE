@@ -2,15 +2,16 @@
   "info": {
     "_postman_id": "721f5f80-d14c-4473-b9f2-a860e2bbc6c2",
     "name": "NPHIIS VHF Line Lists API",
-    "description": "VHF line lists from hie-auth, read from the analytics Postgres: the same rows and columns as the Superset VHF datasets.\n\n| Endpoint | Rows | Date filter on |\n|---|---|---|\n| `GET /reports/vhf/line-list` | Cases and contacts, one per VHF record (Superset \"VHF Line List\") | Date Reported |\n| `GET /reports/vhf/contacts` | Contacts with their 21-day follow-up (Superset \"vhf_contacts\") | contact_date |\n\n**Auth.** Either a Keycloak bearer token (run **Auth > Login**; the token lasts 30 minutes, then **Auth > Refresh Token**), which returns only the rows in the user's area, as in Superset; or, for partner systems, either a client credentials token from `POST /reports/vhf/token` (a Keycloak client listed in the server's `REPORTS_CLIENT_IDS`; see **System access (client credentials)**) or `X-Api-Key: {{reportsApiKey}}` (see **System access (API key)**). Both return every area. A client credentials token works on these report endpoints only.\n\n**Query parameters** (all optional)\n\n| Parameter | Values |\n|---|---|\n| `period` | `today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `this_year`, `last_year`, `last_<N>_days`, `yyyy`, `yyyy-mm`, `yyyy-mm-dd`, `yyyy-Www`. Kenya dates; weeks run Monday to Sunday. |\n| `from`, `to` | `yyyy-mm-dd`, inclusive. Not together with `period`. |\n| `recordType` | `Case` or `Contact` (line-list only) |\n| `status` | Contacts only: `active` (inside 21 days), `flagged` (reported symptoms), `lost` (3+ days missed), `completed` (21 days done), `converted` (became a case) |\n| `format` | `json` (default) or `csv` |\n| `limit`, `offset` | Paging: `limit` 1-50000 (default 5000), `offset` default 0 |\n\n**JSON response:** `{ status, period, from, to, dateField, total, limit, offset, count, columns, rows }`, where `total` is the full count and `rows` is this page. **CSV:** a file download with the full count in the `X-Total-Count` header.\n\n| Status | Meaning |\n|---|---|\n| 200 | Rows returned |\n| 400 | Bad parameter; `error` says which |\n| 401 | Missing, invalid or expired token / wrong API key |\n| 403 | User not found |\n| 503 | Line lists not configured on this server (`ANALYTICS_DB_URL` unset) |\n",
+    "description": "VHF line lists from hie-auth, read from the analytics Postgres: the same rows and columns as the Superset VHF datasets.\n\n| Endpoint | Rows | Date filter on |\n|---|---|---|\n| `GET /reports/vhf/line-list` | Cases and contacts, one per VHF record (Superset \"VHF Line List\") | Date Reported |\n| `GET /reports/vhf/contacts` | Contacts with their 21-day follow-up (Superset \"vhf_contacts\") | contact_date |\n\n**Auth: client ID and secret.** Set `{{clientId}}` and `{{clientSecret}}` to a Keycloak client listed in the server's `REPORTS_CLIENT_IDS` (Client authentication and Service accounts roles on). Before each request the collection gets a token from `POST /reports/vhf/token` when it has none or it is about to expire (tokens last 30 minutes), so you can just send requests. A client token sees every area and is refused everywhere except `/reports/vhf/*`.\n\nAlternative: `X-Api-Key: {{reportsApiKey}}` (the server's `REPORTS_API_KEY`), see **System access (API key)**.\n\n**Query parameters** (all optional)\n\n| Parameter | Values |\n|---|---|\n| `period` | `today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `this_year`, `last_year`, `last_<N>_days`, `yyyy`, `yyyy-mm`, `yyyy-mm-dd`, `yyyy-Www`. Kenya dates; weeks run Monday to Sunday. |\n| `from`, `to` | `yyyy-mm-dd`, inclusive. Not together with `period`. |\n| `recordType` | `Case` or `Contact` (line-list only) |\n| `status` | Contacts only: `active` (inside 21 days), `flagged` (reported symptoms), `lost` (3+ days missed), `completed` (21 days done), `converted` (became a case) |\n| `format` | `json` (default) or `csv` |\n| `limit`, `offset` | Paging: `limit` 1-50000 (default 5000), `offset` default 0 |\n\n**JSON response:** `{ status, period, from, to, dateField, total, limit, offset, count, columns, rows }`, where `total` is the full count and `rows` is this page. **CSV:** a file download with the full count in the `X-Total-Count` header.\n\n| Status | Meaning |\n|---|---|\n| 200 | Rows returned |\n| 400 | Bad parameter; `error` says which |\n| 401 | Missing, invalid or expired token, wrong client secret, or wrong API key |\n| 403 | Client not in `REPORTS_CLIENT_IDS` |\n| 503 | Line lists not configured on this server (`ANALYTICS_DB_URL` unset) |\n",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "Auth",
+      "description": "Run **Get token** once to check the client ID and secret. After that the collection renews the token by itself.",
       "item": [
         {
-          "name": "Login",
+          "name": "Get token",
           "request": {
             "method": "POST",
             "header": [],
@@ -18,24 +19,32 @@
               "type": "noauth"
             },
             "url": {
-              "raw": "{{API_HOST}}/provider/login",
+              "raw": "{{API_HOST}}/reports/vhf/token",
               "host": [
                 "{{API_HOST}}"
               ],
               "path": [
-                "provider",
-                "login"
-              ]
+                "reports",
+                "vhf",
+                "token"
+              ],
+              "query": []
             },
-            "description": "Log in as an NPHIIS user. Saves `access_token` to `{{token}}` and `refresh_token` to `{{refresh_token}}`. The token lasts 30 minutes.",
+            "description": "Client credentials grant: swaps `{{clientId}}` / `{{clientSecret}}` for an access token and saves it to `{{token}}`. You rarely need to run this: the collection fetches a token by itself before any request when there is none or it is about to expire. 401 for a wrong secret or a client not in the server's `REPORTS_CLIENT_IDS`.",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"idNumber\": \"{{idNumber}}\",\n  \"password\": \"{{password}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "{{clientId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{clientSecret}}",
+                  "type": "text"
                 }
-              }
+              ]
             }
           },
           "response": [],
@@ -48,52 +57,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const t = pm.response.json();",
                   "pm.collectionVariables.set(\"token\", t.access_token);",
-                  "pm.collectionVariables.set(\"refresh_token\", t.refresh_token);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Refresh Token",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "url": {
-              "raw": "{{API_HOST}}/provider/refresh_token",
-              "host": [
-                "{{API_HOST}}"
-              ],
-              "path": [
-                "provider",
-                "refresh_token"
-              ]
-            },
-            "description": "Exchange `{{refresh_token}}` for a new token pair.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "const t = pm.response.json();",
-                  "pm.collectionVariables.set(\"token\", t.access_token);",
-                  "pm.collectionVariables.set(\"refresh_token\", t.refresh_token);"
+                  "pm.collectionVariables.set(\"tokenExpiresAt\", String(Date.now() + (t.expires_in || 1800) * 1000));"
                 ]
               }
             }
@@ -103,7 +67,7 @@
     },
     {
       "name": "Line List (cases and contacts)",
-      "description": "`GET /reports/vhf/line-list`: one row per VHF record, the same rows and columns as the Superset **VHF Line List** dataset. `period` / `from` / `to` filter on **Date Reported**.",
+      "description": "`GET /reports/vhf/line-list`: one row per VHF record, the same rows and columns as the Superset **VHF Line List** dataset. `period` / `from` / `to` filter on **Date Reported**. With a client token, every area.",
       "item": [
         {
           "name": "Cases this month",
@@ -447,7 +411,7 @@
     },
     {
       "name": "Contacts (21-day follow-up)",
-      "description": "`GET /reports/vhf/contacts`: one row per contact with their 21-day follow-up, the same as the Superset **vhf_contacts** dataset. `period` / `from` / `to` filter on **contact_date**.",
+      "description": "`GET /reports/vhf/contacts`: one row per contact with their 21-day follow-up, the same as the Superset **vhf_contacts** dataset. `period` / `from` / `to` filter on **contact_date**. With a client token, every area.",
       "item": [
         {
           "name": "Under follow-up",
@@ -714,192 +678,6 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "pm.test(\"is CSV\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/csv\"));",
                   "console.log(`X-Total-Count: ${pm.response.headers.get(\"X-Total-Count\")}`);"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "System access (client credentials)",
-      "description": "A partner system logs in with its own Keycloak client (Client authentication and Service accounts roles on) whose ID is in the server's `REPORTS_CLIENT_IDS`. Set `{{clientId}}` and `{{clientSecret}}`, run **Get token**, then the other requests use `{{systemToken}}`. The token lasts 30 minutes, sees all areas, and is refused everywhere except `/reports/vhf/*`.",
-      "auth": {
-        "type": "bearer",
-        "bearer": [
-          {
-            "key": "token",
-            "value": "{{systemToken}}",
-            "type": "string"
-          }
-        ]
-      },
-      "item": [
-        {
-          "name": "Get token",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "url": {
-              "raw": "{{API_HOST}}/reports/vhf/token",
-              "host": [
-                "{{API_HOST}}"
-              ],
-              "path": [
-                "reports",
-                "vhf",
-                "token"
-              ],
-              "query": []
-            },
-            "description": "Client credentials grant. Body as form fields or JSON (`client_id`, `client_secret`), or HTTP Basic. Saves `access_token` to `{{systemToken}}`. 401 for a wrong secret or a client not in `REPORTS_CLIENT_IDS`.",
-            "body": {
-              "mode": "urlencoded",
-              "urlencoded": [
-                {
-                  "key": "client_id",
-                  "value": "{{clientId}}",
-                  "type": "text"
-                },
-                {
-                  "key": "client_secret",
-                  "value": "{{clientSecret}}",
-                  "type": "text"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set(\"systemToken\", pm.response.json().access_token);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Line list (client token)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{API_HOST}}/reports/vhf/line-list?recordType=Case&period=this_month",
-              "host": [
-                "{{API_HOST}}"
-              ],
-              "path": [
-                "reports",
-                "vhf",
-                "line-list"
-              ],
-              "query": [
-                {
-                  "key": "recordType",
-                  "value": "Case"
-                },
-                {
-                  "key": "period",
-                  "value": "this_month"
-                }
-              ]
-            },
-            "description": "Cases reported this month, every area."
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "const b = pm.response.json();",
-                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows`);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Contacts (client token)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{API_HOST}}/reports/vhf/contacts?status=active&period=last_21_days",
-              "host": [
-                "{{API_HOST}}"
-              ],
-              "path": [
-                "reports",
-                "vhf",
-                "contacts"
-              ],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "active"
-                },
-                {
-                  "key": "period",
-                  "value": "last_21_days"
-                }
-              ]
-            },
-            "description": "Contacts under follow-up, every area."
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "const b = pm.response.json();",
-                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows`);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "403 - client token on another API",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{API_HOST}}/provider/me",
-              "host": [
-                "{{API_HOST}}"
-              ],
-              "path": [
-                "provider",
-                "me"
-              ],
-              "query": []
-            },
-            "description": "The same token is refused outside the reports."
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"refused\", () => pm.expect(pm.response.code).to.be.oneOf([401, 403, 404]));"
                 ]
               }
             }
@@ -1184,6 +962,37 @@
               }
             }
           ]
+        },
+        {
+          "name": "Refused outside the reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/me",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "me"
+              ],
+              "query": []
+            },
+            "description": "The same token is refused by the rest of hie-auth (here `/provider/me`)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"refused\", () => pm.expect(pm.response.code).to.be.oneOf([401, 403, 404]));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
@@ -1205,31 +1014,6 @@
       "type": "default"
     },
     {
-      "key": "idNumber",
-      "value": "",
-      "type": "default"
-    },
-    {
-      "key": "password",
-      "value": "",
-      "type": "secret"
-    },
-    {
-      "key": "token",
-      "value": "",
-      "type": "secret"
-    },
-    {
-      "key": "refresh_token",
-      "value": "",
-      "type": "secret"
-    },
-    {
-      "key": "reportsApiKey",
-      "value": "",
-      "type": "secret"
-    },
-    {
       "key": "clientId",
       "value": "",
       "type": "default"
@@ -1240,9 +1024,55 @@
       "type": "secret"
     },
     {
-      "key": "systemToken",
+      "key": "token",
       "value": "",
       "type": "secret"
+    },
+    {
+      "key": "tokenExpiresAt",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "reportsApiKey",
+      "value": "",
+      "type": "secret"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Logs in with {{clientId}} / {{clientSecret}} when there is no token or it expires within a minute.",
+          "// Skipped for Get token itself and for requests set to No Auth or API key.",
+          "const auth = pm.request.auth;",
+          "if (pm.info.requestName === \"Get token\" || (auth && auth.type && auth.type !== \"bearer\")) return;",
+          "const expiresAt = Number(pm.collectionVariables.get(\"tokenExpiresAt\") || 0);",
+          "if (pm.collectionVariables.get(\"token\") && Date.now() < expiresAt - 60000) return;",
+          "const clientId = pm.collectionVariables.get(\"clientId\");",
+          "const clientSecret = pm.collectionVariables.get(\"clientSecret\");",
+          "if (!clientId || !clientSecret) throw new Error(\"Set the clientId and clientSecret collection variables\");",
+          "pm.sendRequest({",
+          "    url: pm.variables.replaceIn(\"{{API_HOST}}/reports/vhf/token\"),",
+          "    method: \"POST\",",
+          "    header: { \"Content-Type\": \"application/x-www-form-urlencoded\" },",
+          "    body: { mode: \"urlencoded\", urlencoded: [",
+          "        { key: \"client_id\", value: clientId },",
+          "        { key: \"client_secret\", value: clientSecret },",
+          "    ] },",
+          "}, (err, res) => {",
+          "    if (err || res.code !== 200) {",
+          "        console.error(\"Token request failed\", err || res.code, res && res.text());",
+          "        return;",
+          "    }",
+          "    const t = res.json();",
+          "    pm.collectionVariables.set(\"token\", t.access_token);",
+          "    pm.collectionVariables.set(\"tokenExpiresAt\", String(Date.now() + (t.expires_in || 1800) * 1000));",
+          "});"
+        ]
+      }
     }
   ]
 }
