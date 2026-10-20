@@ -98,6 +98,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStored(null);
   }, []);
 
+  // Sign out automatically the moment the access token expires. A timer covers
+  // the open tab; the focus/visibility checks cover a laptop that slept past
+  // the expiry (timers don't fire while the machine is asleep).
+  const expiresAt = session?.claims.exp ? session.claims.exp * 1000 : null;
+  useEffect(() => {
+    if (!expiresAt) return;
+    const expireIfDue = () => {
+      if (Date.now() >= expiresAt) signOut();
+    };
+    expireIfDue();
+    // setTimeout overflows past ~24.8 days, so cap the delay and re-check.
+    const delay = Math.min(Math.max(expiresAt - Date.now(), 0), 2 ** 31 - 1);
+    const timer = window.setTimeout(expireIfDue, delay);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") expireIfDue();
+    };
+    window.addEventListener("focus", expireIfDue);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", expireIfDue);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [expiresAt, signOut]);
+
   const user: SessionUser | null = useMemo(() => {
     if (!stored) return null;
     const u = stored.userInfo;

@@ -1,25 +1,13 @@
 import fetch from "cross-fetch";
-import { createHash, randomBytes, timingSafeEqual } from 'crypto';
+import { timingSafeEqual } from 'crypto';
 import { getApplicationRoles } from "./roles";
+import { clearCounter, hitCounter } from "./rate-limit";
 
 
 let KC_BASE_URL = String(process.env.KC_BASE_URL);
 let KC_REALM = String(process.env.KC_REALM);
 let KC_CLIENT_ID = String(process.env.KC_CLIENT_ID);
 let KC_CLIENT_SECRET = String(process.env.KC_CLIENT_SECRET);
-
-// Function to generate hashed password and salt
-const generateHashedPassword = (password: string, salt: string): string => {
-  const hash = createHash('sha512');
-  hash.update(password + salt);
-  return hash.digest('base64');
-};
-
-// Function to generate a random salt
-const generateRandomSalt = (length: number): string => {
-  return randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
-};
-
 
 export const getKeycloakAdminToken = async () => {
     try {
@@ -108,7 +96,6 @@ export const findKeycloakUser = async (username: string) => {
 
 const RESET_CODE_MAX_ATTEMPTS = 5;
 const RESET_CODE_TTL_MS = 15 * 60 * 1000;
-const resetCodeFailures = new Map<string, number>();
 
 /**
  * Checks a password-reset code. Codes expire (see resetCodeExpiresAt) and are
@@ -130,17 +117,19 @@ export const validateResetCode = async (idNumber: string, resetCode: string) => 
 
     const a = Buffer.from(String(resetCode));
     const b = Buffer.from(String(stored));
+    const failKey = `reset-fail:${String(idNumber).trim().toLowerCase()}`;
     if (a.length === b.length && timingSafeEqual(a, b)) {
-      resetCodeFailures.delete(idNumber);
+      await clearCounter(failKey);
       return true;
     }
 
-    const failures = (resetCodeFailures.get(idNumber) ?? 0) + 1;
-    if (failures >= RESET_CODE_MAX_ATTEMPTS) {
-      resetCodeFailures.delete(idNumber);
+    // Wrong guesses are counted in the database, so the cap holds across
+    // restarts and instances. If the count can't be stored this throws and
+    // the code is treated as invalid.
+    const { hits } = await hitCounter(failKey, RESET_CODE_TTL_MS);
+    if (hits >= RESET_CODE_MAX_ATTEMPTS) {
+      await clearCounter(failKey);
       await deleteResetCode(idNumber);
-    } else {
-      resetCodeFailures.set(idNumber, failures);
     }
     return false;
   } catch (error) {
@@ -330,7 +319,6 @@ export const registerKeycloakUser = async (username: string, email: string | nul
         
         // Authenticate
         const accessToken = (await getKeycloakAdminToken()).access_token;
-        let salt = generateRandomSalt(10);
         // Create Keycloak user
         const createUserResponse = await fetch(`${KC_BASE_URL}/admin/realms/${KC_REALM}/users`, {
             method: 'POST',
@@ -339,21 +327,13 @@ export const registerKeycloakUser = async (username: string, email: string | nul
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ username, firstName, lastName, enabled: true, email,
-              credentials: [
-                {
-                  "type": "password",
-                  "secretData": JSON.stringify({
-                    value: generateHashedPassword(password, salt)
-                  }),
-                  credentialData: JSON.stringify({
-                    algorithm: 'sha512',
-                    hashIterations: 1,
-                }),
-                },],
+              // Keycloak hashes the password with the realm's password policy.
+              credentials: [{ type: "password", value: password, temporary: false }],
               attributes: {
                 fhirPatientId,
                 phone,
                 firstLogin: ["true"],
+                tempPasswordExpiresAt: [tempPasswordExpiry()],
               },
             }),
           })
@@ -692,6 +672,27 @@ export const getKeycloakUserById = async (id: string) => {
   }
 }
 
+/** How long a temporary (welcome-email) password works before it must be re-issued. */
+const TEMP_PASSWORD_TTL_MS = Number(process.env.TEMP_PASSWORD_TTL_HOURS ?? 72) * 60 * 60 * 1000;
+
+const tempPasswordExpiry = () => String(Date.now() + TEMP_PASSWORD_TTL_MS);
+
+function withoutTempPasswordExpiry(attrs: Record<string, unknown>) {
+  const { tempPasswordExpiresAt: _drop, ...rest } = attrs;
+  return rest;
+}
+
+/**
+ * True when the user still has to change a temporary password and it has
+ * expired. Accounts created before expiry was recorded have no
+ * tempPasswordExpiresAt and are let through.
+ */
+export function isTempPasswordExpired(user: any): boolean {
+  if (user?.attributes?.firstLogin?.[0] !== "true") return false;
+  const expiresAt = Number(user?.attributes?.tempPasswordExpiresAt?.[0]);
+  return !!expiresAt && Date.now() > expiresAt;
+}
+
 export const setFirstLoginComplete = async (username: string) => {
   try {
     const user = await findKeycloakUser(username);
@@ -704,7 +705,7 @@ export const setFirstLoginComplete = async (username: string) => {
       lastName: user.lastName,
       username: user.username,
       enabled: user.enabled,
-      attributes: { ...user.attributes, firstLogin: ["false"] },
+      attributes: withoutTempPasswordExpiry({ ...user.attributes, firstLogin: ["false"] }),
     };
     if (user.email) requestBody.email = user.email;
 
@@ -732,7 +733,7 @@ export const setFirstLoginPending = async (username: string) => {
       lastName: user.lastName,
       username: user.username,
       enabled: user.enabled,
-      attributes: { ...user.attributes, firstLogin: ["true"] },
+      attributes: { ...user.attributes, firstLogin: ["true"], tempPasswordExpiresAt: [tempPasswordExpiry()] },
     };
     if (user.email) requestBody.email = user.email;
 
@@ -819,6 +820,7 @@ const REQUIRED_USER_ATTRIBUTES: { name: string; displayName: string }[] = [
   { name: "phone",               displayName: "Phone Number" },
   { name: "resetCode",           displayName: "Password Reset Code" },
   { name: "resetCodeExpiresAt",  displayName: "Password Reset Code Expiry" },
+  { name: "tempPasswordExpiresAt", displayName: "Temporary Password Expiry" },
   { name: "firstLogin",          displayName: "First Login" },
   { name: "fhirPatientId",       displayName: "FHIR Patient ID" },
   { name: "fhirPractitionerId",  displayName: "FHIR Practitioner ID" },
