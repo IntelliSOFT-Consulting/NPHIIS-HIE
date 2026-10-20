@@ -3,6 +3,7 @@ import { processFollowUpObservations } from "./fhir";
 import { generateCaseId } from "./caseIdTracker";
 import {
   getEpidValueFromEncounter,
+  getEpidValueFromPatient,
   patientHasOfficialEpid,
   EPID_SYSTEM_URI,
 } from "./epid-utils";
@@ -22,6 +23,16 @@ import {
   vhfCaseYear,
 } from "./vhf-case-id";
 import { queueCaseSync } from "./nphl-lab-sync";
+import { isVhfContactEncounter, isVhfEncounter, vhfCaseTypeForEncounter } from "./vhf-contact";
+import {
+  CONTACT_ID_SYSTEM_URI,
+  contactIdIdentifier,
+  formatVhfContactId,
+  getContactId,
+  vhfContactIdCounterKey,
+} from "./vhf-contact-id";
+import { epidFromAnswer, findCaseEncounter } from "./vhf-contact-list";
+import { VHF_CONTACT_LINK_IDS } from "./vhf-link-ids";
 
 /** Serialize EPID mutations per Patient to avoid concurrent double-allocation under subscription races. */
 const epidQueues = new Map<string, Promise<unknown>>();
@@ -127,6 +138,14 @@ export async function assignEpidForEncounter(
   }
 
   return enqueueEpidAssignmentForPatient(patientId, async () => {
+    /** Contacts get a Contact ID, no EPID; the EPID, Case ID, NPHL sync and case alert wait for conversion. */
+    if (await isVhfContactEncounter(encounterDraft)) {
+      const r = await ensureVhfContactIdLocked(encounterId);
+      if (r.kind === "error") return { kind: "error", error: r.error };
+      /** The List rebuild (daily job, contacts API) retries once the case has its EPID. */
+      if (r.kind === "pending") return { kind: "error", error: new Error(`Contact ID not assigned yet: ${r.reason}`), retryable: false };
+      return { kind: "success", encounter: r.encounter };
+    }
     const result = await assignEpidForEncounterLocked(encounterId, opts);
     if (result.kind === "error") return result;
     try {
@@ -321,9 +340,13 @@ async function assignEpidForEncounterLocked(
   data.identifier = identifiers.filter((id: any) => id.system !== encounterCodeSystem);
   data.identifier.push(newId);
 
+  /** A converted contact keeps its Contact ID (and any Case ID) next to its new EPID. */
+  const kept = identifiers.filter(
+    (id: any) => id?.system === CONTACT_ID_SYSTEM_URI || id?.system === CASE_ID_SYSTEM_URI,
+  );
   const encounterBody = {
     ...data,
-    identifier: [{ system: encounterCodeSystem, value: formattedId }],
+    identifier: [...kept, { system: encounterCodeSystem, value: formattedId }],
   };
   const encounterHeaders: Record<string, string> = {};
   if (data?.meta?.versionId) {
@@ -371,23 +394,28 @@ async function assignEpidForEncounterLocked(
   return { kind: "success", encounter: encounterPut.data };
 }
 
-/** Case ID an Encounter held in an earlier version, e.g. before a mobile re-sync overwrote its identifiers. */
-async function previousCaseId(encounterId: string): Promise<string | undefined> {
+/** An identifier an Encounter held in an earlier version, e.g. before a mobile re-sync overwrote its identifiers. */
+async function previousIdentifier(encounterId: string, read: (resource: any) => string | undefined): Promise<string | undefined> {
   const history = await FhirApi({ url: `/Encounter/${encounterId}/_history?_count=100` });
   for (const entry of history.data?.entry ?? []) {
-    const caseId = getCaseId(entry?.resource);
-    if (caseId) return caseId;
+    const value = read(entry?.resource);
+    if (value) return value;
   }
   return undefined;
 }
 
+const previousCaseId = (encounterId: string) => previousIdentifier(encounterId, getCaseId);
+
 /** Adds the Case ID to a resource that lacks one; returns the saved resource. */
-async function putCaseId(resource: any, caseId: string): Promise<any> {
+const putCaseId = (resource: any, caseId: string) => putIdentifier(resource, caseIdIdentifier(caseId));
+
+/** Sets [identifier] on a resource, replacing any with the same system; returns the saved resource. */
+async function putIdentifier(resource: any, identifier: { system: string; value: string }): Promise<any> {
   const url = `/${resource.resourceType}/${resource.id}`;
   const identifiers = Array.isArray(resource.identifier) ? resource.identifier : [];
   const body = {
     ...resource,
-    identifier: [...identifiers.filter((id: any) => id?.system !== CASE_ID_SYSTEM_URI), caseIdIdentifier(caseId)],
+    identifier: [...identifiers.filter((id: any) => id?.system !== identifier.system), identifier],
   };
   const headers: Record<string, string> = {};
   if (resource?.meta?.versionId) {
@@ -398,7 +426,7 @@ async function putCaseId(resource: any, caseId: string): Promise<any> {
   if (put.status !== "success") {
     const detail =
       put.data?.issue?.[0]?.diagnostics || put.data?.issue?.[0]?.details?.text || JSON.stringify(put.data);
-    throw new Error(`${resource.resourceType} Case ID update failed (${put.statusText}): ${detail}`);
+    throw new Error(`${resource.resourceType} ${identifier.system} update failed (${put.statusText}): ${detail}`);
   }
   return put.data;
 }
@@ -429,4 +457,137 @@ async function ensureVhfCaseId(encounterId: string): Promise<any | undefined> {
   if (getCaseId(encounter) !== caseId) encounter = await putCaseId(encounter, caseId);
   if (!getCaseId(patient)) await putCaseId(patient, caseId);
   return encounter;
+}
+
+export type PromoteResult =
+  | { kind: "promoted"; caseId: string }
+  | { kind: "skipped"; reason: string }
+  | { kind: "error"; error: unknown };
+
+/**
+ * Runs what a VHF contact skipped at registration (EPID, Case ID, NPHL sync, case alert) once
+ * its latest "Type of case" is no longer Contact. It keeps its Contact ID. Safe to repeat: a
+ * record with a Case ID is skipped.
+ */
+export async function promoteConvertedVhfContact(encounterId: string): Promise<PromoteResult> {
+  const encounter = (await FhirApi({ url: `/Encounter/${encounterId}`, headers: { "Cache-Control": "no-cache" } })).data;
+  if (!encounter?.id || !isVhfEncounter(encounter)) return { kind: "skipped", reason: "not a VHF case record" };
+  if (getCaseId(encounter)) return { kind: "skipped", reason: "already has a Case ID" };
+  const caseType = await vhfCaseTypeForEncounter(encounterId);
+  if (!caseType || caseType === "contact") return { kind: "skipped", reason: `type of case is ${caseType ?? "unanswered"}` };
+
+  const patientId = encounter?.subject?.reference?.split("/")[1];
+  return enqueueEpidAssignmentForPatient(patientId, async (): Promise<PromoteResult> => {
+    try {
+      let epid = getEpidValueFromEncounter(encounter);
+      if (!epid) {
+        const assigned = await assignEpidForEncounterLocked(encounterId, { notify: false });
+        if (assigned.kind === "error") return { kind: "error", error: assigned.error };
+        const fresh = (await FhirApi({ url: `/Encounter/${encounterId}`, headers: { "Cache-Control": "no-cache" } })).data;
+        const patient = (await FhirApi({ url: `/Patient/${patientId}`, headers: { "Cache-Control": "no-cache" } })).data;
+        epid = getEpidValueFromEncounter(fresh) ?? getEpidValueFromPatient(patient);
+        if (!epid) return { kind: "skipped", reason: "EPID not assigned" };
+      }
+      const promoted = await ensureVhfCaseId(encounterId);
+      const caseId = promoted ? getCaseId(promoted) : undefined;
+      if (!caseId) return { kind: "skipped", reason: "Case ID not assigned" };
+      queueCaseSync(encounterId);
+      const location = await resolveLocationNamesForEncounter(encounterId, FhirApi);
+      void notifyCaseSubmissionIfEnabled(promoted, {
+        epid,
+        diseaseCondition: "VHF",
+        countyName: location?.countyName ?? "",
+        subCountyName: location?.subCountyName ?? "",
+      }).catch((e) => console.error("[CaseSubmissionNotify] Background notification failed:", e));
+      console.log(`Promoted VHF contact Encounter/${encounterId} to a case (${caseId})`);
+      return { kind: "promoted", caseId };
+    } catch (error) {
+      return { kind: "error", error };
+    }
+  });
+}
+
+export type ContactIdResult =
+  | { kind: "assigned" | "present"; contactId: string; encounter: any }
+  /** Waiting for something outside the record, e.g. the case's EPID. */
+  | { kind: "pending"; reason: string }
+  | { kind: "error"; error: unknown };
+
+/** When an Observation was captured, for picking the earliest "Contact Link to Case" answer. */
+function capturedAt(o: any): string {
+  return String(o?.issued ?? o?.effectiveDateTime ?? o?.meta?.lastUpdated ?? "");
+}
+
+/**
+ * The case a contact was first linked to, with that case's EPID: the earliest "Contact Link to
+ * Case" answer that names a known case (by focus, else by EPID or Case ID).
+ */
+async function firstSourceCase(contactEncounterId: string): Promise<{ epid: string } | { reason: string }> {
+  const resp = await FhirApi({
+    url: `/Observation?encounter=Encounter/${contactEncounterId}&code=${VHF_CONTACT_LINK_IDS.sourceCaseEpid}&_count=100`,
+    headers: { "Cache-Control": "no-cache" },
+  });
+  const answers = (resp.data?.entry ?? []).map((e: any) => e.resource).sort((a: any, b: any) => capturedAt(a).localeCompare(capturedAt(b)));
+  if (answers.length === 0) return { reason: "no Contact Link to Case answer" };
+
+  for (const answer of answers) {
+    const focus = (answer?.focus ?? []).map((f: any) => String(f?.reference ?? "")).find((r: string) => r.startsWith("Encounter/"));
+    let index: any = null;
+    if (focus) {
+      const read = (await FhirApi({ url: `/${focus}` })).data;
+      if (read?.resourceType === "Encounter" && isVhfEncounter(read) && !read?.partOf?.reference) index = read;
+    }
+    if (!index) {
+      const value = epidFromAnswer(answer?.valueString);
+      if (value) index = await findCaseEncounter(value);
+    }
+    if (!index?.id || index.id === contactEncounterId) continue;
+
+    const casePatientId = index?.subject?.reference?.split("/")[1];
+    const epid =
+      getEpidValueFromEncounter(index) ??
+      (casePatientId ? getEpidValueFromPatient((await FhirApi({ url: `/Patient/${casePatientId}` })).data) : undefined);
+    return epid ? { epid } : { reason: `case Encounter/${index.id} has no EPID yet` };
+  }
+  return { reason: `no known case named by ${answers.map((a: any) => JSON.stringify(a?.valueString ?? "")).join(", ")}` };
+}
+
+async function ensureVhfContactIdLocked(encounterId: string): Promise<ContactIdResult> {
+  try {
+    let encounter = (await FhirApi({ url: `/Encounter/${encounterId}`, headers: { "Cache-Control": "no-cache" } })).data;
+    if (encounter?.resourceType !== "Encounter") return { kind: "error", error: new Error(`Encounter/${encounterId} not found`) };
+    const patientId = encounter?.subject?.reference?.split("/")[1];
+    const patient = (await FhirApi({ url: `/Patient/${patientId}`, headers: { "Cache-Control": "no-cache" } })).data;
+    if (patient?.resourceType !== "Patient") return { kind: "error", error: new Error(`Patient/${patientId} not found`) };
+
+    let kind: "assigned" | "present" = "present";
+    let contactId =
+      getContactId(encounter) ?? getContactId(patient) ?? (await previousIdentifier(encounterId, getContactId));
+    if (!contactId) {
+      const source = await firstSourceCase(encounterId);
+      if ("reason" in source) return { kind: "pending", reason: source.reason };
+      const key = vhfContactIdCounterKey(source.epid);
+      const seq = await generateCaseId(key.country, key.county, key.subCounty, key.condition);
+      contactId = formatVhfContactId(source.epid, seq);
+      kind = "assigned";
+      console.log(`Assigned VHF Contact ID ${contactId} to Encounter/${encounterId}`);
+    }
+
+    if (getContactId(encounter) !== contactId) encounter = await putIdentifier(encounter, contactIdIdentifier(contactId));
+    if (getContactId(patient) !== contactId) await putIdentifier(patient, contactIdIdentifier(contactId));
+    return { kind, contactId, encounter };
+  } catch (error) {
+    return { kind: "error", error };
+  }
+}
+
+/**
+ * Gives a VHF contact its Contact ID (the first linked case's EPID + "-C001"...), once, on its
+ * case Encounter and Patient. Pending while that case has no EPID.
+ */
+export async function ensureVhfContactId(encounterId: string): Promise<ContactIdResult> {
+  const encounter = (await FhirApi({ url: `/Encounter/${encounterId}`, headers: { "Cache-Control": "no-cache" } })).data;
+  const patientId = encounter?.subject?.reference?.split("/")[1];
+  if (!patientId) return { kind: "error", error: new Error(`Encounter/${encounterId} has no subject Patient`) };
+  return enqueueEpidAssignmentForPatient(patientId, () => ensureVhfContactIdLocked(encounterId));
 }

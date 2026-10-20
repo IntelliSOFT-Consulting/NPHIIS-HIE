@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import nodemailer from 'nodemailer';
 import { findKeycloakUser, getKeycloakUserById, updateUserProfile } from './keycloak';
 import {
@@ -23,9 +24,9 @@ const smtpConfig = {
 };
 
 
-// Function to generate a random 5-digit code
+// 8-digit password-reset code from a cryptographically secure source.
 function generateResetCode() {
-    return Math.floor(10000 + Math.random() * 90000).toString(); // Random 5-digit code
+    return randomInt(0, 100_000_000).toString().padStart(8, '0');
 }
 
 const transporter = nodemailer.createTransport(smtpConfig);

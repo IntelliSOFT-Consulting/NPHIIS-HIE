@@ -5,6 +5,7 @@ import {
     isIdentificationType,
 } from "./identification-types";
 import { countryCoding } from "./vhf-countries";
+import { VHF_CASE_LINK_IDS } from "./vhf-link-ids";
 
 const BASE = "http://nphiis.health.go.ke/fhir";
 
@@ -300,39 +301,7 @@ export function mergeIntoExistingPatient(existing: any, incoming: Record<string,
 
 type QrItem = { linkId: string; text?: string; answer?: any[]; item?: QrItem[] };
 
-/**
- * linkIds of the mobile VHF case form (android-fhir nphiis/src/main/assets/vhf-case.json),
- * so a screening response lines up with, and can prefill, a vhf-case response.
- */
-export const VHF_CASE_LINK_IDS = {
-    demographics: "vhf-demographics",
-    familyName: "486402457213",
-    givenNames: "873240407472",
-    sex: "929966324957",
-    birthDateKnown: "442636360588",
-    birthDate: "257830485990",
-    idType: "vhf-id-type",
-    idTypeMinor: "vhf-id-type-minor",
-    idNumber: "vhf-national-id",
-    phone: "vhf-phone",
-    currentResidence: "vhf-current-residence",
-    village: "vhf-village",
-    clinical: "vhf-clinical",
-    symptoms: "vhf-symptoms",
-    bleedingSite: "vhf-bleeding-site",
-    symptomsOther: "vhf-symptoms-other",
-    firstOnset: "728034137219",
-    onsetPrefix: "vhf-onset-",
-    travel: "vhf-travel",
-    travelled: "vhf-travelled",
-    originCountry: "vhf-travel-origin-country",
-    originPlace: "vhf-travel-origin-place",
-    departureDate: "vhf-travel-departure-date",
-    stopovers: "vhf-travel-stopovers",
-    destinationCountry: "vhf-travel-destination-country",
-    destinationPlace: "vhf-travel-destination-place",
-    arrivalDate: "vhf-travel-arrival-date",
-} as const;
+export { VHF_CASE_LINK_IDS };
 
 /** Screening answers with no vhf-case question. */
 export const SCREENING_LINK_IDS = {

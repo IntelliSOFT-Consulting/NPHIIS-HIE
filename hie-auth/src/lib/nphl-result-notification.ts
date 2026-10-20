@@ -61,7 +61,7 @@ export async function notifySpecimenOutcome(args: {
   if (!email) return { sent: false, reason: "no_email" };
 
   const key = `${args.task.id}:${args.outcome}`;
-  const where = { practitionerId_encounterId_type: { practitionerId, encounterId: key, type: NotificationType.LAB_RESULT } };
+  const where = { practitionerId_encounterId_type_followUpDay: { practitionerId, encounterId: key, type: NotificationType.LAB_RESULT, followUpDay: -1 } };
   const epid = getEpidValueFromEncounter(encounter) ?? (await patientEpid(encounter)) ?? "Unknown EPID";
   const resultLines = labOutcomeEmailLines(args.task, args.observation);
   const title = `${copy.subject} — ${epid}`;

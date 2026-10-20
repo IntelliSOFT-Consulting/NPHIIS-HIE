@@ -5,7 +5,7 @@ import { deleteResetCode, findKeycloakUser, getKeycloakUserToken, getKeycloakUse
 import { authenticateUser } from "../lib/middleware";
 import { sendPasswordResetEmail, sendRegistrationConfirmationEmail } from "../lib/email";
 import { getSupersetGuestToken } from "../lib/superset";
-import { getRoleFromPractitioner, providerRoleKeycloakAttributes, putPractitionerRoleResource, resolvePractitionerAssignment, deletePractitionerRoleResource, syncPractitionerRoleAndExtensions, getLocationFromPractitioner } from "../lib/practitioner-role";
+import { getRoleFromPractitioner, isAdminPractitioner, providerRoleKeycloakAttributes, putPractitionerRoleResource, resolvePractitionerAssignment, deletePractitionerRoleResource, syncPractitionerRoleAndExtensions, getLocationFromPractitioner } from "../lib/practitioner-role";
 import { runPractitionerRoleBackfillJob } from "../lib/practitioner-role-backfill";
 import { runPractitionerRoleResourceBackfillJob } from "../lib/practitioner-role-resource-backfill";
 import { runCaseNotificationBackfillJob } from "../lib/notification-backfill-job";
@@ -54,8 +54,19 @@ const generatePassword = (length: number): string => {
 };
 
 
-router.post("/register", async (req: Request, res: Response) => {
+router.post("/register", authenticateUser, async (req: Request, res: Response) => {
     try {
+        // Only administrators may create provider accounts.
+        const currentUser = (req as any).user;
+        const adminInfo = await findKeycloakUser(currentUser.preferred_username);
+        if (!adminInfo?.id) {
+            return res.status(403).json({ error: "User not found", status: "error" });
+        }
+        const adminPractitioner = (await FhirApi({ url: `/Practitioner/${adminInfo.id}` })).data;
+        if (!(await isAdminPractitioner(adminInfo.id, adminPractitioner))) {
+            return res.status(403).json({ error: "Insufficient permissions. Administrator access required.", status: "error" });
+        }
+
         // Extract and validate input
         let { firstName, lastName, idNumber, password, role, email, phone, facility } = req.body;
 
@@ -396,7 +407,7 @@ router.get("/me", authenticateUser, async (req: Request, res: Response) => {
         }
 
         const assignment = await resolvePractitionerAssignment(userId, practitioner);
-        const practitionerRole = assignment?.role ?? "ADMINISTRATOR";
+        const practitionerRole = assignment?.role ?? null;
 
         // For non-ADMINISTRATOR roles, build location info efficiently
         let locationInfo = {
@@ -448,9 +459,7 @@ router.get("/user/:username", authenticateUser, async (req: Request, res: Respon
         const currentUser = (req as any).user;
         let userInfo = await findKeycloakUser(currentUser.preferred_username);
         let currentUserPractitioner = await (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
-        let currentUserPractitionerRole = currentUserPractitioner?.extension?.length > 0 ?
-            currentUserPractitioner.extension[1]?.valueString : "ADMINISTRATOR";
-        if (currentUserPractitionerRole !== "ADMINISTRATOR") {
+        if (!userInfo?.id || !(await isAdminPractitioner(userInfo.id, currentUserPractitioner))) {
             return res.status(401).json({ error: "Unauthorized access", status: "error" });
         }
         let user = await findKeycloakUser(username);
@@ -458,8 +467,7 @@ router.get("/user/:username", authenticateUser, async (req: Request, res: Respon
             return res.status(404).json({ status: "error", error: "User not found" });
         }
         let practitioner = await (await FhirApi({ url: `/Practitioner/${user.id}` })).data;
-        let practitionerRole = practitioner?.extension?.length > 0 ?
-            practitioner.extension[1]?.valueString : "ADMINISTRATOR";
+        let practitionerRole = getRoleFromPractitioner(practitioner);
         let locationInfo = { facility: "", facilityName: "", ward: "", wardName: "", subCounty: "", subCountyName: "", county: "", countyName: "", country: "", countryName: "" };
         let fhirLocationRef = practitioner.extension[0].valueReference.reference;
         let fhirLocation = await (await FhirApi({ url: `/${fhirLocationRef}` })).data;
@@ -575,12 +583,8 @@ router.post('/welcome-email', authenticateUser, async (req: Request, res: Respon
         }
 
         const currentPractitioner = await (await FhirApi({ url: `/Practitioner/${currentUserInfo.id}` })).data;
-        const practitionerRole = currentPractitioner?.extension?.length > 0 
-            ? currentPractitioner.extension[1]?.valueString 
-            : "ADMINISTRATOR";
-
         // Authorization check: Only administrators and superusers can send welcome emails
-        if (practitionerRole !== "ADMINISTRATOR" && practitionerRole !== "SUPERUSER") {
+        if (!(await isAdminPractitioner(currentUserInfo.id, currentPractitioner))) {
             return res.status(403).json({ 
                 error: "Unauthorized. Only administrators can send welcome emails.", 
                 status: "error" 
@@ -674,8 +678,7 @@ async function requireAdminOrInternalApiKey(
         return res.status(403).json({ status: "error", error: "User not found" });
     }
     const practitioner = (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
-    const role = getRoleFromPractitioner(practitioner) ?? "ADMINISTRATOR";
-    if (role !== "ADMINISTRATOR" && role !== "SUPERUSER") {
+    if (!(await isAdminPractitioner(userInfo.id, practitioner))) {
         return res.status(403).json({ status: "error", error: "Administrator access required" });
     }
     next();
@@ -754,10 +757,7 @@ router.get("/users", authenticateUser, async (req: Request, res: Response) => {
         if (!practitioner) {
             return res.status(404).json({ error: "Practitioner not found", status: "error" });
         }
-        const practitionerRole = practitioner?.extension?.length > 0 ?
-            practitioner.extension[1]?.valueString : "ADMINISTRATOR";
-
-        if (practitionerRole !== "ADMINISTRATOR" && practitionerRole !== "SUPERUSER") {
+        if (!(await isAdminPractitioner(userInfo.id, practitioner))) {
             return res.status(403).json({ error: "Insufficient permissions. Administrator access required.", status: "error" });
         }
 
@@ -781,7 +781,7 @@ router.get("/users", authenticateUser, async (req: Request, res: Response) => {
             }
             const practitioner = await (await FhirApi({ url: `/Practitioner/${user.id}` })).data;
             const assignment = await resolvePractitionerAssignment(user.id, practitioner);
-            const role = assignment?.role ?? getRoleFromPractitioner(practitioner) ?? "ADMINISTRATOR";
+            const role = assignment?.role ?? getRoleFromPractitioner(practitioner) ?? null;
             user.role = role;
             response.push({...user, role});
         }
@@ -837,9 +837,7 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
             return res.status(403).json({ error: "User not found", status: "error" });
         }
         const practitioner = await (await FhirApi({ url: `/Practitioner/${currentUserInfo.id}` })).data;
-        const practitionerRole = practitioner?.extension?.length > 0 ?
-            practitioner.extension[1]?.valueString : "ADMINISTRATOR";
-        if (practitionerRole !== "ADMINISTRATOR" && practitionerRole !== "SUPERUSER") {
+        if (!(await isAdminPractitioner(currentUserInfo.id, practitioner))) {
             return res.status(403).json({ error: "Unauthorized access. Only administrators can edit users.", status: "error" });
         }
 
@@ -1009,11 +1007,7 @@ router.patch("/users/:username/notifications-enabled", authenticateUser, async (
         }
 
         const currentPractitioner = await (await FhirApi({ url: `/Practitioner/${currentUserInfo.id}` })).data;
-        const currentUserRole = currentPractitioner?.extension?.length > 0
-            ? currentPractitioner.extension[1]?.valueString
-            : "ADMINISTRATOR";
-
-        if (currentUserRole !== "ADMINISTRATOR" && currentUserRole !== "SUPERUSER") {
+        if (!(await isAdminPractitioner(currentUserInfo.id, currentPractitioner))) {
             return res.status(403).json({
                 error: "Unauthorized access. Only administrators can update notification settings.",
                 status: "error",
@@ -1065,11 +1059,8 @@ router.delete("/users/:username", authenticateUser, async (req: Request, res: Re
         }
 
         const currentPractitioner = await (await FhirApi({ url: `/Practitioner/${currentUserInfo.id}` })).data;
-        const currentUserRole = currentPractitioner?.extension?.length > 0 ?
-            currentPractitioner.extension[1]?.valueString : "ADMINISTRATOR";
-
         // Authorization check: Only administrators can delete users
-        if (currentUserRole !== "ADMINISTRATOR" && currentUserRole !== "SUPERUSER") {
+        if (!(await isAdminPractitioner(currentUserInfo.id, currentPractitioner))) {
             return res.status(403).json({ error: "Unauthorized access. Only administrators can delete users.", status: "error" });
         }
 
