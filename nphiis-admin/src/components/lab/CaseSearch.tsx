@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SearchSm } from '@untitled-ui/icons-react';
 import { useAuthedFetch } from '@/lib/auth-context';
-import { Field, TextInput } from '../ui/Field';
+import { fhirApi, FhirCounty, FhirSubCounty } from '@/lib/api';
+import { Field, Select, TextInput } from '../ui/Field';
 import Spinner from '../ui/Spinner';
 import { Alert } from '../ui/Alert';
 
@@ -28,12 +29,44 @@ export default function CaseSearch({
 }) {
   const authedFetch = useAuthedFetch();
   const [name, setName] = useState('');
-  const [county, setCounty] = useState('');
-  const [subCounty, setSubCounty] = useState('');
+  // Dropdowns hold Location ids; the search itself matches on names.
+  const [countyId, setCountyId] = useState('');
+  const [subCountyId, setSubCountyId] = useState('');
+  const [counties, setCounties] = useState<FhirCounty[]>([]);
+  const [subCounties, setSubCounties] = useState<FhirSubCounty[]>([]);
+  const [loadingSubCounties, setLoadingSubCounties] = useState(false);
   const [epid, setEpid] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<CaseResult[] | null>(null);
+
+  useEffect(() => {
+    fhirApi
+      .getCounties()
+      .then((c) => setCounties([...c].sort((a, b) => a.name.localeCompare(b.name))))
+      .catch(() => setCounties([]));
+  }, []);
+
+  useEffect(() => {
+    setSubCountyId('');
+    setSubCounties([]);
+    if (!countyId) return;
+    let cancelled = false;
+    setLoadingSubCounties(true);
+    fhirApi
+      .getSubCounties(countyId)
+      .then((s) => {
+        if (!cancelled) setSubCounties([...s].sort((a, b) => a.name.localeCompare(b.name)));
+      })
+      .catch(() => !cancelled && setSubCounties([]))
+      .finally(() => !cancelled && setLoadingSubCounties(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [countyId]);
+
+  const county = counties.find((c) => c.id === countyId)?.name ?? '';
+  const subCounty = subCounties.find((s) => s.id === subCountyId)?.name ?? '';
 
   const canSearch = [name, county, subCounty, epid].some((v) => v.trim());
 
@@ -73,7 +106,8 @@ export default function CaseSearch({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* One row on wide screens: the four fields, then the button. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto] gap-3 lg:items-end">
         <Field label="Patient name" htmlFor="cs-name">
           <TextInput
             id="cs-name"
@@ -93,40 +127,53 @@ export default function CaseSearch({
           />
         </Field>
         <Field label="County" htmlFor="cs-county">
-          <TextInput
+          <Select
             id="cs-county"
-            value={county}
-            onChange={(e) => setCounty(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), void search())}
-            placeholder="e.g. Nairobi"
+            value={countyId}
+            onChange={setCountyId}
+            placeholder="Any county"
+            options={[
+              { value: '', label: 'Any county' },
+              ...counties.map((c) => ({ value: c.id, label: c.name })),
+            ]}
           />
         </Field>
         <Field label="Sub-county" htmlFor="cs-sub">
-          <TextInput
+          <Select
             id="cs-sub"
-            value={subCounty}
-            onChange={(e) => setSubCounty(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), void search())}
-            placeholder="e.g. Westlands"
+            value={subCountyId}
+            onChange={setSubCountyId}
+            disabled={!countyId || loadingSubCounties}
+            placeholder={
+              !countyId ? 'Select a county first' : loadingSubCounties ? 'Loading…' : 'Any sub-county'
+            }
+            options={
+              countyId && !loadingSubCounties
+                ? [
+                    { value: '', label: 'Any sub-county' },
+                    ...subCounties.map((s) => ({ value: s.id, label: s.name })),
+                  ]
+                : []
+            }
           />
         </Field>
-      </div>
 
-      <button
-        type="button"
-        onClick={() => void search()}
-        disabled={loading || !canSearch}
-        className="btn-secondary"
-      >
-        {loading ? (
-          <Spinner size="sm" label="Searching…" />
-        ) : (
-          <>
-            <SearchSm className="h-4 w-4 mr-1.5" />
-            Search cases
-          </>
-        )}
-      </button>
+        <button
+          type="button"
+          onClick={() => void search()}
+          disabled={loading || !canSearch}
+          className="btn-secondary w-full sm:col-span-2 lg:col-span-1 lg:w-auto whitespace-nowrap"
+        >
+          {loading ? (
+            <Spinner size="sm" label="Searching…" />
+          ) : (
+            <>
+              <SearchSm className="h-4 w-4 mr-1.5" />
+              Search cases
+            </>
+          )}
+        </button>
+      </div>
 
       {error && <Alert variant="error">{error}</Alert>}
       {results && results.length === 0 && (

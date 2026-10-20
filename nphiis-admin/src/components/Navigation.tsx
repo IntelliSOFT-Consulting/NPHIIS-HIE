@@ -15,6 +15,7 @@ import {
   ChatBubbleLeftEllipsisIcon,
   EyeDropperIcon,
   ShieldCheckIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
 
@@ -79,6 +80,12 @@ export default function Navigation() {
       href: '/specimens',
       icon: EyeDropperIcon,
       visible: can('SPECIMENS_VIEW'),
+    },
+    {
+      name: 'Contacts',
+      href: '/contacts',
+      icon: UserGroupIcon,
+      visible: can('VHF_CONTACTS'),
     },
     {
       name: 'Rumours',

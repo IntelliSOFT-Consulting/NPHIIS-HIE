@@ -46,6 +46,7 @@ InstanceOf: Questionnaire
 Usage: #definition
 Title: "Traveller Screening"
 Description: "Item structure for screening responses (point of entry, travel history, signs and symptoms)."
+* id = "traveller-screening"
 * url = "http://nphiis.health.go.ke/fhir/Questionnaire/traveller-screening"
 * name = "TravellerScreening"
 * title = "Traveller Screening"

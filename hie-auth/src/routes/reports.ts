@@ -1,14 +1,20 @@
 import express, { Request, Response } from "express";
 import { computeMOH710 } from '../lib/reports'
-import { getKeycloakUsers } from "../lib/keycloak";
+import { findKeycloakUser, getKeycloakUsers } from "../lib/keycloak";
+import { authenticateUser } from "../lib/middleware";
+import { getRoleFromPractitioner, isAdminPractitioner } from "../lib/practitioner-role";
 import { getApplicationRoles } from "../lib/roles";
 import { FhirApi } from "../lib/utils";
 const router = express.Router();
 router.use(express.json());
 
 
-router.get("/users", async (req: Request, res: Response) => {
+router.get("/users", authenticateUser, async (req: Request, res: Response) => {
     try {
+        const caller = await findKeycloakUser((req as any).user.preferred_username);
+        if (!caller?.id || !(await isAdminPractitioner(caller.id))) {
+            return res.status(403).json({ error: "Administrator access required", status: "error" });
+        }
         const keycloakResponse = await getKeycloakUsers();
         const response = [];
         if(!keycloakResponse || !keycloakResponse.users){
@@ -19,8 +25,7 @@ router.get("/users", async (req: Request, res: Response) => {
                 continue;
             }
             const practitioner = await (await FhirApi({ url: `/Practitioner/${user.id}` })).data;
-            const role = practitioner?.extension?.length > 0 ?
-                practitioner.extension[1]?.valueString : "ADMINISTRATOR";
+            const role = getRoleFromPractitioner(practitioner);
             user.role = role;
             response.push({...user, role});
 

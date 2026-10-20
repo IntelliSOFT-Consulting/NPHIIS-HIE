@@ -1,0 +1,84 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "questionnaire_response_answer_pg",
+  "status": "active",
+  "resource": "QuestionnaireResponse",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "forEach": "repeat(item | answer.item)",
+      "column": [
+        {
+          "name": "link_id",
+          "path": "linkId",
+          "type": "string"
+        },
+        {
+          "name": "text",
+          "path": "text",
+          "type": "string"
+        }
+      ],
+      "select": [
+        {
+          "forEach": "answer",
+          "column": [
+            {
+              "name": "value_string",
+              "path": "value.ofType(string)",
+              "type": "string"
+            },
+            {
+              "name": "value_code",
+              "path": "value.ofType(Coding).code",
+              "type": "string"
+            },
+            {
+              "name": "value_display",
+              "path": "value.ofType(Coding).display",
+              "type": "string"
+            },
+            {
+              "name": "value_date",
+              "path": "value.ofType(date)",
+              "type": "string"
+            },
+            {
+              "name": "value_datetime",
+              "path": "value.ofType(dateTime)",
+              "type": "string"
+            },
+            {
+              "name": "value_integer",
+              "path": "value.ofType(integer)",
+              "type": "string"
+            },
+            {
+              "name": "value_decimal",
+              "path": "value.ofType(decimal)",
+              "type": "string"
+            },
+            {
+              "name": "value_boolean",
+              "path": "value.ofType(boolean)",
+              "type": "string"
+            },
+            {
+              "name": "value_reference",
+              "path": "value.ofType(Reference).reference",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

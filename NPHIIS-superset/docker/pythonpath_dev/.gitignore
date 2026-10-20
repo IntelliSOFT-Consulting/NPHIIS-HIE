@@ -24,3 +24,4 @@
 !keycloak_security_manager.py
 client_secret.json
 !oauth2_security_manager.py
+!nphiis_tasks.py

@@ -27,6 +27,10 @@ export const PAGE_META: Record<
     title: 'Specimens',
     subtitle: 'VHF specimens sent to NPHL, their status and lab results',
   },
+  '/contacts': {
+    title: 'Contacts',
+    subtitle: 'VHF contacts of each case and their 21-day follow up',
+  },
   '/rumours': {
     title: 'Rumours',
     subtitle: 'Set High / Medium / Low priority on rumour reports',

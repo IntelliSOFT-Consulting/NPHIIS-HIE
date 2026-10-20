@@ -1,0 +1,37 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "patient_identifier_pg",
+  "status": "active",
+  "resource": "Patient",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "forEach": "identifier",
+      "column": [
+        {
+          "name": "system",
+          "path": "system",
+          "type": "string"
+        },
+        {
+          "name": "type_code",
+          "path": "type.coding.first().code",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "path": "value",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

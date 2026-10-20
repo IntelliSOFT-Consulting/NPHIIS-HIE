@@ -398,3 +398,18 @@ export async function syncPractitionerRoleAndExtensions(
     }),
   });
 }
+
+const ADMIN_ROLES = new Set(["ADMINISTRATOR", "SUPERUSER"]);
+
+/**
+ * True only when the practitioner's assigned role is ADMINISTRATOR or
+ * SUPERUSER. A missing or unreadable role is not an admin.
+ */
+export async function isAdminPractitioner(
+  practitionerId: string,
+  practitioner?: unknown,
+): Promise<boolean> {
+  const assignment = await resolvePractitionerAssignment(practitionerId, practitioner);
+  const role = assignment?.role ?? getRoleFromPractitioner(practitioner);
+  return !!role && ADMIN_ROLES.has(role.toUpperCase());
+}

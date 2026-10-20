@@ -1,0 +1,62 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "patient_flat_pg",
+  "status": "active",
+  "resource": "Patient",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        },
+        {
+          "name": "active",
+          "path": "active",
+          "type": "boolean"
+        },
+        {
+          "name": "gender",
+          "path": "gender",
+          "type": "string"
+        },
+        {
+          "name": "birth_date",
+          "path": "birthDate",
+          "type": "string"
+        },
+        {
+          "name": "given",
+          "path": "name.first().given.join(' ')",
+          "type": "string"
+        },
+        {
+          "name": "family",
+          "path": "name.first().family",
+          "type": "string"
+        },
+        {
+          "name": "address_city",
+          "path": "address.first().city",
+          "type": "string"
+        },
+        {
+          "name": "address_state",
+          "path": "address.first().state",
+          "type": "string"
+        },
+        {
+          "name": "link_patient_id",
+          "path": "link.last().other.getReferenceKey(Patient)",
+          "type": "string"
+        },
+        {
+          "name": "last_updated",
+          "path": "meta.lastUpdated",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

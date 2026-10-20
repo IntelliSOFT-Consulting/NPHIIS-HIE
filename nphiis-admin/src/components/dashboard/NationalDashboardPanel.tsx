@@ -26,7 +26,7 @@ export default function NationalDashboardPanel() {
         subtitle={
           isViewer
             ? "MOH 505 line list"
-            : "MOH 502 and MOH 505 dashboards across all counties"
+            : "VHF, IDSR and AFP dashboards across all counties"
         }
       />
     </div>

@@ -1,0 +1,13 @@
+networks:
+  cloudbuild:
+    external: true
+
+services:
+  fhir-ig:
+    build: .
+    image: nphiis-fhir-ig
+    container_name: fhir-ig
+    restart: unless-stopped
+    networks:
+      - cloudbuild
+    mem_limit: 128m

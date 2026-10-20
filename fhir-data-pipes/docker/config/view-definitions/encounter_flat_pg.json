@@ -1,0 +1,42 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "encounter_flat_pg",
+  "status": "active",
+  "resource": "Encounter",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        },
+        {
+          "name": "patient_id",
+          "path": "subject.getReferenceKey(Patient)",
+          "type": "string"
+        },
+        {
+          "name": "part_of_id",
+          "path": "partOf.getReferenceKey(Encounter)",
+          "type": "string"
+        },
+        {
+          "name": "epid",
+          "path": "identifier.where(system = 'http://hie.org/identifiers/EPID').value.first()",
+          "type": "string"
+        },
+        {
+          "name": "managing_location_id",
+          "path": "meta.tag.where(system.endsWith('encounter-managingLocation')).code.first()",
+          "type": "string"
+        },
+        {
+          "name": "last_updated",
+          "path": "meta.lastUpdated",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

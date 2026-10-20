@@ -1,0 +1,47 @@
+{
+  "resourceType": "https://sql-on-fhir.org/ig/StructureDefinition/ViewDefinition",
+  "name": "practitioner_role_pg",
+  "status": "active",
+  "resource": "PractitionerRole",
+  "select": [
+    {
+      "column": [
+        {
+          "name": "id",
+          "path": "getResourceKey()",
+          "type": "string"
+        },
+        {
+          "name": "active",
+          "path": "active",
+          "type": "boolean"
+        },
+        {
+          "name": "practitioner_id",
+          "path": "practitioner.getReferenceKey(Practitioner)",
+          "type": "string"
+        },
+        {
+          "name": "role",
+          "path": "code.first().coding.first().code",
+          "type": "string"
+        },
+        {
+          "name": "location_id",
+          "path": "location.first().getReferenceKey(Location)",
+          "type": "string"
+        },
+        {
+          "name": "period_start",
+          "path": "period.start",
+          "type": "string"
+        },
+        {
+          "name": "last_updated",
+          "path": "meta.lastUpdated",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

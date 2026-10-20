@@ -1,5 +1,5 @@
 import fetch from "cross-fetch";
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import { getApplicationRoles } from "./roles";
 
 
@@ -106,23 +106,48 @@ export const findKeycloakUser = async (username: string) => {
 }
 
 
-export const  validateResetCode = async (idNumber: string, resetCode: string) => {
+const RESET_CODE_MAX_ATTEMPTS = 5;
+const RESET_CODE_TTL_MS = 15 * 60 * 1000;
+const resetCodeFailures = new Map<string, number>();
+
+/**
+ * Checks a password-reset code. Codes expire (see resetCodeExpiresAt) and are
+ * deleted after RESET_CODE_MAX_ATTEMPTS wrong guesses, so the user has to
+ * request a new one.
+ */
+export const validateResetCode = async (idNumber: string, resetCode: string) => {
   try {
-    let userInfo = await findKeycloakUser(idNumber);
-    console.log(userInfo);
-    let _resetCode = userInfo?.attributes?.resetCode;
-    if(!_resetCode){
+    if (!idNumber || !resetCode) return null;
+    const userInfo = await findKeycloakUser(idNumber);
+    const stored = userInfo?.attributes?.resetCode?.[0];
+    if (!stored) return null;
+
+    const expiresAt = Number(userInfo?.attributes?.resetCodeExpiresAt?.[0]);
+    if (!expiresAt || Date.now() > expiresAt) {
+      await deleteResetCode(idNumber);
       return null;
     }
-    _resetCode = _resetCode[0]
-    return resetCode === _resetCode;
+
+    const a = Buffer.from(String(resetCode));
+    const b = Buffer.from(String(stored));
+    if (a.length === b.length && timingSafeEqual(a, b)) {
+      resetCodeFailures.delete(idNumber);
+      return true;
+    }
+
+    const failures = (resetCodeFailures.get(idNumber) ?? 0) + 1;
+    if (failures >= RESET_CODE_MAX_ATTEMPTS) {
+      resetCodeFailures.delete(idNumber);
+      await deleteResetCode(idNumber);
+    } else {
+      resetCodeFailures.set(idNumber, failures);
+    }
+    return false;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return null
   }
 }
-
-
 
 export const updateUserPassword = async (username: string, password: string) => {
   try {
@@ -162,6 +187,7 @@ export const deleteResetCode = async (idNumber: string) => {
     // Remove resetCode from attributes
     let updatedAttributes = { ...user.attributes };
     delete updatedAttributes.resetCode;
+    delete updatedAttributes.resetCodeExpiresAt;
     
     // Build complete request body with all user fields to prevent clearing user information
     const requestBody: any = {
@@ -236,6 +262,7 @@ export const updateUserProfile = async (
     // Store resetCode in user attributes so it persists in Keycloak
     if (resetCode !== null) {
       updatedAttributes.resetCode = [resetCode];
+      updatedAttributes.resetCodeExpiresAt = [String(Date.now() + RESET_CODE_TTL_MS)];
     }
     
     // Start with the existing user data to avoid overriding fields
@@ -791,6 +818,7 @@ export const checkUserRoles = async () => {
 const REQUIRED_USER_ATTRIBUTES: { name: string; displayName: string }[] = [
   { name: "phone",               displayName: "Phone Number" },
   { name: "resetCode",           displayName: "Password Reset Code" },
+  { name: "resetCodeExpiresAt",  displayName: "Password Reset Code Expiry" },
   { name: "firstLogin",          displayName: "First Login" },
   { name: "fhirPatientId",       displayName: "FHIR Patient ID" },
   { name: "fhirPractitionerId",  displayName: "FHIR Practitioner ID" },
