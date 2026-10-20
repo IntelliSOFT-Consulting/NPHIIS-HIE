@@ -37,6 +37,7 @@ app.use(cors({ origin: corsOrigins.length ? corsOrigins : false }))
 const authPaths = [
   '/client/login', '/client/register', '/client/reset-password',
   '/provider/login', '/provider/register', '/provider/refresh_token', '/provider/reset-password',
+  '/reports/vhf/token',
 ];
 app.use(authPaths, authIpLimiter);
 app.use(['/client/login', '/provider/login'], express.json(), loginLimiter);
