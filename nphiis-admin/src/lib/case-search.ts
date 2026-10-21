@@ -4,6 +4,8 @@
 export type CaseQuery =
   | { kind: "id"; value: string }
   | { kind: "phone"; variants: string[] }
+  /** Digits, but too few for a whole number (HAPI matches whole numbers only). */
+  | { kind: "partial-phone" }
   | { kind: "name"; terms: string[] }
   | { kind: "empty" };
 
@@ -29,8 +31,11 @@ export function parseCaseQuery(text: string): CaseQuery {
   const q = text.trim();
   if (!q) return { kind: "empty" };
   if (CASE_REF.test(q)) return { kind: "id", value: q };
-  const digitCount = q.replace(/\D/g, "").length;
-  if (digitCount >= 7 && /^[+\d\s().-]+$/.test(q)) return { kind: "phone", variants: phoneVariants(q) };
+  if (/^[+\d\s().-]+$/.test(q) && /\d/.test(q)) {
+    const d = q.replace(/\D/g, "");
+    const local = d.startsWith("254") ? d.slice(3) : d.startsWith("0") ? d.slice(1) : d;
+    return local.length >= 9 ? { kind: "phone", variants: phoneVariants(q) } : { kind: "partial-phone" };
+  }
   const terms = q
     .split(/[\s,]+/)
     .map((t) => t.replace(/[^A-Za-z0-9À-ɏ'-]/g, ""))

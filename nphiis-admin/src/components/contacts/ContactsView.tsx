@@ -3,12 +3,12 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { UserGroupIcon, ArrowUpTrayIcon, UserPlusIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
 import { useAuthedFetch } from '@/lib/auth-context';
-import type { Board, BoardContact, CaseMatch, ContactStatus, DayState, RemovedContact } from '@/lib/fhir-contacts';
-import { parseCaseQuery } from '@/lib/case-search';
+import type { Board, BoardContact, ContactStatus, DayState, RemovedContact } from '@/lib/fhir-contacts';
 import { Alert } from '../ui/Alert';
 import { Select, TextInput } from '../ui/Field';
 import { TableSkeleton } from '../ui/Skeleton';
 import AddContacts, { type SaveSummary } from './AddContacts';
+import CaseSearch, { type CaseTarget } from './CaseSearch';
 import FollowUpForm from './FollowUpForm';
 
 const STATUS: Record<ContactStatus, { label: string; chip: string }> = {
@@ -65,14 +65,13 @@ function DayGrid({ contact }: { contact: BoardContact }) {
 
 export default function ContactsView() {
   const authedFetch = useAuthedFetch();
+  // Text left in the case box (the case's EPID once one is open).
   const [query, setQuery] = useState('');
-  // The case to show, as the /api/contacts query: "id=<EPID or Case ID>" or "encounter=<id>".
-  const [lookup, setLookup] = useState('');
+  // The case to show, as the /api/contacts query: "id=<EPID or Case ID>" or "encounter=<id>";
+  // n changes on every pick, so picking the open case again reloads it.
+  const [lookup, setLookup] = useState<{ q: string; n: number } | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
   const [loading, setLoading] = useState(false);
-  // Cases matching a name or phone search, to pick from.
-  const [matches, setMatches] = useState<{ q: string; cases: CaseMatch[] } | null>(null);
-  const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('');
@@ -97,7 +96,7 @@ export default function ContactsView() {
       const last = window.localStorage.getItem('contacts.lastCase');
       if (last) {
         setQuery(last);
-        setLookup(`id=${encodeURIComponent(last)}`);
+        setLookup({ q: `id=${encodeURIComponent(last)}`, n: 0 });
       }
     } catch {
       /* storage unavailable */
@@ -111,11 +110,13 @@ export default function ContactsView() {
     setError(null);
     (async () => {
       try {
-        const res = await authedFetch(`/api/contacts?${lookup}`);
+        const res = await authedFetch(`/api/contacts?${lookup.q}`);
         const body = await res.json();
         if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
-        if (!cancelled) setBoard(body as Board);
+        if (cancelled) return;
+        setBoard(body as Board);
         const ref = (body as Board).indexCase.epid ?? (body as Board).indexCase.caseId;
+        if (ref) setQuery(ref);
         try {
           if (ref) window.localStorage.setItem('contacts.lastCase', ref);
         } catch {
@@ -135,45 +136,17 @@ export default function ContactsView() {
     };
   }, [authedFetch, lookup]);
 
-  const openCase = useCallback((m: CaseMatch) => {
-    setMatches(null);
-    setQuery(m.epid ?? m.caseId ?? m.name);
-    setLookup(`encounter=${encodeURIComponent(m.encounterId)}`);
-  }, []);
-
-  /** EPID or Case ID: open the case. Name or phone: list the matching cases (one match opens). */
-  const find = useCallback(async () => {
-    const parsed = parseCaseQuery(query);
+  /** A case picked in the search box. */
+  const openCase = useCallback((t: CaseTarget) => {
     setNotice(null);
     setUndo(null);
     setAdding(null);
     setSelected(new Set());
-    setError(null);
-    if (parsed.kind === 'empty') {
-      setError('Enter an EPID, a Case ID, at least two letters of a name, or a phone number.');
-      return;
-    }
-    if (parsed.kind === 'id') {
-      setMatches(null);
-      setLookup(`id=${encodeURIComponent(parsed.value)}`);
-      return;
-    }
-    setSearching(true);
-    try {
-      const res = await authedFetch(`/api/contacts/search?q=${encodeURIComponent(query.trim())}`);
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
-      const cases = (body as { cases: CaseMatch[] }).cases;
-      setBoard(null);
-      setLookup('');
-      if (cases.length === 1) openCase(cases[0]);
-      else setMatches({ q: query.trim(), cases });
-    } catch (e) {
-      setError(`Could not search: ${(e as Error).message}`);
-    } finally {
-      setSearching(false);
-    }
-  }, [authedFetch, openCase, query]);
+    setConfirmRemove(false);
+    setOpenId(null);
+    setQuery(t.label);
+    setLookup((prev) => ({ q: t.lookup, n: (prev?.n ?? 0) + 1 }));
+  }, []);
 
   const post = useCallback(
     async (url: string, payload: unknown) => {
@@ -328,39 +301,19 @@ export default function ContactsView() {
         </Alert>
       )}
 
-      <form
-        className="flex flex-col sm:flex-row gap-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void find();
-        }}
-      >
-        <div className="flex-1">
-          <TextInput
-            placeholder="Case EPID, Case ID, name or phone, e.g. KEN-2026-001, Jane Wanjiru or 0712345678"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="Find a VHF case"
-          />
-        </div>
-        <button type="submit" className="btn-primary" disabled={!query.trim() || loading || searching}>
-          {searching ? 'Searching…' : 'Find case'}
-        </button>
-      </form>
+      <CaseSearch initial={query} onOpen={openCase} />
 
-      {(searching || (loading && !board)) && <TableSkeleton rows={6} cols={7} />}
+      {loading && !board && <TableSkeleton rows={6} cols={7} />}
 
-      {!lookup && !board && !matches && !searching && (
+      {!lookup && !board && (
         <div className="card text-center py-16 px-4">
           <UserGroupIcon className="mx-auto h-12 w-12 text-gray-300" />
           <p className="mt-3 text-sm font-medium text-nphi-900">Find a VHF case</p>
           <p className="mt-1 text-sm text-gray-500">
-            Enter a case&apos;s EPID, Case ID, name or phone number to see its contacts and their 21-day follow up, or to upload a contact line list.
+            Search by the case&apos;s name, phone number, EPID or Case ID to see its contacts and their 21-day follow up, or to upload a contact line list.
           </p>
         </div>
       )}
-
-      {matches && !searching && <CaseMatches q={matches.q} cases={matches.cases} onOpen={openCase} />}
 
       {board && (
         <>
@@ -708,48 +661,6 @@ export default function ContactsView() {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-/** Cases found by name or phone; picking one opens its contacts. */
-function CaseMatches({ q, cases, onOpen }: { q: string; cases: CaseMatch[]; onOpen: (m: CaseMatch) => void }) {
-  if (cases.length === 0) {
-    return (
-      <div className="card text-center py-12 px-4 text-sm text-gray-500">
-        No VHF case matches &ldquo;{q}&rdquo;. Contacts are not listed here: search for the case they were exposed to.
-      </div>
-    );
-  }
-  return (
-    <div className="card overflow-hidden">
-      <p className="px-4 py-3 text-sm text-gray-600 border-b border-nphi-100">
-        <span className="font-semibold text-nphi-900">{cases.length}</span> case{cases.length === 1 ? '' : 's'} match &ldquo;{q}&rdquo;
-        {cases.length >= 50 ? ': showing the first 50, add more of the name to narrow it down' : ''}
-      </p>
-      <ul className="divide-y divide-nphi-100">
-        {cases.map((m) => (
-          <li key={m.encounterId}>
-            <button
-              type="button"
-              onClick={() => onOpen(m)}
-              className="flex w-full flex-col gap-1 px-4 py-3 text-left hover:bg-nphi-50/50 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div>
-                <div className="font-medium text-gray-900">
-                  {m.name}
-                  {m.caseType && <span className="ml-2 chip bg-nphi-50 text-nphi-800">{m.caseType}</span>}
-                </div>
-                <div className="font-mono text-[11px] text-gray-500">{[m.epid, m.caseId].filter(Boolean).join(' · ') || 'No EPID yet'}</div>
-                <div className="text-xs text-gray-600">{[m.phone, m.subCounty, m.county].filter(Boolean).join(' · ')}</div>
-              </div>
-              <span className="text-sm text-nphi-700 whitespace-nowrap">
-                {m.contacts == null ? 'Open' : `${m.contacts} contact${m.contacts === 1 ? '' : 's'}`} →
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
