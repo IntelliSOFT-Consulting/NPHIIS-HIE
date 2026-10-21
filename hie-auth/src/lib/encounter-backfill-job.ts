@@ -61,7 +61,9 @@ export async function runEncounterBackfillJob(): Promise<EncounterBackfillStats>
           epidAssignedOrPresent++;
         } else {
           const r = await assignEpidForEncounter(enc);
-          if (r.kind === "success" || r.kind === "already_official_epid") {
+          if (r.kind === "not_applicable") {
+            // Call logs get no EPID.
+          } else if (r.kind === "success" || r.kind === "already_official_epid") {
             epidAssignedOrPresent++;
           } else {
             epidAssignErrors++;

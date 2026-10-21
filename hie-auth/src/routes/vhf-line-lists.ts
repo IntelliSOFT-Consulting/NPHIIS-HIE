@@ -1,8 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import crypto from "crypto";
-import {
-  validateBearerToken, validateUserAuthentication, findKeycloakUser, getClientCredentialsToken, reportsClientIds, reportsClientOf,
-} from "../lib/keycloak";
+import { validateBearerToken, validateUserAuthentication, findKeycloakUser, reportsClientOf, reportsClientIds, getClientCredentialsToken } from "../lib/keycloak";
 import { resolvePractitionerAssignment } from "../lib/practitioner-role";
 import { buildLocationInfo, FhirApi } from "../lib/utils";
 import { kenyaToday } from "../lib/vhf-contact-status";
@@ -20,11 +18,8 @@ import { Dataset, fetchLineList, LineListUnavailable, PERIOD_HELP, resolvePeriod
  * inclusive; Kenya dates, weeks Monday to Sunday); recordType=Case|Contact (line-list),
  * status=active|flagged|lost|completed|converted (contacts), limit (default 5000, max 50000), offset.
  *
- * Auth, one of:
- *   - a user's Keycloak bearer token: rows limited to the user's area, as in Superset;
- *   - a partner system's client credentials token from POST /reports/vhf/token, for Keycloak
- *     clients listed in REPORTS_CLIENT_IDS: all rows, and accepted on these endpoints only;
- *   - X-Api-Key = REPORTS_API_KEY: all rows.
+ * Auth: a Keycloak bearer token (rows limited to the user's area, as in Superset), or
+ * X-Api-Key = REPORTS_API_KEY for system integrations (all rows).
  */
 const router = express.Router();
 
@@ -143,11 +138,7 @@ function handler(dataset: Dataset) {
   };
 }
 
-/**
- * POST /reports/vhf/token: a partner system swaps its Keycloak client id and secret for an access
- * token (client credentials grant). JSON or form body { client_id, client_secret }, or HTTP Basic.
- * Only clients in REPORTS_CLIENT_IDS; the token is accepted by the line-list endpoints only.
- */
+/** POST /reports/vhf/token: swap Keycloak client_id + client_secret for an access token. */
 router.post("/token", express.json(), express.urlencoded({ extended: false }), async (req: Request, res: Response) => {
   let clientId = typeof req.body?.client_id === "string" ? req.body.client_id.trim() : "";
   let clientSecret = typeof req.body?.client_secret === "string" ? req.body.client_secret : "";
@@ -167,7 +158,6 @@ router.post("/token", express.json(), express.urlencoded({ extended: false }), a
   if (!clientId || !clientSecret) {
     return res.status(400).json({ status: "error", error: "client_id and client_secret are required" });
   }
-  // Same answer for an unlisted client as for a wrong secret.
   const invalid = () => res.status(401).json({ status: "error", error: "Invalid client credentials" });
   if (!reportsClientIds().includes(clientId)) return invalid();
   const token = await getClientCredentialsToken(clientId, clientSecret);

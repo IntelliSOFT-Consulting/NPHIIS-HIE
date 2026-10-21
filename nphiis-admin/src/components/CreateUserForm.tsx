@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CreateUserRequest } from '@/types/user';
 import { userApi, rolesApi, getAccessToken, fhirApi, FhirCounty, FhirSubCounty, FhirWard, FhirFacility, isUnauthorizedError, handleUnauthorized } from '@/lib/api';
+import { LOCATION_FREE_ROLES } from '@/lib/roles';
 import { 
   UserIcon, 
   EyeIcon, 
@@ -108,7 +109,8 @@ export default function CreateUserForm({ onUserCreated }: CreateUserFormProps) {
   const selectedWardId = watch('wardId');
   
   // Determine visibility based on role
-  const isLocationDisabled = selectedRole === 'ADMINISTRATOR' || selectedRole === 'SUPERUSER';
+  // National roles with no location of their own (administrators, call-centre agents).
+  const isLocationDisabled = LOCATION_FREE_ROLES.includes(selectedRole);
   const showCountyOnly = selectedRole === 'COUNTY_DISEASE_SURVEILLANCE_OFFICER';
   const showSubCountyOnly = selectedRole === 'SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER';
   const showSubCounty = !isLocationDisabled && !showCountyOnly;
@@ -274,8 +276,8 @@ export default function CreateUserForm({ onUserCreated }: CreateUserFormProps) {
       // Use the lowest level location appropriate for the user's role
       let locationId = '';
       
-      if (selectedRole === 'ADMINISTRATOR' || selectedRole === 'SUPERUSER') {
-        // No location for admin roles
+      if (LOCATION_FREE_ROLES.includes(selectedRole)) {
+        // No location for national roles
         locationId = '';
       } else if (selectedRole === 'COUNTY_DISEASE_SURVEILLANCE_OFFICER') {
         // County level - use county ID

@@ -104,59 +104,6 @@ PROXY_FIX_CONFIG = {
     "x_prefix": 1
 }
 
-# When the external SSL terminator forwards plain HTTP to port 8088,
-# set SUPERSET_WEBSERVER_ADDRESS (e.g. analytics-nphiis.health.go.ke) in .env-local
-# to force Flask to use https:// when building OAuth callback URLs.
-#
-# NOTE: We intentionally do NOT set Flask's SERVER_NAME here.  SERVER_NAME causes
-# Flask/Werkzeug to reject any request whose Host header doesn't match exactly,
-# which breaks Docker health checks (they hit localhost:8088) and marks the
-# container as unhealthy.  ProxyFix + X-Forwarded-Host is sufficient for correct
-# external URL generation when requests arrive through Nginx.
-#
-# We also sanitize the "next" query parameter on login paths so it is stored as a
-# relative path rather than a full https://host/path URL.  When next is an absolute
-# URL, Keycloak rejects the OAuth authorization request (the URL ends up embedded in
-# the Authlib state JWT, and Keycloak's authorization endpoint errors on it).
-# Relative paths produce smaller state JWTs and Keycloak handles them correctly.
-_SUPERSET_WEBSERVER_ADDRESS = os.getenv("SUPERSET_WEBSERVER_ADDRESS", "")
-if _SUPERSET_WEBSERVER_ADDRESS:
-    PREFERRED_URL_SCHEME = "https"
-
-    def FLASK_APP_MUTATOR(app):
-        _inner = app.wsgi_app
-
-        def _fix_request(environ, start_response):
-            # 1. Force wsgi.url_scheme so url_for(_external=True) returns https://
-            #    even when Nginx forwards plain HTTP without X-Forwarded-Proto.
-            environ["wsgi.url_scheme"] = "https"
-
-            # 2. Rewrite "next=https://host/path" → "next=/path" on login endpoints.
-            #    Flask-Login passes request.url (absolute) as next, which Keycloak
-            #    rejects when embedded in the Authlib state JWT.
-            from urllib.parse import parse_qs, urlencode, urlparse
-            path = environ.get("PATH_INFO", "")
-            qs = environ.get("QUERY_STRING", "")
-            if path.startswith("/login") and qs and "next=" in qs:
-                try:
-                    params = parse_qs(qs, keep_blank_values=True)
-                    if "next" in params:
-                        sanitized = []
-                        for v in params["next"]:
-                            if v.startswith("http://") or v.startswith("https://"):
-                                p = urlparse(v)
-                                sanitized.append(p.path + ("?" + p.query if p.query else ""))
-                            else:
-                                sanitized.append(v)
-                        params["next"] = sanitized
-                        environ["QUERY_STRING"] = urlencode(params, doseq=True)
-                except Exception:
-                    pass
-
-            return _inner(environ, start_response)
-
-        app.wsgi_app = _fix_request
-
 # Session cookie configuration for OAuth state management
 # These settings ensure cookies are properly set and preserved through the proxy
 SESSION_COOKIE_SECURE = True  # Required for HTTPS

@@ -1,9 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { FhirApi, OperationOutcome } from '../lib/utils';
 import { processAfpObservation } from '../lib/notification';
-import { assignEpidForEncounter, promoteConvertedVhfContact } from '../lib/epid-assignment';
+import { assignEpidForEncounter } from '../lib/epid-assignment';
 import { attachSubscriptionAuditLog } from '../lib/subscription-audit';
-import { VHF_CONTACT_LINK_IDS } from '../lib/vhf-link-ids';
 import { requireInternalApiKey } from '../middleware/internal-api-key';
 import { requireInternalApiKeyOrAdminBearer } from '../middleware/internal-api-key-or-admin';
 import { authenticateUser } from '../lib/middleware';
@@ -36,6 +35,12 @@ async function assignIdsHandler(
     const result = await assignEpidForEncounter(data, {
       notify: options?.notify === true,
     });
+
+    if (result.kind === 'not_applicable') {
+      res.locals.subscriptionOutcome = 'skipped';
+      res.locals.subscriptionDetail = { kind: 'not_applicable', reason: result.reason };
+      return res.status(200).json(OperationOutcome(`No EPID: ${result.reason}`, 'information'));
+    }
 
     if (result.kind === 'already_official_epid') {
       if (options?.alreadyEpidResponse === '200skipped') {
@@ -310,7 +315,7 @@ router.post('/encounters/retry-epid', requireInternalApiKeyOrAdminBearer, async 
         const r = await assignEpidForEncounter(enc);
         if (r.kind === 'success') {
           results.push({ encounterId: eid, ok: true });
-        } else if (r.kind === 'already_official_epid') {
+        } else if (r.kind === 'already_official_epid' || r.kind === 'not_applicable') {
           results.push({ encounterId: eid, ok: true });
         } else {
           results.push({ encounterId: eid, ok: false, error: String(r.error) });
@@ -348,6 +353,10 @@ router.post('/encounters/retry-epid', requireInternalApiKeyOrAdminBearer, async 
     }
 
     const result = await assignEpidForEncounter(data);
+    if (result.kind === 'not_applicable') {
+      res.locals.subscriptionOutcome = 'skipped';
+      return res.status(200).json(OperationOutcome(`No EPID: ${result.reason}`, 'information'));
+    }
     if (result.kind === 'already_official_epid') {
       res.locals.subscriptionOutcome = 'skipped';
       return res.status(200).json(
@@ -368,54 +377,6 @@ router.post('/encounters/retry-epid', requireInternalApiKeyOrAdminBearer, async 
     return res.status(200).json(result.encounter);
   } catch (error) {
     console.error(error);
-    res.locals.subscriptionOutcome = 'error';
-    res.locals.subscriptionErrorMessage = String(error);
-    return res.status(400).json(OperationOutcome(error));
-  }
-});
-
-router.put('/observations/vhf-case-type/notifications/Observation/:id', async (req: Request, res: Response) => {
-  console.log('VHF case type Observation subscription triggered for ID:', req.params.id);
-  const start = Date.now();
-  attachSubscriptionAuditLog(
-    res,
-    { route: 'vhf-case-type-notification', resourceType: 'Observation', resourceId: req.params.id },
-    start
-  );
-
-  try {
-    const { id } = req.params;
-    const data = (await FhirApi({ url: `/Observation/${id}` })).data;
-
-    const code = data?.code?.coding?.[0]?.code;
-    if (code !== VHF_CONTACT_LINK_IDS.caseType) {
-      res.locals.subscriptionOutcome = 'skipped';
-      return res.status(200).json(OperationOutcome('Not a VHF case type observation', 'information'));
-    }
-
-    const encounterId = data?.encounter?.reference?.split('/')[1];
-    if (!encounterId) {
-      res.locals.subscriptionOutcome = 'skipped';
-      return res.status(200).json(OperationOutcome('Observation has no encounter reference', 'information'));
-    }
-
-    const result = await promoteConvertedVhfContact(encounterId);
-
-    if (result.kind === 'skipped') {
-      res.locals.subscriptionOutcome = 'skipped';
-      res.locals.subscriptionDetail = { reason: result.reason };
-      return res.status(200).json(OperationOutcome(result.reason, 'information'));
-    }
-    if (result.kind === 'error') {
-      res.locals.subscriptionOutcome = 'error';
-      res.locals.subscriptionErrorMessage = String(result.error);
-      return res.status(400).json(OperationOutcome(result.error));
-    }
-    res.locals.subscriptionOutcome = 'success';
-    res.locals.subscriptionDetail = { caseId: result.caseId };
-    return res.status(200).json(OperationOutcome(`Contact promoted to case (${result.caseId})`, 'information'));
-  } catch (error) {
-    console.error('Error in VHF case type subscription:', error);
     res.locals.subscriptionOutcome = 'error';
     res.locals.subscriptionErrorMessage = String(error);
     return res.status(400).json(OperationOutcome(error));

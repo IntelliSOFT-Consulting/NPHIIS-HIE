@@ -385,7 +385,7 @@ Verify the wildcard cert is presented and is not expired.
 2. Create or import the `nphiis` realm (use the realm export file if available).
 3. Create the `nphiis-admin` client. Copy the **client secret** into `hie-auth/.env` (`KEYCLOAK_CLIENT_SECRET`).
 4. Add the custom attributes: ensure `fhirPractitionerId` is defined as a user attribute on the `nphiis` realm.
-5. Assign the application roles to the client. The full list of roles is defined by the `USER_ROLES` variable in `hie-auth/.env`.
+5. Assign the application roles to the client. The full list of roles is defined by the `USER_ROLES` variable in `hie-auth/.env`. Include `NATIONAL_CALL_CENTER_AGENTS` (719 call-centre agents). These users have no location and see only the admin portal's **Call Centre** module, where they log calls and view call logs from the whole country.
 6. Import or configure the custom Keycloak themes from `keycloak/themes/`.
 
 After updating the client secret, restart hie-auth:
@@ -889,20 +889,6 @@ After `--switch`, set `NPHIIS_VHF_SOURCE=postgres` in `NPHIIS-superset/docker/.e
 curl -H "Authorization: Bearer $TOKEN" "https://<host>/api/reports/vhf/line-list?recordType=Case&period=this_month"
 curl -H "X-Api-Key: $REPORTS_API_KEY" -o contacts.csv "https://<host>/api/reports/vhf/contacts?period=last_21_days&format=csv"
 ```
-
-**Partner systems with their own login (client credentials).** Instead of sharing `REPORTS_API_KEY`, give each system its own Keycloak client. Its token sees all areas but is accepted only by `/reports/vhf/*`; the rest of hie-auth refuses it.
-
-1. Keycloak admin, realm `$KC_REALM` > Clients > Create client: OpenID Connect, a client ID such as `partner-reports`; turn on **Client authentication** and **Service accounts roles**, and turn off Standard flow and Direct access grants. Copy the secret from the Credentials tab.
-2. Add the client ID to `REPORTS_CLIENT_IDS` in `hie-auth/.env` (comma-separated) and restart hie-auth.
-3. The system gets a token (30 minutes; ask for a new one when it expires) and calls the line lists with it:
-
-```bash
-TOKEN=$(curl -s -X POST "https://<host>/api/reports/vhf/token" \
-  -d client_id=partner-reports -d client_secret=$SECRET | jq -r .access_token)
-curl -H "Authorization: Bearer $TOKEN" "https://<host>/api/reports/vhf/line-list?period=this_month"
-```
-
-To revoke a system, remove it from `REPORTS_CLIENT_IDS` (or regenerate its secret / disable the client in Keycloak).
 
 **Load the sink without waiting for a run** (a new database, or after changing a view definition). From HAPI directly, for every resource type that has a view (the same read-only queries the controller runs):
 

@@ -15,6 +15,11 @@ describe("parseCaseQuery", () => {
     }
   });
 
+  it("waits for the whole phone number", () => {
+    expect(parseCaseQuery("0712")).toEqual({ kind: "partial-phone" });
+    expect(parseCaseQuery("+254 712 34")).toEqual({ kind: "partial-phone" });
+  });
+
   it("keeps foreign numbers as typed", () => {
     expect(phoneVariants("+256772004519")).toEqual(expect.arrayContaining(["+256772004519", "256772004519"]));
   });

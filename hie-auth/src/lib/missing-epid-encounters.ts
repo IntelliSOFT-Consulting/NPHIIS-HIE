@@ -1,6 +1,6 @@
 import { FhirApi } from "./utils";
 import { patientHasOfficialEpid } from "./epid-utils";
-import { REASON_CODE_CONDITIONS, conditionCodeForReason } from "./condition-codes";
+import { REASON_CODE_CONDITIONS, conditionCodeForReason, encounterGetsNoEpid } from "./condition-codes";
 
 const apiHost = process.env.FHIR_BASE_URL || "";
 
@@ -114,6 +114,8 @@ export async function scanEncountersMissingEpid(options: {
     for (; index < bundle.entry.length && encounters.length < limit; index++) {
       const enc = bundle.entry[index]?.resource;
       if (enc?.resourceType !== "Encounter" || !enc?.id) continue;
+      // Call logs never get an EPID, so they are never "missing" one.
+      if (encounterGetsNoEpid(enc)) continue;
 
       const patientId = patientIdFromEncounter(enc);
       if (!patientId) continue;
