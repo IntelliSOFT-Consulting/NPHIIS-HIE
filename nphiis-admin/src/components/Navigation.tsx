@@ -16,8 +16,10 @@ import {
   EyeDropperIcon,
   ShieldCheckIcon,
   UserGroupIcon,
+  PhoneIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
+import { isCallCentreOnly } from '@/lib/roles';
 
 interface NavItem {
   name: string;
@@ -51,7 +53,9 @@ const SETTINGS_SUB_ITEMS: SettingsSubItem[] = [
 ];
 
 export default function Navigation() {
-  const { can } = useAuth();
+  const { can, roles } = useAuth();
+  // Call-centre agents see the Call Centre module and nothing else.
+  const callCentreOnly = isCallCentreOnly(roles);
   const router = useRouter();
   const pathname = usePathname() ?? '';
   const showSettings = can('SUBSCRIPTION_LOGS_VIEW');
@@ -65,9 +69,9 @@ export default function Navigation() {
   }, [settingsActive]);
 
   const navigation: NavItem[] = [
-    { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon, visible: true },
+    { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon, visible: !callCentreOnly },
     { name: 'Users', href: '/users', icon: UsersIcon, visible: can('USERS_MANAGE') },
-    { name: 'Locations', href: '/locations', icon: MapPinIcon, visible: true },
+    { name: 'Locations', href: '/locations', icon: MapPinIcon, visible: !callCentreOnly },
     { name: 'Lab', href: '/lab', icon: BeakerIcon, visible: can('LAB_ACCESS') },
     {
       name: 'Screening',
@@ -92,6 +96,12 @@ export default function Navigation() {
       href: '/rumours',
       icon: ChatBubbleLeftEllipsisIcon,
       visible: can('RUMOURS_TRIAGE'),
+    },
+    {
+      name: 'Call Centre',
+      href: '/call-centre',
+      icon: PhoneIcon,
+      visible: can('CALL_CENTRE'),
     },
   ];
 

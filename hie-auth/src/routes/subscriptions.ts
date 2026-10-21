@@ -36,6 +36,12 @@ async function assignIdsHandler(
       notify: options?.notify === true,
     });
 
+    if (result.kind === 'not_applicable') {
+      res.locals.subscriptionOutcome = 'skipped';
+      res.locals.subscriptionDetail = { kind: 'not_applicable', reason: result.reason };
+      return res.status(200).json(OperationOutcome(`No EPID: ${result.reason}`, 'information'));
+    }
+
     if (result.kind === 'already_official_epid') {
       if (options?.alreadyEpidResponse === '200skipped') {
         res.locals.subscriptionOutcome = 'skipped';
@@ -309,7 +315,7 @@ router.post('/encounters/retry-epid', requireInternalApiKeyOrAdminBearer, async 
         const r = await assignEpidForEncounter(enc);
         if (r.kind === 'success') {
           results.push({ encounterId: eid, ok: true });
-        } else if (r.kind === 'already_official_epid') {
+        } else if (r.kind === 'already_official_epid' || r.kind === 'not_applicable') {
           results.push({ encounterId: eid, ok: true });
         } else {
           results.push({ encounterId: eid, ok: false, error: String(r.error) });
@@ -347,6 +353,10 @@ router.post('/encounters/retry-epid', requireInternalApiKeyOrAdminBearer, async 
     }
 
     const result = await assignEpidForEncounter(data);
+    if (result.kind === 'not_applicable') {
+      res.locals.subscriptionOutcome = 'skipped';
+      return res.status(200).json(OperationOutcome(`No EPID: ${result.reason}`, 'information'));
+    }
     if (result.kind === 'already_official_epid') {
       res.locals.subscriptionOutcome = 'skipped';
       return res.status(200).json(

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { conditionCodeForReason } from "./condition-codes";
+import { conditionCodeForReason, encounterGetsNoEpid } from "./condition-codes";
 
 describe("conditionCodeForReason", () => {
   it("maps known case forms", () => {
@@ -16,5 +16,20 @@ describe("conditionCodeForReason", () => {
   it("returns UNK for a missing reason", () => {
     expect(conditionCodeForReason(undefined)).toBe("UNK");
     expect(conditionCodeForReason("")).toBe("UNK");
+  });
+});
+
+describe("encounterGetsNoEpid", () => {
+  it("is true for call logs, whichever reason coding names them", () => {
+    expect(encounterGetsNoEpid({ reasonCode: [{ coding: [{ code: "Alert Rumor Log" }] }] })).toBe(true);
+    expect(
+      encounterGetsNoEpid({ reasonCode: [{ coding: [{ code: "case-information" }] }, { coding: [{ code: "Alert Rumor Log" }] }] }),
+    ).toBe(true);
+  });
+
+  it("is false for case forms and encounters without a reason", () => {
+    expect(encounterGetsNoEpid({ reasonCode: [{ coding: [{ code: "VHF Case Information" }] }] })).toBe(false);
+    expect(encounterGetsNoEpid({})).toBe(false);
+    expect(encounterGetsNoEpid(null)).toBe(false);
   });
 });

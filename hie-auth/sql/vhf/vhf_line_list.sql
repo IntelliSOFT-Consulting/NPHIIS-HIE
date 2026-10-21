@@ -10,7 +10,8 @@
 -- The pipeline writes missing values as '', hence the NULLIFs; timestamps are ISO text.
 WITH vhf AS (
   SELECT p.id AS patient_id,
-         MAX(CASE WHEN i.type_code = 'EPID' THEN NULLIF(i.value, '') END) AS epid
+         MAX(CASE WHEN i.type_code = 'EPID' THEN NULLIF(i.value, '') END) AS epid,
+         MAX(CASE WHEN i.system = 'http://hie.org/identifiers/CONTACT_ID' THEN NULLIF(i.value, '') END) AS contact_id
   FROM public.patient_flat_pg p
   JOIN public.patient_identifier_pg i ON i.id = p.id
   WHERE p.active IS DISTINCT FROM false
@@ -121,6 +122,7 @@ base AS (
   SELECT
     v.patient_id,
     COALESCE(v.epid, o.epid_obs) AS epid,
+    v.contact_id,
     o.*,
     s.first_submitted AS date_reported,
     NULLIF(p.birth_date, '') AS birth_date,
@@ -167,6 +169,7 @@ SELECT
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(subcounty, '')), '\s+', ' ', 'g')) AS subcounty_rls,
   patient_id,
   epid                                    AS "EPID",
+  contact_id                              AS "Contact ID",
   record_type                             AS "Record Type",
   classification                          AS "Classification",
   COALESCE(disease_other, disease)        AS "Disease",

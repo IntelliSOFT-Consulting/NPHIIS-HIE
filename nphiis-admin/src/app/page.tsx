@@ -5,16 +5,17 @@ import { useRouter } from 'next/navigation';
 import AdminLogin from '@/components/AdminLogin';
 import { authApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { homePath } from '@/lib/roles';
 
 export default function Home() {
-  const { isAuthenticated, isLoading, signIn } = useAuth();
+  const { isAuthenticated, isLoading, signIn, roles } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace('/dashboard');
+      router.replace(homePath(roles));
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, roles, router]);
 
   const handleLogin = async (
     idNumber: string,
@@ -46,7 +47,7 @@ export default function Home() {
         accessToken: result.accessToken,
         timestamp: Date.now(),
       });
-      router.replace('/dashboard');
+      router.replace(homePath(result.userInfo.role ? [result.userInfo.role] : []));
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);

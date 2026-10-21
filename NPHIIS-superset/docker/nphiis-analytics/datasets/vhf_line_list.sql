@@ -16,7 +16,8 @@
 -- checks every name.
 WITH vhf AS (
   SELECT p.id AS patient_id,
-         MAX(CASE WHEN id_elem.type.coding[0].code = 'EPID' THEN id_elem.value END) AS epid
+         MAX(CASE WHEN id_elem.type.coding[0].code = 'EPID' THEN id_elem.value END) AS epid,
+         MAX(CASE WHEN id_elem.system = 'http://hie.org/identifiers/CONTACT_ID' THEN id_elem.value END) AS contact_id
   FROM patient p
   LATERAL VIEW EXPLODE(p.identifier) id_table AS id_elem
   WHERE COALESCE(p.active, true) = true
@@ -124,6 +125,7 @@ base AS (
   SELECT
     v.patient_id,
     COALESCE(v.epid, o.epid_obs) AS epid,
+    v.contact_id,
     o.*,
     DATE(s.first_submitted) AS date_reported,
     p.birthDate AS birth_date,
@@ -172,6 +174,7 @@ SELECT
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(subcounty, '')), '\\s+', ' ')) AS subcounty_rls,
   patient_id,
   epid                                    AS `EPID`,
+  contact_id                              AS `Contact ID`,
   record_type                             AS `Record Type`,
   classification                          AS `Classification`,
   COALESCE(disease_other, disease)        AS `Disease`,

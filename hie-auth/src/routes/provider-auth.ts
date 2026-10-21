@@ -10,8 +10,14 @@ import { getRoleFromPractitioner, isAdminPractitioner, providerRoleKeycloakAttri
 import { runPractitionerRoleBackfillJob } from "../lib/practitioner-role-backfill";
 import { runPractitionerRoleResourceBackfillJob } from "../lib/practitioner-role-resource-backfill";
 import { runCaseNotificationBackfillJob } from "../lib/notification-backfill-job";
-import { getApplicationRoles, isValidApplicationRole } from "../lib/roles";
+import { getApplicationRoles, isLocationFreeRole, isValidApplicationRole } from "../lib/roles";
 import { lookupClientRegistryPatient } from "../lib/client-registry";
+import {
+    FACILITY_IDENTIFIER_TYPES,
+    isFacilityIdentifierType,
+    searchFacilityRegistry,
+    type FacilitySearch,
+} from "../lib/facility-registry";
 import { lookupIprsPatient } from "../lib/iprs";
 import { IdentificationType, isIdentificationType } from "../lib/identification-types";
 import { handleResetRequest } from "../lib/password-reset-request";
@@ -82,7 +88,8 @@ router.post("/register", authenticateUser, async (req: Request, res: Response) =
             return res.status(400).json({ status: "error", error: `invalid role provided. Allowed roles: ${getApplicationRoles().join(",")}` });
         }
 
-        if (role !== "ADMINISTRATOR" && !facility) {
+        const locationFree = isLocationFreeRole(role);
+        if (!locationFree && !facility) {
             return res.status(400).json({ status: "error", error: "Failed to register user. Invalid location provided for user role" });
         }
 
@@ -94,8 +101,8 @@ router.post("/register", authenticateUser, async (req: Request, res: Response) =
         // Parallel operations for better performance
         const [keycloakUser, location] = await Promise.all([
             registerKeycloakUser(idNumber, email, phone, firstName, lastName, password, null),
-            // Only fetch location if needed (not for ADMINISTRATOR role)
-            role !== "ADMINISTRATOR" ?
+            // National roles (administrator, call-centre agent) get the root location
+            !locationFree ?
                 (await FhirApi({ url: `/Location/${facility}` })).data :
                 Promise.resolve({ id: '0', name: process.env.ROOT_LOCATION_NAME || 'Kenya' })
         ]);
@@ -374,6 +381,43 @@ router.get("/patients/registry", authenticateUser, async (req: Request, res: Res
             status: "error",
             error: "Failed to look up patient identity",
         });
+    }
+});
+
+/**
+ * Facilities from the DHA Facility Registry, by name (?name=, at least 3 letters)
+ * or by code (?identifier=&identifier_type=mfl|license-number|fr-code|registration-number|fid).
+ * Not found is an empty list.
+ */
+router.get("/facilities/search", authenticateUser, async (req: Request, res: Response) => {
+    const name = String(req.query.name ?? "").trim();
+    const identifier = String(req.query.identifier ?? "").trim();
+    const identifierType = String(req.query.identifier_type ?? req.query["identifier-type"] ?? "").trim();
+
+    let query: FacilitySearch;
+    if (identifier) {
+        if (!isFacilityIdentifierType(identifierType)) {
+            return res.status(400).json({
+                status: "error",
+                error: `identifier_type must be one of: ${FACILITY_IDENTIFIER_TYPES.join(", ")}`,
+            });
+        }
+        query = { identifier, identifierType };
+    } else if (name.length >= 3) {
+        query = { name: name.slice(0, 100) };
+    } else {
+        return res.status(400).json({ status: "error", error: "Give a name of at least 3 characters, or an identifier" });
+    }
+
+    try {
+        const result = await searchFacilityRegistry(query);
+        if (result.status === "misconfigured") return res.status(503).json({ status: "error", error: result.error });
+        if (result.status === "error") return res.status(502).json({ status: "error", error: result.error });
+        const facilities = result.status === "found" ? result.facilities : [];
+        return res.status(200).json({ status: "success", facilities });
+    } catch (error) {
+        console.error("GET /facilities/search error:", error);
+        return res.status(500).json({ status: "error", error: "Failed to search the Facility Registry" });
     }
 });
 
