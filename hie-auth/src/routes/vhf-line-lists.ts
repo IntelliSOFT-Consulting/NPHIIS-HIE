@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import crypto from "crypto";
-import { validateBearerToken, validateUserAuthentication, findKeycloakUser } from "../lib/keycloak";
+import { validateBearerToken, validateUserAuthentication, findKeycloakUser, reportsClientOf, reportsClientIds, getClientCredentialsToken } from "../lib/keycloak";
 import { resolvePractitionerAssignment } from "../lib/practitioner-role";
 import { buildLocationInfo, FhirApi } from "../lib/utils";
 import { kenyaToday } from "../lib/vhf-contact-status";
@@ -61,8 +61,16 @@ async function authorize(req: Request, res: Response, next: NextFunction) {
     }
     const token = validateBearerToken(req);
     if (!token) return res.status(401).json({ status: "error", error: "Bearer token or X-Api-Key required" });
-    const user = await validateUserAuthentication(token);
+    const user = await validateUserAuthentication(token, { allowReportsClient: true });
     if (!user) return res.status(401).json({ status: "error", error: "Invalid Bearer token provided" });
+    if (reportsClientOf(token, user)) {
+      (req as any).scope = { roles: ["ADMINISTRATOR"] } satisfies UserScope;
+      return next();
+    }
+    // Any other client's service account (e.g. hie-auth's own admin client) has no reports access.
+    if (String(user.preferred_username ?? "").startsWith("service-account-")) {
+      return res.status(403).json({ status: "error", error: "This client may not read reports" });
+    }
     const scope = await userScope(user.preferred_username);
     if (!scope) return res.status(403).json({ status: "error", error: "User not found" });
     (req as any).scope = scope;
@@ -129,6 +137,38 @@ function handler(dataset: Dataset) {
     }
   };
 }
+
+/** POST /reports/vhf/token: swap Keycloak client_id + client_secret for an access token. */
+router.post("/token", express.json(), express.urlencoded({ extended: false }), async (req: Request, res: Response) => {
+  let clientId = typeof req.body?.client_id === "string" ? req.body.client_id.trim() : "";
+  let clientSecret = typeof req.body?.client_secret === "string" ? req.body.client_secret : "";
+  const basic = req.header("authorization")?.match(/^Basic\s+(.+)$/i);
+  if (basic && !clientId) {
+    const decoded = Buffer.from(basic[1], "base64").toString("utf8");
+    const i = decoded.indexOf(":");
+    if (i > 0) {
+      try {
+        clientId = decodeURIComponent(decoded.slice(0, i));
+        clientSecret = decodeURIComponent(decoded.slice(i + 1));
+      } catch {
+        clientId = clientSecret = "";
+      }
+    }
+  }
+  if (!clientId || !clientSecret) {
+    return res.status(400).json({ status: "error", error: "client_id and client_secret are required" });
+  }
+  const invalid = () => res.status(401).json({ status: "error", error: "Invalid client credentials" });
+  if (!reportsClientIds().includes(clientId)) return invalid();
+  const token = await getClientCredentialsToken(clientId, clientSecret);
+  if (!token) return invalid();
+  return res.json({
+    status: "success",
+    access_token: token.access_token,
+    token_type: "Bearer",
+    expires_in: token.expires_in,
+  });
+});
 
 router.get("/line-list", authorize, handler("line-list"));
 router.get("/contacts", authorize, handler("contacts"));
