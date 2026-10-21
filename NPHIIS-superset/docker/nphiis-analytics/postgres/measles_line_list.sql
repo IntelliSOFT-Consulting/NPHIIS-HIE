@@ -294,8 +294,6 @@ SELECT
   "Sex",
   "Ward",
   patient_id,
-  subcounty_rls,
-  county_rls,
   "DistrictofResidence",
   "ProvinceOfResidence",
   "ReportingHealthfacility",

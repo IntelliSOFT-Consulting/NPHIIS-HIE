@@ -324,8 +324,6 @@ SELECT
   "Sex",
   "Ward",
   patient_id,
-  subcounty_rls,
-  county_rls,
   "Urbanrural",
   TO_CHAR("DateLabSentResulttodistrict",'DD/MM/YYYY') AS "DateLabSentResulttodistrict",
   TO_CHAR("DateReceivedNatlevel",'DD/MM/YYYY') AS "DateReceivedNatlevel",
