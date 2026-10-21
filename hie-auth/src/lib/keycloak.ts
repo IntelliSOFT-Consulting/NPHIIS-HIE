@@ -2,6 +2,8 @@ import fetch from "cross-fetch";
 import { timingSafeEqual } from 'crypto';
 import { getApplicationRoles } from "./roles";
 import { clearCounter, hitCounter } from "./rate-limit";
+import { reportsClientOf } from "./reports-client";
+export { reportsClientIds, reportsClientOf } from "./reports-client";
 
 
 let KC_BASE_URL = String(process.env.KC_BASE_URL);
@@ -381,7 +383,11 @@ export const getKeycloakUserToken = async (idNumber: string, password: string) =
     }
 }
 
-export const getCurrentUserInfo = async (accessToken: string) => {
+/**
+ * The token's user, or null when Keycloak rejects it. Tokens of the reports clients are refused
+ * unless allowReportsClient is set: they are for /reports/vhf only.
+ */
+export const getCurrentUserInfo = async (accessToken: string, { allowReportsClient = false } = {}) => {
   try {
     const userInfoEndpoint = `${KC_BASE_URL}/realms/${KC_REALM}/protocol/openid-connect/userinfo`;
     // Make a request to Keycloak's userinfo endpoint with the access token
@@ -415,6 +421,10 @@ export const getCurrentUserInfo = async (accessToken: string) => {
     // Only parse JSON if response is OK
     try {
       const result = await response.json();
+      if (!allowReportsClient && reportsClientOf(accessToken, result)) {
+        console.warn(`Refused a reports client token outside /reports/vhf (${result?.preferred_username})`);
+        return null;
+      }
       return result;
     } catch (error) {
       console.error('Failed to parse userinfo response as JSON:', error);
@@ -574,8 +584,8 @@ export const validateBearerToken = (req: any): string | null => {
     return accessToken;
 };
 
-export const validateUserAuthentication = async (accessToken: string) => {
-    const currentUser = await getCurrentUserInfo(accessToken);
+export const validateUserAuthentication = async (accessToken: string, options: { allowReportsClient?: boolean } = {}) => {
+    const currentUser = await getCurrentUserInfo(accessToken, options);
     if (!currentUser) {
         return null;
     }

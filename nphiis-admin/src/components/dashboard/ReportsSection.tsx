@@ -5,10 +5,10 @@ import { useAuth } from '@/lib/auth-context';
 import SupersetDashboard from '../SupersetDashboard';
 
 interface ReportTab {
-  id: 'vhf' | 'vhf_contacts' | 'idsr_cbs' | 'afp';
+  id: 'vhf' | 'idsr_cbs' | 'afp';
   label: string;
   dashboardId: string;
-  feature: 'REPORTS_VIEW_IDSR' | 'VHF_REPORTS' | 'VHF_CONTACTS';
+  feature: 'REPORTS_VIEW_IDSR' | 'VHF_REPORTS';
 }
 
 const SUPERSET_URL = process.env.NEXT_PUBLIC_SUPERSET_URL ?? '';
@@ -22,8 +22,6 @@ const AFP_DASHBOARD_ID = process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_AFP ?? '';
 // Embed ids fixed by the Superset setup (NPHIIS-superset/docker/nphiis-analytics).
 const VHF_DASHBOARD_ID =
   process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_VHF ?? 'f7c7ba20-bbfb-57f8-ab96-a7e44eb07da7';
-const VHF_CONTACTS_DASHBOARD_ID =
-  process.env.NEXT_PUBLIC_SUPERSET_DASHBOARD_VHF_CONTACTS ?? '5f9bceb6-0753-5dd0-8217-7f78abdad7a1';
 
 interface ReportsSectionProps {
   title?: string;
@@ -49,12 +47,6 @@ export default function ReportsSection({
         label: 'VHF / Ebola Surveillance',
         dashboardId: VHF_DASHBOARD_ID,
         feature: 'VHF_REPORTS',
-      },
-      {
-        id: 'vhf_contacts',
-        label: 'VHF Contact Tracing',
-        dashboardId: VHF_CONTACTS_DASHBOARD_ID,
-        feature: 'VHF_CONTACTS',
       },
       {
         id: 'idsr_cbs',
