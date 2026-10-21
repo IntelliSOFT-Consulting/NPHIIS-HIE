@@ -6,7 +6,7 @@ export type UpstreamLookupResult = {
     error?: string;
 };
 
-function parseTimeoutMs(raw: string | undefined, fallback: number): number {
+export function parseTimeoutMs(raw: string | undefined, fallback: number): number {
     const n = Number(raw);
     return Number.isFinite(n) && n > 0 ? n : fallback;
 }
@@ -22,12 +22,12 @@ export function resetClientRegistryTokenCache(): void {
 }
 
 /**
- * Bearer token for CR. With CR_CLIENT_ID + CR_CLIENT_SECRET, fetches an OAuth2
+ * Bearer token for the DHA middleware (Client Registry, and the Facility Registry on the same middleware). With CR_CLIENT_ID + CR_CLIENT_SECRET, fetches an OAuth2
  * client-credentials token (DHA middleware: POST ${CR_BASE_URL}/api/v1/tenants/token,
  * override with CR_TOKEN_URL) and caches it until shortly before expiry.
  * Otherwise falls back to the static CR_API_TOKEN.
  */
-async function getClientRegistryToken(
+export async function getClientRegistryToken(
     baseUrl: string,
     signal: AbortSignal,
     forceRefresh = false

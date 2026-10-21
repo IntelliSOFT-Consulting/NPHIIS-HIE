@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import Navigation from './Navigation';
 import { useAuth } from '@/lib/auth-context';
-import { formatRole } from '@/lib/roles';
+import { formatRole, homePath } from '@/lib/roles';
 
 export const PAGE_META: Record<
   string,
@@ -35,6 +35,10 @@ export const PAGE_META: Record<
     title: 'Rumours',
     subtitle: 'Set High / Medium / Low priority on rumour reports',
   },
+  '/call-centre': {
+    title: 'Call Centre',
+    subtitle: '719 call log: alerts and rumours from callers',
+  },
   '/settings': { title: 'Settings', subtitle: 'System configuration' },
   '/settings/subscription-logs': {
     title: 'Subscription logs',
@@ -59,7 +63,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname() ?? '/dashboard';
 
-  const meta = PAGE_META[pathname] ?? PAGE_META['/dashboard'];
+  const meta = PAGE_META[pathname] ?? PAGE_META[homePath(roles)];
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();

@@ -29,12 +29,19 @@ export function scopeMpoxRole(
 
 export const ADMIN_ROLES: Role[] = ["ADMINISTRATOR", "SUPERUSER"];
 
+/** 719 call-centre agents: the Call Centre module and nothing else. */
+export const CALL_CENTRE_ROLE: Role = "NATIONAL_CALL_CENTER_AGENTS";
+
+/** Roles with no location of their own: they work across the whole country. */
+export const LOCATION_FREE_ROLES: Role[] = ["ADMINISTRATOR", "SUPERUSER", CALL_CENTRE_ROLE];
+
 export const NATIONAL_ROLES: Role[] = [
   "ADMINISTRATOR",
   "SUPERUSER",
   "NATIONAL_FOCAL_PERSON",
   "NATIONAL_VIEWER",
   "NATIONAL_LAB",
+  CALL_CENTRE_ROLE,
 ];
 
 export const LAB_ROLES: Role[] = [
@@ -93,6 +100,9 @@ export const FEATURES = {
   SPECIMENS_VIEW: [...LAB_ROLES, "NATIONAL_FOCAL_PERSON", "NATIONAL_VIEWER"],
   // Screened travellers and their follow-up. Not location-scoped either.
   SCREENINGS_VIEW: ["ADMINISTRATOR", "SUPERUSER", "NATIONAL_FOCAL_PERSON", "NATIONAL_VIEWER"],
+  // 719 call log (alert / rumour log): capture, edit, delete and view calls
+  // from the whole country.
+  CALL_CENTRE: ["ADMINISTRATOR", "SUPERUSER", CALL_CENTRE_ROLE],
   LAB_NATIONAL_SCOPE: ["NATIONAL_LAB", "ADMINISTRATOR", "SUPERUSER"],
   SUBSCRIPTION_LOGS_VIEW: ["ADMINISTRATOR", "SUPERUSER"],
 } as const;
@@ -138,6 +148,20 @@ export function isApplicationRole(role: string): boolean {
   if (KEYCLOAK_NOISE.has(role)) return false;
   if (role.startsWith("default-roles-")) return false;
   return true;
+}
+
+/** True when the user's only role is call-centre agent: they see the Call Centre module alone. */
+export function isCallCentreOnly(userRoles: string[] | undefined): boolean {
+  const roles = (userRoles ?? []).filter(isApplicationRole);
+  return (
+    roles.length > 0 &&
+    roles.every((r) => r.toUpperCase() === CALL_CENTRE_ROLE)
+  );
+}
+
+/** Where a user lands after signing in. */
+export function homePath(userRoles: string[] | undefined): string {
+  return isCallCentreOnly(userRoles) ? "/call-centre" : "/dashboard";
 }
 
 // "COUNTY_DISEASE_SURVEILLANCE_OFFICER" → "County Disease Surveillance Officer"

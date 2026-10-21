@@ -13,7 +13,7 @@ import {
   resolveLocationNamesForEncounter,
 } from "./epid-location-segment";
 import { resolveCountyLocationSegment } from "./county-segment-registry";
-import { conditionCodeForReason } from "./condition-codes";
+import { conditionCodeForReason, encounterGetsNoEpid } from "./condition-codes";
 import {
   caseIdIdentifier,
   CASE_ID_SYSTEM_URI,
@@ -117,6 +117,8 @@ function stripNonOfficialTypedEpidFromPatientClone(patient: any): any {
 export type EpidAssignResult =
   | { kind: "success"; encounter: any }
   | { kind: "already_official_epid"; encounterId: string }
+  /** The record never gets an EPID (e.g. a call log). */
+  | { kind: "not_applicable"; encounterId: string; reason: string }
   /** retryable: false when retrying cannot help (e.g. the form never captured a sub-county). */
   | { kind: "error"; error: unknown; retryable?: boolean };
 
@@ -136,6 +138,11 @@ export async function assignEpidForEncounter(
   }
   if (!encounterId) {
     return { kind: "error", error: new Error("Encounter must include resource id") };
+  }
+
+  /** Call logs get no EPID; a case linked to the log carries one. */
+  if (encounterGetsNoEpid(encounterDraft)) {
+    return { kind: "not_applicable", encounterId, reason: "call logs get no EPID" };
   }
 
   return enqueueEpidAssignmentForPatient(patientId, async () => {
