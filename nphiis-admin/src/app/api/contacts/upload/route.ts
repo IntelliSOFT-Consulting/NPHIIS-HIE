@@ -6,13 +6,27 @@ import {
   buildBoard,
   caseDisease,
   findSamePerson,
+  latestAnswers,
+  patientResources,
   postTransaction,
   refreshCaseList,
   reportingSite,
   resolvePlace,
+  type HieContact,
 } from "@/lib/fhir-contacts";
 import { mapWithConcurrency } from "@/lib/fhir-search";
-import { buildContactBundle, buildExtraExposureBundle, contactIds, type ContactInput, type IndexCase } from "@/lib/vhf-contacts";
+import {
+  buildContactBundle,
+  buildContactUpdateBundle,
+  buildExtraExposureBundle,
+  contactIds,
+  contactUpdate,
+  ROW_LINK_IDS,
+  type ContactInput,
+  type ContactOnRecord,
+  type ContactUpdate,
+  type IndexCase,
+} from "@/lib/vhf-contacts";
 
 const MAX_ROWS = 1000;
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -45,7 +59,8 @@ const Upload = z.object({
   commit: z.boolean().default(false),
 });
 
-export type UploadAction = "create" | "link-existing" | "restore" | "exists" | "skip";
+/** "update": on this list already, and the row has something new for it; "exists": nothing new. */
+export type UploadAction = "create" | "link-existing" | "restore" | "update" | "exists" | "skip";
 
 export interface UploadRowResult {
   rowNumber: number;
@@ -54,15 +69,38 @@ export interface UploadRowResult {
   residence?: string;
   problems: string[];
   existingName?: string;
+  /** What an update (or a put-back) changes: "Phone", "Days 4, 5". */
+  changes?: string[];
   saved?: boolean;
   error?: string;
 }
 
+interface Plan {
+  result: UploadRowResult;
+  input?: ContactInput;
+  existing?: { patientId: string; encounterId: string };
+  /** The contact on this case's list (or taken off it) that the row is. */
+  onRecord?: HieContact;
+  update?: ContactUpdate;
+  record?: ContactOnRecord;
+}
+
+/** Follow-up days recorded for a contact: day → symptomatic. */
+function recordedDays(c: HieContact): Map<number, boolean> {
+  const out = new Map<number, boolean>();
+  for (const d of c.days ?? []) {
+    if (d.state === "seen") out.set(d.day, false);
+    else if (d.state === "symptomatic") out.set(d.day, true);
+  }
+  return out;
+}
+
 /**
- * Line-list upload for one case. Preview resolves each row's county and sub-county, and finds
- * rows already uploaded for this case or people already registered (as a contact of another
- * case, or a case). Commit creates the new contacts, links people already registered to this
- * case too, and rebuilds the case's contact list.
+ * Line-list upload for one case, as an upsert. Preview resolves each row's county and
+ * sub-county and finds rows already on this case's list or people already registered (as a
+ * contact of another case, or a case). Commit creates the new contacts, links people already
+ * registered to this case too, adds what is new for contacts already on the list (changed
+ * details, new follow-up days), and rebuilds the case's contact list.
  */
 export async function POST(req: NextRequest) {
   const s = await contactsSession(req);
@@ -86,15 +124,15 @@ export async function POST(req: NextRequest) {
       epid,
       disease: await caseDisease(indexEncounterId, s.token),
     };
-    const onList = new Set(list.contacts.map((c) => c.encounterId));
+    const onList = new Map(list.contacts.map((c) => [c.encounterId, c]));
     // Taken off this case's list before: saving puts them back.
-    const offList = new Set((list.removed ?? []).map((c) => c.encounterId));
+    const offList = new Map((list.removed ?? []).map((c) => [c.encounterId, c]));
     const facility = s.profile.locationInfo?.facility
       ? { id: s.profile.locationInfo.facility, name: s.profile.locationInfo.facilityName ?? s.profile.locationInfo.facility }
       : undefined;
 
     const placeCache = new Map();
-    const plans = await mapWithConcurrency(rows, 4, async (row): Promise<{ result: UploadRowResult; input?: ContactInput; existing?: { patientId: string; encounterId: string } }> => {
+    const plans = await mapWithConcurrency(rows, 4, async (row): Promise<Plan> => {
       const name = `${row.givenNames} ${row.familyName}`.trim() || "(no name)";
       const problems: string[] = [];
       if (!row.givenNames.trim() && !row.familyName.trim()) {
@@ -108,18 +146,20 @@ export async function POST(req: NextRequest) {
 
       const ids = contactIds(index, input);
       if (onList.has(ids.encounterId)) {
-        return { result: { rowNumber: row.rowNumber, name, action: "exists", residence, problems } };
+        return { result: { rowNumber: row.rowNumber, name, action: "exists", residence, problems }, input, onRecord: onList.get(ids.encounterId) };
       }
       if (offList.has(ids.encounterId)) {
-        return { result: { rowNumber: row.rowNumber, name, action: "restore", residence, problems }, input };
+        return { result: { rowNumber: row.rowNumber, name, action: "restore", residence, problems }, input, onRecord: offList.get(ids.encounterId) };
       }
       const same = await findSamePerson(row, s.token);
       if (same) {
+        const onRecord = onList.get(same.encounterId) ?? offList.get(same.encounterId);
         const action: UploadAction = onList.has(same.encounterId) ? "exists" : offList.has(same.encounterId) ? "restore" : "link-existing";
         return {
           result: { rowNumber: row.rowNumber, name, action, residence, problems, existingName: same.name },
           existing: same,
           input,
+          onRecord,
         };
       }
       return { result: { rowNumber: row.rowNumber, name, action: "create", residence, problems }, input };
@@ -134,26 +174,57 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Contacts already on (or taken off) this list: what the row adds to them.
+    const known = plans.filter((p) => p.onRecord && p.input);
+    const answers = await latestAnswers(
+      known.map((p) => p.onRecord!.encounterId),
+      ROW_LINK_IDS,
+      s.token,
+    );
+    for (const p of known) {
+      const c = p.onRecord!;
+      p.record = {
+        patientId: c.patientId,
+        encounterId: c.encounterId,
+        answers: answers.get(c.encounterId) ?? new Map(),
+        followUps: recordedDays(c),
+        dayZero: c.dayZero || c.exposureDate || undefined,
+      };
+      p.update = contactUpdate(index, p.input!, p.record);
+      if (p.update.changes.length) {
+        p.result.changes = p.update.changes;
+        if (p.result.action === "exists") p.result.action = "update";
+      }
+    }
+
     if (commit) {
       const site = await reportingSite(s.profile, s.token);
+      const opts = { practitionerId: s.profile.practitionerId, facility };
+      const updating = plans.filter((p) => p.record && p.update?.changes.length && (p.result.action === "update" || p.result.action === "restore"));
+      const patients = await patientResources(updating.map((p) => p.record!.patientId), s.token);
       const restore = plans
         .filter((p) => p.result.action === "restore")
         .map((p) => p.existing?.encounterId ?? contactIds(index, p.input!).encounterId);
       await mapWithConcurrency(plans, 3, async (p) => {
-        if (!p.input || (p.result.action !== "create" && p.result.action !== "link-existing")) return;
+        if (!p.input) return;
         try {
-          const bundle =
-            p.result.action === "create"
-              ? buildContactBundle(index, p.input, { practitionerId: s.profile.practitionerId, facility, site })
-              : buildExtraExposureBundle(index, p.existing!, p.input.contactDate, { practitionerId: s.profile.practitionerId, facility });
-          await postTransaction(bundle, s.token);
+          if (p.result.action === "create") {
+            await postTransaction(buildContactBundle(index, p.input, { ...opts, site }), s.token);
+          } else if (p.result.action === "link-existing") {
+            await postTransaction(buildExtraExposureBundle(index, p.existing!, p.input.contactDate, opts), s.token);
+          } else if (updating.includes(p)) {
+            const bundle = buildContactUpdateBundle(p.record!, patients.get(p.record!.patientId) ?? null, p.input, p.update!, opts);
+            if (bundle) await postTransaction(bundle, s.token);
+          } else {
+            return;
+          }
           p.result.saved = true;
         } catch (err) {
           p.result.error = (err as Error).message;
         }
       });
       const refreshed = await refreshCaseList(s.token, indexEncounterId, { restore });
-      for (const p of plans) if (p.result.action === "restore") p.result.saved = true;
+      for (const p of plans) if (p.result.action === "restore" && !p.result.error) p.result.saved = true;
       return NextResponse.json({
         results: plans.map((p) => p.result),
         board: await buildBoard(refreshed, s.token, s.scope),

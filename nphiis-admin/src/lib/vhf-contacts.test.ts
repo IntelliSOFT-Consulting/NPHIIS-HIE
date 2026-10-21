@@ -1,16 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
   buildContactBundle,
+  buildContactUpdateBundle,
   buildConversionBundle,
   buildExtraExposureBundle,
   buildFollowUpBundle,
   contactIds,
+  contactUpdate,
   creationStamp,
   reportingSiteBackfill,
   responseItems,
   CASE_FORM,
   uuidv5,
   type ContactInput,
+  type ContactOnRecord,
   type IndexCase,
   type ReportingSite,
 } from "./vhf-contacts";
@@ -230,5 +233,84 @@ describe("reporting site backfill", () => {
   it("is a no-op once the site is there", () => {
     const qr = of(reportingSiteBackfill(saved(), site)!.entry as Entry[], "QuestionnaireResponse")[0];
     expect(reportingSiteBackfill(qr, site)).toBeNull();
+  });
+});
+
+describe("re-upload (upsert)", () => {
+  /** Jane as saved by her first upload: the answers and follow-up days on record. */
+  const saved = buildContactBundle(index, jane, { now: NOW }).entry as Entry[];
+  const ids = contactIds(index, jane);
+  const record = (over: Partial<ContactOnRecord> = {}): ContactOnRecord => ({
+    patientId: ids.patientId,
+    encounterId: ids.encounterId,
+    answers: new Map(
+      of(saved, "Observation")
+        .filter((o) => o.encounter.reference === `Encounter/${ids.encounterId}`)
+        .map((o) => [o.code.coding[0].code, o.valueString]),
+    ),
+    followUps: new Map([[1, false], [2, true]]),
+    dayZero: "2026-10-03",
+    ...over,
+  });
+  const patient = of(saved, "Patient")[0];
+
+  it("finds nothing new in the same row", () => {
+    const u = contactUpdate(index, jane, record());
+    expect(u.changes).toEqual([]);
+    expect(buildContactUpdateBundle(record(), patient, jane, u, { now: NOW })).toBeNull();
+  });
+
+  it("does not clear what a blank cell leaves out", () => {
+    const { phone: _p, village: _v, followUps: _f, ...fewer } = jane;
+    expect(contactUpdate(index, fewer, record()).changes).toEqual([]);
+  });
+
+  it("adds new follow-up days and changed details", () => {
+    const row: ContactInput = {
+      ...jane,
+      phone: "0722000111",
+      followUps: [...jane.followUps!, { day: 3, symptomatic: false }, { day: 4, symptomatic: true }],
+    };
+    const u = contactUpdate(index, row, record());
+    expect(u.changes).toEqual(["Phone", "Days 3, 4"]);
+    expect(u.followUps).toEqual([{ day: 3, symptomatic: false }, { day: 4, symptomatic: true }]);
+
+    const later = new Date("2026-10-20T07:00:00Z");
+    const entries = buildContactUpdateBundle(record(), patient, row, u, { now: later })!.entry as Entry[];
+    // The Patient's phone changes; the answer is appended as a new Observation.
+    expect(of(entries, "Patient")[0].telecom[0].value).toBe("0722000111");
+    expect(obsValue(entries, "vhf-phone", ids.encounterId).valueString).toBe("0722000111");
+    expect(of(entries, "Observation").find((o) => o.code.coding[0].code === "vhf-phone").id).not.toBe(
+      of(saved, "Observation").find((o) => o.code.coding[0].code === "vhf-phone").id,
+    );
+    // Day 3 and 4 follow ups, dated from the contact date.
+    const visits = of(entries, "Encounter");
+    expect(visits).toHaveLength(2);
+    expect(visits.every((e) => e.partOf.reference === `Encounter/${ids.encounterId}`)).toBe(true);
+    expect(of(entries, "Observation").filter((o) => o.code.coding[0].code === "vhf-follow-up-date").map((o) => o.valueString).sort()).toEqual([
+      "2026-10-06",
+      "2026-10-07",
+    ]);
+  });
+
+  it("records a corrected day result", () => {
+    const row: ContactInput = { ...jane, followUps: [{ day: 1, symptomatic: true }, { day: 2, symptomatic: true }] };
+    expect(contactUpdate(index, row, record()).followUps).toEqual([{ day: 1, symptomatic: true }]);
+  });
+
+  it("dates day columns from the record when the row has no contact date", () => {
+    const { contactDate: _d, ...row } = { ...jane, followUps: [{ day: 5, symptomatic: false }] };
+    const u = contactUpdate(index, row, record());
+    expect(u.changes).toEqual(["Day 5"]);
+    const entries = buildContactUpdateBundle(record(), null, row, u, { now: NOW })!.entry as Entry[];
+    expect(obsValue(entries, "vhf-follow-up-date").valueString).toBe("2026-10-08");
+  });
+
+  it("moves the residence on the Patient", () => {
+    const row: ContactInput = { ...jane, subCounty: { id: "4711", name: "LANGATA" } };
+    const u = contactUpdate(index, row, record());
+    expect(u.changes).toEqual(["Residence"]);
+    const entries = buildContactUpdateBundle(record(), patient, row, u, { now: NOW })!.entry as Entry[];
+    expect(of(entries, "Patient")[0].address[0]).toMatchObject({ state: "LANGATA", city: "NAIROBI" });
   });
 });
