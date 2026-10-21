@@ -110,7 +110,7 @@ interface FhirPatient {
   gender?: string;
   telecom?: Array<{ value?: string }>;
   address?: Array<{ city?: string; state?: string }>;
-  identifier?: Array<{ system?: string; value?: string }>;
+  identifier?: Array<{ system?: string; value?: string; type?: { coding?: Array<{ system?: string }> } }>;
 }
 interface FhirObservation {
   id: string;
@@ -221,6 +221,78 @@ export async function buildBoard(list: HieCaseList, token: string, scope: Rumour
         return { encounterId: c.encounterId, name: displayName(p), contactId: c.contactId, phone: p?.telecom?.[0]?.value, exposureDate: c.exposureDate };
       }),
   };
+}
+
+/* ── Case search ───────────────────────────────────────────────────────── */
+
+const EPID_SYSTEM = "http://hie.org/identifiers/EPID";
+const CASE_ID_SYSTEM = "http://hie.org/identifiers/CASE_ID";
+const SEARCH_LIMIT = 50;
+
+export interface CaseMatch {
+  encounterId: string;
+  name: string;
+  epid: string | null;
+  caseId: string | null;
+  caseType: string | null;
+  phone?: string;
+  county?: string;
+  subCounty?: string;
+  /** Contacts on the case's list; null until the list is first built (opening the case builds it). */
+  contacts: number | null;
+}
+
+interface FhirList {
+  encounter?: { reference?: string };
+  entry?: Array<{ flag?: { coding?: Array<{ code?: string }> } }>;
+}
+
+/**
+ * VHF cases (not contacts) whose person matches a name (every term) or a phone number.
+ * Contacts are left out: a contact's own board only says to go to its case.
+ */
+export async function searchIndexCases(query: { kind: "phone"; variants: string[] } | { kind: "name"; terms: string[] }, token: string): Promise<CaseMatch[]> {
+  const params = new URLSearchParams({ identifier: `${VHF_CASE_SLUG}|`, _count: String(SEARCH_LIMIT) });
+  if (query.kind === "phone") params.set("phone", query.variants.join(","));
+  else for (const t of query.terms) params.append("name", t);
+  const res = await fetch(`${FHIR_BASE_URL}/Patient?${params}`, { headers: fhirHeaders(token), cache: "no-store" });
+  if (!res.ok) throw new Error(`FHIR search failed (${res.status})`);
+  const bundle = (await res.json()) as { entry?: Array<{ resource?: FhirPatient }> };
+  const people = (bundle.entry ?? [])
+    .map((e) => e.resource)
+    .filter((p): p is FhirPatient => !!p)
+    .map((p) => ({ p, encounterId: p.identifier?.find((i) => i.system === VHF_CASE_SLUG)?.value }))
+    .filter((x): x is { p: FhirPatient; encounterId: string } => !!x.encounterId);
+  if (!people.length) return [];
+
+  const encounterIds = people.map((x) => x.encounterId);
+  const types = await latestAnswers(encounterIds, [L.caseType], token);
+  const cases = people.filter((x) => types.get(x.encounterId)?.get(L.caseType)?.trim().toLowerCase() !== "contact");
+  if (!cases.length) return [];
+
+  const lists = new Map<string, number>();
+  for (const part of chunk(cases.map((x) => `Encounter/${x.encounterId}`), 50)) {
+    const found = await searchAll<FhirList>(`${FHIR_BASE_URL}/List?encounter=${part.join(",")}&_count=50`, token);
+    for (const l of found) {
+      const enc = l.encounter?.reference?.split("/").pop();
+      if (enc) lists.set(enc, (l.entry ?? []).filter((e) => e.flag?.coding?.[0]?.code !== "removed").length);
+    }
+  }
+
+  // Older EPIDs on the Patient name their system only in type.coding.
+  const idOf = (p: FhirPatient, system: string) =>
+    p.identifier?.find((i) => i.system === system || i.type?.coding?.some((c) => c.system === system))?.value?.trim() || null;
+  return cases.map(({ p, encounterId }) => ({
+    encounterId,
+    name: displayName(p),
+    epid: idOf(p, EPID_SYSTEM),
+    caseId: idOf(p, CASE_ID_SYSTEM),
+    caseType: types.get(encounterId)?.get(L.caseType) ?? null,
+    phone: p.telecom?.[0]?.value,
+    county: p.address?.[0]?.city,
+    subCounty: p.address?.[0]?.state,
+    contacts: lists.get(encounterId) ?? null,
+  }));
 }
 
 /* ── Places ────────────────────────────────────────────────────────────── */
