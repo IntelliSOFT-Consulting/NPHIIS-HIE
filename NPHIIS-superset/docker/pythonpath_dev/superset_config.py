@@ -104,6 +104,29 @@ PROXY_FIX_CONFIG = {
     "x_prefix": 1
 }
 
+# When the external SSL terminator doesn't forward X-Forwarded-* headers,
+# Flask builds OAuth redirect_uri as http://localhost:8088/... which Keycloak rejects.
+# Set SUPERSET_WEBSERVER_ADDRESS (e.g. analytics-nphiis.health.go.ke) in .env-local
+# to force Flask to use the correct public hostname and https scheme for all external URLs.
+_SUPERSET_WEBSERVER_ADDRESS = os.getenv("SUPERSET_WEBSERVER_ADDRESS", "")
+if _SUPERSET_WEBSERVER_ADDRESS:
+    SERVER_NAME = _SUPERSET_WEBSERVER_ADDRESS
+    PREFERRED_URL_SCHEME = "https"
+
+    # FLASK_APP_MUTATOR is called by Superset after the Flask app is created.
+    # We wrap app.wsgi_app with a thin middleware that forces wsgi.url_scheme to 'https'
+    # BEFORE Flask creates the request URL adapter.  This ensures url_for(_external=True)
+    # builds https:// OAuth callback URLs even when the external SSL terminator forwards
+    # plain HTTP to port 8088 without an X-Forwarded-Proto header.
+    def FLASK_APP_MUTATOR(app):
+        _inner = app.wsgi_app
+
+        def _force_https(environ, start_response):
+            environ["wsgi.url_scheme"] = "https"
+            return _inner(environ, start_response)
+
+        app.wsgi_app = _force_https
+
 # Session cookie configuration for OAuth state management
 # These settings ensure cookies are properly set and preserved through the proxy
 SESSION_COOKIE_SECURE = True  # Required for HTTPS
