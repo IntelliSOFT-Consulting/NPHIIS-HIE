@@ -8,7 +8,8 @@
 //     one Observation per answer (code = linkId, valueString = the answer as shown).
 //   - Daily follow up: child Encounter "VHF Contact Follow Up" (partOf the case Encounter).
 // Resource ids are derived from the case and the person (uuidv5), so the same row
-// uploaded twice maps to the same records and is skipped.
+// uploaded twice maps to the same records. A re-upload adds what is new for a contact
+// already on the list (changed details, new follow-up days); see contactUpdate.
 
 import { createHash } from "crypto";
 import vhfCaseForm from "@/questionnaires/vhf-case.json";
@@ -587,4 +588,212 @@ export function buildConversionBundle(
 
 export function addDays(day: string, n: number): string {
   return new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
+}
+
+/* ── Backfill ──────────────────────────────────────────────────────────── */
+
+/** A saved VHF case response, as read back from the server. */
+export interface SavedResponse extends Record<string, unknown> {
+  resourceType: "QuestionnaireResponse";
+  id: string;
+  authored?: string;
+  subject?: { reference?: string };
+  encounter?: { reference?: string };
+  author?: { reference?: string };
+  extension?: Array<{ url?: string; valueReference?: { reference?: string; display?: string } }>;
+  item?: QrItem[];
+}
+
+const CASE_ORDER = new Map(Array.from(CASE_ITEMS.keys()).map((id, i) => [id, i]));
+
+/** [extra] merged into [items]: groups merge by linkId, answered questions are kept, form order. */
+function mergeItems(items: QrItem[], extra: QrItem[]): QrItem[] {
+  const out = items.map((i) => ({ ...i }));
+  for (const e of extra) {
+    const same = out.find((i) => i.linkId === e.linkId);
+    if (!same) out.push(e);
+    else if (same.item && e.item) same.item = mergeItems(same.item, e.item);
+  }
+  return out.sort((a, b) => (CASE_ORDER.get(a.linkId) ?? Infinity) - (CASE_ORDER.get(b.linkId) ?? Infinity));
+}
+
+function answeredIds(items?: QrItem[], into = new Set<string>()): Set<string> {
+  for (const i of items ?? []) {
+    if (i.answer?.length) into.add(i.linkId);
+    answeredIds(i.item, into);
+    for (const a of i.answer ?? []) answeredIds(a.item, into);
+  }
+  return into;
+}
+
+/**
+ * The Reporting Site for a contact saved without one (the portal's upload before it filled
+ * the site): the response with the missing answers added, plus their Observations.
+ * Answers already in the response are left alone. Null when nothing is missing.
+ */
+export function reportingSiteBackfill(qr: SavedResponse, site: ReportingSite | undefined): TransactionBundle | null {
+  const authored = qr.authored ? new Date(qr.authored) : new Date();
+  const answered = answeredIds(qr.item);
+  const answers = Object.fromEntries(
+    Object.entries(reportingAnswers(site, authored)).filter(([id]) => !answered.has(id)),
+  ) as Answers;
+  if (!Object.keys(answers).length) return null;
+  const encounterId = qr.encounter?.reference?.split("/")[1];
+  const patientId = qr.subject?.reference?.split("/")[1];
+  if (!encounterId || !patientId) return null;
+  const managing = qr.extension?.find((e) => e.url?.endsWith("questionnaire-managingLocation"))?.valueReference;
+  const facilityId = managing?.reference?.split("/")[1];
+  const ctx: Ctx = {
+    patientId,
+    encounterId,
+    practitionerId: qr.author?.reference?.split("/")[1],
+    facility: facilityId ? { id: facilityId, name: managing?.display ?? facilityId } : undefined,
+    now: authored,
+  };
+  const updated = { ...qr, item: mergeItems(qr.item ?? [], responseItems(CASE_FORM, answers)) };
+  return {
+    resourceType: "Bundle",
+    type: "transaction",
+    entry: [
+      put(updated as SavedResponse & { resourceType: string; id: string }),
+      ...observations(CASE_FORM, answers, ctx, `${encounterId}|reporting-site`),
+    ],
+  };
+}
+
+/* ── Re-upload ─────────────────────────────────────────────────────────── */
+
+/** Answers a line-list row can change on a contact already registered, with the label shown in review. */
+const ROW_FIELDS: Array<[string, string]> = [
+  [L.givenNames, "Name"],
+  [L.familyName, "Name"],
+  [L.sex, "Sex"],
+  [L.birthDate, "Date of birth"],
+  [L.ageYears, "Age"],
+  [L.idNumber, "ID number"],
+  [L.phone, "Phone"],
+  [L.county, "Residence"],
+  [L.subCounty, "Residence"],
+  [L.village, "Residence"],
+  [L.contactDate, "Date of contact"],
+  [L.relationship, "Relationship"],
+  [L.relationshipOther, "Relationship"],
+  [L.contactLocation, "Place of exposure"],
+  [L.exposureLocation, "Place of exposure"],
+  [L.importNotes, "Notes"],
+];
+
+/** The answers to read back before comparing a row with a contact (contactUpdate). */
+export const ROW_LINK_IDS = ROW_FIELDS.map(([id]) => id);
+
+/** A contact already on the case's list, as it stands. */
+export interface ContactOnRecord {
+  patientId: string;
+  encounterId: string;
+  /** Latest answer per linkId, as shown (Observation valueString). */
+  answers: Map<string, string>;
+  /** Follow-up days recorded: day → symptomatic. */
+  followUps: Map<number, boolean>;
+  /** Day 0 of the follow up on record. */
+  dayZero?: string;
+}
+
+export interface ContactUpdate {
+  /** Answers that are new or differ from the record. */
+  answers: Answers;
+  /** Day columns not recorded yet, or recorded with the other result. */
+  followUps: Array<{ day: number; symptomatic: boolean }>;
+  /** What changes, for the review screen ("Phone", "Days 4, 5"). */
+  changes: string[];
+}
+
+const same = (a: string | undefined, b: string) => (a ?? "").trim().toLowerCase() === b.trim().toLowerCase();
+
+/**
+ * What a re-uploaded row adds to a contact already on the list. Only filled cells count: a
+ * blank cell never clears what is recorded. Empty `changes` = nothing new.
+ */
+export function contactUpdate(index: IndexCase, c: ContactInput, current: ContactOnRecord): ContactUpdate {
+  const wanted: Answers = { ...contactAnswers(index, c), ...(c.notes ? { [L.importNotes]: [c.notes] } : {}) };
+  const answers: Answers = {};
+  const changes: string[] = [];
+  for (const [linkId, label] of ROW_FIELDS) {
+    const values = wanted[linkId];
+    if (!values?.length) continue;
+    const item = CASE_ITEMS.get(linkId);
+    const shown = values.map((v) => toFhirAnswer(item, v).shown).join(", ");
+    if (same(current.answers.get(linkId), shown)) continue;
+    answers[linkId] = values;
+    if (!changes.includes(label)) changes.push(label);
+  }
+  // Questions the changed answers depend on in the form.
+  if (answers[L.birthDate] || answers[L.ageYears]) answers[L.birthDateKnown] = wanted[L.birthDateKnown];
+  if (answers[L.idNumber]) answers[L.idType] = wanted[L.idType];
+
+  const dayZero = c.contactDate ?? current.dayZero;
+  const followUps = dayZero
+    ? (c.followUps ?? []).filter((f) => f.day >= 0 && f.day <= FOLLOW_UP_WINDOW_DAYS && current.followUps.get(f.day) !== f.symptomatic)
+    : [];
+  if (followUps.length) changes.push(`${followUps.length === 1 ? "Day" : "Days"} ${followUps.map((f) => f.day).join(", ")}`);
+  return { answers, followUps, changes };
+}
+
+type PatientResource = Record<string, unknown> & { resourceType: string; id: string };
+
+/** [patient] with the row's changed details (name, sex, date of birth, phone, ID, residence). */
+export function updatedPatient(patient: PatientResource, c: ContactInput, answers: Answers): PatientResource {
+  const p: Record<string, any> = structuredClone(patient);
+  if (answers[L.givenNames] || answers[L.familyName]) {
+    const name = p.name?.[0] ?? {};
+    p.name = [{ ...name, family: c.familyName || name.family, given: c.givenNames ? [c.givenNames] : (name.given ?? []) }, ...(p.name ?? []).slice(1)];
+  }
+  if (answers[L.sex] && c.sex) p.gender = c.sex;
+  if (answers[L.birthDate] && c.birthDate) p.birthDate = c.birthDate;
+  if (answers[L.phone] && c.phone) {
+    p.telecom = [{ system: "phone", use: "mobile", value: c.phone }, ...(p.telecom ?? []).filter((t: any) => t.system !== "phone")];
+  }
+  if (answers[L.idNumber] && c.idNumber) {
+    p.identifier = [{ system: "national-id", value: c.idNumber }, ...(p.identifier ?? []).filter((i: any) => i.system !== "national-id")];
+  }
+  if (answers[L.county] || answers[L.subCounty]) {
+    const a = p.address?.[0] ?? {};
+    const state = c.subCounty?.name ?? a.state;
+    const city = c.county?.name ?? a.city;
+    p.address = [{ ...a, ...(state ? { state } : {}), ...(city ? { city } : {}), line: [state, city].filter(Boolean) }, ...(p.address ?? []).slice(1)];
+  }
+  return p as PatientResource;
+}
+
+/**
+ * Saves a re-uploaded row's changes on a contact: the Patient (when its details changed), the
+ * changed answers as new Observations (the latest answer counts, as on mobile) and the new
+ * follow-up days. Null when there is nothing to write.
+ */
+export function buildContactUpdateBundle(
+  current: ContactOnRecord,
+  patient: PatientResource | null,
+  c: ContactInput,
+  update: ContactUpdate,
+  opts: ContactBundleOptions = {},
+): TransactionBundle | null {
+  const now = opts.now ?? new Date();
+  const ctx: Ctx = { patientId: current.patientId, encounterId: current.encounterId, practitionerId: opts.practitionerId, facility: opts.facility, now };
+  const entries: BundleEntry[] = [];
+  if (patient) {
+    const next = updatedPatient(patient, c, update.answers);
+    if (JSON.stringify(next) !== JSON.stringify(patient)) entries.push(put(next));
+  }
+  entries.push(...observations(CASE_FORM, update.answers, ctx, `${current.encounterId}|upload|${now.toISOString()}`));
+  const dayZero = c.contactDate ?? current.dayZero;
+  for (const f of dayZero ? update.followUps : []) {
+    entries.push(
+      ...followUpEntries(
+        { patientId: current.patientId, contactEncounterId: current.encounterId },
+        { day: f.day, date: addDays(dayZero!, f.day), symptomatic: f.symptomatic },
+        { ...opts, now },
+        `${current.encounterId}|day${f.day}|${now.toISOString()}`,
+      ),
+    );
+  }
+  return entries.length ? { resourceType: "Bundle", type: "transaction", entry: entries } : null;
 }
