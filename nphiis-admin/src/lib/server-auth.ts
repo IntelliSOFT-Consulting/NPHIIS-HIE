@@ -21,17 +21,26 @@ const KEYCLOAK_URL =
   process.env.KEYCLOAK_URL ?? process.env.NEXT_PUBLIC_KEYCLOAK_URL ?? "";
 const KEYCLOAK_REALM =
   process.env.KEYCLOAK_REALM ?? process.env.NEXT_PUBLIC_KEYCLOAK_REALM ?? "";
+
+// KEYCLOAK_ISSUER is the public-facing base URL that Keycloak stamps in the
+// `iss` claim. When running behind a reverse proxy (common in Docker), tokens
+// carry the public URL while KEYCLOAK_URL points to the internal container.
+const ISSUER_BASE = (
+  process.env.KEYCLOAK_ISSUER ?? KEYCLOAK_URL
+).replace(/\/$/, "");
 const ISSUER =
-  KEYCLOAK_URL && KEYCLOAK_REALM
-    ? `${KEYCLOAK_URL.replace(/\/$/, "")}/realms/${KEYCLOAK_REALM}`
+  ISSUER_BASE && KEYCLOAK_REALM
+    ? `${ISSUER_BASE}/realms/${KEYCLOAK_REALM}`
     : "";
 
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 function getJwks() {
-  if (!ISSUER) return null;
+  if (!KEYCLOAK_URL || !KEYCLOAK_REALM) return null;
   if (!jwks)
     jwks = createRemoteJWKSet(
-      new URL(`${ISSUER}/protocol/openid-connect/certs`),
+      new URL(
+        `${KEYCLOAK_URL.replace(/\/$/, "")}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs`,
+      ),
     );
   return jwks;
 }
