@@ -1,14 +1,19 @@
 import express, { Request, Response } from "express";
 import { authenticateUser } from "../lib/middleware";
-import { FhirApi } from "../lib/utils";
+import { findKeycloakUser } from "../lib/keycloak";
+import { resolvePractitionerAssignment } from "../lib/practitioner-role";
+import { buildLocationInfo, FhirApi } from "../lib/utils";
 import {
+    ReportingSite,
     SCREENING_ID_SYSTEM,
     SCREENING_TAG_CODE,
     SCREENING_TAG_SYSTEM,
     buildScreenedPatient,
     buildScreeningQuestionnaireResponse,
+    facilityTypeOf,
     mergeIntoExistingPatient,
     patientHasIdentifier,
+    reportingSiteFromLocationInfo,
     validateScreeningPayload,
 } from "../lib/screening";
 
@@ -40,9 +45,47 @@ async function findMatchingPatients(identifiers: Array<{ type: any; value: strin
     return [...found.values()];
 }
 
+const HIERARCHY = [
+    { country: "COUNTRY" },
+    { county: "COUNTY" },
+    { subCounty: "SUB-COUNTY" },
+    { ward: "WARD" },
+    { facility: "FACILITY" },
+];
+
+/**
+ * The screener's reporting site: their role and the location info of their assigned location,
+ * as /provider/me builds it. Undefined when it cannot be looked up; the screening is still saved.
+ */
+async function screenerReportingSite(username: string | undefined): Promise<ReportingSite | undefined> {
+    try {
+        if (!username) return undefined;
+        const user = await findKeycloakUser(username);
+        if (!user?.id) return undefined;
+        const assignment = await resolvePractitionerAssignment(user.id);
+        if (!assignment) return undefined;
+        let info: Awaited<ReturnType<typeof buildLocationInfo>> | undefined;
+        let location: any;
+        if (assignment.locationReference) {
+            location = (await FhirApi({ url: `/${assignment.locationReference}` })).data;
+            if (location?.type?.[0]?.coding?.[0]?.code) info = await buildLocationInfo(location, HIERARCHY);
+        }
+        const facility = !info?.facility
+            ? undefined
+            : location?.id === info.facility
+              ? location
+              : (await FhirApi({ url: `/Location/${encodeURIComponent(info.facility)}` })).data;
+        return reportingSiteFromLocationInfo(assignment.role ?? undefined, info, facilityTypeOf(facility));
+    } catch (error) {
+        console.warn("[screenings] reporting site lookup failed:", (error as Error).message);
+        return undefined;
+    }
+}
+
 /**
  * Receive a screened person: match/create the Patient, then store the screening
- * (point of entry, travel history, signs & symptoms) as a QuestionnaireResponse linked to it.
+ * (reporting site, point of entry, travel history, signs & symptoms) as a QuestionnaireResponse
+ * linked to it. The reporting site is the screener's role and assigned location.
  * Idempotent on `screeningId`.
  */
 router.post("/", authenticateUser, async (req: Request, res: Response) => {
@@ -95,7 +138,8 @@ router.post("/", authenticateUser, async (req: Request, res: Response) => {
             patientCreated = true;
         }
 
-        const qr = buildScreeningQuestionnaireResponse(payload, patient.id);
+        const site = await screenerReportingSite((req as any).user?.preferred_username);
+        const qr = buildScreeningQuestionnaireResponse(payload, patient.id, site);
         const savedQr = await FhirApi({
             url: "/QuestionnaireResponse",
             method: "POST",

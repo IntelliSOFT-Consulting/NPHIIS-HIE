@@ -3,6 +3,7 @@
  */
 
 import { resolveSubCountyLocationByName } from "./epid-location";
+import { screeningSubCountyForPatient } from "./screening-epid-location";
 
 /** Legacy rule: first 3 characters of the full name (pre multi-word fix). */
 export function legacyLocationSegment(name: string): string {
@@ -143,7 +144,8 @@ export type ResolvedEpidLocation = {
 };
 
 /**
- * Resolve country / county / sub-county names from Encounter `a3-sub-county` Observation.
+ * Resolve country / county / sub-county names from Encounter `a3-sub-county` Observation,
+ * else from the patient's screening (point of entry, then reporting facility).
  */
 export async function resolveLocationNamesForEncounter(
   encounterId: string,
@@ -154,7 +156,13 @@ export async function resolveLocationNamesForEncounter(
     await fhirApi({ url: `/Observation?code=${subCountyCode}&encounter=${encounterId}` })
   ).data?.entry?.[0]?.resource;
   const vs = subCountyObservation?.valueString;
-  const subCounty = vs ? await resolveSubCountyLocationByName(fhirApi, vs) : undefined;
+  let subCounty = vs ? await resolveSubCountyLocationByName(fhirApi, vs) : undefined;
+  if (!subCounty) {
+    // A screened person converted to a case may arrive without a case form: use the screening's place.
+    const encounter = (await fhirApi({ url: `/Encounter/${encounterId}` })).data;
+    const patientId = encounter?.subject?.reference?.split("/")[1];
+    if (patientId) subCounty = await screeningSubCountyForPatient(fhirApi, patientId);
+  }
   const county = subCounty?.partOf?.reference?.split("/")[1]
     ? (await fhirApi({ url: `/Location/${subCounty.partOf.reference.split("/")[1]}` })).data
     : undefined;

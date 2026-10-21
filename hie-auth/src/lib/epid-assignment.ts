@@ -33,6 +33,7 @@ import {
 } from "./vhf-contact-id";
 import { epidFromAnswer, findCaseEncounter } from "./vhf-contact-list";
 import { VHF_CONTACT_LINK_IDS } from "./vhf-link-ids";
+import { completeVhfCaseRecord } from "./vhf-case-record";
 
 /** Serialize EPID mutations per Patient to avoid concurrent double-allocation under subscription races. */
 const epidQueues = new Map<string, Promise<unknown>>();
@@ -151,6 +152,7 @@ export async function assignEpidForEncounter(
     try {
       const encounter = await ensureVhfCaseId(encounterId);
       if (!encounter) return result;
+      await completeVhfCaseRecord(encounter);
       /** Samples synced before the EPID and Case ID existed are on hold; send them now rather than at the next poll. */
       queueCaseSync(encounterId);
       return result.kind === "success" ? { kind: "success", encounter } : result;
@@ -250,14 +252,15 @@ async function assignEpidForEncounterLocked(
     return {
       kind: "error",
       error: new Error(
-        "Could not resolve country/county/subcounty from Observation a3-sub-county Location chain",
+        "Could not resolve country/county/subcounty from Observation a3-sub-county or the patient's screening (point of entry / reporting facility)",
       ),
       retryable: false,
     };
   }
   const { countryName, countyName, subCountyName } = location;
 
-  let onsetDate = getSystemCreationTimestampValue(patient);
+  /** Screened patients are created without one; the case Encounter still carries it. */
+  let onsetDate = getSystemCreationTimestampValue(patient) ?? getSystemCreationTimestampValue(dataFresh);
   let normalizedOnsetDate = onsetDate;
   if (onsetDate && typeof onsetDate === "string") {
     normalizedOnsetDate = onsetDate.split(" ")[0];

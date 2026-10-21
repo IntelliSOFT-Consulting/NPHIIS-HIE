@@ -33,10 +33,12 @@ fhirdata:
   # There is no Questionnaire in our test FHIR server, but it is added to
   # prevent regression of https://github.com/google/fhir-data-pipes/issues/785.
   # TODO: add resource table creation to e2e tests.
-  # List: VHF contact lists (one per case); Task / DiagnosticReport / Specimen: NPHL specimen
-  # submission and results; PractitionerRole: user roles; Group: earlier contact groups.
+  # Task / DiagnosticReport / Specimen: NPHL specimen submission and results;
+  # PractitionerRole: user roles; Group: earlier contact groups.
+  # Do NOT add List: the pipeline looks up org.hl7.fhir.r4.model.List (HAPI's class is
+  # ListResource), so every run fails and Spark stops updating. The dashboards don't need it.
   # A type added here is only complete after a full run (incremental runs fetch changes only).
-  resourceList: "Patient,Encounter,Observation,Questionnaire,Condition,Practitioner,PractitionerRole,Location,Organization,Immunization,ServiceRequest,ImmunizationRecommendation,Specimen,Task,DiagnosticReport,List,Group,MeasureReport,QuestionnaireResponse"
+  resourceList: "Patient,Encounter,Observation,Questionnaire,Condition,Practitioner,PractitionerRole,Location,Organization,Immunization,ServiceRequest,ImmunizationRecommendation,Specimen,Task,DiagnosticReport,Group,MeasureReport,QuestionnaireResponse"
   maxWorkers: 1
   numThreads: 4
   createHiveResourceTables: true
