@@ -51,6 +51,8 @@ contacts AS (
   SELECT l.encounter_id, l.case_type, l.source_case, l.contact_date, l.relationship,
          NULLIF(e.patient_id, '') AS patient_id,
          NULLIF(e.epid, '') AS epid,
+         (SELECT MAX(NULLIF(i.value, '')) FROM public.patient_identifier_pg i
+           WHERE i.id = e.patient_id AND i.system = 'http://hie.org/identifiers/CONTACT_ID') AS contact_id,
          NULLIF(regexp_replace(e.managing_location_id, '^Location/', ''), '') AS facility_id,
          l.phone,
          l.next_of_kin_phone
@@ -116,6 +118,7 @@ coded AS (
   FROM area a
 )
 SELECT c.encounter_id,
+       c.contact_id,
        c.epid AS contact_epid,
        c.source_case,
        c.relationship,

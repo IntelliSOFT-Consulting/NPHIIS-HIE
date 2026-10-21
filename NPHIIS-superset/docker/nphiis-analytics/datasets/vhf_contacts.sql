@@ -46,6 +46,7 @@ contacts AS (
   SELECT l.encounter_id, l.case_type, l.source_case, l.contact_date, l.relationship,
          e.subject.patientId AS patient_id,
          MAX(CASE WHEN i.system = 'http://hie.org/identifiers/EPID' THEN i.value END) AS epid,
+         MAX(CASE WHEN i.system = 'http://hie.org/identifiers/CONTACT_ID' THEN i.value END) AS contact_id,
          MAX(CASE WHEN tg.system LIKE '%encounter-managingLocation' THEN regexp_replace(tg.code, '^Location/', '') END) AS facility_id
   FROM latest l
   JOIN encounter e ON e.id = l.encounter_id
@@ -110,6 +111,7 @@ coded AS (
   FROM area a
 )
 SELECT c.encounter_id,
+       c.contact_id,
        c.epid AS contact_epid,
        c.source_case,
        c.relationship,
