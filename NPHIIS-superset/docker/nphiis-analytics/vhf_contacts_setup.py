@@ -172,45 +172,6 @@ CHARTS = [
 ROWS = [[0, 1, 2, 3, 4], [5, 6], [7]]
 
 
-def _seed_columns_from_describe(database, ds, sqla_db):
-    """Seeds ds.columns via DESCRIBE when fetch_metadata() returns 0 columns.
-
-    fetch_metadata() infers columns by running SELECT * LIMIT 1 and reading the resultset.
-    When the precomputed table has no rows yet (fresh deployment, no VHF cases ingested),
-    SupersetResultSet returns 0 columns, breaking every chart with "Columns missing in dataset".
-    This falls back to DESCRIBE <table>, which returns the schema regardless of row count.
-
-    sqla_db is the Flask-SQLAlchemy db extension (from superset.extensions import db).
-    """
-    import re
-    from superset.connectors.sqla.models import TableColumn
-
-    m = re.search(r"FROM\s+\S+\.(\S+)", ds.sql or "", re.I)
-    if not m:
-        print(f"  could not extract table name from SQL for {ds.table_name!r}; skipping column seed")
-        return
-    hive_table = m.group(1)
-    try:
-        with database.get_raw_connection() as conn:
-            cur = conn.cursor()
-            cur.execute(f"DESCRIBE default.{hive_table}")
-            rows = cur.fetchall()
-        added = 0
-        for row in rows:
-            col_name = str(row[0]).strip()
-            col_type = str(row[1]).strip() if row[1] else "STRING"
-            if col_name.startswith("#") or not col_name:
-                break  # partition info separator
-            tc = TableColumn(column_name=col_name, type=col_type.upper(), groupby=True, filterable=True)
-            ds.columns.append(tc)
-            added += 1
-        sqla_db.session.commit()
-        print(f"  seeded {added} columns from DESCRIBE {hive_table} (table was empty at metadata sync time)")
-    except Exception as e:
-        sqla_db.session.rollback()
-        print(f"  could not DESCRIBE {hive_table}: {e}")
-
-
 def main():
     app = create_app()
     with app.app_context():
@@ -233,7 +194,6 @@ def main():
             db.session.rollback()
             print(f"SKIP: could not build the precomputed VHF tables ({e}); deploy again once the warehouse is up")
             return
-        updated_dataset_ids = []
         for name, source in PRECOMPUTED_DATASETS.items():
             existing = db.session.query(SqlaTable).filter_by(table_name=name, database_id=database.id).one_or_none()
             if existing is None:
@@ -246,29 +206,8 @@ def main():
             except Exception as e:
                 db.session.rollback()
                 print(f"could not refresh the columns of {name!r}: {e}")
-            if len(existing.columns) == 0:
-                # fetch_metadata returned 0 cols: the precomputed table is empty (no VHF data yet).
-                # Seed columns from DESCRIBE so charts don't break with "Columns missing in dataset".
-                _seed_columns_from_describe(database, existing, db)
-            updated_dataset_ids.append(existing.id)
-            print("dataset", existing.id, name, "-> precomputed", f"({len(existing.columns)} cols)")
+            print("dataset", existing.id, name, "-> precomputed")
         db.session.commit()
-
-        # Clear stale query_context on charts whose datasets were just updated. query_context is
-        # a render cache; when the dataset SQL changes a stale cache causes "Columns missing" or
-        # wrong results. Clearing forces Superset to re-derive the query from params on next load.
-        if updated_dataset_ids:
-            stale = db.session.query(Slice).filter(
-                Slice.datasource_type == "table",
-                Slice.datasource_id.in_(updated_dataset_ids),
-                Slice.query_context.isnot(None),
-                Slice.query_context != "",
-            ).all()
-            for s in stale:
-                s.query_context = None
-            if stale:
-                db.session.commit()
-                print(f"cleared stale query_context on {len(stale)} chart(s)")
 
         ref = db.session.query(SqlaTable).filter_by(table_name=OWNER_FROM_DATASET).one_or_none()
         admin = security_manager.find_user(username="admin")

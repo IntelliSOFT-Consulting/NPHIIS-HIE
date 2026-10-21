@@ -890,20 +890,6 @@ curl -H "Authorization: Bearer $TOKEN" "https://<host>/api/reports/vhf/line-list
 curl -H "X-Api-Key: $REPORTS_API_KEY" -o contacts.csv "https://<host>/api/reports/vhf/contacts?period=last_21_days&format=csv"
 ```
 
-**Partner systems with their own login (client credentials).** Instead of sharing `REPORTS_API_KEY`, give each system its own Keycloak client. Its token sees all areas but is accepted only by `/reports/vhf/*`; the rest of hie-auth refuses it.
-
-1. Keycloak admin, realm `$KC_REALM` > Clients > Create client: OpenID Connect, a client ID such as `partner-reports`; turn on **Client authentication** and **Service accounts roles**, and turn off Standard flow and Direct access grants. Copy the secret from the Credentials tab.
-2. Add the client ID to `REPORTS_CLIENT_IDS` in `hie-auth/.env` (comma-separated) and restart hie-auth.
-3. The system gets a token (30 minutes; ask for a new one when it expires) and calls the line lists with it:
-
-```bash
-TOKEN=$(curl -s -X POST "https://<host>/api/reports/vhf/token" \
-  -d client_id=partner-reports -d client_secret=$SECRET | jq -r .access_token)
-curl -H "Authorization: Bearer $TOKEN" "https://<host>/api/reports/vhf/line-list?period=this_month"
-```
-
-To revoke a system, remove it from `REPORTS_CLIENT_IDS` (or regenerate its secret / disable the client in Keycloak).
-
 **Load the sink without waiting for a run** (a new database, or after changing a view definition). From HAPI directly, for every resource type that has a view (the same read-only queries the controller runs):
 
 ```bash

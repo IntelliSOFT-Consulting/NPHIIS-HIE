@@ -26,26 +26,6 @@ export const getKeycloakAdminToken = async () => {
     }
 }
 
-/**
- * Client credentials grant for a partner system's own Keycloak client (service account).
- * Returns null when Keycloak rejects the client id / secret.
- */
-export const getClientCredentialsToken = async (clientId: string, clientSecret: string) => {
-  try {
-    const res = await fetch(`${KC_BASE_URL}/realms/${KC_REALM}/protocol/openid-connect/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ grant_type: "client_credentials", client_id: clientId, client_secret: clientSecret }),
-    });
-    if (!res.ok) return null;
-    const data: any = await res.json();
-    return data?.access_token ? data : null;
-  } catch (error) {
-    console.error("getClientCredentialsToken:", error);
-    return null;
-  }
-};
-
 export const refreshToken = async (refreshToken: string) => {
   try {
     const tokenResponse = await fetch(`${KC_BASE_URL}/realms/${KC_REALM}/protocol/openid-connect/token`, {

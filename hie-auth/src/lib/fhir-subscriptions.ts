@@ -114,18 +114,6 @@ const createSpecimenFHIRSubscription = async () => {
     );
 }
 
-const createVhfCaseTypeSubscription = async () => {
-    const id = process.env['FHIR_VHF_CASE_TYPE_SUBSCRIPTION_ID'];
-    const url = process.env['FHIR_VHF_CASE_TYPE_SUBSCRIPTION_CALLBACK_URL'];
-
-    if (!id || !url) {
-        console.log('Missing environment variables for VHF case type subscription');
-        return;
-    }
-
-    await createSubscription(id, url, `Observation?code=vhf-case-type`);
-}
-
 /** One Subscription per patient-related type; each bumps the Patient's patient-data-last-updated extension. */
 const createPatientActivitySubscriptions = async () => {
     let PATIENT_ACTIVITY_SUBSCRIPTION_CALLBACK_URL = process.env['PATIENT_ACTIVITY_SUBSCRIPTION_CALLBACK_URL'];
@@ -150,6 +138,5 @@ export let createFHIRSubscription = async () => {
     await createEpidFHIRSubscription();
     await createFollowUpFHIRSubscription();
     await createSpecimenFHIRSubscription();
-    await createVhfCaseTypeSubscription();
     await createPatientActivitySubscriptions();
 }

@@ -98,12 +98,6 @@ if [ "${NPHIIS_ANALYTICS_SETUP:-yes}" = "yes" ]; then
         echo "WARNING: NPHIIS Postgres analytics setup failed; Superset starts without it. Re-run:"
         echo "  sudo docker exec superset_app python /app/docker/nphiis-analytics/vhf_postgres_setup.py $PG_MODE"
     fi
-    if /app/.venv/bin/python /app/docker/nphiis-analytics/afp_measles_postgres_setup.py $PG_MODE; then
-        echo_step "5" "Complete" "NPHIIS analytics on Postgres (AFP/Measles)"
-    else
-        echo "WARNING: AFP/Measles Postgres analytics setup failed. Re-run:"
-        echo "  sudo docker exec superset_app python /app/docker/nphiis-analytics/afp_measles_postgres_setup.py $PG_MODE"
-    fi
 fi
 
 # if [ "$SUPERSET_LOAD_EXAMPLES" = "yes" ]; then

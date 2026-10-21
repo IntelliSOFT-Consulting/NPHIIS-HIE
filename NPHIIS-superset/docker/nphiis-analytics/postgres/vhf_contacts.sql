@@ -21,8 +21,7 @@ WITH answers AS (
                                      NULLIF(o.issued, '')::timestamptz DESC NULLS LAST, o.id COLLATE "C") AS rn
   FROM public.observation_flat_pg o
   WHERE o.code IN ('vhf-case-type', 'vhf-source-case-epid', 'vhf-contact-date', 'vhf-relationship',
-                   'vhf-follow-up-day', 'vhf-follow-up-date', 'vhf-follow-up-symptomatic',
-                   'vhf-phone', 'vhf-next-of-kin-phone')
+                   'vhf-follow-up-day', 'vhf-follow-up-date', 'vhf-follow-up-symptomatic')
     AND o.encounter_id <> ''
 ),
 latest AS (
@@ -33,9 +32,7 @@ latest AS (
          MAX(CASE WHEN link_id = 'vhf-relationship' THEN value END) AS relationship,
          MAX(CASE WHEN link_id = 'vhf-follow-up-day' THEN nphiis.to_int_safe(value) END) AS entered_day,
          MAX(CASE WHEN link_id = 'vhf-follow-up-date' THEN nphiis.to_date_safe(substr(value, 1, 10)) END) AS follow_up_date,
-         BOOL_OR(CASE WHEN link_id = 'vhf-follow-up-symptomatic' THEN lower(value) = 'yes' END) AS symptomatic,
-         MAX(CASE WHEN link_id = 'vhf-phone' THEN value END) AS phone,
-         MAX(CASE WHEN link_id = 'vhf-next-of-kin-phone' THEN value END) AS next_of_kin_phone
+         BOOL_OR(CASE WHEN link_id = 'vhf-follow-up-symptomatic' THEN lower(value) = 'yes' END) AS symptomatic
   FROM answers
   WHERE rn = 1
   GROUP BY encounter_id
@@ -51,9 +48,9 @@ contacts AS (
   SELECT l.encounter_id, l.case_type, l.source_case, l.contact_date, l.relationship,
          NULLIF(e.patient_id, '') AS patient_id,
          NULLIF(e.epid, '') AS epid,
-         NULLIF(regexp_replace(e.managing_location_id, '^Location/', ''), '') AS facility_id,
-         l.phone,
-         l.next_of_kin_phone
+         (SELECT MAX(NULLIF(i.value, '')) FROM public.patient_identifier_pg i
+           WHERE i.id = e.patient_id AND i.system = 'http://hie.org/identifiers/CONTACT_ID') AS contact_id,
+         NULLIF(regexp_replace(e.managing_location_id, '^Location/', ''), '') AS facility_id
   FROM latest l
   JOIN public.encounter_flat_pg e ON e.id = l.encounter_id
   WHERE l.source_case IS NOT NULL AND e.part_of_id = ''
@@ -81,9 +78,7 @@ per_contact AS (
 located AS (
   SELECT c.*, NULLIF(p.gender, '') AS gender,
          upper(btrim(NULLIF(p.address_city, ''))) AS res_county,
-         upper(btrim(NULLIF(p.address_state, ''))) AS res_subcounty,
-         TRIM(CONCAT_WS(' ', NULLIF(p.given, ''), NULLIF(p.family, ''))) AS contact_name,
-         nphiis.to_date_safe(NULLIF(p.birth_date, '')) AS birth_date
+         upper(btrim(NULLIF(p.address_state, ''))) AS res_subcounty
   FROM contacts c
   LEFT JOIN public.patient_flat_pg p ON p.id = c.patient_id
 ),
@@ -116,6 +111,7 @@ coded AS (
   FROM area a
 )
 SELECT c.encounter_id,
+       c.contact_id,
        c.epid AS contact_epid,
        c.source_case,
        c.relationship,
@@ -145,11 +141,7 @@ SELECT c.encounter_id,
          WHEN LEAST(CURRENT_DATE - c.contact_date - 1, 21) - COALESCE(f.last_day_followed_up, 0) >= 3 THEN 'lost'
          ELSE 'active'
        END AS status,
-       lower(c.case_type) <> 'contact' AS became_case,
-       c.contact_name,
-       c.birth_date,
-       c.phone,
-       c.next_of_kin_phone
+       lower(c.case_type) <> 'contact' AS became_case
 FROM coded c
 LEFT JOIN per_contact f ON f.contact_encounter_id = c.encounter_id
 LEFT JOIN places pc ON pc.id = c.county_code

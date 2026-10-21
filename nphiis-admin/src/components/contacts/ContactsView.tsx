@@ -8,6 +8,7 @@ import { Alert } from '../ui/Alert';
 import { Select, TextInput } from '../ui/Field';
 import { TableSkeleton } from '../ui/Skeleton';
 import AddContacts, { type SaveSummary } from './AddContacts';
+import CaseSearch, { type CaseTarget } from './CaseSearch';
 import FollowUpForm from './FollowUpForm';
 
 const STATUS: Record<ContactStatus, { label: string; chip: string }> = {
@@ -64,8 +65,11 @@ function DayGrid({ contact }: { contact: BoardContact }) {
 
 export default function ContactsView() {
   const authedFetch = useAuthedFetch();
+  // Text left in the case box (the case's EPID once one is open).
   const [query, setQuery] = useState('');
-  const [caseId, setCaseId] = useState('');
+  // The case to show, as the /api/contacts query: "id=<EPID or Case ID>" or "encounter=<id>";
+  // n changes on every pick, so picking the open case again reloads it.
+  const [lookup, setLookup] = useState<{ q: string; n: number } | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +96,7 @@ export default function ContactsView() {
       const last = window.localStorage.getItem('contacts.lastCase');
       if (last) {
         setQuery(last);
-        setCaseId(last);
+        setLookup({ q: `id=${encodeURIComponent(last)}`, n: 0 });
       }
     } catch {
       /* storage unavailable */
@@ -100,18 +104,21 @@ export default function ContactsView() {
   }, []);
 
   useEffect(() => {
-    if (!caseId) return;
+    if (!lookup) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
     (async () => {
       try {
-        const res = await authedFetch(`/api/contacts?id=${encodeURIComponent(caseId)}`);
+        const res = await authedFetch(`/api/contacts?${lookup.q}`);
         const body = await res.json();
         if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
-        if (!cancelled) setBoard(body as Board);
+        if (cancelled) return;
+        setBoard(body as Board);
+        const ref = (body as Board).indexCase.epid ?? (body as Board).indexCase.caseId;
+        if (ref) setQuery(ref);
         try {
-          window.localStorage.setItem('contacts.lastCase', caseId);
+          if (ref) window.localStorage.setItem('contacts.lastCase', ref);
         } catch {
           /* storage unavailable */
         }
@@ -127,7 +134,19 @@ export default function ContactsView() {
     return () => {
       cancelled = true;
     };
-  }, [authedFetch, caseId]);
+  }, [authedFetch, lookup]);
+
+  /** A case picked in the search box. */
+  const openCase = useCallback((t: CaseTarget) => {
+    setNotice(null);
+    setUndo(null);
+    setAdding(null);
+    setSelected(new Set());
+    setConfirmRemove(false);
+    setOpenId(null);
+    setQuery(t.label);
+    setLookup((prev) => ({ q: t.lookup, n: (prev?.n ?? 0) + 1 }));
+  }, []);
 
   const post = useCallback(
     async (url: string, payload: unknown) => {
@@ -282,37 +301,16 @@ export default function ContactsView() {
         </Alert>
       )}
 
-      <form
-        className="flex flex-col sm:flex-row gap-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setNotice(null);
-          setUndo(null);
-          setAdding(null);
-          setSelected(new Set());
-          setCaseId(query.trim());
-        }}
-      >
-        <div className="flex-1">
-          <TextInput
-            placeholder="Case EPID or Case ID, e.g. KEN-NAI-KIB-2026-VHF-001 or KEN-2026-001"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-        <button type="submit" className="btn-primary" disabled={!query.trim() || loading}>
-          Show contacts
-        </button>
-      </form>
+      <CaseSearch initial={query} onOpen={openCase} />
 
       {loading && !board && <TableSkeleton rows={6} cols={7} />}
 
-      {!caseId && !board && (
+      {!lookup && !board && (
         <div className="card text-center py-16 px-4">
           <UserGroupIcon className="mx-auto h-12 w-12 text-gray-300" />
           <p className="mt-3 text-sm font-medium text-nphi-900">Find a VHF case</p>
           <p className="mt-1 text-sm text-gray-500">
-            Enter a case&apos;s EPID or Case ID to see its contacts and their 21-day follow up, or to upload a contact line list.
+            Search by the case&apos;s name, phone number, EPID or Case ID to see its contacts and their 21-day follow up, or to upload a contact line list.
           </p>
         </div>
       )}
@@ -494,6 +492,7 @@ export default function ContactsView() {
                           aria-label="Select all contacts on this page"
                         />
                       </th>
+                      <th className="px-4 py-3 font-medium text-gray-600">Contact ID</th>
                       <th className="px-4 py-3 font-medium text-gray-600">Contact</th>
                       <th className="px-4 py-3 font-medium text-gray-600">Phone</th>
                       <th className="px-4 py-3 font-medium text-gray-600">Relationship</th>
@@ -522,9 +521,16 @@ export default function ContactsView() {
                                 aria-label={`Select ${c.name}`}
                               />
                             </td>
+                            <td className="px-4 py-3 whitespace-nowrap font-mono text-xs">
+                              {c.contactId ? (
+                                <span className="text-gray-900">{c.contactId}</span>
+                              ) : (
+                                <span className="text-gray-400" title="Assigned within a few minutes, once the case has its EPID">Pending</span>
+                              )}
+                            </td>
                             <td className="px-4 py-3">
                               <div className="font-medium text-gray-900">{c.name}</div>
-                              <div className="font-mono text-[11px] text-gray-500">{[c.contactId ?? 'Contact ID pending', c.epid].filter(Boolean).join(' · ')}</div>
+                              {c.epid && <div className="font-mono text-[11px] text-gray-500">EPID {c.epid}</div>}
                             </td>
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{c.phone ?? '—'}</td>
                             <td className="px-4 py-3 text-gray-700">{c.relationship ?? '—'}</td>
@@ -578,7 +584,7 @@ export default function ContactsView() {
                           </tr>
                           {openId === c.encounterId && (
                             <tr className="bg-nphi-50/30">
-                              <td colSpan={9} className="px-4 py-4">
+                              <td colSpan={10} className="px-4 py-4">
                                 <FollowUpForm
                                   contact={c}
                                   onCancel={() => setOpenId(null)}
