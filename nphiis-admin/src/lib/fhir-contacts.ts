@@ -170,8 +170,13 @@ async function patientsById(ids: string[], token: string): Promise<Map<string, F
   return out;
 }
 
+/** Whole Patient resources by id (to write back changed details). */
+export async function patientResources(ids: string[], token: string): Promise<Map<string, Record<string, unknown> & { resourceType: string; id: string }>> {
+  return (await patientsById(ids, token)) as unknown as Map<string, Record<string, unknown> & { resourceType: string; id: string }>;
+}
+
 /** Latest answer per contact Encounter for the given linkIds. */
-async function latestAnswers(encounterIds: string[], codes: string[], token: string) {
+export async function latestAnswers(encounterIds: string[], codes: string[], token: string) {
   const out = new Map<string, Map<string, string>>();
   const seen = new Map<string, string>();
   for (const part of chunk(encounterIds, 40)) {
