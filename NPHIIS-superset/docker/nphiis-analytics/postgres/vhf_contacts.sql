@@ -81,7 +81,9 @@ per_contact AS (
 located AS (
   SELECT c.*, NULLIF(p.gender, '') AS gender,
          upper(btrim(NULLIF(p.address_city, ''))) AS res_county,
-         upper(btrim(NULLIF(p.address_state, ''))) AS res_subcounty
+         upper(btrim(NULLIF(p.address_state, ''))) AS res_subcounty,
+         TRIM(CONCAT_WS(' ', NULLIF(p.given, ''), NULLIF(p.family, ''))) AS contact_name,
+         nphiis.to_date_safe(NULLIF(p.birth_date, '')) AS birth_date
   FROM contacts c
   LEFT JOIN public.patient_flat_pg p ON p.id = c.patient_id
 ),
@@ -144,6 +146,8 @@ SELECT c.encounter_id,
          ELSE 'active'
        END AS status,
        lower(c.case_type) <> 'contact' AS became_case,
+       c.contact_name,
+       c.birth_date,
        c.phone,
        c.next_of_kin_phone
 FROM coded c
