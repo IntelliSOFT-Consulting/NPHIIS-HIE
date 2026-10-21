@@ -493,6 +493,7 @@ export default function ContactsView() {
                           aria-label="Select all contacts on this page"
                         />
                       </th>
+                      <th className="px-4 py-3 font-medium text-gray-600">Contact ID</th>
                       <th className="px-4 py-3 font-medium text-gray-600">Contact</th>
                       <th className="px-4 py-3 font-medium text-gray-600">Phone</th>
                       <th className="px-4 py-3 font-medium text-gray-600">Relationship</th>
@@ -521,9 +522,16 @@ export default function ContactsView() {
                                 aria-label={`Select ${c.name}`}
                               />
                             </td>
+                            <td className="px-4 py-3 whitespace-nowrap font-mono text-xs">
+                              {c.contactId ? (
+                                <span className="text-gray-900">{c.contactId}</span>
+                              ) : (
+                                <span className="text-gray-400" title="Assigned within a few minutes, once the case has its EPID">Pending</span>
+                              )}
+                            </td>
                             <td className="px-4 py-3">
                               <div className="font-medium text-gray-900">{c.name}</div>
-                              <div className="font-mono text-[11px] text-gray-500">{[c.contactId ?? 'Contact ID pending', c.epid].filter(Boolean).join(' · ')}</div>
+                              {c.epid && <div className="font-mono text-[11px] text-gray-500">EPID {c.epid}</div>}
                             </td>
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{c.phone ?? '—'}</td>
                             <td className="px-4 py-3 text-gray-700">{c.relationship ?? '—'}</td>
@@ -577,7 +585,7 @@ export default function ContactsView() {
                           </tr>
                           {openId === c.encounterId && (
                             <tr className="bg-nphi-50/30">
-                              <td colSpan={9} className="px-4 py-4">
+                              <td colSpan={10} className="px-4 py-4">
                                 <FollowUpForm
                                   contact={c}
                                   onCancel={() => setOpenId(null)}
