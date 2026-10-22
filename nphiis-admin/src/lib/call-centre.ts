@@ -51,8 +51,8 @@ export const CALL_LOG_FIELDS = {
   callEnd: "alert-call-end",
 } as const;
 
-/** Filled by the system, not typed: when the call came in, who took it, and when it ended. */
-export const AUTO_FIELDS: ReadonlySet<string> = new Set([CALL_LOG_FIELDS.date, CALL_LOG_FIELDS.agent, CALL_LOG_FIELDS.callEnd]);
+/** Filled by the system, not typed: when the call came in and who took it. The agent types when it ended. */
+export const AUTO_FIELDS: ReadonlySet<string> = new Set([CALL_LOG_FIELDS.date, CALL_LOG_FIELDS.agent]);
 
 /** The agent ID saved on a log: "Jane Wanjiku (12345678)", from the logged-in account. */
 export function agentLabel(name?: string, username?: string): string | undefined {
@@ -101,6 +101,8 @@ export interface CallLogPayload {
 /** One row of the call log list. */
 export interface CallLogSummary {
   patientId: string;
+  /** The log's own ID (KEN-NAI-EME-2026-ALR-001), given by the server shortly after saving. */
+  logId?: string;
   /** EPID of the linked case, if any. */
   epid?: string;
   callDate?: string;

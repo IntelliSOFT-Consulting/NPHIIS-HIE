@@ -27,6 +27,7 @@ export const VHF_CASE_LINK_IDS = {
   originCountry: "vhf-travel-origin-country",
   originPlace: "vhf-travel-origin-place",
   departureDate: "vhf-travel-departure-date",
+  means: "vhf-travel-means",
   stopovers: "vhf-travel-stopovers",
   destinationCountry: "vhf-travel-destination-country",
   destinationPlace: "vhf-travel-destination-place",

@@ -26,7 +26,8 @@ const API_HOST = process.env.API_HOST ?? process.env.NEXT_PUBLIC_API_HOST ?? "";
 
 /* ── hie-auth ──────────────────────────────────────────────────────────── */
 
-export type ContactStatus = "active" | "flagged" | "completed" | "converted" | "lost" | "died";
+/** "transferred": a newer case linked the contact; its follow-up goes on on that case's list. */
+export type ContactStatus = "active" | "flagged" | "completed" | "converted" | "lost" | "died" | "transferred";
 export type DayState = "seen" | "symptomatic" | "missed" | "due" | "upcoming";
 
 export interface HieContact {
@@ -40,6 +41,8 @@ export interface HieContact {
   caseType: string | null;
   exposureDate: string | null;
   dayZero: string;
+  /** The day a newer case linked the contact; its 21 days started again then. */
+  restartedOn?: string | null;
   daysSinceExposure: number;
   lastDay: string;
   status: ContactStatus;
@@ -48,6 +51,8 @@ export interface HieContact {
   missedDays: number[];
   firstSymptomaticDay: number | null;
   days: Array<{ day: number; date: string; state: DayState }>;
+  /** Status "transferred": the case now following the contact up (EPID or Case ID). */
+  movedTo?: string | null;
 }
 
 export interface HieCaseList {
@@ -402,6 +407,23 @@ export interface ExistingContact {
   patientId: string;
   encounterId: string;
   name: string;
+}
+
+/**
+ * The case following an existing record up: its latest "Contact Link to Case" answer, as the
+ * case's EPID (or Case ID) and, when set, the case Encounter it points at. Null if not a contact of any case.
+ */
+export async function currentCaseOf(encounterId: string, token: string): Promise<{ epid: string; encounterId: string | null } | null> {
+  const answers = await searchAll<FhirObservation & { focus?: Array<{ reference?: string }> }>(
+    `${FHIR_BASE_URL}/Observation?encounter=Encounter/${encodeURIComponent(encounterId)}&code=${L.sourceCaseEpid}&_count=50`,
+    token,
+  );
+  const at = (o: FhirObservation) => o.issued ?? o.meta?.lastUpdated ?? "";
+  const latest = answers.sort((a, b) => at(a).localeCompare(at(b))).pop();
+  const epid = latest?.valueString?.trim().split(/\s+/)[0];
+  if (!epid) return null;
+  const focus = latest?.focus?.map((f) => f.reference ?? "").find((r) => r.startsWith("Encounter/"));
+  return { epid, encounterId: focus ? focus.slice("Encounter/".length) : null };
 }
 
 /** The records already created for these rows under this case (same derived ids). */

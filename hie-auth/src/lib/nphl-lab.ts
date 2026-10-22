@@ -853,7 +853,8 @@ const LAB_STATUS_ON_SPECIMEN = new Set([
 /**
  * The Specimen with its lab progress from `task`: the businessStatus in the nphl-lab-status
  * extension, and status "unsatisfactory" while the lab has it rejected. Only once the specimen
- * has reached the lab; null when nothing would change.
+ * has reached the lab; null when nothing would change. The date the lab received it becomes
+ * receivedTime, unless the Specimen already has one.
  */
 export function specimenWithLabStatus(specimen: any, task: any): any | null {
   const coding = task?.businessStatus?.coding?.[0];
@@ -866,10 +867,13 @@ export function specimenWithLabStatus(specimen: any, task: any): any | null {
     : previous === "specimen-rejected" && specimen?.status === "unsatisfactory"
       ? "available"
       : specimen?.status;
-  if (previous === coding.code && status === specimen?.status) return null;
+  const receivedOn = (task?.output ?? []).find((o: any) => o?.type?.text === "received-on")?.valueDateTime;
+  const receivedTime = specimen?.receivedTime ?? receivedOn;
+  if (previous === coding.code && status === specimen?.status && receivedTime === specimen?.receivedTime) return null;
   return {
     ...specimen,
     ...(status ? { status } : {}),
+    ...(receivedTime ? { receivedTime } : {}),
     extension: [...others, { url: SPECIMEN_LAB_STATUS_EXT, valueCoding: { system: coding.system, code: coding.code, display: coding.display } }],
   };
 }

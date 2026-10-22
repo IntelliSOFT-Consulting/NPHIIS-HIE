@@ -29,6 +29,7 @@ import Spinner from '../ui/Spinner';
 import { Alert } from '../ui/Alert';
 import CaseSearch from './CaseSearch';
 import ExistingResultModal from './ExistingResultModal';
+import SpecimenEntry from './SpecimenEntry';
 import { Field, Select, TextInput } from '../ui/Field';
 import QuestionInput, { fieldHint } from '../questionnaire/QuestionInput';
 
@@ -224,7 +225,10 @@ export default function SingleResultForm() {
       const v = data as VerifiedCase;
       setVerified(v);
       const resolvedFormId = maybeAutoSwitchForm(v);
-      void checkExistingResult(v.patient.id, resolvedFormId);
+      // Specimen-based forms show each specimen's status instead.
+      if (!getLabForm(resolvedFormId)?.specimenBased) {
+        void checkExistingResult(v.patient.id, resolvedFormId);
+      }
     } catch (err) {
       setTopError((err as Error).message);
       setVerified(null);
@@ -290,7 +294,8 @@ export default function SingleResultForm() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form || !accessToken) return;
+    // Specimen-based forms record each update from SpecimenEntry.
+    if (!form || !accessToken || form.specimenBased) return;
     if (!verified) {
       setTopError('Verify the EPID before submitting');
       return;
@@ -485,7 +490,11 @@ export default function SingleResultForm() {
         </>
       )}
 
-      {verified && (
+      {verified && form?.specimenBased && (
+        <SpecimenEntry form={form} epid={verified.epid} patientId={verified.patient.id} />
+      )}
+
+      {verified && !form?.specimenBased && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
           {visibleItems.map((it) => {
             const value = answers[it.linkId] ?? '';
@@ -521,7 +530,7 @@ export default function SingleResultForm() {
       {topError && <Alert variant="error">{topError}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
 
-      {verified && (
+      {verified && !form?.specimenBased && (
         <div className="flex justify-end">
           <button
             type="submit"

@@ -3,6 +3,8 @@
 -- "Contact Link to Case" answer (vhf-source-case-epid); answers are appended, so the latest
 -- per question counts. The rules follow hie-auth (src/lib/vhf-contact-status.ts): day N =
 -- follow-up date minus date of contact; lost = the last 3 days up to yesterday all missed.
+-- A contact linked again by a newer case moves to it: the latest link (by issued time) is the
+-- source case, its date of contact restarts the 21 days, and visits before it no longer count.
 --
 -- Area columns:
 --   county_rls / subcounty_rls  upper-case names, matched by the Superset RLS rules
@@ -16,8 +18,10 @@ WITH answers AS (
          o.code AS link_id,
          NULLIF(o.value_string, '') AS value,
          -- Ties on lastUpdated are common (a record re-saved at once): issued decides.
+         -- Links get focus set later (lastUpdated moves), so the link captured last wins by issued.
          ROW_NUMBER() OVER (PARTITION BY o.encounter_id, o.code
-                            ORDER BY COALESCE(NULLIF(o.last_updated, ''), NULLIF(o.issued, ''))::timestamptz DESC NULLS LAST,
+                            ORDER BY CASE WHEN o.code = 'vhf-source-case-epid' THEN NULLIF(o.issued, '')::timestamptz END DESC NULLS LAST,
+                                     COALESCE(NULLIF(o.last_updated, ''), NULLIF(o.issued, ''))::timestamptz DESC NULLS LAST,
                                      NULLIF(o.issued, '')::timestamptz DESC NULLS LAST, o.id COLLATE "C") AS rn
   FROM public.observation_flat_pg o
   WHERE o.code IN ('vhf-case-type', 'vhf-source-case-epid', 'vhf-contact-date', 'vhf-relationship',
@@ -48,8 +52,11 @@ contacts AS (
   SELECT l.encounter_id, l.case_type, l.source_case, l.contact_date, l.relationship,
          NULLIF(e.patient_id, '') AS patient_id,
          NULLIF(e.epid, '') AS epid,
-         (SELECT MAX(NULLIF(i.value, '')) FROM public.patient_identifier_pg i
-           WHERE i.id = e.patient_id AND i.system = 'http://hie.org/identifiers/CONTACT_ID') AS contact_id,
+         -- A moved contact keeps its earlier Contact ID (use old): take the one made from the source case.
+         (SELECT i.value FROM public.patient_identifier_pg i
+           WHERE i.id = e.patient_id AND i.system = 'http://hie.org/identifiers/CONTACT_ID' AND NULLIF(i.value, '') IS NOT NULL
+           ORDER BY left(i.value, length(l.source_case) + 2) = l.source_case || '-C' DESC, i.value COLLATE "C" DESC
+           LIMIT 1) AS contact_id,
          NULLIF(regexp_replace(e.managing_location_id, '^Location/', ''), '') AS facility_id
   FROM latest l
   JOIN public.encounter_flat_pg e ON e.id = l.encounter_id
@@ -70,8 +77,9 @@ per_contact AS (
          COUNT(DISTINCT CASE WHEN day BETWEEN 1 AND 21 THEN day END) AS days_followed_up,
          MAX(CASE WHEN day BETWEEN 1 AND 21 THEN day END) AS last_day_followed_up,
          MAX(follow_up_date) AS last_follow_up_date,
-         BOOL_OR(symptomatic) AS ever_symptomatic,
-         MIN(CASE WHEN symptomatic THEN day END) AS first_symptomatic_day
+         -- Visits before day 0 (under an earlier case) do not count.
+         BOOL_OR(symptomatic AND day >= 0) AS ever_symptomatic,
+         MIN(CASE WHEN symptomatic AND day >= 0 THEN day END) AS first_symptomatic_day
   FROM visits
   GROUP BY contact_encounter_id
 ),

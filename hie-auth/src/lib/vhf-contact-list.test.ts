@@ -84,6 +84,16 @@ describe("buildContactList", () => {
     const lost = buildContactList(index, [{ encounterId: "e1", status: "lost" }], null, NOW);
     expect(lost.status).toBe("current");
   });
+
+  it("counts a contact moved to a newer case as ended here", () => {
+    const list = buildContactList(index, [
+      { encounterId: "e1", status: "completed" },
+      { encounterId: "e2", status: "transferred" },
+    ], null, NOW);
+    expect(list.status).toBe("retired");
+    expect(list.entry.map(flag)).toEqual(["completed", "transferred"]);
+    expect(list.entry[1].flag.coding[0].display).toBe("Moved to another case");
+  });
 });
 
 describe("epidFromAnswer", () => {

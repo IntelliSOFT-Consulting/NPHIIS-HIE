@@ -27,6 +27,7 @@ import { isVhfContactEncounter, isVhfEncounter, vhfCaseTypeForEncounter } from "
 import {
   CONTACT_ID_SYSTEM_URI,
   contactIdIdentifier,
+  contactIdCaseEpid,
   formatVhfContactId,
   getContactId,
   vhfContactIdCounterKey,
@@ -34,6 +35,7 @@ import {
 import { epidFromAnswer, findCaseEncounter } from "./vhf-contact-list";
 import { VHF_CONTACT_LINK_IDS } from "./vhf-link-ids";
 import { completeVhfCaseRecord } from "./vhf-case-record";
+import { assignAlertLogId } from "./alert-log-id";
 
 /** Serialize EPID mutations per Patient to avoid concurrent double-allocation under subscription races. */
 const epidQueues = new Map<string, Promise<unknown>>();
@@ -140,9 +142,13 @@ export async function assignEpidForEncounter(
     return { kind: "error", error: new Error("Encounter must include resource id") };
   }
 
-  /** Call logs get no EPID; a case linked to the log carries one. */
+  /** Call logs get no EPID (a case linked to the log carries one); they get an Alert Log ID. */
   if (encounterGetsNoEpid(encounterDraft)) {
-    return { kind: "not_applicable", encounterId, reason: "call logs get no EPID" };
+    return enqueueEpidAssignmentForPatient(patientId, async (): Promise<EpidAssignResult> => {
+      const r = await assignAlertLogId(encounterId);
+      if (r.kind === "error") return r;
+      return { kind: "not_applicable", encounterId, reason: `call log (Alert Log ID ${r.alertLogId}); no EPID` };
+    });
   }
 
   return enqueueEpidAssignmentForPatient(patientId, async () => {
@@ -420,13 +426,15 @@ const previousCaseId = (encounterId: string) => previousIdentifier(encounterId, 
 const putCaseId = (resource: any, caseId: string) => putIdentifier(resource, caseIdIdentifier(caseId));
 
 /** Sets [identifier] on a resource, replacing any with the same system; returns the saved resource. */
-async function putIdentifier(resource: any, identifier: { system: string; value: string }): Promise<any> {
-  const url = `/${resource.resourceType}/${resource.id}`;
+function putIdentifier(resource: any, identifier: { system: string; value: string }): Promise<any> {
   const identifiers = Array.isArray(resource.identifier) ? resource.identifier : [];
-  const body = {
-    ...resource,
-    identifier: [...identifiers.filter((id: any) => id?.system !== identifier.system), identifier],
-  };
+  return putIdentifiers(resource, [...identifiers.filter((id: any) => id?.system !== identifier.system), identifier]);
+}
+
+/** Saves the resource with [identifiers] (If-Match on its version); returns the saved resource. */
+async function putIdentifiers(resource: any, identifiers: any[]): Promise<any> {
+  const url = `/${resource.resourceType}/${resource.id}`;
+  const body = { ...resource, identifier: identifiers };
   const headers: Record<string, string> = {};
   if (resource?.meta?.versionId) {
     headers["If-Match"] = `W/"${resource.meta.versionId}"`;
@@ -436,7 +444,7 @@ async function putIdentifier(resource: any, identifier: { system: string; value:
   if (put.status !== "success") {
     const detail =
       put.data?.issue?.[0]?.diagnostics || put.data?.issue?.[0]?.details?.text || JSON.stringify(put.data);
-    throw new Error(`${resource.resourceType} ${identifier.system} update failed (${put.statusText}): ${detail}`);
+    throw new Error(`${resource.resourceType} identifier update failed (${put.statusText}): ${detail}`);
   }
   return put.data;
 }
@@ -523,21 +531,22 @@ export type ContactIdResult =
   | { kind: "pending"; reason: string }
   | { kind: "error"; error: unknown };
 
-/** When an Observation was captured, for picking the earliest "Contact Link to Case" answer. */
+/** When an Observation was captured, for ordering "Contact Link to Case" answers. */
 function capturedAt(o: any): string {
   return String(o?.issued ?? o?.effectiveDateTime ?? o?.meta?.lastUpdated ?? "");
 }
 
 /**
- * The case a contact was first linked to, with that case's EPID: the earliest "Contact Link to
- * Case" answer that names a known case (by focus, else by EPID or Case ID).
+ * The case now following a contact up, with that case's EPID: the latest "Contact Link to Case"
+ * answer that names a known case (by focus, else by EPID or Case ID). A contact exposed again by
+ * a newer case moves to it.
  */
-async function firstSourceCase(contactEncounterId: string): Promise<{ epid: string } | { reason: string }> {
+async function currentSourceCase(contactEncounterId: string): Promise<{ epid: string } | { reason: string }> {
   const resp = await FhirApi({
     url: `/Observation?encounter=Encounter/${contactEncounterId}&code=${VHF_CONTACT_LINK_IDS.sourceCaseEpid}&_count=100`,
     headers: { "Cache-Control": "no-cache" },
   });
-  const answers = (resp.data?.entry ?? []).map((e: any) => e.resource).sort((a: any, b: any) => capturedAt(a).localeCompare(capturedAt(b)));
+  const answers = (resp.data?.entry ?? []).map((e: any) => e.resource).sort((a: any, b: any) => capturedAt(b).localeCompare(capturedAt(a)));
   if (answers.length === 0) return { reason: "no Contact Link to Case answer" };
 
   for (const answer of answers) {
@@ -562,6 +571,19 @@ async function firstSourceCase(contactEncounterId: string): Promise<{ epid: stri
   return { reason: `no known case named by ${answers.map((a: any) => JSON.stringify(a?.valueString ?? "")).join(", ")}` };
 }
 
+/**
+ * Sets [contactId] as the resource's Contact ID. Earlier Contact IDs stay, marked use "old",
+ * so a contact moved to a newer case can still be found by the ID it had.
+ */
+function putContactId(resource: any, contactId: string): Promise<any> {
+  const identifiers = Array.isArray(resource.identifier) ? resource.identifier : [];
+  const others = identifiers.filter((id: any) => id?.system !== CONTACT_ID_SYSTEM_URI);
+  const earlier = identifiers
+    .filter((id: any) => id?.system === CONTACT_ID_SYSTEM_URI && String(id?.value ?? "").trim() !== contactId)
+    .map((id: any) => ({ ...id, use: "old" }));
+  return putIdentifiers(resource, [...others, ...earlier, contactIdIdentifier(contactId)]);
+}
+
 async function ensureVhfContactIdLocked(encounterId: string): Promise<ContactIdResult> {
   try {
     let encounter = (await FhirApi({ url: `/Encounter/${encounterId}`, headers: { "Cache-Control": "no-cache" } })).data;
@@ -573,8 +595,10 @@ async function ensureVhfContactIdLocked(encounterId: string): Promise<ContactIdR
     let kind: "assigned" | "present" = "present";
     let contactId =
       getContactId(encounter) ?? getContactId(patient) ?? (await previousIdentifier(encounterId, getContactId));
-    if (!contactId) {
-      const source = await firstSourceCase(encounterId);
+    const source = await currentSourceCase(encounterId);
+    // Moved to a newer case: a new Contact ID under that case's EPID; the old one is kept as "old".
+    const moved = !!contactId && !("reason" in source) && contactIdCaseEpid(contactId) !== source.epid;
+    if (!contactId || moved) {
       if ("reason" in source) return { kind: "pending", reason: source.reason };
       const key = vhfContactIdCounterKey(source.epid);
       const seq = await generateCaseId(key.country, key.county, key.subCounty, key.condition);
@@ -583,8 +607,8 @@ async function ensureVhfContactIdLocked(encounterId: string): Promise<ContactIdR
       console.log(`Assigned VHF Contact ID ${contactId} to Encounter/${encounterId}`);
     }
 
-    if (getContactId(encounter) !== contactId) encounter = await putIdentifier(encounter, contactIdIdentifier(contactId));
-    if (getContactId(patient) !== contactId) await putIdentifier(patient, contactIdIdentifier(contactId));
+    if (getContactId(encounter) !== contactId) encounter = await putContactId(encounter, contactId);
+    if (getContactId(patient) !== contactId) await putContactId(patient, contactId);
     return { kind, contactId, encounter };
   } catch (error) {
     return { kind: "error", error };
@@ -592,8 +616,8 @@ async function ensureVhfContactIdLocked(encounterId: string): Promise<ContactIdR
 }
 
 /**
- * Gives a VHF contact its Contact ID (the first linked case's EPID + "-C001"...), once, on its
- * case Encounter and Patient. Pending while that case has no EPID.
+ * Gives a VHF contact its Contact ID (the current linked case's EPID + "-C001"...) on its case
+ * Encounter and Patient; a new one when it moved to a newer case. Pending while that case has no EPID.
  */
 export async function ensureVhfContactId(encounterId: string): Promise<ContactIdResult> {
   const encounter = (await FhirApi({ url: `/Encounter/${encounterId}`, headers: { "Cache-Control": "no-cache" } })).data;

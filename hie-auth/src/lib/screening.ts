@@ -36,6 +36,11 @@ export const SCREENING_NUMBER_SYSTEMS = [SCREENING_NUMBER_SYSTEM, SCREENING_NUMB
 
 export const SCREENING_OUTCOMES = ["cleared", "referred", "suspected"] as const;
 export const POINT_OF_ENTRY_TYPES = ["airport", "seaport", "border", "facility", "community"] as const;
+/** vhf-travelled answers. */
+export const TRAVELLED_ANSWERS = ["yes", "no", "unknown"] as const;
+/** vhf-travel-means answers. */
+export const TRAVEL_MEANS = ["land", "air", "water"] as const;
+const TRAVEL_MEANS_DISPLAY: Record<(typeof TRAVEL_MEANS)[number], string> = { land: "Land", air: "Air", water: "Water" };
 
 export const SYMPTOM_CODES = [
     "fever",
@@ -74,14 +79,22 @@ export type ScreeningPayload = {
         address?: { county?: string; subCounty?: string; ward?: string; village?: string; text?: string };
     };
     travelHistory?: {
-        hasTravelled: boolean;
+        /** Yes / No; use `travelled` to answer Unknown. One of the two is required. */
+        hasTravelled?: boolean;
+        travelled?: (typeof TRAVELLED_ANSWERS)[number];
+        /** Countries are ISO 3166 alpha-2 codes (GET /provider/screenings/countries); names are mapped. */
         trips?: Array<{
             country: string;
             city?: string;
             departureDate?: string;
             arrivalDate?: string;
+            means?: (typeof TRAVEL_MEANS)[number];
             purpose?: string;
         }>;
+        /** Free-text stopovers; defaults to the trips other than the main one. */
+        stopovers?: string;
+        /** Defaults to Kenya and the point of entry name. */
+        destination?: { country?: string; place?: string };
     };
     signsAndSymptoms?: {
         temperatureCelsius?: number;
@@ -145,21 +158,7 @@ export function validateScreeningPayload(
     }
 
     const travel = body.travelHistory;
-    if (travel != null) {
-        if (!isObj(travel) || typeof travel.hasTravelled !== "boolean") {
-            errors.push("travelHistory.hasTravelled (boolean) is required when travelHistory is given");
-        } else if (travel.trips != null) {
-            if (!Array.isArray(travel.trips)) errors.push("travelHistory.trips must be an array");
-            else
-                travel.trips.forEach((t: any, i: number) => {
-                    if (!isObj(t) || !isStr(t.country)) errors.push(`travelHistory.trips[${i}].country is required`);
-                    else
-                        for (const k of ["departureDate", "arrivalDate"])
-                            if (t[k] != null && !(isStr(t[k]) && DATE_RE.test(t[k])))
-                                errors.push(`travelHistory.trips[${i}].${k} must be YYYY-MM-DD`);
-                });
-        }
-    }
+    if (travel != null) errors.push(...travelErrors(travel));
 
     const ss = body.signsAndSymptoms;
     if (ss != null) {
@@ -184,6 +183,64 @@ export function validateScreeningPayload(
     }
 
     return errors.length ? { ok: false, errors } : { ok: true, value: body as unknown as ScreeningPayload };
+}
+
+/** Today's date in Kenya (UTC+3), so a date entered just after local midnight is not "in the future". */
+function todayInKenya(now = Date.now()): string {
+    return new Date(now + 3 * 3600_000).toISOString().slice(0, 10);
+}
+
+const COUNTRY_HINT = "an ISO 3166 alpha-2 code (see GET /provider/screenings/countries)";
+
+function travelErrors(travel: unknown): string[] {
+    const errors: string[] = [];
+    if (!isObj(travel)) return ["travelHistory must be an object"];
+    const hasBool = typeof travel.hasTravelled === "boolean";
+    if (travel.hasTravelled != null && !hasBool) errors.push("travelHistory.hasTravelled must be a boolean");
+    if (travel.travelled != null && !(TRAVELLED_ANSWERS as readonly string[]).includes(travel.travelled))
+        errors.push(`travelHistory.travelled must be one of ${TRAVELLED_ANSWERS.join(", ")}`);
+    if (travel.hasTravelled == null && travel.travelled == null)
+        errors.push("travelHistory.hasTravelled (boolean) or travelHistory.travelled (yes|no|unknown) is required");
+    if (hasBool && travel.travelled != null && travel.travelled !== (travel.hasTravelled ? "yes" : "no"))
+        errors.push("travelHistory.hasTravelled and travelHistory.travelled disagree");
+
+    const today = todayInKenya();
+    if (travel.trips != null) {
+        if (!Array.isArray(travel.trips)) errors.push("travelHistory.trips must be an array");
+        else
+            travel.trips.forEach((t: any, i: number) => {
+                const at = `travelHistory.trips[${i}]`;
+                if (!isObj(t) || !isStr(t.country)) return errors.push(`${at}.country is required`);
+                if (!countryCoding(t.country).code) errors.push(`${at}.country "${t.country}" is not a known country; send ${COUNTRY_HINT}`);
+                for (const k of ["departureDate", "arrivalDate"]) {
+                    if (t[k] == null) continue;
+                    if (!(isStr(t[k]) && DATE_RE.test(t[k]))) errors.push(`${at}.${k} must be YYYY-MM-DD`);
+                    else if (t[k] > today) errors.push(`${at}.${k} cannot be in the future`);
+                }
+                if (isStr(t.departureDate) && isStr(t.arrivalDate) && t.arrivalDate < t.departureDate)
+                    errors.push(`${at}.arrivalDate cannot be before departureDate`);
+                if (t.means != null && !(TRAVEL_MEANS as readonly string[]).includes(t.means))
+                    errors.push(`${at}.means must be one of ${TRAVEL_MEANS.join(", ")}`);
+                if (t.city != null && typeof t.city !== "string") errors.push(`${at}.city must be a string`);
+            });
+    }
+    if (travel.stopovers != null && typeof travel.stopovers !== "string") errors.push("travelHistory.stopovers must be a string");
+    const dest = travel.destination;
+    if (dest != null) {
+        if (!isObj(dest)) errors.push("travelHistory.destination must be an object");
+        else {
+            if (dest.country != null && !(isStr(dest.country) && countryCoding(dest.country).code))
+                errors.push(`travelHistory.destination.country must be ${COUNTRY_HINT}`);
+            if (dest.place != null && typeof dest.place !== "string") errors.push("travelHistory.destination.place must be a string");
+        }
+    }
+    return errors;
+}
+
+/** The vhf-travelled answer of a travel history. */
+export function travelledAnswer(th: NonNullable<ScreeningPayload["travelHistory"]>): (typeof TRAVELLED_ANSWERS)[number] {
+    if (th.travelled) return th.travelled;
+    return th.hasTravelled ? "yes" : "no";
 }
 
 export function buildScreeningIdentifier(type: IdentificationType, value: string) {
@@ -426,18 +483,21 @@ function describeTrip(t: Trip): string {
 
 function travelItems(th: NonNullable<ScreeningPayload["travelHistory"]>, pointOfEntry?: string): QrItem[] {
     const L = VHF_CASE_LINK_IDS;
-    const items = answered(L.travelled, th.hasTravelled ? choice("yes", "Yes") : choice("no", "No"));
-    const { main, rest } = th.hasTravelled ? mainTrip(th.trips ?? []) : { rest: [] };
+    const travelled = travelledAnswer(th);
+    const items = answered(L.travelled, choice(travelled, humanize(travelled)));
+    const { main, rest } = travelled === "yes" ? mainTrip(th.trips ?? []) : { rest: [] };
     if (!main) return items;
-    const stopovers = rest.map(describeTrip).join("; ");
+    const stopovers = th.stopovers?.trim() || rest.map(describeTrip).join("; ");
+    const destinationPlace = th.destination?.place?.trim() || pointOfEntry;
     return [
         ...items,
         ...answered(L.originCountry, { valueCoding: countryCoding(main.country) }),
-        ...answered(L.originPlace, main.city ? { valueString: main.city } : undefined),
+        ...answered(L.originPlace, main.city?.trim() ? { valueString: main.city.trim() } : undefined),
         ...answered(L.departureDate, main.departureDate ? { valueDate: main.departureDate } : undefined),
+        ...answered(L.means, main.means ? choice(main.means, TRAVEL_MEANS_DISPLAY[main.means]) : undefined),
         ...answered(L.stopovers, stopovers ? { valueString: stopovers } : undefined),
-        ...answered(L.destinationCountry, { valueCoding: countryCoding(KENYA) }),
-        ...answered(L.destinationPlace, pointOfEntry ? { valueString: pointOfEntry } : undefined),
+        ...answered(L.destinationCountry, { valueCoding: countryCoding(th.destination?.country ?? KENYA) }),
+        ...answered(L.destinationPlace, destinationPlace ? { valueString: destinationPlace } : undefined),
         ...answered(L.arrivalDate, main.arrivalDate ? { valueDate: main.arrivalDate } : undefined),
     ];
 }
@@ -563,7 +623,7 @@ export function buildScreeningQuestionnaireResponse(payload: ScreeningPayload, p
     const L = VHF_CASE_LINK_IDS;
     const authored = payload.screenedAt ?? new Date().toISOString();
     const poe = payload.pointOfEntry;
-    const purpose = payload.travelHistory?.hasTravelled ? mainTrip(payload.travelHistory.trips ?? []).main?.purpose : undefined;
+    const purpose = payload.travelHistory && travelledAnswer(payload.travelHistory) === "yes" ? mainTrip(payload.travelHistory.trips ?? []).main?.purpose : undefined;
 
     const items: QrItem[] = [
         ...(site ? reportingSiteItems(site, authored, poe) : []),

@@ -492,6 +492,22 @@ async function tasksForUpdate(update: LabUpdate): Promise<{ tasks: any[]; matche
   return { tasks: [] };
 }
 
+/**
+ * A Specimen linked to a case that has no Task yet, by its tube label or else its FHIR id.
+ * Only for updates entered in the portal: the lab can only know IDs we submitted.
+ */
+async function untrackedSpecimen(update: LabUpdate): Promise<{ specimen: any; caseEncounterId: string } | null> {
+  for (const id of [update.specimenId, ...(update.altIds ?? [])]) {
+    const byLabel = await searchAll(`/Specimen?identifier=${encodeURIComponent(`${SPECIMEN_LABEL_SYSTEM}|${id}`)}`, 1);
+    const byId = byLabel.length || !/^[A-Za-z0-9\-.]{1,64}$/.test(id) ? [] : [await getResource(`/Specimen/${id}`)].filter(Boolean);
+    for (const specimen of [...byLabel, ...byId]) {
+      const caseEncounterId = specimenCaseEncounterId(specimen);
+      if (caseEncounterId) return { specimen, caseEncounterId };
+    }
+  }
+  return null;
+}
+
 function stateForUpdate(update: Exclude<LabUpdate, { kind: "note" }>): TaskState {
   switch (update.kind) {
     case "rejected":
@@ -505,14 +521,33 @@ function stateForUpdate(update: Exclude<LabUpdate, { kind: "note" }>): TaskState
 
 /**
  * Applies what the lab system sends (results, rejections, progress and notes), matched to Tasks
- * by the specimen tube label.
+ * by the specimen tube label. With `createMissingTasks` (lab results entered in the portal), a
+ * case's specimen that has no Task yet gets one.
  */
-export async function applyLabUpdates(updates: LabUpdate[]): Promise<PushedUpdateOutcome[]> {
+export async function applyLabUpdates(
+  updates: LabUpdate[],
+  opts: { createMissingTasks?: boolean } = {},
+): Promise<PushedUpdateOutcome[]> {
   const out: PushedUpdateOutcome[] = [];
   for (const update of updates) {
     const base = { specimenId: update.specimenId, kind: update.kind };
     try {
       const { tasks, matchedOn } = await tasksForUpdate(update);
+      if (!tasks.length && opts.createMissingTasks) {
+        const found = await untrackedSpecimen(update);
+        if (found && update.kind === "note") {
+          out.push({ ...base, matched: false, error: "Record the specimen's progress or result before adding a note" });
+          continue;
+        }
+        if (found && update.kind !== "note") {
+          const o = await recordSpecimenState(found.specimen, found.caseEncounterId, stateForUpdate(update), {
+            existingTask: null,
+            labNumber: update.labNumber,
+          });
+          out.push({ ...base, matched: true, status: o.status, businessStatus: o.businessStatus });
+          continue;
+        }
+      }
       if (!tasks.length) {
         out.push({ ...base, matched: false, error: "No specimen with this ID has been submitted" });
         continue;

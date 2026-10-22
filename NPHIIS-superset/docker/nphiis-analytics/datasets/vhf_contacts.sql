@@ -18,8 +18,10 @@ WITH answers AS (
   SELECT o.encounter.encounterId AS encounter_id,
          c.code AS link_id,
          o.value.string AS value,
+         -- A contact linked again by a newer case moves to it: the link captured last wins by issued.
          ROW_NUMBER() OVER (PARTITION BY o.encounter.encounterId, c.code
-                            ORDER BY COALESCE(o.meta.lastUpdated, o.issued) DESC) AS rn
+                            ORDER BY CASE WHEN c.code = 'vhf-source-case-epid' THEN o.issued END DESC NULLS LAST,
+                                     COALESCE(o.meta.lastUpdated, o.issued) DESC) AS rn
   FROM observation o LATERAL VIEW explode(o.code.coding) t AS c
   WHERE c.code IN ('vhf-case-type', 'vhf-source-case-epid', 'vhf-contact-date', 'vhf-relationship',
                    'vhf-follow-up-day', 'vhf-follow-up-date', 'vhf-follow-up-symptomatic')
@@ -46,7 +48,7 @@ contacts AS (
   SELECT l.encounter_id, l.case_type, l.source_case, l.contact_date, l.relationship,
          e.subject.patientId AS patient_id,
          MAX(CASE WHEN i.system = 'http://hie.org/identifiers/EPID' THEN i.value END) AS epid,
-         MAX(CASE WHEN i.system = 'http://hie.org/identifiers/CONTACT_ID' THEN i.value END) AS contact_id,
+         MAX(CASE WHEN i.system = 'http://hie.org/identifiers/CONTACT_ID' AND COALESCE(i.use, '') <> 'old' THEN i.value END) AS contact_id,
          MAX(CASE WHEN tg.system LIKE '%encounter-managingLocation' THEN regexp_replace(tg.code, '^Location/', '') END) AS facility_id
   FROM latest l
   JOIN encounter e ON e.id = l.encounter_id
@@ -70,8 +72,8 @@ per_contact AS (
          COUNT(DISTINCT CASE WHEN day BETWEEN 1 AND 21 THEN day END) AS days_followed_up,
          MAX(CASE WHEN day BETWEEN 1 AND 21 THEN day END) AS last_day_followed_up,
          MAX(follow_up_date) AS last_follow_up_date,
-         MAX(symptomatic) AS ever_symptomatic,
-         MIN(CASE WHEN symptomatic THEN day END) AS first_symptomatic_day
+         MAX(symptomatic AND day >= 0) AS ever_symptomatic,
+         MIN(CASE WHEN symptomatic AND day >= 0 THEN day END) AS first_symptomatic_day
   FROM visits
   GROUP BY contact_encounter_id
 ),

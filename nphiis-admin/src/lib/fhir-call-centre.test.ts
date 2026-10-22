@@ -266,3 +266,13 @@ describe("linking a case", () => {
     expect(mod.toCaseCandidate({ id: "p3", identifier: [epid, { system: "alert-rumor-log", value: "e" }] })).toBeNull();
   });
 });
+
+describe("Alert Log ID", () => {
+  it("is shown on the list once the server has given one", () => {
+    const bundle = mod.buildCreateBundle(advice, { now: NOW, newId: ids() });
+    const [patient] = byType(bundle, "Patient");
+    expect(mod.toSummary(patient, []).logId).toBeUndefined();
+    patient.identifier.push({ system: mod.ALERT_LOG_ID_SYSTEM, value: "KEN-NAI-EME-2026-ALR-001" });
+    expect(mod.toSummary(patient, []).logId).toBe("KEN-NAI-EME-2026-ALR-001");
+  });
+});

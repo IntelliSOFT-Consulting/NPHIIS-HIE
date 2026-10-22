@@ -16,6 +16,7 @@ import {
     reportingSiteFromLocationInfo,
     validateScreeningPayload,
 } from "../lib/screening";
+import { COUNTRY_SYSTEM, VHF_COUNTRIES } from "../lib/vhf-countries";
 
 const router = express.Router();
 router.use(express.json({ limit: "1mb" }));
@@ -187,6 +188,17 @@ router.get("/patients", authenticateUser, async (req: Request, res: Response) =>
         console.error("GET /provider/screenings/patients error:", error);
         return res.status(500).json({ status: "error", error: "Failed to list screened patients" });
     }
+});
+
+/**
+ * Country options for travelHistory trips[].country and destination.country: the ISO 3166
+ * alpha-2 codes the vhf-case form offers. Send the code; the display is stored with it.
+ */
+router.get("/countries", authenticateUser, (_req: Request, res: Response) => {
+    const countries = Object.entries(VHF_COUNTRIES)
+        .map(([code, display]) => ({ code, display }))
+        .sort((a, b) => a.display.localeCompare(b.display));
+    return res.status(200).json({ status: "success", system: COUNTRY_SYSTEM, count: countries.length, countries });
 });
 
 export default router;

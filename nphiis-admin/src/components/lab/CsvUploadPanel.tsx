@@ -8,6 +8,7 @@ import { hasAnyRole } from "@/lib/roles";
 import { LAB_FORMS, getLabForm } from "@/lib/questionnaires";
 import { type PendingLabCases, labTemplateCsv } from "@/lib/lab-template";
 import Spinner from "../ui/Spinner";
+import SpecimenCsvUpload from "./SpecimenCsvUpload";
 import { Alert } from "../ui/Alert";
 import { Field, Select } from "../ui/Field";
 
@@ -313,30 +314,42 @@ export default function CsvUploadPanel() {
       </div>
     ) : null;
 
+  const formPicker = (
+    <Field label="Lab form" htmlFor="csv-form-select">
+      <Select
+        id="csv-form-select"
+        value={formId}
+        onChange={(v) => {
+          setFormId(v);
+          setRows([]);
+          setResponse(null);
+          setFileName("");
+          setTemplateNote(null);
+          setTemplateError(null);
+        }}
+        options={availableForms.map((f) => ({
+          value: f.id,
+          label: f.title,
+        }))}
+      />
+    </Field>
+  );
+
+  // Specimen-based forms upload one row per specimen update instead of per case.
+  if (form?.specimenBased) {
+    return (
+      <div className="card p-6 space-y-5">
+        {formPicker}
+        <SpecimenCsvUpload key={form.id} templateName={form.id} />
+      </div>
+    );
+  }
+
   return (
     <div className="card p-6 space-y-5">
       <ResultsSummary />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-        <div className="md:col-span-2">
-          <Field label="Lab form" htmlFor="csv-form-select">
-            <Select
-              id="csv-form-select"
-              value={formId}
-              onChange={(v) => {
-                setFormId(v);
-                setRows([]);
-                setResponse(null);
-                setFileName("");
-                setTemplateNote(null);
-                setTemplateError(null);
-              }}
-              options={availableForms.map((f) => ({
-                value: f.id,
-                label: f.title,
-              }))}
-            />
-          </Field>
-        </div>
+        <div className="md:col-span-2">{formPicker}</div>
         <button
           onClick={downloadTemplate}
           disabled={!form || templateLoading}

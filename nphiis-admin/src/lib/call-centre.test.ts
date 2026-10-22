@@ -96,3 +96,17 @@ describe("call time", () => {
     expect(errors["alert-date"]).toBeUndefined();
   });
 });
+
+describe("call end time", () => {
+  it("is typed by the agent and required", () => {
+    const answers: Record<string, string> = { ...base, "alert-call-pathway": "general-advice" };
+    delete answers["alert-call-end"];
+    expect(validateCallLog({ answers, locations })["alert-call-end"]).toBeDefined();
+    expect(validateCallLog({ answers: { ...answers, "alert-call-end": "14:05" }, locations })["alert-call-end"]).toBeUndefined();
+  });
+
+  it("is not a system-filled field", async () => {
+    const { AUTO_FIELDS } = await import("./call-centre");
+    expect(AUTO_FIELDS.has("alert-call-end")).toBe(false);
+  });
+});

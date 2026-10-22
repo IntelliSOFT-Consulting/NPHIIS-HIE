@@ -142,11 +142,20 @@ describe("other bundles", () => {
     expect(entries[0].resource).toMatchObject({ encounter: { reference: "Encounter/e1" }, valueString: "Suspected" });
   });
 
-  it("links an existing contact to a second case", () => {
+  it("moves an existing contact to a second case with its date of contact", () => {
     const entries = buildExtraExposureBundle(index, { patientId: "p1", encounterId: "e1" }, "2026-10-10", { now: NOW }).entry as Entry[];
     expect(entries.map((e) => [e.resource.code.coding[0].code, e.resource.valueString])).toEqual([
       ["vhf-source-case-epid", "KEN-NAI-KIB-2026-VHF-001"],
       ["vhf-contact-date", "2026-10-10"],
+    ]);
+  });
+
+  it("restarts the 21 days from today (Kenya) when no date of contact is given", () => {
+    const late = new Date("2026-10-10T22:30:00Z");
+    const entries = buildExtraExposureBundle(index, { patientId: "p1", encounterId: "e1" }, undefined, { now: late }).entry as Entry[];
+    expect(entries.map((e) => [e.resource.code.coding[0].code, e.resource.valueString])).toEqual([
+      ["vhf-source-case-epid", "KEN-NAI-KIB-2026-VHF-001"],
+      ["vhf-contact-date", "2026-10-11"],
     ]);
   });
 

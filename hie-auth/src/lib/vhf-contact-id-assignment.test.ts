@@ -55,7 +55,7 @@ beforeEach(() => {
 });
 
 describe("ensureVhfContactId", () => {
-  it("prefixes the next number with the first linked case's EPID, on the Encounter and the Patient", async () => {
+  it("prefixes the next number with the linked case's EPID, on the Encounter and the Patient", async () => {
     tracker.generateCaseId.mockResolvedValue(7);
     const puts = hapi({
       "/Encounter/c1": contactEncounter(),
@@ -87,6 +87,46 @@ describe("ensureVhfContactId", () => {
     expect(r).toMatchObject({ kind: "present", contactId: "KEN-NAI-KIB-2026-VHF-001-C002" });
     expect(tracker.generateCaseId).not.toHaveBeenCalled();
     expect(puts.map((p) => p.url)).toEqual(["/Encounter/c1"]);
+  });
+
+  it("gives a new Contact ID under a newer case's EPID and keeps the earlier one as old", async () => {
+    tracker.generateCaseId.mockResolvedValue(3);
+    const brianId = { use: "official", system: CONTACT_ID_SYSTEM_URI, value: "KEN-NAI-KIB-2026-VHF-001-C007" };
+    const puts = hapi({
+      "/Encounter/c1": contactEncounter([brianId]),
+      "/Patient/p1": { resourceType: "Patient", id: "p1", identifier: [brianId] },
+      "/Encounter/case1": caseEncounter("KEN-NAI-KIB-2026-VHF-001"),
+      "/Encounter/case2": { ...caseEncounter("KEN-NAI-KIB-2026-VHF-002"), id: "case2" },
+      observations: [
+        link("KEN-NAI-KIB-2026-VHF-002  Yao (Suspected)", "2026-10-12T08:00:00Z"),
+        link("KEN-NAI-KIB-2026-VHF-001  Brian (Confirmed)", "2026-10-10T08:00:00Z"),
+      ],
+    });
+
+    const r = await ensureVhfContactId("c1");
+
+    expect(r).toMatchObject({ kind: "assigned", contactId: "KEN-NAI-KIB-2026-VHF-002-C003" });
+    expect(tracker.generateCaseId).toHaveBeenCalledWith("KEN", "CONTACT", "KEN-NAI-KIB-2026-VHF-002", "VHF");
+    expect(puts.map((p) => p.url)).toEqual(["/Encounter/c1", "/Patient/p1"]);
+    for (const p of puts) {
+      const ids = p.body.identifier.filter((i: any) => i.system === CONTACT_ID_SYSTEM_URI);
+      expect(ids).toEqual([
+        { ...brianId, use: "old" },
+        expect.objectContaining({ use: "official", value: "KEN-NAI-KIB-2026-VHF-002-C003" }),
+      ]);
+    }
+  });
+
+  it("keeps the Contact ID while the contact is still with the case it was made from", async () => {
+    const id = { use: "official", system: CONTACT_ID_SYSTEM_URI, value: "KEN-NAI-KIB-2026-VHF-001-C007" };
+    const puts = hapi({
+      "/Encounter/c1": contactEncounter([id]),
+      "/Patient/p1": { resourceType: "Patient", id: "p1", identifier: [id] },
+      "/Encounter/case1": caseEncounter("KEN-NAI-KIB-2026-VHF-001"),
+      observations: [link("KEN-NAI-KIB-2026-VHF-001", "2026-10-10T08:00:00Z")],
+    });
+    expect(await ensureVhfContactId("c1")).toMatchObject({ kind: "present", contactId: id.value });
+    expect(puts).toEqual([]);
   });
 
   it("waits while the case has no EPID", async () => {

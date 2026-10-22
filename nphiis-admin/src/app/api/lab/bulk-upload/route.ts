@@ -8,7 +8,7 @@ import {
   type VerifiedToken,
 } from '@/lib/server-auth';
 import { canAccess, hasAnyRole } from '@/lib/roles';
-import { getLabForm, labResultReasons } from '@/lib/questionnaires';
+import { getAnswerForm, labResultReasons } from '@/lib/questionnaires';
 import {
   RowMappingError,
   buildLabSubmissionBundle,
@@ -171,7 +171,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const form = getLabForm(body.formId);
+  // Specimen-based forms record results through /api/lab/specimen-updates.
+  const form = getAnswerForm(body.formId);
   if (!form) return NextResponse.json({ error: 'Unknown form' }, { status: 404 });
   if (!hasAnyRole(profile.roles, form.allowedRoles)) {
     console.warn(

@@ -18,6 +18,7 @@ const STATUS: Record<ContactStatus, { label: string; chip: string }> = {
   converted: { label: 'Became a case', chip: 'bg-purple-100 text-purple-800' },
   lost: { label: 'Lost to follow up', chip: 'bg-amber-100 text-amber-800' },
   died: { label: 'Died', chip: 'bg-gray-200 text-gray-700' },
+  transferred: { label: 'Moved to another case', chip: 'bg-gray-100 text-gray-700' },
 };
 
 const DAY_CELL: Record<DayState, string> = {
@@ -358,7 +359,7 @@ export default function ContactsView() {
                 setUndo(null);
                 const parts = [
                   saved.created && `${plural(saved.created)} added`,
-                  saved.linked && `${plural(saved.linked)} already registered, now linked to this case`,
+                  saved.linked && `${plural(saved.linked)} already registered, moved to this case (21 days restarted)`,
                   saved.restored && `${plural(saved.restored)} put back`,
                   saved.updated && `${plural(saved.updated)} updated`,
                 ].filter(Boolean);
@@ -538,16 +539,37 @@ export default function ContactsView() {
                               {c.exposureDate ? formatDay(c.exposureDate) : <span title="Counted from registration">{formatDay(c.dayZero)}*</span>}
                             </td>
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                              {c.daysSinceExposure < 0 ? '—' : `${Math.min(c.daysSinceExposure, 21)}/21`}
+                              {c.status === 'transferred' || c.daysSinceExposure < 0 ? '—' : `${Math.min(c.daysSinceExposure, 21)}/21`}
                             </td>
                             <td className="px-4 py-3">
-                              <DayGrid contact={c} />
+                              {c.status === 'transferred' ? (
+                                <div className="text-xs text-gray-600">
+                                  Follow up stopped here
+                                  {c.restartedOn ? ` on ${formatDay(c.restartedOn)}` : ''}. It goes on as a contact of{' '}
+                                  {c.movedTo ? (
+                                    <button
+                                      type="button"
+                                      className="font-mono text-nphi-700 underline"
+                                      onClick={() => openCase({ lookup: `id=${encodeURIComponent(c.movedTo!)}`, label: c.movedTo! })}
+                                    >
+                                      {c.movedTo}
+                                    </button>
+                                  ) : (
+                                    'another case'
+                                  )}
+                                  .
+                                </div>
+                              ) : (
+                                <DayGrid contact={c} />
+                              )}
                               {c.missedDays.length > 0 && open && (
                                 <div className="mt-1 text-[11px] text-amber-700">Missed: day {c.missedDays.join(', ')}</div>
                               )}
                             </td>
                             <td className="px-4 py-3">
-                              <span className={`chip ${STATUS[c.status].chip}`}>{STATUS[c.status].label}</span>
+                              <span className={`chip ${STATUS[c.status].chip}`}>
+                                {c.status === 'transferred' && c.movedTo ? `Moved to ${c.movedTo}` : STATUS[c.status].label}
+                              </span>
                               {c.dueToday && <div className="mt-1 text-[11px] text-nphi-700">Due today</div>}
                             </td>
                             <td className="px-4 py-3">

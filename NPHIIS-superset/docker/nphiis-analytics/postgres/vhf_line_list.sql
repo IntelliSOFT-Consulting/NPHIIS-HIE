@@ -11,7 +11,9 @@
 WITH vhf AS (
   SELECT p.id AS patient_id,
          MAX(CASE WHEN i.type_code = 'EPID' THEN NULLIF(i.value, '') END) AS epid,
-         MAX(CASE WHEN i.system = 'http://hie.org/identifiers/CONTACT_ID' THEN NULLIF(i.value, '') END) AS contact_id
+         -- Earlier Contact IDs of a contact moved to a newer case stay (use old); base picks the current one.
+         ARRAY_AGG(NULLIF(i.value, '') ORDER BY i.value COLLATE "C" DESC)
+           FILTER (WHERE i.system = 'http://hie.org/identifiers/CONTACT_ID' AND NULLIF(i.value, '') IS NOT NULL) AS contact_ids
   FROM public.patient_flat_pg p
   JOIN public.patient_identifier_pg i ON i.id = p.id
   WHERE p.active IS DISTINCT FROM false
@@ -48,8 +50,10 @@ obs_latest AS (
     SELECT patient_id, code, val,
            -- Ties on lastUpdated are common (a record re-saved at once), so the answer's own
            -- issued time decides; Spark's version had no tie-break and picked arbitrarily.
+           -- A contact linked again by a newer case moves to it: the link captured last wins by issued.
            ROW_NUMBER() OVER (PARTITION BY patient_id, code
-                              ORDER BY lu DESC NULLS LAST, issued DESC NULLS LAST, obs_id COLLATE "C") rn
+                              ORDER BY CASE WHEN code = 'vhf-source-case-epid' THEN issued END DESC NULLS LAST,
+                                       lu DESC NULLS LAST, issued DESC NULLS LAST, obs_id COLLATE "C") rn
     FROM obs_norm
   ) x WHERE rn = 1
 ),
@@ -92,18 +96,45 @@ o AS (
     MAX(CASE WHEN code = 'vhf-collection-date'         THEN val END) AS collection_date,
     MAX(CASE WHEN code = 'vhf-sent-date'               THEN val END) AS sent_date,
     MAX(CASE WHEN code = 'vhf-specimen-id'             THEN val END) AS specimen_id,
-    MAX(CASE WHEN code = 'vhf-received-date'           THEN val END) AS received_date,
+    MAX(CASE WHEN code = 'vhf-received-date'           THEN val END) AS form_received_date,
     MAX(CASE WHEN code = 'vhf-sample-condition'        THEN val END) AS sample_condition,
     MAX(CASE WHEN code = 'vhf-lab-tests'               THEN val END) AS lab_tests,
-    MAX(CASE WHEN code = 'vhf-preliminary-result'      THEN val END) AS preliminary_result,
-    MAX(CASE WHEN code = 'vhf-preliminary-result-date' THEN val END) AS preliminary_date,
-    MAX(CASE WHEN code = 'vhf-final-result'            THEN val END) AS final_result,
-    MAX(CASE WHEN code = 'vhf-final-result-date'       THEN val END) AS final_date,
-    MAX(CASE WHEN code = 'vhf-final-lab'               THEN val END) AS final_lab,
+    MAX(CASE WHEN code = 'vhf-preliminary-result'      THEN val END) AS form_preliminary_result,
+    MAX(CASE WHEN code = 'vhf-preliminary-result-date' THEN val END) AS form_preliminary_date,
+    MAX(CASE WHEN code = 'vhf-final-result'            THEN val END) AS form_final_result,
+    MAX(CASE WHEN code = 'vhf-final-result-date'       THEN val END) AS form_final_date,
+    MAX(CASE WHEN code = 'vhf-final-lab'               THEN val END) AS form_final_lab,
     MAX(CASE WHEN code = 'final_classification'        THEN val END) AS lab_classification,
     MAX(CASE WHEN code = 'vhf-exposure-risk'           THEN val END) AS exposure_risk,
     MAX(CASE WHEN code = 'vhf-monitoring-status'       THEN val END) AS monitoring_status
   FROM obs_latest GROUP BY patient_id
+),
+lab_report AS (
+  -- Specimen results (DiagnosticReport per specimen, from the lab API or the admin portal),
+  -- ranked per patient and status: the first positive, else the latest result.
+  SELECT patient_id, status, conclusion, effective, performer,
+         ROW_NUMBER() OVER (PARTITION BY patient_id, status
+                            ORDER BY CASE WHEN LOWER(conclusion) = 'positive' THEN 0 ELSE 1 END,
+                                     CASE WHEN LOWER(conclusion) = 'positive' THEN NULLIF(effective, '') END ASC NULLS LAST,
+                                     NULLIF(effective, '') DESC NULLS LAST, id COLLATE "C") AS rn
+  FROM public.diagnostic_report_flat_pg
+  WHERE code = 'nphl-lab-result' AND status IN ('preliminary', 'final')
+    AND patient_id IN (SELECT patient_id FROM vhf)
+),
+lab AS (
+  SELECT patient_id,
+    MAX(CASE WHEN status = 'preliminary' THEN conclusion END)                 AS preliminary_result,
+    MAX(CASE WHEN status = 'preliminary' THEN SUBSTRING(effective FROM 1 FOR 10) END) AS preliminary_date,
+    MAX(CASE WHEN status = 'final' THEN conclusion END)                       AS final_result,
+    MAX(CASE WHEN status = 'final' THEN SUBSTRING(effective FROM 1 FOR 10) END) AS final_date,
+    MAX(CASE WHEN status = 'final' THEN performer END)                        AS final_lab
+  FROM lab_report WHERE rn = 1 GROUP BY patient_id
+),
+received AS (
+  SELECT patient_id, MIN(SUBSTRING(NULLIF(received, '') FROM 1 FOR 10)) AS received_date
+  FROM public.specimen_flat_pg
+  WHERE patient_id IN (SELECT patient_id FROM vhf)
+  GROUP BY patient_id
 ),
 follow_up AS (
   -- Daily contact follow-ups are repeated records, so aggregate all of them.
@@ -122,13 +153,25 @@ base AS (
   SELECT
     v.patient_id,
     COALESCE(v.epid, o.epid_obs) AS epid,
-    v.contact_id,
+    -- The Contact ID made from the source case, else the latest-sorting one.
+    COALESCE(
+      (SELECT x FROM unnest(v.contact_ids) x
+        WHERE left(x, length(split_part(btrim(o.source_epid), ' ', 1)) + 2) = split_part(btrim(o.source_epid), ' ', 1) || '-C'
+        LIMIT 1),
+      v.contact_ids[1]) AS contact_id,
     o.*,
     s.first_submitted AS date_reported,
     NULLIF(p.birth_date, '') AS birth_date,
     NULLIF(p.gender, '') AS gender,
     TRIM(CONCAT(p.given, ' ', p.family)) AS patient_name,
     f.days_followed, f.last_follow_up, f.ever_symptomatic,
+    -- Specimen results first; the admin lab form's answers for records entered before.
+    COALESCE(r.received_date, o.form_received_date) AS received_date,
+    CASE WHEN l.preliminary_result IS NOT NULL THEN l.preliminary_result ELSE o.form_preliminary_result END AS preliminary_result,
+    CASE WHEN l.preliminary_result IS NOT NULL THEN l.preliminary_date ELSE o.form_preliminary_date END AS preliminary_date,
+    CASE WHEN l.final_result IS NOT NULL THEN l.final_result ELSE o.form_final_result END AS final_result,
+    CASE WHEN l.final_result IS NOT NULL THEN l.final_date ELSE o.form_final_date END AS final_date,
+    CASE WHEN l.final_result IS NOT NULL THEN l.final_lab ELSE o.form_final_lab END AS final_lab,
     -- A contact that became a case is reported as a case.
     CASE
       WHEN LOWER(o.case_type) = 'contact'
@@ -142,6 +185,8 @@ base AS (
   LEFT JOIN o ON o.o_patient_id = v.patient_id
   LEFT JOIN follow_up f ON f.patient_id = v.patient_id
   LEFT JOIN submitted s ON s.patient_id = v.patient_id
+  LEFT JOIN lab l ON l.patient_id = v.patient_id
+  LEFT JOIN received r ON r.patient_id = v.patient_id
 ),
 classified AS (
   SELECT b.*,

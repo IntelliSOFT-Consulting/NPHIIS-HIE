@@ -60,3 +60,15 @@ Description: "Signs and symptoms captured during screening."
 * #jaundice "Jaundice"
 * #confusion "Confusion"
 * #other "Other"
+
+CodeSystem: TravelMeansCS
+Id: travel-means
+Title: "Means of Travel"
+Description: "Means of travel recorded in the vhf-case travel history."
+* ^url = "http://nphiis.health.go.ke/fhir/CodeSystem/travel-means"
+* ^status = #active
+* ^caseSensitive = true
+* ^content = #complete
+* #land "Land"
+* #air "Air"
+* #water "Water"

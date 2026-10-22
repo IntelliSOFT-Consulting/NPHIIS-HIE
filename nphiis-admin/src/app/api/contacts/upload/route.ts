@@ -4,7 +4,9 @@ import { contactsError, contactsSession } from "@/lib/contacts-auth";
 import {
   alreadyUploaded,
   buildBoard,
+  caseListById,
   caseDisease,
+  currentCaseOf,
   findSamePerson,
   latestAnswers,
   patientResources,
@@ -69,6 +71,8 @@ export interface UploadRowResult {
   residence?: string;
   problems: string[];
   existingName?: string;
+  /** link-existing: the case now following the person up (EPID); they move to this case. */
+  movesFrom?: string;
   /** What an update (or a put-back) changes: "Phone", "Days 4, 5". */
   changes?: string[];
   saved?: boolean;
@@ -83,6 +87,8 @@ interface Plan {
   onRecord?: HieContact;
   update?: ContactUpdate;
   record?: ContactOnRecord;
+  /** link-existing: the case following the person up before this upload. */
+  from?: { epid: string; encounterId: string | null } | null;
 }
 
 /** Follow-up days recorded for a contact: day → symptomatic. */
@@ -155,9 +161,11 @@ export async function POST(req: NextRequest) {
       if (same) {
         const onRecord = onList.get(same.encounterId) ?? offList.get(same.encounterId);
         const action: UploadAction = onList.has(same.encounterId) ? "exists" : offList.has(same.encounterId) ? "restore" : "link-existing";
+        const from = action === "link-existing" ? await currentCaseOf(same.encounterId, s.token) : null;
         return {
-          result: { rowNumber: row.rowNumber, name, action, residence, problems, existingName: same.name },
+          result: { rowNumber: row.rowNumber, name, action, residence, problems, existingName: same.name, movesFrom: from?.epid },
           existing: same,
+          from,
           input,
           onRecord,
         };
@@ -183,6 +191,11 @@ export async function POST(req: NextRequest) {
     );
     for (const p of known) {
       const c = p.onRecord!;
+      // Moved to a newer case: its follow up is kept there, so this list's row changes nothing.
+      if (c.status === "transferred") {
+        p.result.problems.push(`Moved to ${c.movedTo ?? "another case"}: update this contact on that case's list`);
+        continue;
+      }
       p.record = {
         patientId: c.patientId,
         encounterId: c.encounterId,
@@ -224,6 +237,19 @@ export async function POST(req: NextRequest) {
         }
       });
       const refreshed = await refreshCaseList(s.token, indexEncounterId, { restore });
+      // People who moved here: their earlier case's list now shows them as moved.
+      const earlier = new Map<string, () => Promise<unknown>>();
+      for (const p of plans) {
+        if (!p.result.saved || p.result.action !== "link-existing" || !p.from) continue;
+        const from = p.from;
+        if (from.encounterId === indexEncounterId) continue;
+        earlier.set(from.encounterId ?? from.epid, () =>
+          from.encounterId ? refreshCaseList(s.token, from.encounterId) : caseListById(s.token, from.epid),
+        );
+      }
+      for (const [key, refresh] of Array.from(earlier.entries())) {
+        await refresh().catch((err: unknown) => console.warn(`[contacts upload] contact list of ${key} not refreshed:`, err));
+      }
       for (const p of plans) if (p.result.action === "restore" && !p.result.error) p.result.saved = true;
       return NextResponse.json({
         results: plans.map((p) => p.result),
