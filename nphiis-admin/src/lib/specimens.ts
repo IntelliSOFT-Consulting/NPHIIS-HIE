@@ -25,6 +25,23 @@ export const SPECIMEN_STATUS_LABEL: Record<SpecimenStatus, string> = {
   'specimen-rejected': 'Rejected',
 };
 
+/** Tailwind classes for a status chip. */
+export const STATUS_BADGE: Record<SpecimenStatus, string> = {
+  'awaiting-epid': 'bg-gray-100 text-gray-700',
+  'submission-failed': 'bg-accent-50 text-accent-700',
+  'awaiting-result': 'bg-sky-100 text-sky-800',
+  'received-at-lab': 'bg-indigo-100 text-indigo-800',
+  'in-testing': 'bg-violet-100 text-violet-800',
+  'preliminary-result': 'bg-amber-100 text-amber-800',
+  'final-result': 'bg-emerald-100 text-emerald-800',
+  'specimen-rejected': 'bg-accent-50 text-accent-700',
+};
+
+export const RESULT_BADGE: Record<string, string> = {
+  Positive: 'bg-accent-50 text-accent-700',
+  Negative: 'bg-emerald-100 text-emerald-800',
+};
+
 export function isSpecimenStatus(value: unknown): value is SpecimenStatus {
   return SPECIMEN_STATUSES.includes(value as SpecimenStatus);
 }
@@ -60,6 +77,18 @@ export interface SubmittedSpecimen {
   tests: LabTest[];
   rejectedBy?: string;
   rejectedOn?: string;
+  /** The lab's accession number, once the lab sends it. */
+  labNumber?: string;
+  /** Notes from the lab. */
+  notes?: Array<{ author: string; time?: string; text: string }>;
+}
+
+/** A specimen of one case, for entering its lab results. */
+export interface CaseSpecimen extends SubmittedSpecimen {
+  /** Has a tracking Task; without one, the first update entered creates it. */
+  tracked: boolean;
+  /** Linked to its case encounter; results can only be recorded when it is. */
+  linkedToCase: boolean;
 }
 
 export type PullSource =

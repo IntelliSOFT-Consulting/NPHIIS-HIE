@@ -600,6 +600,15 @@ describe("specimenWithLabStatus", () => {
     expect(specimenWithLabStatus(rejected, taskIn("final-result")).status).toBe("available");
   });
 
+  it("keeps the date the lab received the specimen as receivedTime, without replacing one", () => {
+    const received = taskIn("received-at-lab", { output: [{ type: { text: "received-on" }, valueDateTime: "2026-10-15T08:10:00+03:00" }] });
+    const next = specimenWithLabStatus(specimen({ status: "available" }), received);
+    expect(next.receivedTime).toBe("2026-10-15T08:10:00+03:00");
+    expect(specimenWithLabStatus(next, received)).toBeNull();
+    expect(specimenWithLabStatus(specimen({ receivedTime: "2026-10-14" }), received).receivedTime).toBe("2026-10-14");
+    expect(specimenWithLabStatus(next, taskIn("final-result")).receivedTime).toBe("2026-10-15T08:10:00+03:00");
+  });
+
   it("leaves the specimen alone before it reaches the lab", () => {
     expect(specimenWithLabStatus(specimen(), taskIn("submission-failed"))).toBeNull();
     expect(specimenWithLabStatus(specimen(), taskIn("awaiting-epid"))).toBeNull();

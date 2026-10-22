@@ -117,6 +117,12 @@ export interface LabFormDefinition {
   mobileEncounterReasons?: string[];
   /** Patient.identifier system that marks a case of this form's disease. */
   caseIdentifierSystem: string;
+  /**
+   * Results are recorded against the case's specimens through hie-auth's lab
+   * workflow (POST /lab/updates, the same as the lab system's POST /lab/results)
+   * instead of as answers to `questionnaire`.
+   */
+  specimenBased?: boolean;
 }
 
 /** Every Encounter.reasonCode that records a result for `form`. */
@@ -228,8 +234,51 @@ const ALL_LAB_FORMS: LabFormDefinition[] = [
       "SUPERUSER",
     ],
     questionnaire: vhfLabResults as unknown as FhirQuestionnaire,
+    specimenBased: true,
   },
 ];
+
+/** A specimen-based form's case-level answers, saved like a questionnaire form. */
+function caseLevelForm(
+  form: LabFormDefinition,
+  id: string,
+  encounterReason: string,
+  linkIds: string[],
+): LabFormDefinition {
+  const items = flattenItems(form.questionnaire)
+    .filter((it) => linkIds.includes(it.linkId))
+    // Shown on their own, so not conditional on the result questions they followed.
+    .map(({ enableWhen: _e, enableBehavior: _b, ...it }) => it as QuestionnaireItem);
+  return {
+    ...form,
+    id,
+    title: `${form.title} - case`,
+    // Must not end in "Lab Information": hie-auth would email it as a lab result.
+    encounterReason,
+    mobileEncounterReasons: undefined,
+    specimenBased: false,
+    questionnaire: { ...form.questionnaire, item: items },
+  };
+}
+
+const CASE_LEVEL = [
+  { of: "vhf-lab-results", id: "vhf-case-classification", reason: "VHF Lab Classification", linkIds: ["final_classification"] },
+];
+let caseLevelForms: LabFormDefinition[] | undefined;
+
+/** Case-level answers of specimen-based forms (built on first use: the helpers below are not initialised yet). */
+function allCaseLevelForms(): LabFormDefinition[] {
+  caseLevelForms ??= CASE_LEVEL.map((c) =>
+    caseLevelForm(ALL_LAB_FORMS.find((f) => f.id === c.of)!, c.id, c.reason, c.linkIds),
+  );
+  return caseLevelForms;
+}
+
+/** The case-level answers that go with a specimen-based form, if it has any. */
+export function caseLevelFormFor(formId: string): LabFormDefinition | undefined {
+  const i = CASE_LEVEL.findIndex((c) => c.of === formId);
+  return i < 0 ? undefined : allCaseLevelForms()[i];
+}
 
 export const LAB_FORMS: LabFormDefinition[] = ALL_LAB_FORMS.filter((f) =>
   ENABLED_FORM_IDS.has(f.id),
@@ -237,6 +286,16 @@ export const LAB_FORMS: LabFormDefinition[] = ALL_LAB_FORMS.filter((f) =>
 
 export function getLabForm(id: string): LabFormDefinition | undefined {
   return LAB_FORMS.find((f) => f.id === id);
+}
+
+/**
+ * A form whose answers are saved as a lab Encounter with Observations: a
+ * questionnaire-based lab form, or a specimen-based form's case-level answers.
+ */
+export function getAnswerForm(id: string): LabFormDefinition | undefined {
+  const form = getLabForm(id);
+  if (form) return form.specimenBased ? undefined : form;
+  return allCaseLevelForms().find((f) => f.id === id);
 }
 
 /* ── Helpers for reading Questionnaire extensions ────────────────────────── */

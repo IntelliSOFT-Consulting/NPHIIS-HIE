@@ -5,12 +5,14 @@
 // lists the overall Observation/nphl-result-<specimen id> and one Observation
 // per test.
 
-import { FHIR_BASE_URL, chunk, searchAll, searchAllWithIncludes } from "./fhir-search";
-import { type LabTest, type SubmittedSpecimen, isSpecimenStatus } from "./specimens";
+import { FHIR_BASE_URL, chunk, fhirHeaders, searchAll, searchAllWithIncludes } from "./fhir-search";
+import { type CaseSpecimen, type LabTest, type SubmittedSpecimen, isSpecimenStatus } from "./specimens";
 
 const TASK_CODE = "http://nphiis.health.go.ke/fhir/CodeSystem/task-code|nphl-specimen-submission";
 const RESULT_CODE = "http://nphiis.health.go.ke/fhir/CodeSystem/nphl-lab|nphl-lab-result";
 const SPECIMEN_LABEL_SYSTEM = "http://nphiis.health.go.ke/fhir/identifiers/specimen-id";
+const LAB_NUMBER_SYSTEM = "http://nphiis.health.go.ke/fhir/identifiers/nphl-lab-number";
+const WORKFLOW_ENCOUNTER_EXT = "http://hl7.org/fhir/StructureDefinition/workflow-encounter";
 const EPID_SYSTEM = "http://hie.org/identifiers/EPID";
 const MANAGING_LOCATION_EXT = "specimen-managingLocation";
 
@@ -37,6 +39,7 @@ interface Task {
   meta?: { lastUpdated?: string };
   input?: Array<{ type?: { text?: string }; valueString?: string }>;
   output?: Array<{ type?: { text?: string }; valueString?: string; valueDateTime?: string }>;
+  note?: Array<{ authorString?: string; time?: string; text?: string }>;
 }
 
 interface ResultObservation {
@@ -158,7 +161,93 @@ export function toSubmittedSpecimen(
     tests,
     rejectedBy: output("rejected-by")?.valueString,
     rejectedOn: output("rejected-on")?.valueDateTime,
+    labNumber: task.identifier?.find((i) => i.system === LAB_NUMBER_SYSTEM)?.value,
+    // Notes with an author are the lab's; hie-auth writes its own without one.
+    notes: (task.note ?? [])
+      .filter((n) => n.authorString && n.text)
+      .map((n) => ({ author: n.authorString!, time: n.time, text: n.text! })),
   };
+}
+
+/** The tube label hie-auth would submit for a Specimen (nphl-lab.ts specimenLabel). */
+export function specimenLabel(specimen: any): { value: string; isFhirId: boolean } {
+  const ids: Identifier[] = specimen?.identifier ?? [];
+  const found =
+    ids.find((i) => i.system === SPECIMEN_LABEL_SYSTEM && i.value?.trim()) ??
+    ids.find((i) => i.value?.trim()) ??
+    specimen?.accessionIdentifier;
+  if (found?.value?.trim()) return { value: found.value.trim(), isFhirId: false };
+  return { value: String(specimen?.id ?? ""), isFhirId: true };
+}
+
+function specimenCaseEncounter(specimen: any): string | undefined {
+  const ref = specimen?.extension?.find((e: any) => e?.url === WORKFLOW_ENCOUNTER_EXT)?.valueReference?.reference;
+  return typeof ref === "string" && ref.startsWith("Encounter/") ? ref : undefined;
+}
+
+/** A case's specimens without a Task: what is known from the Specimen itself. */
+export function untrackedSpecimen(specimen: any, patient: any): CaseSpecimen {
+  const label = specimenLabel(specimen);
+  return {
+    taskId: "",
+    specimenId: specimen.id,
+    label: label.value,
+    labelIsFhirId: label.isFhirId,
+    epid: epidFrom(patient?.identifier, true),
+    patientName: patientName(patient),
+    sampleType: sampleType(specimen),
+    collectedAt: specimen?.collection?.collectedDateTime,
+    facility: specimen?.extension?.find((e: any) => e?.url?.endsWith(MANAGING_LOCATION_EXT))?.valueReference?.display,
+    tests: [],
+    tracked: false,
+    linkedToCase: !!specimenCaseEncounter(specimen),
+  };
+}
+
+/**
+ * Every Specimen of a patient with its tracking Task and lab result, for entering
+ * results. Collected first, oldest first.
+ */
+export async function listCaseSpecimens(patientId: string, token: string): Promise<CaseSpecimen[]> {
+  const subject = `Patient/${patientId}`;
+  const specimens = await searchAll<any>(
+    `${FHIR_BASE_URL}/Specimen?${new URLSearchParams({ subject, _count: "100" })}`,
+    token,
+  );
+  if (!specimens.length) return [];
+  const patient = await fetch(`${FHIR_BASE_URL}/${subject}`, { headers: fhirHeaders(token), cache: "no-store" })
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null);
+
+  const taskQuery = new URLSearchParams({ code: TASK_CODE, patient: subject, _count: "100" });
+  taskQuery.append("_include", "Task:encounter");
+  const { matches: tasks, included } = await searchAllWithIncludes<Task>(`${FHIR_BASE_URL}/Task?${taskQuery}`, token);
+  for (const s of specimens) included.set(`Specimen/${s.id}`, s);
+  if (patient) included.set(subject, patient);
+  const taskBySpecimen = new Map(tasks.map((t) => [t.focus?.reference ?? "", t]));
+
+  const resultBySpecimen = new Map<string, LabResult>();
+  for (const refs of chunk(specimens.map((s) => `Specimen/${s.id}`), SPECIMENS_PER_RESULT_QUERY)) {
+    const query = new URLSearchParams({ code: RESULT_CODE, specimen: refs.join(","), _include: "DiagnosticReport:result", _count: "200" });
+    const { matches: reports, included: observations } = await searchAllWithIncludes<DiagnosticReport>(
+      `${FHIR_BASE_URL}/DiagnosticReport?${query}`,
+      token,
+    );
+    for (const r of reports) {
+      const ref = r.specimen?.[0]?.reference;
+      if (ref) resultBySpecimen.set(ref, labResultFromReport(r, observations));
+    }
+  }
+
+  return specimens
+    .map((s): CaseSpecimen => {
+      const ref = `Specimen/${s.id}`;
+      const task = taskBySpecimen.get(ref);
+      const linkedToCase = !!specimenCaseEncounter(s);
+      if (!task) return untrackedSpecimen(s, patient);
+      return { ...toSubmittedSpecimen(task, included, resultBySpecimen.get(ref)), tracked: true, linkedToCase };
+    })
+    .sort((a, b) => (a.collectedAt ?? "").localeCompare(b.collectedAt ?? "") || a.label.localeCompare(b.label));
 }
 
 export async function listSubmittedSpecimens(token: string): Promise<SubmittedSpecimen[]> {

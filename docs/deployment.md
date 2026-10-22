@@ -487,6 +487,18 @@ rejection, is ignored. The response lists each update with `matched` (and `match
 identifier) and the Task status it produced, plus `invalid`: messages that could not be used, by their index in the
 batch. Only a batch with no usable message gets `400`. Each call is logged as route `lab-results-push`.
 
+**Results entered in the admin portal.** The portal's Lab page records VHF results the same way: the lab user
+picks the case and one of its specimens (or uploads a CSV keyed by Specimen ID), and the portal sends the same
+messages to `POST /lab/updates` with the user's bearer token instead of the lab key. hie-auth parses and applies
+them exactly as above, so the Task, result Observations, DiagnosticReport, Specimen status and the submitter's
+email are the same whichever way a result arrives. Only `LAB_TECHNICIAN`, `NATIONAL_LAB`, `ADMINISTRATOR` and
+`SUPERUSER` may call it. Unlike the lab push, a case's specimen with no Task yet (never synced) gets one on its
+first update. A `received` date is also kept as the Specimen's `receivedTime`. Each call is logged as route
+`lab-results-portal`, with the username in `detail.enteredBy`. The VHF final classification is about the case, not
+a specimen, so the portal still saves it as a lab Encounter (reason `VHF Lab Classification`). The VHF line list
+takes Received, Preliminary and Final results from the specimen results (a positive result outranks a later
+negative one). It falls back to the old admin lab form's answers for results entered before this change.
+
 **Securing lab pushes.** The API key is checked before the body is read. When `LAB_RESULTS_HMAC_SECRET` is set,
 each request must also carry `x-lab-timestamp` (Unix seconds or ISO 8601, within
 `LAB_RESULTS_SIGNATURE_TOLERANCE_SECONDS` of now) and `x-lab-signature: sha256=<hex>`, the HMAC-SHA256 of

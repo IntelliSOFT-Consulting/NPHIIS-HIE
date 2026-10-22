@@ -90,26 +90,78 @@ const PULL_ROLES = new Set([
   'NATIONAL_VIEWER',
 ]);
 
-/** Resolves the user's NPHIIS role the way GET /provider/me does. */
-async function requirePullRole(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const userInfo = await findKeycloakUser((req as any).user?.preferred_username);
-    if (!userInfo?.id) {
-      res.status(403).json(OperationOutcome('User not found'));
-      return;
+/** Roles that can enter lab results in the admin portal (LAB_ACCESS there). */
+const ENTRY_ROLES = new Set(['ADMINISTRATOR', 'SUPERUSER', 'LAB_TECHNICIAN', 'NATIONAL_LAB']);
+
+/** Resolves the user's NPHIIS role the way GET /provider/me does, and checks it is one of `roles`. */
+function requireRole(roles: Set<string>, denied: string) {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userInfo = await findKeycloakUser((req as any).user?.preferred_username);
+      if (!userInfo?.id) {
+        res.status(403).json(OperationOutcome('User not found'));
+        return;
+      }
+      const practitioner = (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
+      const role = (await resolvePractitionerAssignment(userInfo.id, practitioner))?.role;
+      if (!role || !roles.has(role.toUpperCase())) {
+        res.status(403).json(OperationOutcome(denied));
+        return;
+      }
+      next();
+    } catch (error) {
+      console.error('lab role check:', error);
+      res.status(500).json(OperationOutcome(error));
     }
-    const practitioner = (await FhirApi({ url: `/Practitioner/${userInfo.id}` })).data;
-    const role = (await resolvePractitionerAssignment(userInfo.id, practitioner))?.role;
-    if (!role || !PULL_ROLES.has(role.toUpperCase())) {
-      res.status(403).json(OperationOutcome('Specimen tracking access required'));
-      return;
-    }
-    next();
-  } catch (error) {
-    console.error('lab pull role check:', error);
-    res.status(500).json(OperationOutcome(error));
-  }
+  };
 }
+
+const requirePullRole = requireRole(PULL_ROLES, 'Specimen tracking access required');
+
+/**
+ * Lab results entered by a person in the admin portal. Same body, parsing and effect as
+ * POST /lab/results, signed in as a lab user instead of with the lab system's key; a case's
+ * specimen without a Task yet gets one. Logged as route `lab-results-portal` with the user.
+ */
+router.post(
+  '/updates',
+  authenticateUser,
+  requireRole(ENTRY_ROLES, 'Lab access required'),
+  express.json({ limit: '5mb' }) as any,
+  async (req: Request, res: Response) => {
+    const start = Date.now();
+    attachSubscriptionAuditLog(res, { route: 'lab-results-portal', resourceType: 'Task', resourceId: 'batch' }, start);
+    const enteredBy = (req as any).user?.preferred_username ?? null;
+    const { updates, invalid } = parseLabMessages(req.body);
+    if (!updates.length) {
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = 'No usable messages';
+      res.locals.subscriptionDetail = { enteredBy, received: 0, invalid: invalid.slice(0, 100) };
+      return res.status(400).json({ ...OperationOutcome('No usable messages'), invalid });
+    }
+    try {
+      const outcomes = await applyLabUpdates(updates, { createMissingTasks: true });
+      const unmatched = outcomes.filter((o) => !o.matched);
+      res.locals.subscriptionOutcome = unmatched.length || invalid.length ? 'error' : 'success';
+      res.locals.subscriptionDetail = {
+        enteredBy,
+        received: updates.length,
+        unmatched: unmatched.length,
+        invalid: invalid.slice(0, 100),
+        results: outcomes.slice(0, 200),
+      };
+      if (unmatched.length || invalid.length) {
+        res.locals.subscriptionErrorMessage = `${unmatched.length} update(s) did not match a specimen; ${invalid.length} message(s) invalid`;
+      }
+      return res.status(200).json({ message: 'Results processed', received: updates.length, results: outcomes, invalid });
+    } catch (error) {
+      console.error('lab results entry:', error);
+      res.locals.subscriptionOutcome = 'error';
+      res.locals.subscriptionErrorMessage = String(error);
+      return res.status(500).json(OperationOutcome(error));
+    }
+  },
+);
 
 /**
  * Pulls results now instead of waiting for the scheduled polls: re-posts open cases to NPHL
