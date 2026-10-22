@@ -4,7 +4,9 @@ import { contactsError, contactsSession } from "@/lib/contacts-auth";
 import {
   alreadyUploaded,
   buildBoard,
+  caseListById,
   caseDisease,
+  currentCaseOf,
   findSamePerson,
   postTransaction,
   refreshCaseList,
@@ -54,6 +56,8 @@ export interface UploadRowResult {
   residence?: string;
   problems: string[];
   existingName?: string;
+  /** link-existing: the case now following the person up (EPID); they move to this case. */
+  movesFrom?: string;
   saved?: boolean;
   error?: string;
 }
@@ -94,7 +98,12 @@ export async function POST(req: NextRequest) {
       : undefined;
 
     const placeCache = new Map();
-    const plans = await mapWithConcurrency(rows, 4, async (row): Promise<{ result: UploadRowResult; input?: ContactInput; existing?: { patientId: string; encounterId: string } }> => {
+    const plans = await mapWithConcurrency(rows, 4, async (row): Promise<{
+      result: UploadRowResult;
+      input?: ContactInput;
+      existing?: { patientId: string; encounterId: string };
+      from?: { epid: string; encounterId: string | null } | null;
+    }> => {
       const name = `${row.givenNames} ${row.familyName}`.trim() || "(no name)";
       const problems: string[] = [];
       if (!row.givenNames.trim() && !row.familyName.trim()) {
@@ -116,9 +125,11 @@ export async function POST(req: NextRequest) {
       const same = await findSamePerson(row, s.token);
       if (same) {
         const action: UploadAction = onList.has(same.encounterId) ? "exists" : offList.has(same.encounterId) ? "restore" : "link-existing";
+        const from = action === "link-existing" ? await currentCaseOf(same.encounterId, s.token) : null;
         return {
-          result: { rowNumber: row.rowNumber, name, action, residence, problems, existingName: same.name },
+          result: { rowNumber: row.rowNumber, name, action, residence, problems, existingName: same.name, movesFrom: from?.epid },
           existing: same,
+          from,
           input,
         };
       }
@@ -153,6 +164,19 @@ export async function POST(req: NextRequest) {
         }
       });
       const refreshed = await refreshCaseList(s.token, indexEncounterId, { restore });
+      // People who moved here: their earlier case's list now shows them as moved.
+      const earlier = new Map<string, () => Promise<unknown>>();
+      for (const p of plans) {
+        if (!p.result.saved || p.result.action !== "link-existing" || !p.from) continue;
+        const from = p.from;
+        if (from.encounterId === indexEncounterId) continue;
+        earlier.set(from.encounterId ?? from.epid, () =>
+          from.encounterId ? refreshCaseList(s.token, from.encounterId) : caseListById(s.token, from.epid),
+        );
+      }
+      for (const [key, refresh] of Array.from(earlier.entries())) {
+        await refresh().catch((err: unknown) => console.warn(`[contacts upload] contact list of ${key} not refreshed:`, err));
+      }
       for (const p of plans) if (p.result.action === "restore") p.result.saved = true;
       return NextResponse.json({
         results: plans.map((p) => p.result),

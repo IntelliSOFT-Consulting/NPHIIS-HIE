@@ -27,6 +27,8 @@ Each case with contacts has one [`VhfContactList`](StructureDefinition-vhf-conta
 
 The list is the only link between a contact and the case. `Patient.link` is not used: it means "the same person in another record", and one person can be a contact of several cases. Such a person keeps a single `Patient` and appears on each case's list.
 
+A contact is followed up by one case at a time: the case named by its latest `vhf-source-case-epid` answer. When a newer case links a contact already on another case's list (for example, a contact of Brian is also a contact of Yao, who has become a case), the follow-up on Brian's list stops: the entry stays with flag `transferred`. A new 21-day follow-up starts on Yao's list. Its day 0 is the date of contact given with the new link, or the day the link was recorded if none was given. Follow-up visits and monitoring records from before the move no longer count.
+
 hie-auth rebuilds the list every day, and after each change made in the admin portal. It reads every contact's `vhf-source-case-epid` answer, so contacts registered on mobile are included. It also sets `focus` on that `Observation` to the case `Encounter`, giving a FHIR reference alongside the EPID text. The list holds no contact details; those stay in the contact's own `Observation`s.
 
 To get a case's contacts and their `Patient`s in one request:
@@ -46,10 +48,11 @@ The status is worked out from the records each time it is needed. The rules are 
 - **lost**: three or more days missed in a row, or recorded as lost on the monitoring form.
 - **converted**: the latest `vhf-case-type` answer is no longer Contact. Answers are added, never edited, so the latest one counts.
 - **died**: recorded on the monitoring form.
+- **transferred** (list entry only): a newer case linked the contact. Its follow-up continues on that case's list.
 
 ### Contact IDs, Case IDs and alerts
 
-A contact gets a **Contact ID**, not an EPID: the EPID of the case it was exposed to, `-C`, and a number counted per case, zero-padded to three digits (`KEN-NAI-KIB-2026-VHF-001-C001`, `-C002`, ...). hie-auth assigns it on the contact's case `Encounter` and `Patient` (system `http://hie.org/identifiers/CONTACT_ID`) as soon as that case has its EPID: when the contact syncs, or at the next list rebuild. It never changes. A contact of several cases takes its prefix from the first case it was linked to.
+A contact gets a **Contact ID**, not an EPID: the EPID of the case it was exposed to, `-C`, and a number counted per case, zero-padded to three digits (`KEN-NAI-KIB-2026-VHF-001-C001`, `-C002`, ...). hie-auth assigns it on the contact's case `Encounter` and `Patient` (system `http://hie.org/identifiers/CONTACT_ID`) as soon as that case has its EPID: when the contact syncs, or at the next list rebuild. A contact that moves to a newer case gets a new Contact ID under that case's EPID. The earlier Contact ID is kept with `use = old`.
 
 A contact does not get an EPID, a national Case ID, an NPHL submission or a case-submission alert while its `vhf-case-type` is Contact. Once it is converted it gets its own EPID and Case ID, is submitted to NPHL and raises the alert. It keeps its Contact ID as history. Only a case with an EPID can have contacts, so a contact's own contacts are traced once it has been converted.
 

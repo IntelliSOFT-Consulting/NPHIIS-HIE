@@ -11,7 +11,9 @@
 WITH vhf AS (
   SELECT p.id AS patient_id,
          MAX(CASE WHEN i.type_code = 'EPID' THEN NULLIF(i.value, '') END) AS epid,
-         MAX(CASE WHEN i.system = 'http://hie.org/identifiers/CONTACT_ID' THEN NULLIF(i.value, '') END) AS contact_id
+         -- Earlier Contact IDs of a contact moved to a newer case stay (use old); base picks the current one.
+         ARRAY_AGG(NULLIF(i.value, '') ORDER BY i.value COLLATE "C" DESC)
+           FILTER (WHERE i.system = 'http://hie.org/identifiers/CONTACT_ID' AND NULLIF(i.value, '') IS NOT NULL) AS contact_ids
   FROM public.patient_flat_pg p
   JOIN public.patient_identifier_pg i ON i.id = p.id
   WHERE p.active IS DISTINCT FROM false
@@ -48,8 +50,10 @@ obs_latest AS (
     SELECT patient_id, code, val,
            -- Ties on lastUpdated are common (a record re-saved at once), so the answer's own
            -- issued time decides; Spark's version had no tie-break and picked arbitrarily.
+           -- A contact linked again by a newer case moves to it: the link captured last wins by issued.
            ROW_NUMBER() OVER (PARTITION BY patient_id, code
-                              ORDER BY lu DESC NULLS LAST, issued DESC NULLS LAST, obs_id COLLATE "C") rn
+                              ORDER BY CASE WHEN code = 'vhf-source-case-epid' THEN issued END DESC NULLS LAST,
+                                       lu DESC NULLS LAST, issued DESC NULLS LAST, obs_id COLLATE "C") rn
     FROM obs_norm
   ) x WHERE rn = 1
 ),
@@ -122,7 +126,12 @@ base AS (
   SELECT
     v.patient_id,
     COALESCE(v.epid, o.epid_obs) AS epid,
-    v.contact_id,
+    -- The Contact ID made from the source case, else the latest-sorting one.
+    COALESCE(
+      (SELECT x FROM unnest(v.contact_ids) x
+        WHERE left(x, length(split_part(btrim(o.source_epid), ' ', 1)) + 2) = split_part(btrim(o.source_epid), ' ', 1) || '-C'
+        LIMIT 1),
+      v.contact_ids[1]) AS contact_id,
     o.*,
     s.first_submitted AS date_reported,
     NULLIF(p.birth_date, '') AS birth_date,

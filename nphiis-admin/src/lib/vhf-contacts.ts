@@ -487,7 +487,10 @@ export function buildContactBundle(index: IndexCase, c: ContactInput, opts: Cont
   return { resourceType: "Bundle", type: "transaction", entry: entries };
 }
 
-/** An existing contact exposed to another case: link it to that case too, and restart its 21 days. */
+/**
+ * An existing record exposed to another case: link it to that case. A contact moves to it: its
+ * follow-up stops on the earlier case's list and its 21 days start again here.
+ */
 export function buildExtraExposureBundle(
   index: IndexCase,
   contact: { patientId: string; encounterId: string },
@@ -496,8 +499,12 @@ export function buildExtraExposureBundle(
 ): TransactionBundle {
   const now = opts.now ?? new Date();
   const ctx: Ctx = { ...contact, practitionerId: opts.practitionerId, facility: opts.facility, now };
-  const answers: Answers = { [L.sourceCaseEpid]: [{ code: index.epid }] };
-  if (contactDate) answers[L.contactDate] = [contactDate];
+  // The contact moves to this case and its 21 days start again: day 0 is the date of contact
+  // given, else today (Kenya), so mobile shows the same restart.
+  const answers: Answers = {
+    [L.sourceCaseEpid]: [{ code: index.epid }],
+    [L.contactDate]: [contactDate || new Date(now.getTime() + 3 * 3_600_000).toISOString().slice(0, 10)],
+  };
   return {
     resourceType: "Bundle",
     type: "transaction",

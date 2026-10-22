@@ -23,8 +23,11 @@ export function normalizeCaseType(value: string | null | undefined): string | nu
   return v ? v : null;
 }
 
-/** Codes of the contact-status CodeSystem (List.entry.flag). */
-export type ContactStatus = "active" | "flagged" | "completed" | "converted" | "lost" | "died";
+/**
+ * Codes of the contact-status CodeSystem (List.entry.flag). "transferred" is only set on a
+ * case's List: the contact was exposed again by a newer case and is followed up on that list.
+ */
+export type ContactStatus = "active" | "flagged" | "completed" | "converted" | "lost" | "died" | "transferred";
 
 /** Consecutive missed days, up to yesterday, after which an open contact counts as lost. */
 export const LOST_AFTER_CONSECUTIVE_MISSED = 3;
@@ -45,6 +48,11 @@ export type ContactFollowUp = {
   exposureDate: string | null;
   /** Day 0: the date of contact, else the registration date. */
   dayZero: string;
+  /**
+   * Set when a newer case was linked after an earlier one: the day that link was recorded.
+   * Follow-up starts again from it; earlier visits and monitoring records no longer count.
+   */
+  restartedOn: string | null;
   daysSinceExposure: number;
   lastDay: string;
   status: ContactStatus;
@@ -105,6 +113,72 @@ export function monitoringToStatus(value: string | null | undefined): ContactSta
   return null;
 }
 
+function capturedAt(o: any): string {
+  return String(o?.issued ?? o?.effectiveDateTime ?? o?.meta?.lastUpdated ?? "");
+}
+
+const codeOf = (o: any): string => String(o?.code?.coding?.[0]?.code ?? "");
+
+/** "Contact Link to Case" answers, oldest first. */
+export function linkAnswersOf(observations: any[]): any[] {
+  return observations
+    .filter((o) => codeOf(o) === VHF_CONTACT_LINK_IDS.sourceCaseEpid)
+    .sort((a, b) => capturedAt(a).localeCompare(capturedAt(b)));
+}
+
+function linkKeys(o: any): string[] {
+  const focus = (o?.focus ?? []).map((f: any) => String(f?.reference ?? "")).filter((r: string) => r.startsWith("Encounter/"));
+  // Mobile's picker stores "EPID  Name (Type)"; a typed answer is the EPID itself.
+  const epid = String(o?.valueString ?? "").trim().split(/\s+/)[0]?.toLowerCase();
+  return [...focus, ...(epid ? [epid] : [])];
+}
+
+/** Whether two "Contact Link to Case" answers name the same case (same focus or same EPID). */
+export function sameLinkedCase(a: any, b: any): boolean {
+  const keys = new Set(linkKeys(a));
+  return linkKeys(b).some((k) => keys.has(k));
+}
+
+/** The latest "Contact Link to Case" answer: the case now following the contact up. */
+export function latestLinkOf(observations: any[]): any | null {
+  return linkAnswersOf(observations).pop() ?? null;
+}
+
+/**
+ * When the contact moved to a newer case: the first answer of the latest run of answers naming
+ * the current case, if an answer naming another case came before it. Null if only one case.
+ */
+function restartLink(observations: any[]): any | null {
+  const links = linkAnswersOf(observations);
+  const current = links[links.length - 1];
+  if (!current) return null;
+  let i = links.length - 1;
+  while (i > 0 && sameLinkedCase(links[i - 1], current)) i--;
+  return i > 0 ? links[i] : null;
+}
+
+/** EAT date of a timestamp ("2026-10-01T22:00:00Z" is 2 October in Kenya); null if unreadable. */
+function kenyaDayOf(timestamp: string): string | null {
+  const ms = Date.parse(timestamp);
+  return Number.isNaN(ms) ? toDay(timestamp) : kenyaToday(new Date(ms));
+}
+
+/**
+ * Date of contact for a follow-up that restarted: the latest answer captured with or after the
+ * newer link (a minute's slack: they come from one form save), else the day of that link.
+ */
+function restartDayZero(observations: any[], link: any, linkDay: string): string {
+  const linkMs = Date.parse(capturedAt(link));
+  const answers = observations
+    .filter((o) => codeOf(o) === VHF_CONTACT_LINK_IDS.contactDate)
+    .filter((o) => {
+      const ms = Date.parse(capturedAt(o));
+      if (Number.isNaN(ms) || Number.isNaN(linkMs)) return (kenyaDayOf(capturedAt(o)) ?? "") >= linkDay;
+      return ms >= linkMs - 60_000;
+    });
+  return toDay(observationValues(answers).get(VHF_CONTACT_LINK_IDS.contactDate)) ?? linkDay;
+}
+
 /** Visits recorded on the "VHF Contact Follow Up" child records. */
 export function visitsOf(record: ContactRecord, exposureDate: string | null): ContactVisit[] {
   return record.children
@@ -125,14 +199,21 @@ export function visitsOf(record: ContactRecord, exposureDate: string | null): Co
     });
 }
 
+/** Day a visit's record was created, for visits that have no follow-up date. */
+function createdOn(record: ContactRecord, visit: ContactVisit): string {
+  const child = record.children.find((c) => String(c.encounter?.id ?? "") === visit.encounterId);
+  return createdAt(child?.encounter).slice(0, 10);
+}
+
 /** Follow-ups are found by their "Day of follow up" answer too, whatever reason the record has. */
 function hasDay(observations: any[]): boolean {
   return observations.some((o) => o?.code?.coding?.[0]?.code === VHF_FOLLOW_UP_LINK_IDS.day);
 }
 
-function latestMonitoringStatus(record: ContactRecord): string | null {
+function latestMonitoringStatus(record: ContactRecord, since: string | null = null): string | null {
   const latest = record.children
     .filter((c) => reasonOf(c.encounter) === VHF_REASONS.monitoring)
+    .filter((c) => !since || createdAt(c.encounter).slice(0, 10) >= since)
     .sort((a, b) => createdAt(a.encounter).localeCompare(createdAt(b.encounter)))
     .pop();
   return latest ? observationValues(latest.observations).get(VHF_MONITORING_LINK_IDS.status) ?? null : null;
@@ -142,17 +223,24 @@ export function contactFollowUp(record: ContactRecord, today: string): ContactFo
   const window = VHF_FOLLOW_UP_WINDOW_DAYS;
   const answers = observationValues(record.observations);
   const caseType = normalizeCaseType(answers.get(VHF_CONTACT_LINK_IDS.caseType));
-  const exposureDate = toDay(answers.get(VHF_CONTACT_LINK_IDS.contactDate));
+  const restart = restartLink(record.observations);
+  const restartedOn = restart ? kenyaDayOf(capturedAt(restart)) ?? today : null;
+  // Moved to a newer case: day 0 is the date of contact given with that link, else the link's day.
+  const exposureDate = restartedOn
+    ? restartDayZero(record.observations, restart, restartedOn)
+    : toDay(answers.get(VHF_CONTACT_LINK_IDS.contactDate));
   const dayZero = exposureDate ?? record.registeredDate;
   const daysSinceExposure = daysBetween(dayZero, today);
-  const visits = visitsOf(record, exposureDate);
+  const visits = visitsOf(record, exposureDate).filter(
+    (v) => !restartedOn || (v.day != null && v.day >= 1 && (v.date ? v.date >= dayZero : createdOn(record, v) >= restartedOn)),
+  );
   const recorded = new Map<number, ContactVisit>();
   for (const v of visits) {
     if (v.day == null) continue;
     const prev = recorded.get(v.day);
     if (!prev || v.symptomatic) recorded.set(v.day, v);
   }
-  const monitoringStatus = latestMonitoringStatus(record);
+  const monitoringStatus = latestMonitoringStatus(record, restartedOn);
   const closedAs = monitoringToStatus(monitoringStatus);
 
   const missedDays: number[] = [];
@@ -200,6 +288,7 @@ export function contactFollowUp(record: ContactRecord, today: string): ContactFo
     caseType,
     exposureDate,
     dayZero,
+    restartedOn,
     daysSinceExposure,
     lastDay: addDays(dayZero, window),
     status,

@@ -4,7 +4,14 @@ import { EPID_SYSTEM_URI, getEpidValueFromEncounter } from "./epid-utils";
 import { CASE_ID_SYSTEM_URI, getCaseId } from "./vhf-case-id";
 import { getContactId } from "./vhf-contact-id";
 import { isVhfEncounter } from "./vhf-contact";
-import { contactFollowUp, kenyaToday, type ContactFollowUp, type ContactRecord, type ContactStatus } from "./vhf-contact-status";
+import {
+  contactFollowUp,
+  kenyaToday,
+  latestLinkOf,
+  type ContactFollowUp,
+  type ContactRecord,
+  type ContactStatus,
+} from "./vhf-contact-status";
 import { VHF_CONTACT_LINK_IDS } from "./vhf-link-ids";
 import { observationValues } from "./nphl-lab";
 
@@ -34,10 +41,11 @@ const STATUS_DISPLAY: Record<EntryFlag, string> = {
   converted: "Became a case",
   lost: "Lost to follow up",
   died: "Died",
+  transferred: "Moved to another case",
   removed: "Taken off the list",
 };
 /** Statuses that end follow-up: a List whose contacts all ended is retired. */
-const CLOSED: ContactStatus[] = ["completed", "converted", "died"];
+const CLOSED: ContactStatus[] = ["completed", "converted", "died", "transferred"];
 
 export const contactListId = (indexEncounterId: string) => `vhf-contacts-${indexEncounterId}`;
 
@@ -231,7 +239,16 @@ export type ContactListResult = {
   list: any;
   indexEncounter: any;
   /** epid: null until the contact is converted to a case; contactId: null until its case has an EPID. */
-  contacts: Array<ContactFollowUp & { patientId: string; contactId: string | null; epid: string | null; subCounty: string | null }>;
+  contacts: Array<
+    ContactFollowUp & {
+      patientId: string;
+      contactId: string | null;
+      epid: string | null;
+      subCounty: string | null;
+      /** Status "transferred": the newer case now following the contact up, as linked (EPID or Case ID). */
+      movedTo: string | null;
+    }
+  >;
   /** Contacts still linked to the case but taken off its list by a user (can be put back). */
   removed: ContactListResult["contacts"];
 };
@@ -257,16 +274,24 @@ export async function upsertContactList(
   const today = opts.today ?? kenyaToday();
 
   const sources = await sourceObservationsOf(indexEncounter);
+  const sourceIds = new Set(sources.map((o) => String(o.id)));
+  const caseEpid = getEpidValueFromEncounter(indexEncounter);
   const contactIds = [...new Set(sources.map((o) => idOf(o.encounter.reference)))];
   const contacts: ContactListResult["contacts"] = [];
   for (const id of contactIds) {
     const loaded = await loadContactRecord(id);
     if (!loaded) continue;
-    const followUp = contactFollowUp(loaded.record, today);
+    const computed = contactFollowUp(loaded.record, today);
+    // A newer case linked the contact since: its follow-up stopped here and goes on there.
+    const latest = latestLinkOf(loaded.record.observations);
+    const transferred = !!latest && !sourceIds.has(String(latest.id));
+    const followUp: ContactFollowUp = transferred ? { ...computed, status: "transferred", dueToday: false } : computed;
     let contactId = getContactId(loaded.encounter) ?? null;
-    if (!contactId && followUp.caseType === "contact" && opts.ensureContactId) {
+    // A contact moved here from another case gets a Contact ID under this case's EPID.
+    const needsId = !contactId || (!transferred && !!caseEpid && !contactId.startsWith(`${caseEpid}-C`));
+    if (needsId && !transferred && followUp.caseType === "contact" && opts.ensureContactId) {
       try {
-        contactId = await opts.ensureContactId(id);
+        contactId = (await opts.ensureContactId(id)) ?? contactId;
       } catch (e) {
         console.warn(`[VhfContacts] Contact ID for Encounter/${id} not assigned:`, e);
       }
@@ -277,6 +302,7 @@ export async function upsertContactList(
       contactId,
       epid: getEpidValueFromEncounter(loaded.encounter) ?? null,
       subCounty: observationValues(loaded.record.observations).get(VHF_CONTACT_LINK_IDS.subCounty) ?? null,
+      movedTo: transferred ? epidFromAnswer(latest?.valueString) : null,
     });
   }
   // One at a time: parallel updates of a patient's answers conflict in HAPI.

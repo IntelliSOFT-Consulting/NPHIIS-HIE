@@ -667,6 +667,12 @@ export default function AddContacts({
                                 {s === 'duplicate' ? `Same person as ${d.duplicateOf}` : STATE[s].label}
                                 {r?.existingName && (s === 'link-existing' || s === 'restore') ? ` (${r.existingName})` : ''}
                               </span>
+                              {s === 'link-existing' && r?.movesFrom && (
+                                <div className="mt-1 text-[11px] text-nphi-800">
+                                  Contact of {r.movesFrom} now: moves to this case. Follow up there stops and a new 21 days starts
+                                  {c.contactDate ? ` from ${c.contactDate}` : ' today'}.
+                                </div>
+                              )}
                               {notes.length > 0 && (
                                 <ul className={`mt-1 space-y-0.5 text-[11px] ${s === 'fix' ? 'text-accent-700' : 'text-amber-800'}`}>
                                   {notes.map((p) => (
@@ -742,7 +748,7 @@ export default function AddContacts({
               ) : (
                 [
                   summary.created && `${summary.created} new`,
-                  summary.linked && `${summary.linked} already registered (linked to this case)`,
+                  summary.linked && `${summary.linked} already registered (moved to this case, 21 days restarted)`,
                   summary.restored && `${summary.restored} put back`,
                 ]
                   .filter(Boolean)

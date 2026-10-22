@@ -22,6 +22,7 @@ Description: "Where a contact is in its follow-up, worked out by hie-auth from t
 * #converted "Became a case" "The record's latest Type of case is no longer Contact."
 * #lost "Lost to follow up" "Three or more days missed in a row, or recorded as lost on the monitoring record."
 * #died "Died" "Recorded as died on the monitoring record."
+* #transferred "Moved to another case" "Exposed again by a newer case: follow-up stopped on this list and started again (a new 21 days) on that case's list."
 * #removed "Taken off the list" "Taken off the list by a user (duplicate, not a contact), or no longer linked to the case. The entry is kept for history."
 
 ValueSet: ContactStatusVS

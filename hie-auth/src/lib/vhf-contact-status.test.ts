@@ -96,6 +96,51 @@ describe("contactFollowUp", () => {
     expect(s.daysSinceExposure).toBe(1);
   });
 
+  describe("moved to a newer case", () => {
+    const link = (epid: string, issued: string) => obs("vhf-source-case-epid", epid, issued);
+    const brian = link("KEN-BRIAN-001", "2026-10-01T08:00:00Z");
+
+    it("restarts the 21 days from the date of contact given with the newer link", () => {
+      const record = contact(
+        [followUp(1, "2026-10-02"), followUp(2, "2026-10-03", true), monitoring("Completed follow up (released)", "2026-10-04 10:00:00")],
+        [brian, link("KEN-YAO-002", "2026-10-10T08:00:00Z"), obs("vhf-contact-date", "2026-10-09", "2026-10-10T08:00:00Z")],
+      );
+      const s = contactFollowUp(record, "2026-10-11");
+      expect(s.restartedOn).toBe("2026-10-10");
+      expect(s.dayZero).toBe("2026-10-09");
+      expect(s.lastDay).toBe("2026-10-30");
+      expect(s.daysSinceExposure).toBe(2);
+      // Visits and the release recorded under the earlier case no longer count.
+      expect(s.status).toBe("active");
+      expect(s.firstSymptomaticDay).toBeNull();
+      expect(s.days[0].state).toBe("missed");
+      expect(s.dueToday).toBe(true);
+    });
+
+    it("starts from the day of the newer link when no date of contact came with it", () => {
+      const record = contact([followUp(1, "2026-10-02")], [brian, link("KEN-YAO-002", "2026-10-09T22:30:00Z")]);
+      const s = contactFollowUp(record, "2026-10-12");
+      expect(s.restartedOn).toBe("2026-10-10");
+      expect(s.dayZero).toBe("2026-10-10");
+      expect(s.daysSinceExposure).toBe(2);
+    });
+
+    it("counts visits recorded after the move", () => {
+      const record = contact(
+        [followUp(1, "2026-10-02"), followUp(1, "2026-10-11")],
+        [brian, link("KEN-YAO-002", "2026-10-10T08:00:00Z")],
+      );
+      const s = contactFollowUp(record, "2026-10-12");
+      expect(s.days.slice(0, 2).map((d) => d.state)).toEqual(["seen", "due"]);
+    });
+
+    it("does not restart when the same case is linked again", () => {
+      const s = contactFollowUp(contact([], [brian, link("KEN-BRIAN-001  Brian (Confirmed)", "2026-10-05T08:00:00Z")]), "2026-10-06");
+      expect(s.restartedOn).toBeNull();
+      expect(s.dayZero).toBe("2026-10-01");
+    });
+  });
+
   it("falls back to the registration date when the date of contact is missing", () => {
     const record: ContactRecord = { ...contact(), observations: [obs("vhf-case-type", "Contact")] };
     const s = contactFollowUp(record, "2026-10-03");

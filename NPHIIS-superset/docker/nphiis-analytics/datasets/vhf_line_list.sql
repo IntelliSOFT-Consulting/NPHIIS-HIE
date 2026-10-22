@@ -17,7 +17,7 @@
 WITH vhf AS (
   SELECT p.id AS patient_id,
          MAX(CASE WHEN id_elem.type.coding[0].code = 'EPID' THEN id_elem.value END) AS epid,
-         MAX(CASE WHEN id_elem.system = 'http://hie.org/identifiers/CONTACT_ID' THEN id_elem.value END) AS contact_id
+         MAX(CASE WHEN id_elem.system = 'http://hie.org/identifiers/CONTACT_ID' AND COALESCE(id_elem.use, '') <> 'old' THEN id_elem.value END) AS contact_id
   FROM patient p
   LATERAL VIEW EXPLODE(p.identifier) id_table AS id_elem
   WHERE COALESCE(p.active, true) = true
