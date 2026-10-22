@@ -91,7 +91,8 @@ export function toScreening(qr: any): Screening {
     });
   }
   const stopovers: string | undefined = answer(travel, "vhf-travel-stopovers");
-  for (const s of stopovers?.split(";") ?? []) if (s.trim()) trips.push({ country: s.trim() });
+  // "None" is what the form asks for when there were no stopovers.
+  for (const s of stopovers?.split(";") ?? []) if (s.trim() && !/^none$/i.test(s.trim())) trips.push({ country: s.trim() });
 
   const temperature = answer(qr.item, "screening-temperature");
   return {

@@ -45,7 +45,7 @@ Instance: TravellerScreeningQuestionnaire
 InstanceOf: Questionnaire
 Usage: #definition
 Title: "Traveller Screening"
-Description: "Item structure for screening responses (point of entry, travel history, signs and symptoms)."
+Description: "Item structure for screening responses (point of entry, travel history, signs and symptoms). The travel history follows the vhf-case form's vhf-travel section; questions after vhf-travelled apply only when it is Yes."
 * id = "traveller-screening"
 * url = "http://nphiis.health.go.ke/fhir/Questionnaire/traveller-screening"
 * name = "TravellerScreening"
@@ -61,31 +61,75 @@ Description: "Item structure for screening responses (point of entry, travel his
 * item[=].item[+].linkId = "point-of-entry.type"
 * item[=].item[=].text = "Type (airport, seaport, border, facility, community)"
 * item[=].item[=].type = #string
-* item[+].linkId = "travel-history"
-* item[=].text = "Travel history"
+* item[+].linkId = "vhf-travel"
+* item[=].text = "Travel History"
 * item[=].type = #group
-* item[=].item[0].linkId = "travel-history.has-travelled"
-* item[=].item[=].text = "Has travelled"
-* item[=].item[=].type = #boolean
-* item[=].item[+].linkId = "travel-history.trip"
-* item[=].item[=].text = "Trip"
-* item[=].item[=].type = #group
-* item[=].item[=].repeats = true
-* item[=].item[=].item[0].linkId = "travel-history.trip.country"
-* item[=].item[=].item[=].text = "Country"
-* item[=].item[=].item[=].type = #string
-* item[=].item[=].item[+].linkId = "travel-history.trip.city"
-* item[=].item[=].item[=].text = "City"
-* item[=].item[=].item[=].type = #string
-* item[=].item[=].item[+].linkId = "travel-history.trip.departure-date"
-* item[=].item[=].item[=].text = "Departure date"
-* item[=].item[=].item[=].type = #date
-* item[=].item[=].item[+].linkId = "travel-history.trip.arrival-date"
-* item[=].item[=].item[=].text = "Arrival date"
-* item[=].item[=].item[=].type = #date
-* item[=].item[=].item[+].linkId = "travel-history.trip.purpose"
-* item[=].item[=].item[=].text = "Purpose"
-* item[=].item[=].item[=].type = #string
+* item[=].item[0].linkId = "vhf-travelled"
+* item[=].item[=].text = "Did the case travel before the onset of illness?"
+* item[=].item[=].type = #choice
+* item[=].item[=].required = true
+* item[=].item[=].answerOption[0].valueCoding = #yes "Yes"
+* item[=].item[=].answerOption[+].valueCoding = #no "No"
+* item[=].item[=].answerOption[+].valueCoding = #unknown "Unknown"
+* item[=].item[+].linkId = "vhf-travel-origin-country"
+* item[=].item[=].text = "Travel origin country"
+* item[=].item[=].type = #choice
+* item[=].item[=].answerValueSet = Canonical(TravelCountryVS)
+* item[=].item[=].required = true
+* item[=].item[=].enableWhen[0].question = "vhf-travelled"
+* item[=].item[=].enableWhen[=].operator = #=
+* item[=].item[=].enableWhen[=].answerCoding = #yes "Yes"
+* item[=].item[+].linkId = "vhf-travel-origin-place"
+* item[=].item[=].text = "Origin city / town / village"
+* item[=].item[=].type = #string
+* item[=].item[=].required = true
+* item[=].item[=].enableWhen[0].question = "vhf-travelled"
+* item[=].item[=].enableWhen[=].operator = #=
+* item[=].item[=].enableWhen[=].answerCoding = #yes "Yes"
+* item[=].item[+].linkId = "vhf-travel-departure-date"
+* item[=].item[=].text = "Date of departure"
+* item[=].item[=].type = #date
+* item[=].item[=].required = true
+* item[=].item[=].enableWhen[0].question = "vhf-travelled"
+* item[=].item[=].enableWhen[=].operator = #=
+* item[=].item[=].enableWhen[=].answerCoding = #yes "Yes"
+* item[=].item[+].linkId = "vhf-travel-means"
+* item[=].item[=].text = "Means of travel"
+* item[=].item[=].type = #choice
+* item[=].item[=].answerValueSet = Canonical(TravelMeansVS)
+* item[=].item[=].required = true
+* item[=].item[=].enableWhen[0].question = "vhf-travelled"
+* item[=].item[=].enableWhen[=].operator = #=
+* item[=].item[=].enableWhen[=].answerCoding = #yes "Yes"
+* item[=].item[+].linkId = "vhf-travel-stopovers"
+* item[=].item[=].text = "Stopovers (specify locations)"
+* item[=].item[=].type = #string
+* item[=].item[=].required = true
+* item[=].item[=].enableWhen[0].question = "vhf-travelled"
+* item[=].item[=].enableWhen[=].operator = #=
+* item[=].item[=].enableWhen[=].answerCoding = #yes "Yes"
+* item[=].item[+].linkId = "vhf-travel-destination-country"
+* item[=].item[=].text = "Destination country"
+* item[=].item[=].type = #choice
+* item[=].item[=].answerValueSet = Canonical(TravelCountryVS)
+* item[=].item[=].required = true
+* item[=].item[=].enableWhen[0].question = "vhf-travelled"
+* item[=].item[=].enableWhen[=].operator = #=
+* item[=].item[=].enableWhen[=].answerCoding = #yes "Yes"
+* item[=].item[+].linkId = "vhf-travel-destination-place"
+* item[=].item[=].text = "Destination city / town / village"
+* item[=].item[=].type = #string
+* item[=].item[=].required = true
+* item[=].item[=].enableWhen[0].question = "vhf-travelled"
+* item[=].item[=].enableWhen[=].operator = #=
+* item[=].item[=].enableWhen[=].answerCoding = #yes "Yes"
+* item[=].item[+].linkId = "vhf-travel-arrival-date"
+* item[=].item[=].text = "Date of arrival"
+* item[=].item[=].type = #date
+* item[=].item[=].required = true
+* item[=].item[=].enableWhen[0].question = "vhf-travelled"
+* item[=].item[=].enableWhen[=].operator = #=
+* item[=].item[=].enableWhen[=].answerCoding = #yes "Yes"
 * item[+].linkId = "signs-symptoms"
 * item[=].text = "Signs and symptoms"
 * item[=].type = #group

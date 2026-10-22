@@ -147,3 +147,15 @@ describe("GET /provider/screenings/patients", () => {
         expect(decodeURIComponent(fhir.FhirApi.mock.calls[0][0].url)).toContain("_tag=http://nphiis.health.go.ke/fhir/CodeSystem/record-origin|screened");
     });
 });
+
+describe("GET /provider/screenings/countries", () => {
+    it("lists the 197 vhf-case country codes", async () => {
+        const res = await fetch(`${base}/countries`, { headers: { authorization: "Bearer token" } });
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json.system).toBe("urn:iso:std:iso:3166");
+        expect(json.count).toBe(197);
+        expect(json.countries).toContainEqual({ code: "UG", display: "Uganda" });
+        expect(fhir.FhirApi).not.toHaveBeenCalled();
+    });
+});

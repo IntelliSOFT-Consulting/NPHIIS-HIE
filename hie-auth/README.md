@@ -40,7 +40,25 @@ Allowed `identification_type` values: Temporary ID, Alien ID, Refugee ID, Mandat
 | `409` | Identifiers match more than one patient (`patientIds[]`) |
 | `502` | FHIR server failure; if a `patientId` is returned, retry with the same `screeningId` |
 
-Minimal body: `{ "screeningId": "<uuid>", "patient": { "identifiers": [{ "type": "National ID", "value": "12345678" }] } }`. Optional: `screeningNumber` (the human-readable Screening No., e.g. `SCR-2026-40560`; defaults to `screeningId`; written to the Patient as identifier system `vhf-screening-number`, type `vhf-screened`), `screenedAt`, `outcome` (`cleared|referred|suspected`), `pointOfEntry`, `patient` demographics, `travelHistory { hasTravelled, trips[] }`, `signsAndSymptoms { temperatureCelsius, symptoms[{ code, present, onsetDate, note }] }`. Symptom codes: see `screening-symptom` CodeSystem in `packages/fhir-ig`.
+Minimal body: `{ "screeningId": "<uuid>", "patient": { "identifiers": [{ "type": "National ID", "value": "12345678" }] } }`. Optional: `screeningNumber` (the human-readable Screening No., e.g. `SCR-2026-40560`; defaults to `screeningId`; written to the Patient as identifier system `vhf-screening-number`, type `vhf-screened`), `screenedAt`, `outcome` (`cleared|referred|suspected`), `pointOfEntry`, `patient` demographics, `travelHistory`, `signsAndSymptoms { temperatureCelsius, symptoms[{ code, present, onsetDate, note }] }`. Symptom codes: see `screening-symptom` CodeSystem in `packages/fhir-ig`.
+
+**Travel history** maps to the vhf-case form's Travel History section (`vhf-travel`):
+
+| Payload field | Form question (linkId) | Rules |
+|---|---|---|
+| `travelled` (`yes\|no\|unknown`) or `hasTravelled` (boolean) | `vhf-travelled` | One is required. The rest is only stored when the answer is yes |
+| `trips[].country` | `vhf-travel-origin-country` | ISO 3166 alpha-2 code, e.g. `UG`. Names (`Uganda`, `DRC`) are mapped; unknown countries are rejected |
+| `trips[].city` | `vhf-travel-origin-place` | Free text |
+| `trips[].departureDate` | `vhf-travel-departure-date` | `YYYY-MM-DD`, not in the future |
+| `trips[].means` (`land\|air\|water`) | `vhf-travel-means` | |
+| `stopovers` | `vhf-travel-stopovers` | Free text; defaults to the other trips |
+| `destination.country` | `vhf-travel-destination-country` | ISO code; defaults to `KE` |
+| `destination.place` | `vhf-travel-destination-place` | Free text; defaults to the point of entry name |
+| `trips[].arrivalDate` | `vhf-travel-arrival-date` | `YYYY-MM-DD`, not in the future, not before `departureDate` |
+
+The form holds one trip: the one with the latest `arrivalDate` (or the last one sent). `trips[].purpose` is stored as `screening-travel-purpose`.
+
+`GET /provider/screenings/countries` returns the 197 country codes the form offers (`{ system, count, countries: [{ code, display }] }`), from `src/lib/vhf-countries.ts`.
 
 **Finding screenings** (all via `/fhir/...` or `GET /provider/screenings/patients`):
 

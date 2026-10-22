@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "5007e9a5-33ed-403c-a4e1-57142c6777d4",
     "name": "NPHIIS Screening API",
-    "description": "Screening intake for NPHIIS (hie-auth `POST /provider/screenings`).\n\nA screening system sends a screened person as plain JSON. The service matches an existing FHIR `Patient` by identifier type + number (or creates one), then stores point of entry, travel history and signs/symptoms as a `QuestionnaireResponse` linked to that patient.\n\n**Auth:** Bearer JWT, like every other NPHIIS API. The screening service has its own user account: run **Auth > Login** to obtain `{{token}}` (and `{{refresh_token}}`), and **Auth > Refresh Token** before it expires. All other requests inherit the collection's Bearer auth.\n\n**Idempotent** on `screeningId`: resubmitting the same id returns `duplicate: true` and creates nothing.\n\n| Status | Meaning |\n|---|---|\n| 201 / 200 | Created a patient / matched an existing one |\n| 400 | Invalid payload; `errors[]` lists every problem |\n| 401 | Missing, invalid or expired token |\n| 409 | Identifiers match more than one patient (`patientIds[]`) |\n| 502 | FHIR server failure; if `patientId` is returned, retry with the same `screeningId` |\n\nEnumerations: `outcome` = cleared | referred | suspected; `pointOfEntry.type` = airport | seaport | border | facility | community; symptom `code` = fever, cough, sore-throat, difficulty-breathing, headache, fatigue, muscle-pain, vomiting, diarrhoea, abdominal-pain, rash, bleeding, jaundice, confusion, other; identifier `type` = Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID. Dates are `YYYY-MM-DD`.\n\nIn query strings, encode `|` as `%7C` (e.g. `_tag=<system>%7C<code>`); the FHIR server rejects a raw `|` with 400.",
+    "description": "Screening intake for NPHIIS (hie-auth `POST /provider/screenings`).\n\nA screening system sends a screened person as plain JSON. The service matches an existing FHIR `Patient` by identifier type + number (or creates one), then stores point of entry, travel history and signs/symptoms as a `QuestionnaireResponse` linked to that patient.\n\n**Auth:** Bearer JWT, like every other NPHIIS API. The screening service has its own user account: run **Auth > Login** to obtain `{{token}}` (and `{{refresh_token}}`), and **Auth > Refresh Token** before it expires. All other requests inherit the collection's Bearer auth.\n\n**Idempotent** on `screeningId`: resubmitting the same id returns `duplicate: true` and creates nothing.\n\n| Status | Meaning |\n|---|---|\n| 201 / 200 | Created a patient / matched an existing one |\n| 400 | Invalid payload; `errors[]` lists every problem |\n| 401 | Missing, invalid or expired token |\n| 409 | Identifiers match more than one patient (`patientIds[]`) |\n| 502 | FHIR server failure; if `patientId` is returned, retry with the same `screeningId` |\n\nEnumerations: `outcome` = cleared | referred | suspected; `pointOfEntry.type` = airport | seaport | border | facility | community; `travelHistory.travelled` = yes | no | unknown; `travelHistory.trips[].means` = land | air | water; countries = ISO 3166 alpha-2 codes from **Lookups > List countries** (e.g. `UG`, `CD`, `KE`); symptom `code` = fever, cough, sore-throat, difficulty-breathing, headache, fatigue, muscle-pain, vomiting, diarrhoea, abdominal-pain, rash, bleeding, jaundice, confusion, other; identifier `type` = Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID. Dates are `YYYY-MM-DD`.\n\nIn query strings, encode `|` as `%7C` (e.g. `_tag=<system>%7C<code>`); the FHIR server rejects a raw `|` with 400.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -112,6 +112,45 @@
       ]
     },
     {
+      "name": "Lookups",
+      "item": [
+        {
+          "name": "List countries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings/countries",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings",
+                "countries"
+              ]
+            },
+            "description": "The 197 countries the vhf-case form offers for travel origin and destination (system `urn:iso:std:iso:3166`). Send the 2-letter `code` in `travelHistory.trips[].country` and `travelHistory.destination.country`; the `display` is stored with it. Country names are also accepted and mapped to the code."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"lists 197 countries\", () => pm.expect(body.countries).to.have.lengthOf(197));",
+                  "pm.test(\"includes Uganda as UG\", () => pm.expect(body.countries).to.deep.include({ code: \"UG\", display: \"Uganda\" }));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Submit Screening",
       "item": [
         {
@@ -129,10 +168,10 @@
                 "screenings"
               ]
             },
-            "description": "Full payload: point of entry, demographics, travel history and symptoms. Generates a new `screeningId` and saves the returned `patientId` / `questionnaireResponseId`.",
+            "description": "Full payload: point of entry, demographics, travel history and symptoms. Generates a new `screeningId` and saves the returned `patientId` / `questionnaireResponseId`.\n\n`travelHistory` fills the vhf-case Travel History section: `travelled` (yes|no|unknown, or boolean `hasTravelled`), `trips[]` { `country` (ISO code), `city`, `departureDate`, `means` (land|air|water), `arrivalDate`, `purpose` }, `stopovers`, `destination` { `country` (ISO code, default KE), `place` (default point of entry) }. Dates cannot be in the future and arrival cannot be before departure. Get the country codes from **Lookups > List countries**.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"hasTravelled\": true,\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ]\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
+              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"means\": \"air\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ],\n    \"stopovers\": \"None\",\n    \"destination\": {\n      \"country\": \"KE\",\n      \"place\": \"Nairobi\"\n    }\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -189,7 +228,7 @@
             "description": "Resends the previous request's `screeningId`; expect `200` with `duplicate: true` and the same ids.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"hasTravelled\": true,\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ]\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
+              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"means\": \"air\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ],\n    \"stopovers\": \"None\",\n    \"destination\": {\n      \"country\": \"KE\",\n      \"place\": \"Nairobi\"\n    }\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -320,10 +359,10 @@
                 "screenings"
               ]
             },
-            "description": "Every problem is reported in `errors[]`.",
+            "description": "Every problem is reported in `errors[]`, including unknown countries, an unknown `means`, and an arrival before departure.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"screeningId\": \"\",\n  \"outcome\": \"unknown\",\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"Passport\",\n        \"value\": \"X1\"\n      }\n    ],\n    \"birthDate\": \"14/05/1990\"\n  },\n  \"signsAndSymptoms\": {\n    \"symptoms\": [\n      {\n        \"code\": \"sneezing\"\n      }\n    ]\n  }\n}",
+              "raw": "{\n  \"screeningId\": \"\",\n  \"outcome\": \"unknown\",\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"Passport\",\n        \"value\": \"X1\"\n      }\n    ],\n    \"birthDate\": \"14/05/1990\"\n  },\n  \"signsAndSymptoms\": {\n    \"symptoms\": [\n      {\n        \"code\": \"sneezing\"\n      }\n    ]\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"Atlantis\",\n        \"departureDate\": \"2026-10-12\",\n        \"arrivalDate\": \"2026-10-01\",\n        \"means\": \"rail\"\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"

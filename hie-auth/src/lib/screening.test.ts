@@ -38,6 +38,32 @@ describe("validateScreeningPayload", () => {
         expect(validateScreeningPayload(valid).ok).toBe(true);
     });
 
+    const travelErrors = (travelHistory: any) => {
+        const r = validateScreeningPayload({ ...valid, travelHistory });
+        return r.ok ? [] : r.errors;
+    };
+
+    it("accepts travelled yes/no/unknown and requires one of hasTravelled/travelled", () => {
+        for (const travelled of ["yes", "no", "unknown"]) expect(travelErrors({ travelled })).toEqual([]);
+        expect(travelErrors({})[0]).toMatch(/hasTravelled .* or travelHistory.travelled/);
+        expect(travelErrors({ travelled: "maybe" })[0]).toMatch(/yes, no, unknown/);
+        expect(travelErrors({ hasTravelled: false, travelled: "yes" })[0]).toMatch(/disagree/);
+    });
+
+    it("requires known countries, sent as ISO codes or names", () => {
+        expect(travelErrors({ hasTravelled: true, trips: [{ country: "cd" }, { country: "Tanzania" }] })).toEqual([]);
+        expect(travelErrors({ hasTravelled: true, trips: [{ country: "Atlantis" }] })[0]).toMatch(/not a known country/);
+        expect(travelErrors({ hasTravelled: true, destination: { country: "XX" } })[0]).toMatch(/destination.country/);
+    });
+
+    it("checks means of travel and the travel dates", () => {
+        const trip = (t: any) => travelErrors({ hasTravelled: true, trips: [{ country: "UG", ...t }] });
+        expect(trip({ means: "air" })).toEqual([]);
+        expect(trip({ means: "rail" })[0]).toMatch(/land, air, water/);
+        expect(trip({ departureDate: "2999-01-01" })[0]).toMatch(/future/);
+        expect(trip({ departureDate: "2026-10-05", arrivalDate: "2026-10-01" })[0]).toMatch(/before departureDate/);
+    });
+
     it("reports every problem", () => {
         const r = validateScreeningPayload({
             patient: { identifiers: [{ type: "Passport", value: "" }], birthDate: "01/02/1990" },
@@ -254,6 +280,47 @@ describe("buildScreeningQuestionnaireResponse", () => {
         expect(answerOf(travel, "vhf-travel-destination-country")[0].valueCoding.code).toBe("KE");
         expect(answerOf(travel, "vhf-travel-destination-place")).toEqual([{ valueString: "Busia OSBP" }]);
         expect(answerOf(qr.item, "screening-travel-purpose")).toEqual([{ valueString: "trade" }]);
+    });
+
+    it("fills every vhf-travel question from the full travel payload", () => {
+        const qr = buildScreeningQuestionnaireResponse(
+            {
+                ...valid,
+                pointOfEntry: { name: "JKIA" },
+                travelHistory: {
+                    travelled: "yes",
+                    trips: [{ country: "UG", city: "Kampala", departureDate: "2026-10-01", arrivalDate: "2026-10-02", means: "air" }],
+                    stopovers: "Entebbe transit",
+                    destination: { country: "KE", place: "Nairobi" },
+                },
+            } as any,
+            "42",
+        );
+        const travel = items(qr, "vhf-travel");
+        expect(travel.map((i) => i.linkId)).toEqual([
+            "vhf-travelled",
+            "vhf-travel-origin-country",
+            "vhf-travel-origin-place",
+            "vhf-travel-departure-date",
+            "vhf-travel-means",
+            "vhf-travel-stopovers",
+            "vhf-travel-destination-country",
+            "vhf-travel-destination-place",
+            "vhf-travel-arrival-date",
+        ]);
+        expect(answerOf(travel, "vhf-travel-means")).toEqual([{ valueCoding: { code: "air", display: "Air" } }]);
+        expect(answerOf(travel, "vhf-travel-stopovers")).toEqual([{ valueString: "Entebbe transit" }]);
+        expect(answerOf(travel, "vhf-travel-destination-place")).toEqual([{ valueString: "Nairobi" }]);
+    });
+
+    it("answers vhf-travelled unknown without trip details", () => {
+        const qr = buildScreeningQuestionnaireResponse(
+            { ...valid, travelHistory: { travelled: "unknown", trips: [{ country: "UG" }] } } as any,
+            "42",
+        );
+        expect(items(qr, "vhf-travel")).toEqual([
+            { linkId: "vhf-travelled", answer: [{ valueCoding: { code: "unknown", display: "Unknown" } }] },
+        ]);
     });
 
     it("answers vhf-travelled no without trip details", () => {
