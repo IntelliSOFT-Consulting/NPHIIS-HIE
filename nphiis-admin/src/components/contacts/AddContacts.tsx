@@ -31,13 +31,15 @@ import Spinner from '../ui/Spinner';
 import ContactForm from './ContactForm';
 
 type Table = unknown[][];
-type SaveAction = Extract<UploadAction, 'create' | 'link-existing' | 'restore'>;
-const SAVE_ACTIONS: UploadAction[] = ['create', 'link-existing', 'restore'];
+type SaveAction = Extract<UploadAction, 'create' | 'link-existing' | 'restore' | 'update'>;
+const SAVE_ACTIONS: UploadAction[] = ['create', 'link-existing', 'restore', 'update'];
+const isSaveState = (s: RowState) => s === 'checking' || SAVE_ACTIONS.includes(s as UploadAction);
 
 export interface SaveSummary {
   created: number;
   linked: number;
   restored: number;
+  updated: number;
 }
 
 /* ── Templates and files ────────────────────────────────────────────────── */
@@ -93,12 +95,13 @@ type RowState = 'fix' | 'duplicate' | 'on-list' | 'checking' | 'left-out' | Save
 const STATE: Record<RowState, { label: string; chip: string }> = {
   fix: { label: 'Needs fixing', chip: 'bg-accent-50 text-accent-700' },
   duplicate: { label: 'Repeated', chip: 'bg-gray-200 text-gray-700' },
-  'on-list': { label: 'Already on this list', chip: 'bg-gray-200 text-gray-700' },
+  'on-list': { label: 'Already on this list, nothing new', chip: 'bg-gray-200 text-gray-700' },
   checking: { label: 'Checking…', chip: 'bg-gray-100 text-gray-500' },
   'left-out': { label: 'Left out', chip: 'bg-gray-100 text-gray-500' },
   create: { label: 'New contact', chip: 'bg-emerald-100 text-emerald-800' },
   'link-existing': { label: 'Registered already: will be linked', chip: 'bg-nphi-50 text-nphi-800' },
   restore: { label: 'Taken off before: will be put back', chip: 'bg-purple-100 text-purple-800' },
+  update: { label: 'On this list: will be updated', chip: 'bg-amber-100 text-amber-800' },
 };
 
 type Filter = 'all' | 'ready' | 'attention' | 'left-out';
@@ -192,19 +195,20 @@ export default function AddContacts({
   };
   const states = new Map(drafts.map((d) => [d.rowNumber, stateOf(d)]));
   const counts = { all: drafts.length, ready: 0, attention: 0, 'left-out': 0 } as Record<Filter, number>;
-  const summary: SaveSummary = { created: 0, linked: 0, restored: 0 };
+  const summary: SaveSummary = { created: 0, linked: 0, restored: 0, updated: 0 };
   for (const s of Array.from(states.values())) {
-    if (s === 'create' || s === 'link-existing' || s === 'restore' || s === 'checking') counts.ready++;
+    if (isSaveState(s)) counts.ready++;
     else if (s === 'fix' || s === 'duplicate') counts.attention++;
     else counts['left-out']++;
     if (s === 'create') summary.created++;
     if (s === 'link-existing') summary.linked++;
     if (s === 'restore') summary.restored++;
+    if (s === 'update') summary.updated++;
   }
   const toSave = drafts.filter((d) => SAVE_ACTIONS.includes(states.get(d.rowNumber) as UploadAction));
   const shown = drafts.filter((d) => {
     const s = states.get(d.rowNumber)!;
-    if (filter === 'ready') return s === 'create' || s === 'link-existing' || s === 'restore' || s === 'checking';
+    if (filter === 'ready') return isSaveState(s);
     if (filter === 'attention') return s === 'fix' || s === 'duplicate';
     if (filter === 'left-out') return s === 'left-out' || s === 'on-list';
     return true;
@@ -378,6 +382,7 @@ export default function AddContacts({
         created: results.filter((r) => r.action === 'create').length,
         linked: results.filter((r) => r.action === 'link-existing').length,
         restored: results.filter((r) => r.action === 'restore').length,
+        updated: results.filter((r) => r.action === 'update').length,
       };
       onSaved(body.board as Board, done);
     } catch (e) {
@@ -638,6 +643,7 @@ export default function AddContacts({
                         ...d.errors,
                         ...(r?.problems ?? []),
                         ...(s === 'fix' ? [] : d.warnings),
+                        ...(r?.changes?.length && (s === 'update' || s === 'restore') ? [`Updates: ${r.changes.join(', ')}`] : []),
                         ...(r?.error ? [r.error] : []),
                       ];
                       return (
@@ -750,6 +756,7 @@ export default function AddContacts({
                   summary.created && `${summary.created} new`,
                   summary.linked && `${summary.linked} already registered (moved to this case, 21 days restarted)`,
                   summary.restored && `${summary.restored} put back`,
+                  summary.updated && `${summary.updated} on the list with new information`,
                 ]
                   .filter(Boolean)
                   .join(' · ') + (counts['left-out'] + counts.attention ? ` · ${counts['left-out'] + counts.attention} not added` : '')

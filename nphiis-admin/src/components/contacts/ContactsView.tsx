@@ -361,6 +361,7 @@ export default function ContactsView() {
                   saved.created && `${plural(saved.created)} added`,
                   saved.linked && `${plural(saved.linked)} already registered, moved to this case (21 days restarted)`,
                   saved.restored && `${plural(saved.restored)} put back`,
+                  saved.updated && `${plural(saved.updated)} updated`,
                 ].filter(Boolean);
                 setNotice(`${parts.join(', ')}.${saved.created ? ' Contact IDs are assigned within a few minutes.' : ''}`);
               }}
