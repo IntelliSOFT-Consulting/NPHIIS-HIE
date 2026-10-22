@@ -34,6 +34,7 @@ import {
 import { epidFromAnswer, findCaseEncounter } from "./vhf-contact-list";
 import { VHF_CONTACT_LINK_IDS } from "./vhf-link-ids";
 import { completeVhfCaseRecord } from "./vhf-case-record";
+import { assignAlertLogId } from "./alert-log-id";
 
 /** Serialize EPID mutations per Patient to avoid concurrent double-allocation under subscription races. */
 const epidQueues = new Map<string, Promise<unknown>>();
@@ -140,9 +141,13 @@ export async function assignEpidForEncounter(
     return { kind: "error", error: new Error("Encounter must include resource id") };
   }
 
-  /** Call logs get no EPID; a case linked to the log carries one. */
+  /** Call logs get no EPID (a case linked to the log carries one); they get an Alert Log ID. */
   if (encounterGetsNoEpid(encounterDraft)) {
-    return { kind: "not_applicable", encounterId, reason: "call logs get no EPID" };
+    return enqueueEpidAssignmentForPatient(patientId, async (): Promise<EpidAssignResult> => {
+      const r = await assignAlertLogId(encounterId);
+      if (r.kind === "error") return r;
+      return { kind: "not_applicable", encounterId, reason: `call log (Alert Log ID ${r.alertLogId}); no EPID` };
+    });
   }
 
   return enqueueEpidAssignmentForPatient(patientId, async () => {

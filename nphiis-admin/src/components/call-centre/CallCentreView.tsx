@@ -178,7 +178,7 @@ export default function CallCentreView() {
       <div className="flex flex-col lg:flex-row gap-3">
         <div className="flex-1">
           <TextInput
-            placeholder="Search linked EPID, caller, phone, county, agent or notes"
+            placeholder="Search log ID, linked EPID, caller, phone, county, agent or notes"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -217,7 +217,7 @@ export default function CallCentreView() {
       </div>
 
       {!loaded ? (
-        <TableSkeleton rows={6} cols={7} />
+        <TableSkeleton rows={6} cols={8} />
       ) : (
         <div className={`card overflow-hidden transition-opacity ${loading ? 'opacity-60' : ''}`}>
           {logs.length === 0 ? (
@@ -233,6 +233,7 @@ export default function CallCentreView() {
               <table className="min-w-full divide-y divide-nphi-100 text-sm">
                 <thead className="bg-gray-50/80">
                   <tr className="text-left">
+                    <th className="px-4 py-3 font-medium text-gray-600">Log ID</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Call received</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Linked case</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Caller</th>
@@ -252,6 +253,7 @@ export default function CallCentreView() {
                       }}
                       className="cursor-pointer hover:bg-nphi-50/40 align-top"
                     >
+                      <td className="px-4 py-3 font-mono text-xs text-gray-800 whitespace-nowrap">{l.logId ?? <span className="text-gray-400">Pending</span>}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-gray-800">{formatDateTime(l.callDate)}</td>
                       <td className="px-4 py-3 font-mono text-xs text-gray-700">{l.epid ?? '—'}</td>
                       <td className="px-4 py-3 text-gray-700">
@@ -501,7 +503,7 @@ function CallLogDetails({
   const pathway = log ? answerText(log, 'alert-call-pathway') : undefined;
 
   return (
-    <Modal title="Call log" onClose={onClose} footer={footer}>
+    <Modal title={log?.summary.logId ? `Call log ${log.summary.logId}` : 'Call log'} onClose={onClose} footer={footer}>
       {error && <Alert variant="error">{error}</Alert>}
       {!log && !error && <Spinner label="Loading…" />}
       {log && summary && (

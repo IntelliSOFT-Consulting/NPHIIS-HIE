@@ -10,7 +10,6 @@ import {
   isVisible,
   AUTO_FIELDS,
   nowInKenya,
-  nowTimeInKenya,
   sectionTitle,
   validateCallLog,
   type CallLogPayload,
@@ -96,7 +95,6 @@ function LocationSelect({
 const AUTO_HINTS: Record<string, string> = {
   [CALL_LOG_FIELDS.date]: 'Set when this form was opened',
   [CALL_LOG_FIELDS.agent]: 'Your account',
-  [CALL_LOG_FIELDS.callEnd]: 'Set when you save',
 };
 
 /** A value the system fills in, shown read-only. */
@@ -113,7 +111,7 @@ function AutoValue({ linkId, value }: { linkId: string; value?: string }) {
       id={`f-${linkId}`}
       className="rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-700"
     >
-      {text || <span className="text-gray-400">{linkId === CALL_LOG_FIELDS.callEnd ? 'On save' : '—'}</span>}
+      {text || <span className="text-gray-400">—</span>}
     </div>
   );
 }
@@ -194,9 +192,7 @@ export default function CallLogForm({
     e.preventDefault();
     setSubmitted(true);
     setError(null);
-    // A new log ends now; an edited one keeps the time it was saved with.
     const final: AnswerMap = { ...answers };
-    if (!final[CALL_LOG_FIELDS.callEnd]) final[CALL_LOG_FIELDS.callEnd] = nowTimeInKenya();
     if (!final[CALL_LOG_FIELDS.agent] && agentName) final[CALL_LOG_FIELDS.agent] = agentName;
     if (Object.keys(validateCallLog({ answers: final, locations })).length) {
       setError('Some answers need attention. They are marked below.');

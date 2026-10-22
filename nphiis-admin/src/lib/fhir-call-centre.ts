@@ -31,6 +31,8 @@ import { FHIR_BASE_URL, fhirHeaders, searchAll, searchPage } from "./fhir-search
 const SNOMED = "http://snomed.info/sct";
 /** Observation linking a call log to an existing case. */
 export const LINKED_CASE_CODE = "linked-case-epid";
+/** Set by hie-auth on every call log (lib/alert-log-id.ts). */
+export const ALERT_LOG_ID_SYSTEM = "http://hie.org/identifiers/ALERT_LOG_ID";
 const EPID_SYSTEM = "http://hie.org/identifiers/EPID";
 const SYSTEM_CREATION = "system-creation";
 const CASE_INFORMATION = "case-information";
@@ -420,6 +422,7 @@ export function toSummary(patient: Resource, observations: Resource[]): CallLogS
   };
   return {
     patientId: patient.id,
+    logId: patient.identifier?.find((i: Resource) => i.system === ALERT_LOG_ID_SYSTEM)?.value,
     epid: value(LINKED_CASE_CODE),
     callDate: value(F.date) ?? patient.meta?.lastUpdated,
     agent: value(F.agent),
@@ -675,16 +678,23 @@ const SEARCH_CODES = [
 ];
 
 async function idsMatching(term: string, token: string): Promise<Set<string>> {
-  const observations = await searchAll<Resource>(
-    `${FHIR_BASE_URL}/Observation?${new URLSearchParams({
-      code: SEARCH_CODES.join(","),
-      "value-string:contains": term,
-      _elements: "subject",
-      _count: String(OBSERVATION_PAGE_SIZE),
-    })}`,
-    token,
-  );
-  return new Set(observations.map(subjectId).filter(Boolean));
+  const [observations, byLogId] = await Promise.all([
+    searchAll<Resource>(
+      `${FHIR_BASE_URL}/Observation?${new URLSearchParams({
+        code: SEARCH_CODES.join(","),
+        "value-string:contains": term,
+        _elements: "subject",
+        _count: String(OBSERVATION_PAGE_SIZE),
+      })}`,
+      token,
+    ),
+    // The Alert Log ID lives on the Patient (exact match).
+    searchAll<Resource>(
+      `${FHIR_BASE_URL}/Patient?${new URLSearchParams({ identifier: `${ALERT_LOG_ID_SYSTEM}|${term.toUpperCase()}`, _elements: "id" })}`,
+      token,
+    ),
+  ]);
+  return new Set([...observations.map(subjectId), ...byLogId.map((p) => p.id as string)].filter(Boolean));
 }
 
 /** Logs whose current answer to `linkId` is the option `code`. */
