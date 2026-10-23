@@ -51,6 +51,9 @@ services:
     openhim-core:
         container_name: openhim-core
         restart: unless-stopped
+        # Reaps the health check's child processes; without it they pile up as zombies until the
+        # container can no longer start processes.
+        init: true
         image: jembi/openhim-core:latest
         env_file:
             - .env
