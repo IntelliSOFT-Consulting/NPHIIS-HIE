@@ -325,7 +325,24 @@ public class LocationHierarchyResolver {
     String locationPath = String.format("/Location/%s", PARAM_ESCAPER.escape(locationId));
     logger.debug("Fetching location: {}", locationPath);
     HttpResponse response = httpFhirClient.getResource(locationPath);
+    if (response.getStatusLine().getStatusCode() == 404) {
+      throw new LocationNotFoundException(locationId);
+    }
     HttpUtil.validateResponseEntityOrFail(response, locationPath);
     return (Location) fhirContext.newJsonParser().parseResource(response.getEntity().getContent());
+  }
+
+  /** The Location does not exist, e.g. a tag of "Location/unknown" sent by a device. */
+  public static class LocationNotFoundException extends IOException {
+    private final String locationId;
+
+    public LocationNotFoundException(String locationId) {
+      super("Location/" + locationId + " does not exist");
+      this.locationId = locationId;
+    }
+
+    public String getLocationId() {
+      return locationId;
+    }
   }
 }

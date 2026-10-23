@@ -86,7 +86,7 @@ public class LocationTagMutator {
       return true;
     } else {
       // Tags exist, validate at least one matches accessible locations
-      boolean hasValidTag = validateLocationTags(existingLocationTags);
+      boolean hasValidTag = validateLocationTags(existingLocationTags, true);
       if (!hasValidTag) {
         logger.warn(
             "Resource {} has location tags but none match accessible locations",
@@ -116,7 +116,7 @@ public class LocationTagMutator {
       return false;
     }
 
-    return validateLocationTags(locationTags);
+    return validateLocationTags(locationTags, false);
   }
 
   /**
@@ -163,13 +163,24 @@ public class LocationTagMutator {
    * Compare: SubCounty2 == SubCounty2? YES → Access granted
    *
    * @param locationTags the list of location tags from the resource (should be facility IDs)
+   * @param writing true for a create/update, where tags that all name missing Locations are
+   *     treated like no tags (the user's own location applies)
    * @return true if the facility's location at user's role level matches user's assigned location
    */
   @VisibleForTesting
-  boolean validateLocationTags(List<Coding> locationTags) {
+  boolean validateLocationTags(List<Coding> locationTags, boolean writing) {
+    // COUNTRY-level users (ADMINISTRATOR, SUPERUSER) can write anywhere, as for reads and edits.
+    if (userAccessLevel == RoleBasedAccessScopeResolver.AccessLevel.COUNTRY) {
+      return true;
+    }
+    // Tags naming a Location that does not exist grant nobody access. When a write has only such
+    // tags, it is treated as untagged rather than failing the whole upload.
+    int missingFacilities = 0;
     for (Coding tag : locationTags) {
       String code = tag.getCode();
-      if (code != null) {
+      if (code == null) {
+        missingFacilities++;
+      } else {
         // Extract location ID from code (format: "Location/123")
         String facilityId = extractLocationIdFromCode(code);
 
@@ -196,11 +207,24 @@ public class LocationTagMutator {
                 locationAtUserLevel,
                 userAssignedLocationId);
           }
-        } catch (IOException e) {
+        } catch (LocationHierarchyResolver.LocationNotFoundException e) {
+          if (facilityId.equals(e.getLocationId())) {
+            logger.warn("Location tag {} names a Location that does not exist", code);
+            missingFacilities++;
+          } else {
+            logger.error("Broken hierarchy above facility {}: {}", facilityId, e.getMessage());
+          }
+        } catch (IOException | RuntimeException e) {
           logger.error("Failed to traverse hierarchy for facility {}", facilityId, e);
           // Continue checking other tags
         }
       }
+    }
+    if (writing && missingFacilities == locationTags.size()) {
+      logger.warn(
+          "No location tag names an existing Location ({}); treating the resource as untagged",
+          locationTags.stream().map(Coding::getCode).collect(Collectors.toList()));
+      return true;
     }
     logger.debug(
         "No location tags grant access. Resource tags: {}, User: {} at {}",
