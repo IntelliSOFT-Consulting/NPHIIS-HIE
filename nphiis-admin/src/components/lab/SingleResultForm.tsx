@@ -1,11 +1,7 @@
 'use client';
 
 import { useMemo, useState, type FormEvent } from 'react';
-import {
-  SearchSm,
-  Edit01,
-  User01,
-} from '@untitled-ui/icons-react';
+import { Edit01, User01 } from '@untitled-ui/icons-react';
 import { useAuth, useAuthedFetch } from '@/lib/auth-context';
 import { hasAnyRole } from '@/lib/roles';
 import {
@@ -30,7 +26,7 @@ import { Alert } from '../ui/Alert';
 import CaseSearch from './CaseSearch';
 import ExistingResultModal from './ExistingResultModal';
 import SpecimenEntry from './SpecimenEntry';
-import { Field, Select, TextInput } from '../ui/Field';
+import { Field, Select } from '../ui/Field';
 import QuestionInput, { fieldHint } from '../questionnaire/QuestionInput';
 
 interface RowResult {
@@ -371,54 +367,14 @@ export default function SingleResultForm() {
       </Field>
 
       {!verified && (
-        <div className="space-y-4">
+        <div className="space-y-2">
           <CaseSearch
             onSelect={(selectedEpid) => {
               set('EPID', selectedEpid);
               void verifyEpid(selectedEpid);
             }}
           />
-          <div className="text-center text-xs text-gray-400">
-            — or enter an EPID directly —
-          </div>
-          <Field
-          label="EPID"
-          htmlFor="epid-input"
-          required
-          hint="Lab results can only be attached to cases. Line-list entries are not eligible."
-        >
-          <div className="flex gap-2">
-            <TextInput
-              id="epid-input"
-              required
-              value={answers.EPID}
-              onChange={(e) => set('EPID', e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  void verifyEpid();
-                }
-              }}
-              className="flex-1"
-              placeholder="e.g. KEN-XXX-XXX-2026-MEA-001"
-            />
-            <button
-              type="button"
-              onClick={() => void verifyEpid()}
-              disabled={verifying || !answers.EPID.trim()}
-              className="btn-secondary shrink-0"
-            >
-              {verifying ? (
-                <Spinner size="sm" label="Verifying…" />
-              ) : (
-                <>
-                  <SearchSm className="h-4 w-4 mr-1.5" />
-                  Verify EPID
-                </>
-              )}
-            </button>
-          </div>
-          </Field>
+          {verifying && <Spinner size="sm" label="Loading case…" />}
         </div>
       )}
 
