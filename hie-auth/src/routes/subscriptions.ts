@@ -1,7 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { FhirApi, OperationOutcome } from '../lib/utils';
 import { processAfpObservation } from '../lib/notification';
-import { assignEpidForEncounter } from '../lib/epid-assignment';
+import { assignEpidForEncounter, promoteConvertedVhfContact } from '../lib/epid-assignment';
+import { VHF_CONTACT_LINK_IDS } from '../lib/vhf-link-ids';
 import { attachSubscriptionAuditLog } from '../lib/subscription-audit';
 import { requireInternalApiKey } from '../middleware/internal-api-key';
 import { requireInternalApiKeyOrAdminBearer } from '../middleware/internal-api-key-or-admin';
@@ -406,6 +407,31 @@ router.put('/observations/notifications/Observation/:id', async (req: Request, r
   try {
     const { id } = req.params;
     const data = (await FhirApi({ url: `/Observation/${id}` })).data;
+
+    /** "Type of case" changed: a contact converted to a case gets its EPID, Case ID, alert and NPHL sync now. */
+    const codes: string[] = (data?.code?.coding ?? []).map((c: any) => c?.code);
+    if (codes.includes(VHF_CONTACT_LINK_IDS.caseType)) {
+      const encounterId = data?.encounter?.reference?.split('/')[1];
+      if (!encounterId) {
+        res.locals.subscriptionOutcome = 'skipped';
+        return res.status(200).json(OperationOutcome('Type of case answer has no Encounter', 'information'));
+      }
+      const promoted = await promoteConvertedVhfContact(encounterId);
+      res.locals.subscriptionDetail = { kind: 'vhf_case_type', encounterId, promoted };
+      if (promoted.kind === 'error') {
+        res.locals.subscriptionOutcome = 'error';
+        res.locals.subscriptionErrorMessage = String((promoted.error as Error)?.message ?? promoted.error);
+        return res.status(400).json(OperationOutcome(res.locals.subscriptionErrorMessage, 'error'));
+      }
+      res.locals.subscriptionOutcome = promoted.kind === 'promoted' ? 'success' : 'skipped';
+      return res.status(200).json(
+        OperationOutcome(
+          promoted.kind === 'promoted' ? `Promoted to case ${promoted.caseId}` : promoted.reason,
+          'information',
+        ),
+      );
+    }
+
     const response = await processAfpObservation(data);
     if (response?.status === 'success') {
       res.locals.subscriptionOutcome = 'success';
