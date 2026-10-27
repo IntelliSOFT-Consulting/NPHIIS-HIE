@@ -124,7 +124,7 @@ public class LocationAccessChecker implements AccessChecker {
    * @param requestDetails the request details
    * @return the access decision
    */
-  private AccessDecision processGet(RequestDetailsReader requestDetails) throws IOException {
+  private AccessDecision processGet(RequestDetailsReader requestDetails) {
     // For search operations (no specific ID), inject location filter
     if (requestDetails.getId() == null) {
       return processSearch(requestDetails);
@@ -162,36 +162,18 @@ public class LocationAccessChecker implements AccessChecker {
   }
 
   /**
-   * Processes read requests by fetching and validating the resource.
+   * Processes read requests (Resource/{id}, Resource/{id}/$operation). Any authenticated user may
+   * read; location rules only restrict writes. This matches search, which is already unfiltered.
    *
    * @param requestDetails the request details
    * @return the access decision
    */
-  private AccessDecision processRead(RequestDetailsReader requestDetails) throws IOException {
-    String resourceId = FhirUtil.getIdOrNull(requestDetails);
-    logger.debug("Processing read request for {}/{}", requestDetails.getResourceName(), resourceId);
-
-    // COUNTRY-level users can read any resource, including ones whose location tag uses another
-    // system (e.g. patient-managingLocation) and operations like Patient/{id}/$everything.
-    if (isCountryLevel()) {
-      return NoOpAccessDecision.accessGranted();
-    }
-
-    // Fetch the resource to check its location tags
-    String resourcePath = String.format("/%s/%s", requestDetails.getResourceName(), resourceId);
-    Resource resource = fetchResource(resourcePath);
-
-    if (resource == null) {
-      logger.warn("Resource not found: {}", resourcePath);
-      return NoOpAccessDecision.accessDenied();
-    }
-
-    // Validate that the resource has valid location tags
-    boolean hasValidTags = tagMutator.hasValidLocationTags(resource);
-    if (!hasValidTags) {
-      logger.warn("Access denied: Resource {} does not have valid location tags", resourcePath);
-    }
-    return new NoOpAccessDecision(hasValidTags);
+  private AccessDecision processRead(RequestDetailsReader requestDetails) {
+    logger.debug(
+        "Processing read request for {}/{}",
+        requestDetails.getResourceName(),
+        FhirUtil.getIdOrNull(requestDetails));
+    return NoOpAccessDecision.accessGranted();
   }
 
   /**
@@ -349,8 +331,10 @@ public class LocationAccessChecker implements AccessChecker {
       // Validate based on request method
       switch (request.getMethod()) {
         case GET:
+          // Reads are open to every authenticated user.
+          break;
         case DELETE:
-          // For GET/DELETE, resource should already have valid tags
+          // For DELETE, resource should already have valid tags
           if (!tagMutator.hasValidLocationTags(resource)) {
             logger.warn("Bundle entry has resource without valid location tags");
             return NoOpAccessDecision.accessDenied();
