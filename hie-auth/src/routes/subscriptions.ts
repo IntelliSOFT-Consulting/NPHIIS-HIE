@@ -260,9 +260,20 @@ router.get('/encounters/missing-epid', authenticateUser, async (req: Request, re
         ? req.query.cursor.trim()
         : null;
 
+    const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+    const day = (v: unknown) => {
+      const s = str(v);
+      return s && /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null;
+    };
     const { encounters, nextCursor, hasMore } = await scanEncountersMissingEpid({
       limit,
       cursor,
+      filters: {
+        condition: str(req.query.condition),
+        from: day(req.query.from),
+        to: day(req.query.to),
+        q: str(req.query.q),
+      },
     });
 
     return res.status(200).json({
