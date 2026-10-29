@@ -212,7 +212,7 @@ export default function CallCentreView() {
           }}
         >
           <PlusIcon className="h-4 w-4" />
-          Log a call
+          Log an alert
         </button>
       </div>
 
@@ -325,7 +325,7 @@ export default function CallCentreView() {
       )}
 
       {panel?.kind === 'new' && (
-        <Modal title="Log a call" onClose={() => setPanel(null)}>
+        <Modal title="Log an alert" onClose={() => setPanel(null)}>
           <CallLogForm agentName={agentName} onSubmit={(p) => save(p)} onCancel={() => setPanel(null)} />
         </Modal>
       )}
