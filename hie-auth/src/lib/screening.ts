@@ -34,6 +34,12 @@ export const SCREENING_NUMBER_SYSTEM = "vhf-screening-number";
 export const SCREENING_NUMBER_TYPE_SYSTEM = "vhf-screened";
 export const SCREENING_NUMBER_SYSTEMS = [SCREENING_NUMBER_SYSTEM, SCREENING_NUMBER_TYPE_SYSTEM];
 
+/** Tag on the screening QuestionnaireResponse saying whether it was taken on entering or leaving the country. */
+export const SCREENING_TYPE_SYSTEM = `${BASE}/CodeSystem/screening-type`;
+export const SCREENING_TYPES = ["entry", "exit"] as const;
+export type ScreeningType = (typeof SCREENING_TYPES)[number];
+const SCREENING_TYPE_DISPLAY: Record<ScreeningType, string> = { entry: "Entry screening", exit: "Exit screening" };
+
 export const SCREENING_OUTCOMES = ["cleared", "referred", "suspected"] as const;
 export const POINT_OF_ENTRY_TYPES = ["airport", "seaport", "border", "facility", "community"] as const;
 /** vhf-travelled answers. */
@@ -65,6 +71,8 @@ export type ScreeningPayload = {
     /** Human-readable Screening No. (e.g. SCR-2026-40560); defaults to screeningId. */
     screeningNumber?: string;
     screenedAt?: string;
+    /** Entry (default) or exit screening; the form and every other field are the same. */
+    screeningType?: ScreeningType;
     outcome?: (typeof SCREENING_OUTCOMES)[number];
     pointOfEntry?: { name: string; type?: (typeof POINT_OF_ENTRY_TYPES)[number]; locationId?: string };
     patient: {
@@ -93,7 +101,7 @@ export type ScreeningPayload = {
         }>;
         /** Free-text stopovers; defaults to the trips other than the main one. */
         stopovers?: string;
-        /** Defaults to Kenya and the point of entry name. */
+        /** Entry: defaults to Kenya and the point of entry name. Exit: defaults to the main trip. */
         destination?: { country?: string; place?: string };
     };
     signsAndSymptoms?: {
@@ -124,6 +132,8 @@ export function validateScreeningPayload(
         errors.push("screeningNumber must be a non-empty string when given");
     if (body.screenedAt != null && !(isStr(body.screenedAt) && DATETIME_RE.test(body.screenedAt)))
         errors.push("screenedAt must be an ISO 8601 date/datetime");
+    if (body.screeningType != null && !(SCREENING_TYPES as readonly string[]).includes(body.screeningType))
+        errors.push(`screeningType must be one of ${SCREENING_TYPES.join(", ")}`);
     if (body.outcome != null && !(SCREENING_OUTCOMES as readonly string[]).includes(body.outcome))
         errors.push(`outcome must be one of ${SCREENING_OUTCOMES.join(", ")}`);
 
@@ -413,6 +423,12 @@ function group(linkId: string, items: QrItem[]): QrItem[] {
     return items.length ? [{ linkId, item: items }] : [];
 }
 
+/** The type of a screening response, from its tag; responses saved before exit screening are entry. */
+export function screeningTypeOf(qr: any): ScreeningType {
+    const code = (qr?.meta?.tag ?? []).find((t: any) => t?.system === SCREENING_TYPE_SYSTEM)?.code;
+    return code === "exit" ? "exit" : "entry";
+}
+
 /** Under 18 on the reference date (vhf-case asks minors for vhf-id-type-minor). */
 function isMinor(birthDate: string, onDate: string): boolean {
     const [y, rest] = [Number(birthDate.slice(0, 4)), birthDate.slice(4)];
@@ -481,23 +497,38 @@ function describeTrip(t: Trip): string {
     return when ? `${where} ${when}` : where;
 }
 
-function travelItems(th: NonNullable<ScreeningPayload["travelHistory"]>, pointOfEntry?: string): QrItem[] {
+function travelItems(
+    th: NonNullable<ScreeningPayload["travelHistory"]>,
+    pointOfEntry?: string,
+    type: ScreeningType = "entry",
+): QrItem[] {
     const L = VHF_CASE_LINK_IDS;
     const travelled = travelledAnswer(th);
     const items = answered(L.travelled, choice(travelled, humanize(travelled)));
     const { main, rest } = travelled === "yes" ? mainTrip(th.trips ?? []) : { rest: [] };
     if (!main) return items;
     const stopovers = th.stopovers?.trim() || rest.map(describeTrip).join("; ");
-    const destinationPlace = th.destination?.place?.trim() || pointOfEntry;
+    // trips[] describe the other end of the journey: where an entry screening came from,
+    // where an exit screening is going. The Kenyan end defaults to Kenya and the point of entry.
+    const kenyaEnd = { country: KENYA, place: pointOfEntry };
+    const tripEnd = { country: main.country, place: main.city?.trim() };
+    const entry = type === "entry";
+    const origin = entry ? tripEnd : kenyaEnd;
+    const defaultDestination = entry ? kenyaEnd : tripEnd;
+    const destination = {
+        country: th.destination?.country ?? defaultDestination.country,
+        place: th.destination?.place?.trim() || defaultDestination.place,
+    };
+    const place = (v?: string) => (v ? { valueString: v } : undefined);
     return [
         ...items,
-        ...answered(L.originCountry, { valueCoding: countryCoding(main.country) }),
-        ...answered(L.originPlace, main.city?.trim() ? { valueString: main.city.trim() } : undefined),
+        ...answered(L.originCountry, { valueCoding: countryCoding(origin.country) }),
+        ...answered(L.originPlace, place(origin.place)),
         ...answered(L.departureDate, main.departureDate ? { valueDate: main.departureDate } : undefined),
         ...answered(L.means, main.means ? choice(main.means, TRAVEL_MEANS_DISPLAY[main.means]) : undefined),
         ...answered(L.stopovers, stopovers ? { valueString: stopovers } : undefined),
-        ...answered(L.destinationCountry, { valueCoding: countryCoding(th.destination?.country ?? KENYA) }),
-        ...answered(L.destinationPlace, destinationPlace ? { valueString: destinationPlace } : undefined),
+        ...answered(L.destinationCountry, { valueCoding: countryCoding(destination.country) }),
+        ...answered(L.destinationPlace, place(destination.place)),
         ...answered(L.arrivalDate, main.arrivalDate ? { valueDate: main.arrivalDate } : undefined),
     ];
 }
@@ -623,13 +654,14 @@ export function buildScreeningQuestionnaireResponse(payload: ScreeningPayload, p
     const L = VHF_CASE_LINK_IDS;
     const authored = payload.screenedAt ?? new Date().toISOString();
     const poe = payload.pointOfEntry;
+    const type = payload.screeningType ?? "entry";
     const purpose = payload.travelHistory && travelledAnswer(payload.travelHistory) === "yes" ? mainTrip(payload.travelHistory.trips ?? []).main?.purpose : undefined;
 
     const items: QrItem[] = [
         ...(site ? reportingSiteItems(site, authored, poe) : []),
         ...group(L.demographics, demographicsItems(payload.patient, authored)),
         ...group(L.clinical, payload.signsAndSymptoms ? clinicalItems(payload.signsAndSymptoms) : []),
-        ...group(L.travel, payload.travelHistory ? travelItems(payload.travelHistory, poe?.name) : []),
+        ...group(L.travel, payload.travelHistory ? travelItems(payload.travelHistory, poe?.name, type) : []),
         ...(poe
             ? [
                   {
@@ -663,6 +695,7 @@ export function buildScreeningQuestionnaireResponse(payload: ScreeningPayload, p
             profile: [SCREENING_RESPONSE_PROFILE],
             tag: [
                 SCREENING_TAG,
+                { system: SCREENING_TYPE_SYSTEM, code: type, display: SCREENING_TYPE_DISPLAY[type] },
                 ...(payload.outcome
                     ? [{ system: SCREENING_OUTCOME_SYSTEM, code: payload.outcome, display: payload.outcome }]
                     : []),
@@ -759,6 +792,7 @@ export function screeningPayloadFromLegacyResponse(qr: any, patient: any): Scree
     return {
         screeningId: qr?.identifier?.value ?? qr?.id,
         ...(qr?.authored ? { screenedAt: qr.authored } : {}),
+        screeningType: screeningTypeOf(qr),
         ...((SCREENING_OUTCOMES as readonly string[]).includes(outcome) ? { outcome } : {}),
         ...(poeName
             ? {

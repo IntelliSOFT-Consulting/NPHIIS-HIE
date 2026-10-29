@@ -14,6 +14,14 @@ Description: "Allowed screening outcomes."
 * ^status = #active
 * include codes from system ScreeningOutcomeCS
 
+ValueSet: ScreeningTypeVS
+Id: screening-type
+Title: "Screening Type"
+Description: "Entry or exit screening."
+* ^url = "http://nphiis.health.go.ke/fhir/ValueSet/screening-type"
+* ^status = #active
+* include codes from system ScreeningTypeCS
+
 ValueSet: ScreeningSymptomVS
 Id: screening-symptom
 Title: "Screening Symptom"

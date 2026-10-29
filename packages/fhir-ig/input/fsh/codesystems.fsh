@@ -37,6 +37,17 @@ Description: "Result of a screening, recorded as a meta.tag on the screening Que
 * #referred "Referred"
 * #suspected "Suspected case"
 
+CodeSystem: ScreeningTypeCS
+Id: screening-type
+Title: "Screening Type"
+Description: "Whether a screening was taken on entering or on leaving the country, recorded as a meta.tag on the screening QuestionnaireResponse. A response with no tag from this system is an entry screening."
+* ^url = "http://nphiis.health.go.ke/fhir/CodeSystem/screening-type"
+* ^status = #active
+* ^content = #complete
+* ^caseSensitive = true
+* #entry "Entry screening" "Taken when the person enters the country."
+* #exit "Exit screening" "Taken when the person leaves the country."
+
 CodeSystem: ScreeningSymptomCS
 Id: screening-symptom
 Title: "Screening Symptom"

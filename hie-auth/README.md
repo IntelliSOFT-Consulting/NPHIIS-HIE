@@ -40,7 +40,7 @@ Allowed `identification_type` values: Temporary ID, Alien ID, Refugee ID, Mandat
 | `409` | Identifiers match more than one patient (`patientIds[]`) |
 | `502` | FHIR server failure; if a `patientId` is returned, retry with the same `screeningId` |
 
-Minimal body: `{ "screeningId": "<uuid>", "patient": { "identifiers": [{ "type": "National ID", "value": "12345678" }] } }`. Optional: `screeningNumber` (the human-readable Screening No., e.g. `SCR-2026-40560`; defaults to `screeningId`; written to the Patient as identifier system `vhf-screening-number`, type `vhf-screened`), `screenedAt`, `outcome` (`cleared|referred|suspected`), `pointOfEntry`, `patient` demographics, `travelHistory`, `signsAndSymptoms { temperatureCelsius, symptoms[{ code, present, onsetDate, note }] }`. Symptom codes: see `screening-symptom` CodeSystem in `packages/fhir-ig`.
+Minimal body: `{ "screeningId": "<uuid>", "patient": { "identifiers": [{ "type": "National ID", "value": "12345678" }] } }`. Optional: `screeningNumber` (the human-readable Screening No., e.g. `SCR-2026-40560`; defaults to `screeningId`; written to the Patient as identifier system `vhf-screening-number`, type `vhf-screened`), `screenedAt`, `screeningType` (`entry` default, or `exit`; same form and fields. `travelHistory.trips[]` is the other end of the journey: the origin for entry, the destination for exit; the Kenya end defaults to Kenya and the point of entry), `outcome` (`cleared|referred|suspected`), `pointOfEntry`, `patient` demographics, `travelHistory`, `signsAndSymptoms { temperatureCelsius, symptoms[{ code, present, onsetDate, note }] }`. Symptom codes: see `screening-symptom` CodeSystem in `packages/fhir-ig`.
 
 **Travel history** maps to the vhf-case form's Travel History section (`vhf-travel`):
 
@@ -65,6 +65,7 @@ The form holds one trip: the one with the latest `arrivalDate` (or the last one 
 - Screened patients: `Patient?_tag=http://nphiis.health.go.ke/fhir/CodeSystem/record-origin|screened` or `Patient?_profile=…/screened-patient`
 - Screenings: `QuestionnaireResponse?_profile=…/traveller-screening-response`
 - By outcome: `QuestionnaireResponse?_tag=…/CodeSystem/screening-outcome|referred`
+- Exit screenings: `QuestionnaireResponse?_tag=…/CodeSystem/screening-type|exit`. Entry: `…|entry`, or `_tag:not=…/CodeSystem/screening-type|exit` to include responses saved before exit screening existed (they have no type tag).
 
 Profiles `ScreenedPatient` and `TravellerScreeningResponse`, plus the `traveller-screening` Questionnaire, are defined in `packages/fhir-ig/input/fsh/screening.fsh`. An existing patient who is screened later also gets the tag and profile, so the filter means "has been screened".
 
