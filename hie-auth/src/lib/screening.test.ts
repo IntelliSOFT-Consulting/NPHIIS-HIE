@@ -35,6 +35,31 @@ const valid = {
 };
 
 describe("validateScreeningPayload", () => {
+    it("requires a National ID to be 7 or 8 digits", () => {
+        const withId = (value: string, type = "National ID") => ({
+            ...valid,
+            patient: { ...valid.patient, identifiers: [{ type, value }] },
+        });
+        for (const ok of ["1234567", "12345678", " 12345678 "]) expect(validateScreeningPayload(withId(ok)).ok).toBe(true);
+        for (const bad of ["123456", "123456789", "1234567A", "12 34567", ""]) expect(validateScreeningPayload(withId(bad)).ok).toBe(false);
+        // Other identification types keep their own formats.
+        expect(validateScreeningPayload(withId("A1234567", "Alien ID")).ok).toBe(true);
+    });
+
+    it("checks the other document numbers, phone and dates", () => {
+        const withPatient = (patch: object) => ({ ...valid, patient: { ...valid.patient, ...patch } });
+        expect(validateScreeningPayload(withPatient({ identifiers: [{ type: "Alien ID", value: "A 123" }] })).ok).toBe(false);
+        expect(validateScreeningPayload(withPatient({ identifiers: [{ type: "Birth Certificate", value: "12" }] })).ok).toBe(false);
+        expect(validateScreeningPayload(withPatient({ identifiers: [{ type: "Refugee ID", value: "KE-123/45" }] })).ok).toBe(true);
+        for (const phone of ["0712345678", "+254712345678", "+256 700 123 456", "0712-345-678"])
+            expect(validateScreeningPayload(withPatient({ phone })).ok).toBe(true);
+        for (const phone of ["12345", "071234567", "+25471", "abc"])
+            expect(validateScreeningPayload(withPatient({ phone })).ok).toBe(false);
+        expect(validateScreeningPayload(withPatient({ birthDate: "2999-01-01" })).ok).toBe(false);
+        expect(validateScreeningPayload(withPatient({ birthDate: "1850-01-01" })).ok).toBe(false);
+        expect(validateScreeningPayload({ ...valid, screenedAt: "2999-01-01" }).ok).toBe(false);
+    });
+
     it("accepts entry and exit and rejects other screening types", () => {
         expect(validateScreeningPayload({ ...valid, screeningType: "exit" }).ok).toBe(true);
         expect(validateScreeningPayload({ ...valid, screeningType: "entry" }).ok).toBe(true);
