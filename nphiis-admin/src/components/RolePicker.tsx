@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getAccessToken } from '@/lib/api';
 import { LEVEL_ROLE, formatRole } from '@/lib/roles';
+import { Select } from './ui/Field';
 
 export interface ProfileOption {
   slug: string;
@@ -22,6 +23,31 @@ export function useProfiles(): ProfileOption[] {
       .catch(() => setProfiles([]));
   }, []);
   return profiles;
+}
+
+/** The country at the root of the location tree, from the backend (no configuration needed). */
+export function useRootLocation(): { id: string; name: string } | null {
+  const [root, setRoot] = useState<{ id: string; name: string } | null>(null);
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) return;
+    fetch('/api/provider/locations/root', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((b) => setRoot(b?.location ?? null))
+      .catch(() => setRoot(null));
+  }, []);
+  return root;
+}
+
+/** Shown in place of the location pickers for roles that cover the whole country. */
+export function NationalRoleNote({ role }: { role: string }) {
+  const root = useRootLocation();
+  return (
+    <div className="rounded-lg border border-nphi-100 bg-nphi-50/50 px-4 py-3 text-sm text-gray-700">
+      <span className="font-medium text-nphi-900">No location needed.</span> {formatRole(role)} covers all of{' '}
+      {root?.name ?? 'the country'}, so this user is registered at the top of the location tree.
+    </div>
+  );
 }
 
 /**
@@ -47,44 +73,29 @@ export default function RolePicker({
 }) {
   const profiles = useProfiles();
   const value = profileSlug && profiles.some((p) => p.slug === profileSlug) ? `profile:${profileSlug}` : `role:${role}`;
+  const options = loadingLabel
+    ? [{ value: `role:${role}`, label: loadingLabel === role ? formatRole(role) : loadingLabel }]
+    : [
+        ...profiles.map((p) => ({ value: `profile:${p.slug}`, label: `${p.name} · profile` })),
+        ...roles.map((r) => ({ value: `role:${r}`, label: formatRole(r) })),
+      ];
   return (
-    <select
+    <Select
       id={id}
       value={value}
       disabled={disabled}
-      onChange={(e) => {
-        const [kind, key] = [e.target.value.split(':')[0], e.target.value.slice(e.target.value.indexOf(':') + 1)];
-        if (kind === 'profile') {
+      searchable
+      options={options}
+      placeholder="Choose a role…"
+      onChange={(v) => {
+        const key = v.slice(v.indexOf(':') + 1);
+        if (v.startsWith('profile:')) {
           const p = profiles.find((x) => x.slug === key);
           if (p) onChange(LEVEL_ROLE[p.level], p.slug);
         } else {
           onChange(key, '');
         }
       }}
-      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 disabled:bg-gray-100"
-    >
-      {loadingLabel ? (
-        <option value={`role:${role}`}>{loadingLabel === role ? formatRole(role) : loadingLabel}</option>
-      ) : (
-        <>
-          {profiles.length > 0 && (
-            <optgroup label="Profiles">
-              {profiles.map((p) => (
-                <option key={p.slug} value={`profile:${p.slug}`}>
-                  {p.name}
-                </option>
-              ))}
-            </optgroup>
-          )}
-          <optgroup label="Roles">
-            {roles.map((r) => (
-              <option key={r} value={`role:${r}`}>
-                {formatRole(r)}
-              </option>
-            ))}
-          </optgroup>
-        </>
-      )}
-    </select>
+    />
   );
 }

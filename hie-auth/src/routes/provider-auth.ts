@@ -1,6 +1,7 @@
 import { randomInt } from "crypto";
 import { resolveAccess } from "../lib/permissions";
 import { PROFILE_USER_ATTRIBUTE, compatRole, getProfile, setUserProfileRole } from "../lib/profiles";
+import { getRootLocation } from "../lib/root-location";
 import { randomBytes } from "node:crypto";
 import express, { Request, Response, NextFunction } from "express";
 import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
@@ -114,7 +115,7 @@ router.post("/register", authenticateUser, async (req: Request, res: Response) =
             // National roles (administrator, call-centre agent) get the root location
             !locationFree ?
                 (await FhirApi({ url: `/Location/${facility}` })).data :
-                Promise.resolve({ id: '0', name: process.env.ROOT_LOCATION_NAME || 'Kenya' })
+                getRootLocation()
         ]);
 
         // Validate keycloak user creation
@@ -456,6 +457,11 @@ async function accessFor(user: any, role: string | null) {
         ? { level: profile.level, profile: profile.name, permissions: profile.permissions }
         : resolveAccess(role);
 }
+
+/** The root of the location tree (the country), found in FHIR; clients need no configuration for it. */
+router.get("/locations/root", authenticateUser, async (_req: Request, res: Response) => {
+    return res.status(200).json({ status: "success", location: await getRootLocation() });
+});
 
 router.get("/me", authenticateUser, async (req: Request, res: Response) => {
     try {

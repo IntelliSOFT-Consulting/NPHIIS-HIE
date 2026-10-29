@@ -7,7 +7,8 @@ import { z } from 'zod';
 import { User } from '@/types/user';
 import { userApi, rolesApi, getAccessToken, fhirApi, FhirCounty, FhirSubCounty, FhirWard, FhirFacility, isUnauthorizedError, handleUnauthorized } from '@/lib/api';
 import { LOCATION_FREE_ROLES } from '@/lib/roles';
-import RolePicker from './RolePicker';
+import RolePicker, { NationalRoleNote } from './RolePicker';
+import { Select } from './ui/Field';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 // import { useNotification } from './Notification';
 
@@ -498,6 +499,8 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
 
             </div>
 
+            {isLocationDisabled && <NationalRoleNote role={selectedRole} />}
+
             {/* Location Information */}
             {!isLocationDisabled && (
               <div>
@@ -523,19 +526,14 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                           </button>
                         </div>
                       ) : (
-                        <select
-                          {...register('locationId')}
-                          id="locationId"
-                          disabled={isLoadingCounties}
-                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        >
-                          <option value="">Select a county</option>
-                          {counties.map((county) => (
-                            <option key={county.id} value={county.id}>
-                              {county.name}
-                            </option>
-                          ))}
-                        </select>
+                        <Select
+                      id="locationId"
+                      value={watch('locationId') ?? ''}
+                      onChange={(v) => setValue('locationId', v, { shouldValidate: true })}
+                      disabled={isLoadingCounties}
+                      placeholder="Select a county"
+                      options={[{ value: '', label: 'Select a county' }, ...counties.map((x) => ({ value: x.id, label: x.name }))]}
+                    />
                       )}
                       {errors.locationId && (
                         <p className="mt-1 text-sm text-red-600">{errors.locationId.message}</p>
@@ -557,19 +555,14 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                           <p className="text-sm text-red-600">{subCountiesError}</p>
                         </div>
                       ) : (
-                        <select
-                          {...register('subCountyId')}
-                          id="subCountyId"
-                          disabled={isLoadingSubCounties || !selectedCountyId}
-                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        >
-                          <option value="">Select a sub-county</option>
-                          {subCounties.map((subCounty) => (
-                            <option key={subCounty.id} value={subCounty.id}>
-                              {subCounty.name}
-                            </option>
-                          ))}
-                        </select>
+                        <Select
+                      id="subCountyId"
+                      value={watch('subCountyId') ?? ''}
+                      onChange={(v) => setValue('subCountyId', v, { shouldValidate: true })}
+                      disabled={isLoadingSubCounties || !selectedCountyId}
+                      placeholder="Select a sub-county"
+                      options={[{ value: '', label: 'Select a sub-county' }, ...subCounties.map((x) => ({ value: x.id, label: x.name }))]}
+                    />
                       )}
                       {errors.subCountyId && (
                         <p className="mt-1 text-sm text-red-600">{errors.subCountyId.message}</p>
@@ -592,19 +585,14 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                         </div>
                       ) : (
                         <>
-                          <select
-                            {...register('wardId')}
-                            id="wardId"
-                            disabled={isLoadingWards || !selectedSubCountyId}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                          >
-                            <option value="">Select a ward</option>
-                            {wards.map((ward) => (
-                              <option key={ward.id} value={ward.id}>
-                                {ward.name}
-                              </option>
-                            ))}
-                          </select>
+                          <Select
+                      id="wardId"
+                      value={watch('wardId') ?? ''}
+                      onChange={(v) => setValue('wardId', v, { shouldValidate: true })}
+                      disabled={isLoadingWards || !selectedSubCountyId}
+                      placeholder="Select a ward"
+                      options={[{ value: '', label: 'Select a ward' }, ...wards.map((x) => ({ value: x.id, label: x.name }))]}
+                    />
                           {!isLoadingWards && wards.length === 0 && selectedSubCountyId && (
                             <p className="mt-1 text-sm text-yellow-600">No wards found for this sub-county</p>
                           )}
@@ -631,19 +619,14 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                         </div>
                       ) : (
                         <>
-                          <select
-                            {...register('facilityId')}
-                            id="facilityId"
-                            disabled={isLoadingFacilities || !selectedWardId}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                          >
-                            <option value="">Select a facility</option>
-                            {facilities.map((facility) => (
-                              <option key={facility.id} value={facility.id}>
-                                {facility.name}
-                              </option>
-                            ))}
-                          </select>
+                          <Select
+                      id="facilityId"
+                      value={watch('facilityId') ?? ''}
+                      onChange={(v) => setValue('facilityId', v, { shouldValidate: true })}
+                      disabled={isLoadingFacilities || !selectedWardId}
+                      placeholder="Select a facility"
+                      options={[{ value: '', label: 'Select a facility' }, ...facilities.map((x) => ({ value: x.id, label: x.name }))]}
+                    />
                           {!isLoadingFacilities && facilities.length === 0 && selectedWardId && (
                             <p className="mt-1 text-sm text-yellow-600">No facilities found for this ward</p>
                           )}
