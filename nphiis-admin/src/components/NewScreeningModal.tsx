@@ -83,6 +83,9 @@ export default function NewScreeningModal({
 
   const [idType, setIdType] = useState('National ID');
   const [idValue, setIdValue] = useState('');
+  const [lookup, setLookup] = useState<
+    { state: 'idle' } | { state: 'checking' } | { state: 'found'; source: string } | { state: 'notfound' } | { state: 'error'; message: string }
+  >({ state: 'idle' });
   const [givenNames, setGivenNames] = useState('');
   const [familyName, setFamilyName] = useState('');
   const [gender, setGender] = useState('');
@@ -122,6 +125,44 @@ export default function NewScreeningModal({
 
   const updateTrip = (i: number, patch: Partial<Trip>) =>
     setTrips((prev) => prev.map((t, j) => (j === i ? { ...t, ...patch } : t)));
+
+  // Any change to the ID makes an earlier lookup result stale.
+  const changeId = (type: string, value: string) => {
+    setIdType(type);
+    setIdValue(value);
+    setLookup({ state: 'idle' });
+  };
+
+  /** Look the ID up in the Client Registry, then IPRS, and fill in the person's details. */
+  async function validateId() {
+    const number = idValue.trim();
+    if (!number) return;
+    setLookup({ state: 'checking' });
+    try {
+      const qs = new URLSearchParams({ identification_type: idType, identification_number: number });
+      const res = await authedFetch(`/api/provider/patients/registry?${qs}`);
+      const body = await res.json().catch(() => ({}));
+      if (res.ok && body.found) {
+        const p = body.patient ?? {};
+        const given = [p.first_name, p.middle_name].filter(Boolean).join(' ');
+        const sex = String(p.gender ?? '').toLowerCase();
+        if (given) setGivenNames(given);
+        if (p.last_name) setFamilyName(p.last_name);
+        if (['male', 'female', 'other'].includes(sex)) setGender(sex);
+        else if (sex === 'm') setGender('male');
+        else if (sex === 'f') setGender('female');
+        const dob = String(p.date_of_birth ?? '').slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dob)) setBirthDate(dob);
+        setLookup({ state: 'found', source: body.source === 'iprs' ? 'IPRS' : 'Client Registry' });
+      } else if (res.status === 400) {
+        setLookup({ state: 'notfound' });
+      } else {
+        setLookup({ state: 'error', message: body.error ?? `Lookup failed (${res.status}).` });
+      }
+    } catch {
+      setLookup({ state: 'error', message: 'Could not reach the registry.' });
+    }
+  }
 
   function validate(): string[] {
     const out: string[] = [];
@@ -257,10 +298,29 @@ export default function NewScreeningModal({
           <FormSection title="Person">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="ID type" required>
-                <Select value={idType} onChange={setIdType} options={ID_TYPES.map((t) => ({ value: t, label: t }))} />
+                <Select value={idType} onChange={(v) => changeId(v, idValue)} options={ID_TYPES.map((t) => ({ value: t, label: t }))} />
               </Field>
               <Field label="ID number" required hint="An existing person with this ID gets the screening added to their record.">
-                <TextInput value={idValue} onChange={(e) => setIdValue(e.target.value)} />
+                <div className="flex gap-2">
+                  <TextInput value={idValue} onChange={(e) => changeId(idType, e.target.value)} />
+                  <button
+                    type="button"
+                    onClick={validateId}
+                    disabled={!idValue.trim() || lookup.state === 'checking'}
+                    className="shrink-0 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {lookup.state === 'checking' ? 'Checking…' : 'Validate'}
+                  </button>
+                </div>
+                {lookup.state === 'found' && (
+                  <p className="mt-1 text-xs text-emerald-700">Verified in {lookup.source}; details filled in below.</p>
+                )}
+                {lookup.state === 'notfound' && (
+                  <p className="mt-1 text-xs text-amber-700">
+                    Not found in the Client Registry or IPRS. You can still continue and enter the details by hand.
+                  </p>
+                )}
+                {lookup.state === 'error' && <p className="mt-1 text-xs text-accent-700">{lookup.message}</p>}
               </Field>
               <Field label="Given names" required>
                 <TextInput value={givenNames} onChange={(e) => setGivenNames(e.target.value)} />
