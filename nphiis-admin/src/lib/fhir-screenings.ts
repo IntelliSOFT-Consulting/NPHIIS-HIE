@@ -18,6 +18,7 @@ import { isSpecimenStatus } from "./specimens";
 
 const SCREENED_TAG = "http://nphiis.health.go.ke/fhir/CodeSystem/record-origin|screened";
 const OUTCOME_SYSTEM = "http://nphiis.health.go.ke/fhir/CodeSystem/screening-outcome";
+const TYPE_SYSTEM = "http://nphiis.health.go.ke/fhir/CodeSystem/screening-type";
 const SCREENING_NUMBER_SYSTEM = "vhf-screening-number";
 /** hie-auth also writes the Screening No. under this system. */
 const SCREENED_SYSTEM = "vhf-screened";
@@ -79,12 +80,15 @@ export function toScreening(qr: any): Screening {
     }));
 
   const travelled = answer(travel, "vhf-travelled");
-  const originCountry = find(travel, "vhf-travel-origin-country")?.answer?.[0]?.valueCoding;
+  // The trip is the other end of the journey: the origin of an entry screening, the destination of an exit one.
+  const exit = qr.meta?.tag?.some((t: any) => t?.system === TYPE_SYSTEM && t.code === "exit");
+  const end = exit ? "destination" : "origin";
+  const originCountry = find(travel, `vhf-travel-${end}-country`)?.answer?.[0]?.valueCoding;
   const trips: Trip[] = [];
   if (originCountry) {
     trips.push({
       country: originCountry.display ?? originCountry.code ?? "",
-      city: answer(travel, "vhf-travel-origin-place"),
+      city: answer(travel, `vhf-travel-${end}-place`),
       departureDate: answer(travel, "vhf-travel-departure-date"),
       arrivalDate: answer(travel, "vhf-travel-arrival-date"),
       purpose: answer(qr.item, "screening-travel-purpose"),
@@ -98,6 +102,7 @@ export function toScreening(qr: any): Screening {
   return {
     id: qr.id,
     screenedAt: qr.authored,
+    screeningType: exit ? "exit" : "entry",
     outcome: isScreeningOutcome(outcome) ? outcome : undefined,
     pointOfEntry: answer(poe, "point-of-entry.name"),
     pointOfEntryType: answer(poe, "point-of-entry.type"),

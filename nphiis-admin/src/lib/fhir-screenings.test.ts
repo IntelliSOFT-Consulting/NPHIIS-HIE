@@ -69,6 +69,7 @@ describe("toScreening", () => {
   it("reads point of entry, outcome, temperature, symptoms and trips from the vhf-case linkIds", () => {
     expect(mod.toScreening(qr)).toEqual({
       id: "q1",
+      screeningType: "entry",
       screenedAt: "2026-10-14T14:50:00+03:00",
       outcome: "suspected",
       pointOfEntry: "Lunga Lunga One Stop Border Post",

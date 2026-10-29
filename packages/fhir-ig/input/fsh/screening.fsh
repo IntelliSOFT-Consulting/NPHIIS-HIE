@@ -20,15 +20,16 @@ Profile: TravellerScreeningResponse
 Parent: QuestionnaireResponse
 Id: traveller-screening-response
 Title: "Traveller Screening Response"
-Description: "A completed screening: point of entry, travel history and signs and symptoms for a Patient. The screening id is the business identifier used for idempotent submission."
+Description: "A completed entry or exit screening (see the screening-type tag): point of entry, travel history and signs and symptoms for a Patient. The screening id is the business identifier used for idempotent submission."
 * ^url = "http://nphiis.health.go.ke/fhir/StructureDefinition/traveller-screening-response"
 * ^status = #active
 * meta.profile 1..*
 * meta.tag ^slicing.discriminator.type = #pattern
 * meta.tag ^slicing.discriminator.path = "$this"
 * meta.tag ^slicing.rules = #open
-* meta.tag contains screened 1..1 and outcome 0..1
+* meta.tag contains screened 1..1 and screeningType 1..1 and outcome 0..1
 * meta.tag[screened] = RecordOriginCS#screened
+* meta.tag[screeningType] from ScreeningTypeVS (required)
 * meta.tag[outcome] from ScreeningOutcomeVS (required)
 * identifier 1..1
 * identifier.system 1..1

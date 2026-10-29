@@ -27,6 +27,14 @@ export const FOLLOW_UP_LABEL: Record<FollowUpStage, string> = {
   result: 'Lab result',
 };
 
+export const SCREENING_TYPES = ['entry', 'exit'] as const;
+export type ScreeningType = (typeof SCREENING_TYPES)[number];
+
+export const SCREENING_TYPE_LABEL: Record<ScreeningType, string> = {
+  entry: 'Entry',
+  exit: 'Exit',
+};
+
 export interface Trip {
   country: string;
   city?: string;
@@ -38,6 +46,8 @@ export interface Trip {
 export interface Screening {
   id: string;
   screenedAt?: string;
+  /** Responses saved before exit screening have no tag and are entry. */
+  screeningType: ScreeningType;
   outcome?: ScreeningOutcome;
   pointOfEntry?: string;
   pointOfEntryType?: string;

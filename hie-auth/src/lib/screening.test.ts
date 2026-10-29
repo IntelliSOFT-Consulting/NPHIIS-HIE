@@ -8,6 +8,7 @@ import {
     mergeIntoExistingPatient,
     migrateLegacyScreeningResponse,
     patientHasIdentifier,
+    screeningTypeOf,
     reportingSiteFromLocationInfo,
     validateScreeningPayload,
 } from "./screening";
@@ -34,6 +35,12 @@ const valid = {
 };
 
 describe("validateScreeningPayload", () => {
+    it("accepts entry and exit and rejects other screening types", () => {
+        expect(validateScreeningPayload({ ...valid, screeningType: "exit" }).ok).toBe(true);
+        expect(validateScreeningPayload({ ...valid, screeningType: "entry" }).ok).toBe(true);
+        expect(validateScreeningPayload({ ...valid, screeningType: "transit" }).ok).toBe(false);
+    });
+
     it("accepts a valid payload", () => {
         expect(validateScreeningPayload(valid).ok).toBe(true);
     });
@@ -148,7 +155,39 @@ describe("buildScreeningQuestionnaireResponse", () => {
         const qr = buildScreeningQuestionnaireResponse(valid as any, "42");
         expect(qr.subject.reference).toBe("Patient/42");
         expect(qr.identifier.value).toBe("scr-1");
-        expect(qr.meta.tag.map((t: any) => t.code)).toEqual(["screened", "referred"]);
+        expect(qr.meta.tag.map((t: any) => t.code)).toEqual(["screened", "entry", "referred"]);
+    });
+
+    it("tags an exit screening and maps the trip to its destination", () => {
+        const base = { ...valid, pointOfEntry: { name: "JKIA" } };
+        const entry = buildScreeningQuestionnaireResponse(base as any, "42");
+        const exit = buildScreeningQuestionnaireResponse({ ...base, screeningType: "exit" } as any, "42");
+        expect(screeningTypeOf(entry)).toBe("entry");
+        expect(screeningTypeOf(exit)).toBe("exit");
+        expect(exit.meta.tag.map((t: any) => t.code)).toEqual(["screened", "exit", "referred"]);
+        const a = (qr: any, id: string) => answerOf(items(qr, "vhf-travel"), id)?.[0];
+        // Entry: trip is the origin, Kenya / point of entry the destination.
+        expect(a(entry, "vhf-travel-origin-country").valueCoding.code).toBe("UG");
+        expect(a(entry, "vhf-travel-destination-country").valueCoding.code).toBe("KE");
+        expect(a(entry, "vhf-travel-destination-place")).toEqual({ valueString: "JKIA" });
+        // Exit: Kenya / point of entry the origin, trip is the destination. All required answers present.
+        expect(a(exit, "vhf-travel-origin-country").valueCoding.code).toBe("KE");
+        expect(a(exit, "vhf-travel-origin-place")).toEqual({ valueString: "JKIA" });
+        expect(a(exit, "vhf-travel-destination-country").valueCoding.code).toBe("UG");
+        expect(a(exit, "vhf-travel-departure-date")).toEqual({ valueDate: "2026-10-01" });
+    });
+
+    it("lets an explicit destination override the exit trip", () => {
+        const qr = buildScreeningQuestionnaireResponse(
+            { ...valid, screeningType: "exit", travelHistory: { ...valid.travelHistory, destination: { country: "TZ", place: "Arusha" } } } as any,
+            "42",
+        );
+        expect(answerOf(items(qr, "vhf-travel"), "vhf-travel-destination-country")?.[0].valueCoding.code).toBe("TZ");
+        expect(answerOf(items(qr, "vhf-travel"), "vhf-travel-destination-place")).toEqual([{ valueString: "Arusha" }]);
+    });
+
+    it("treats a response with no screening-type tag as entry", () => {
+        expect(screeningTypeOf({ meta: { tag: [{ system: "x", code: "screened" }] } })).toBe("entry");
     });
 
     it("uses the vhf-case groups in form order, then the screening-only items", () => {

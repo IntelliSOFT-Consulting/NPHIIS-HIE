@@ -8,6 +8,7 @@ import {
   FOLLOW_UP_STAGES,
   SCREENING_OUTCOME_LABEL,
   SCREENING_OUTCOMES,
+  SCREENING_TYPE_LABEL,
   type FollowUpStage,
   type ScreenedPerson,
   type ScreeningOutcome,
@@ -392,6 +393,9 @@ function PersonDetails({ person: p }: { person: ScreenedPerson }) {
                 <div key={s.id} className="rounded-xl border border-nphi-100 bg-white p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2 text-gray-800">
                     <span className="font-medium">{formatDateTime(s.screenedAt)}</span>
+                    <span className="chip bg-gray-100 text-gray-700">
+                      {SCREENING_TYPE_LABEL[s.screeningType]} screening
+                    </span>
                     {s.pointOfEntry && (
                       <span className="text-gray-500">
                         · {s.pointOfEntry}

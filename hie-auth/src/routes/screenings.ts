@@ -159,6 +159,7 @@ router.post("/", authenticateUser, async (req: Request, res: Response) => {
         return res.status(patientCreated ? 201 : 200).json({
             status: "success",
             duplicate: false,
+            screeningType: payload.screeningType ?? "entry",
             patientCreated,
             patientId: patient.id,
             questionnaireResponseId: savedQr.data?.id,
