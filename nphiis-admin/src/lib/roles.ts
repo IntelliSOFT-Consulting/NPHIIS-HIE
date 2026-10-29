@@ -41,7 +41,14 @@ export const ADMIN_ROLES: Role[] = ["ADMINISTRATOR", "SUPERUSER"];
 export const CALL_CENTRE_ROLE: Role = "NATIONAL_CALL_CENTER_AGENTS";
 
 /** Roles with no location of their own: they work across the whole country. */
-export const LOCATION_FREE_ROLES: Role[] = ["ADMINISTRATOR", "SUPERUSER", CALL_CENTRE_ROLE];
+export const LOCATION_FREE_ROLES: Role[] = [
+  "ADMINISTRATOR",
+  "SUPERUSER",
+  "NATIONAL_FOCAL_PERSON",
+  "NATIONAL_VIEWER",
+  "NATIONAL_LAB",
+  CALL_CENTRE_ROLE,
+];
 
 export const NATIONAL_ROLES: Role[] = [
   "ADMINISTRATOR",
