@@ -1,4 +1,5 @@
 import { randomInt } from "crypto";
+import { resolveAccess } from "../lib/permissions";
 import { randomBytes } from "node:crypto";
 import express, { Request, Response, NextFunction } from "express";
 import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
@@ -485,6 +486,8 @@ router.get("/me", authenticateUser, async (req: Request, res: Response) => {
                 fhirPractitionerId: userId,
                 practitionerRole,
                 role: practitionerRole,
+                // Generic access model; clients that only know practitionerRole keep working.
+                ...resolveAccess(practitionerRole),
                 status: practitioner.active,
                 id: userInfo.id,
                 idNumber: userInfo.username,
