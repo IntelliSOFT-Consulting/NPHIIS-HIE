@@ -401,6 +401,8 @@ export { VHF_CASE_LINK_IDS };
 export const SCREENING_LINK_IDS = {
     pointOfEntry: "point-of-entry",
     temperature: "screening-temperature",
+    /** The Screening No. this response was taken under (it is also on the Patient). */
+    screeningNumber: "screening-number",
     travelPurpose: "screening-travel-purpose",
 } as const;
 
@@ -714,6 +716,7 @@ export function buildScreeningQuestionnaireResponse(payload: ScreeningPayload, p
             payload.signsAndSymptoms?.temperatureCelsius != null ? { valueDecimal: payload.signsAndSymptoms.temperatureCelsius } : undefined,
         ),
         ...answered(SCREENING_LINK_IDS.travelPurpose, purpose ? { valueString: purpose } : undefined),
+        ...answered(SCREENING_LINK_IDS.screeningNumber, { valueString: (payload.screeningNumber ?? payload.screeningId).trim() }),
     ];
 
     return {

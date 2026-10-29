@@ -539,6 +539,15 @@ function PersonDetails({ person: p }: { person: ScreenedPerson }) {
                 <div key={s.id} className="rounded-xl border border-nphi-100 bg-white p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2 text-gray-800">
                     <span className="font-medium">{formatDateTime(s.screenedAt)}</span>
+                    {s.screeningNumber && (
+                      <span
+                        className="chip bg-nphi-50 text-nphi-800 font-mono"
+                        title={s.numberInferred ? 'Matched to this screening by order; not recorded on it' : 'Screening No.'}
+                      >
+                        {s.screeningNumber}
+                        {s.numberInferred && <span className="ml-1 font-sans italic opacity-70">by order</span>}
+                      </span>
+                    )}
                     <span className="chip bg-gray-100 text-gray-700">
                       {SCREENING_TYPE_LABEL[s.screeningType]} screening
                     </span>

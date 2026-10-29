@@ -45,6 +45,10 @@ export interface Trip {
 
 export interface Screening {
   id: string;
+  /** The Screening No. this screening was taken under. */
+  screeningNumber?: string;
+  /** True when the number was matched to this screening by order, not recorded on it. */
+  numberInferred?: boolean;
   screenedAt?: string;
   /** Responses saved before exit screening have no tag and are entry. */
   screeningType: ScreeningType;
