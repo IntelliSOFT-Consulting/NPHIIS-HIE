@@ -16,7 +16,7 @@ export async function callCentreSession(req: NextRequest): Promise<CallCentreSes
   const session = await verifyToken(req);
   if (!session) return unauthorized();
   const profile = await resolveUserProfile(session);
-  if (!canAccess(profile.roles, "CALL_CENTRE")) return forbidden("Call Centre access required");
+  if (!canAccess(profile.roles, "CALL_CENTRE")) return forbidden("Alert Log access required");
   const p = session.payload;
   const name = [p.given_name, p.family_name].filter(Boolean).join(" ") || undefined;
   return { token: session.raw, profile, agent: agentLabel(name, p.preferred_username) };

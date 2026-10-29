@@ -149,7 +149,7 @@ export default function CallCentreView() {
       if (res.status === 400 && body.errors) return body.errors as Record<string, string>;
       if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
       setPanel(null);
-      setNotice(patientId ? 'Call log updated.' : 'Call logged.');
+      setNotice(patientId ? 'Alert log updated.' : 'Alert logged.');
       setReload((n) => n + 1);
     },
     [authedFetch],
@@ -161,7 +161,7 @@ export default function CallCentreView() {
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
       setPanel(null);
-      setNotice('Call log deleted.');
+      setNotice('Alert log deleted.');
       setReload((n) => n + 1);
     },
     [authedFetch],
@@ -223,7 +223,7 @@ export default function CallCentreView() {
           {logs.length === 0 ? (
             <div className="text-center py-16 px-4">
               <PhoneIcon className="mx-auto h-12 w-12 text-gray-300" />
-              <p className="mt-3 text-sm font-medium text-nphi-900">No call logs</p>
+              <p className="mt-3 text-sm font-medium text-nphi-900">No alert logs</p>
               <p className="mt-1 text-sm text-gray-500">
                 {filtered ? 'Adjust the search or filters.' : 'Calls you log here, or on the mobile app, will appear here.'}
               </p>
@@ -330,7 +330,7 @@ export default function CallCentreView() {
         </Modal>
       )}
       {panel?.kind === 'edit' && (
-        <Modal title="Edit call log" onClose={() => setPanel(null)}>
+        <Modal title="Edit alert log" onClose={() => setPanel(null)}>
           <CallLogForm
             initial={panel.log}
             onSubmit={(p) => save(p, panel.log.summary.patientId)}
@@ -460,7 +460,7 @@ function CallLogDetails({
     <div className="flex flex-wrap justify-end gap-3">
       {confirming ? (
         <>
-          <span className="text-sm text-gray-700 self-center mr-auto">Delete this call log? It leaves the list.</span>
+          <span className="text-sm text-gray-700 self-center mr-auto">Delete this alert log? It leaves the list.</span>
           <button type="button" className="btn-secondary" onClick={() => setConfirming(false)} disabled={deleting}>
             Keep it
           </button>
@@ -503,7 +503,7 @@ function CallLogDetails({
   const pathway = log ? answerText(log, 'alert-call-pathway') : undefined;
 
   return (
-    <Modal title={log?.summary.logId ? `Call log ${log.summary.logId}` : 'Call log'} onClose={onClose} footer={footer}>
+    <Modal title={log?.summary.logId ? `Alert log ${log.summary.logId}` : 'Alert log'} onClose={onClose} footer={footer}>
       {error && <Alert variant="error">{error}</Alert>}
       {!log && !error && <Spinner label="Loading…" />}
       {log && summary && (
