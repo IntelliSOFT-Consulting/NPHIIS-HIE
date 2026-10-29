@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowPathIcon, PlusIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useAuthedFetch } from '@/lib/auth-context';
 import {
@@ -85,7 +85,7 @@ export default function ScreeningsView() {
   const [outcome, setOutcome] = useState<ScreeningOutcome | ''>('');
   const [type, setType] = useState<ScreeningType | ''>('');
   const [stage, setStage] = useState<FollowUpStage | ''>('');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [showNew, setShowNew] = useState(false);
@@ -225,6 +225,10 @@ export default function ScreeningsView() {
         />
       )}
 
+      {openId && people.find((p) => p.patientId === openId) && (
+        <PersonModal person={people.find((p) => p.patientId === openId)!} onClose={() => setOpenId(null)} />
+      )}
+
       {loading ? (
         <TableSkeleton rows={6} cols={8} />
       ) : (
@@ -259,10 +263,15 @@ export default function ScreeningsView() {
                     const latest = p.screenings[0];
                     const specimen = p.specimens[0];
                     return (
-                      <Fragment key={p.patientId}>
-                        <tr
-                          onClick={() => setExpandedId(expandedId === p.patientId ? null : p.patientId)}
-                          className="cursor-pointer hover:bg-nphi-50/40 align-top"
+                      <tr
+                          key={p.patientId}
+                          onClick={() => setOpenId(p.patientId)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.target === e.currentTarget) setOpenId(p.patientId);
+                          }}
+                          tabIndex={0}
+                          aria-label={`Open screening details for ${p.name ?? 'this person'}`}
+                          className="cursor-pointer hover:bg-nphi-50/40 focus:bg-nphi-50/60 focus:outline-none align-top"
                         >
                           <td className="px-4 py-3 whitespace-nowrap text-gray-800">
                             {formatDate(latest?.screenedAt ?? p.lastActivity)}
@@ -288,9 +297,17 @@ export default function ScreeningsView() {
                               <>
                                 {p.screeningNumbers[p.screeningNumbers.length - 1]}
                                 {p.screeningNumbers.length > 1 && (
-                                  <span className="ml-1.5 chip bg-gray-100 text-gray-600 font-sans">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenId(p.patientId);
+                                    }}
+                                    title={`Show all ${p.screeningNumbers.length} screening numbers`}
+                                    className="ml-1.5 chip bg-gray-100 text-gray-600 font-sans hover:bg-nphi-100 hover:text-nphi-900"
+                                  >
                                     +{p.screeningNumbers.length - 1}
-                                  </span>
+                                  </button>
                                 )}
                               </>
                             ) : (
@@ -362,8 +379,6 @@ export default function ScreeningsView() {
                             )}
                           </td>
                         </tr>
-                        {expandedId === p.patientId && <PersonDetails person={p} />}
-                      </Fragment>
                     );
                   })}
                 </tbody>
@@ -430,6 +445,67 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+/** Close on Escape while a modal is open. */
+function useEscape(onClose: () => void) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+}
+
+function PersonModal({ person: p, onClose }: { person: ScreenedPerson; onClose: () => void }) {
+  useEscape(onClose);
+  const latest = p.screenings[0];
+  return (
+    <div
+      className="fixed inset-0 bg-gray-900/75 overflow-y-auto z-50 flex items-start justify-center p-4 sm:py-10"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Screening details"
+      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="w-full max-w-3xl rounded-2xl bg-white shadow-xl">
+        <div className="flex items-start justify-between gap-4 border-b border-nphi-100 px-5 py-4">
+          <div>
+            <h2 className="text-lg font-semibold text-nphi-900">{p.name ?? 'Unnamed person'}</h2>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+              <span className={`chip ${STAGE_BADGE[p.stage]}`}>{FOLLOW_UP_LABEL[p.stage]}</span>
+              {latest && (
+                <span className="chip bg-gray-100 text-gray-700">
+                  Latest: {SCREENING_TYPE_LABEL[latest.screeningType]} · {formatDate(latest.screenedAt)}
+                </span>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="px-5 py-4 space-y-5">
+          {p.screeningNumbers.length > 0 && (
+            <Section title={`Screening numbers (${p.screeningNumbers.length})`}>
+              <div className="flex flex-wrap gap-2">
+                {[...p.screeningNumbers].reverse().map((n) => (
+                  <span key={n} className="chip bg-gray-100 text-gray-700 font-mono">
+                    {n}
+                  </span>
+                ))}
+              </div>
+            </Section>
+          )}
+          <PersonDetails person={p} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PersonDetails({ person: p }: { person: ScreenedPerson }) {
   const rows: Array<[string, string | undefined]> = [
     ['IDs', p.identifiers.join(', ')],
@@ -440,8 +516,7 @@ function PersonDetails({ person: p }: { person: ScreenedPerson }) {
     ['EPID', p.epid],
   ];
   return (
-    <tr className="bg-nphi-50/30">
-      <td colSpan={8} className="px-4 py-4 space-y-5">
+    <div className="space-y-5">
         <dl className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-3">
           {rows
             .filter(([, value]) => value)
@@ -543,7 +618,6 @@ function PersonDetails({ person: p }: { person: ScreenedPerson }) {
             </table>
           </Section>
         )}
-      </td>
-    </tr>
+    </div>
   );
 }

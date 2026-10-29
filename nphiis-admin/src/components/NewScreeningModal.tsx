@@ -25,6 +25,23 @@ const ID_TYPES = [
   'Mandate Number',
   'ClientRegistry ID',
 ];
+/** A Kenyan National ID number is 7 or 8 digits. */
+function idNumberError(type: string, value: string): string | null {
+  const v = value.trim();
+  if (type === 'National ID') {
+    return /^\d{7,8}$/.test(v) ? null : 'A National ID number must be 7 or 8 digits (numbers only).';
+  }
+  return /^[A-Za-z0-9][A-Za-z0-9/_-]{2,29}$/.test(v)
+    ? null
+    : 'An ID number must be 3 to 30 letters, digits, / _ or - (no spaces).';
+}
+
+/** Local 0xxxxxxxxx (10 digits) or international +<country code><number>. */
+function phoneError(value: string): string | null {
+  const v = value.replace(/[\s-]/g, '');
+  return !v || /^(0\d{9}|\+\d{8,15})$/.test(v) ? null : 'Phone must be 0xxxxxxxxx (10 digits) or +<country code><number>.';
+}
+
 const POE_TYPES = [
   { value: 'airport', label: 'Airport' },
   { value: 'seaport', label: 'Seaport' },
@@ -109,6 +126,12 @@ export default function NewScreeningModal({
   const [outcome, setOutcome] = useState<ScreeningOutcome | ''>('');
 
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !saving && onClose();
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose, saving]);
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
@@ -137,6 +160,11 @@ export default function NewScreeningModal({
   async function validateId() {
     const number = idValue.trim();
     if (!number) return;
+    const invalid = idNumberError(idType, number);
+    if (invalid) {
+      setLookup({ state: 'error', message: invalid });
+      return;
+    }
     setLookup({ state: 'checking' });
     try {
       const qs = new URLSearchParams({ identification_type: idType, identification_number: number });
@@ -167,7 +195,13 @@ export default function NewScreeningModal({
   function validate(): string[] {
     const out: string[] = [];
     if (!idValue.trim()) out.push('Enter the ID number.');
+    else {
+      const invalid = idNumberError(idType, idValue);
+      if (invalid) out.push(invalid);
+    }
     if (!givenNames.trim() && !familyName.trim()) out.push('Enter the person’s name.');
+    const phoneProblem = phoneError(phone);
+    if (phoneProblem) out.push(phoneProblem);
     if (!travelled) out.push('Answer whether the person has travelled.');
     if (travelled === 'yes' && !trips.some((t) => t.country))
       out.push(screeningType === 'exit' ? 'Add the country the person is travelling to.' : 'Add at least one country travelled from.');
@@ -302,7 +336,12 @@ export default function NewScreeningModal({
               </Field>
               <Field label="ID number" required hint="An existing person with this ID gets the screening added to their record.">
                 <div className="flex gap-2">
-                  <TextInput value={idValue} onChange={(e) => changeId(idType, e.target.value)} />
+                  <TextInput
+                    value={idValue}
+                    onChange={(e) => changeId(idType, e.target.value)}
+                    inputMode={idType === 'National ID' ? 'numeric' : undefined}
+                    placeholder={idType === 'National ID' ? '7 or 8 digits' : undefined}
+                  />
                   <button
                     type="button"
                     onClick={validateId}
