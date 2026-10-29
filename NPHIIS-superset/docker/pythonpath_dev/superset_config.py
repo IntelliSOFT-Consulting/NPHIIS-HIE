@@ -114,6 +114,16 @@ SESSION_COOKIE_SAMESITE = "Lax"  # Allow cookies in OAuth redirects
 # Use "basic" instead of "strong" to avoid issues with proxy/load balancer setups
 SESSION_PROTECTION = "basic"
 
+# Store sessions server-side in Redis so the cookie holds only an ID.
+# Prevents cookie bloat from accumulated OAuth state on repeated logins.
+SESSION_SERVER_SIDE = True
+SESSION_TYPE = "redis"
+
+import redis as _redis_session
+SESSION_REDIS = _redis_session.Redis(
+    host=REDIS_HOST, port=int(REDIS_PORT), db=2
+)
+
 # ----------------------------------------------------
 # Keycloak OAuth2 Authentication Configuration
 # ----------------------------------------------------
