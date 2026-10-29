@@ -295,7 +295,7 @@ async function lookupPatientIdentity(query: Request["query"]): Promise<PatientId
         return {
             kind: "failed",
             httpStatus: 400,
-            error: `invalid identification_type. Allowed: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID`,
+            error: `invalid identification_type. Allowed: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID, Passport`,
         };
     }
 

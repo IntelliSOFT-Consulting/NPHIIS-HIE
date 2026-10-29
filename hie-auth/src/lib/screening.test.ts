@@ -43,7 +43,19 @@ describe("validateScreeningPayload", () => {
         for (const ok of ["1234567", "12345678", " 12345678 "]) expect(validateScreeningPayload(withId(ok)).ok).toBe(true);
         for (const bad of ["123456", "123456789", "1234567A", "12 34567", ""]) expect(validateScreeningPayload(withId(bad)).ok).toBe(false);
         // Other identification types keep their own formats.
-        expect(validateScreeningPayload(withId("A1234567", "Alien ID")).ok).toBe(true);
+        expect(validateScreeningPayload({ ...withId("A1234567", "Alien ID"), patient: { ...withId("A1234567", "Alien ID").patient, nationality: "Uganda" } }).ok).toBe(true);
+    });
+
+    it("requires nationality for a Passport or Alien ID", () => {
+        const withId = (type: string, extra: object = {}) => ({
+            ...valid,
+            patient: { ...valid.patient, identifiers: [{ type, value: "A1234567" }], ...extra },
+        });
+        expect(validateScreeningPayload(withId("Passport")).ok).toBe(false);
+        expect(validateScreeningPayload(withId("Alien ID")).ok).toBe(false);
+        expect(validateScreeningPayload(withId("Passport", { nationality: "Uganda" })).ok).toBe(true);
+        expect(validateScreeningPayload(withId("Alien ID", { nationality: " " })).ok).toBe(false);
+        expect(validateScreeningPayload({ ...valid }).ok).toBe(true); // National ID: not required
     });
 
     it("checks the other document numbers, phone and dates", () => {

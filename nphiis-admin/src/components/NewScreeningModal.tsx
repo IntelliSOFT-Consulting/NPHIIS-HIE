@@ -17,6 +17,7 @@ import Spinner from './ui/Spinner';
 // Values accepted by hie-auth POST /provider/screenings (hie-auth src/lib/screening.ts).
 const ID_TYPES = [
   'National ID',
+  'Passport',
   'Alien ID',
   'Refugee ID',
   'Birth Certificate',
@@ -25,6 +26,9 @@ const ID_TYPES = [
   'Mandate Number',
   'ClientRegistry ID',
 ];
+
+/** ID types that do not say where the person is from. */
+const NATIONALITY_REQUIRED = ['Passport', 'Alien ID'];
 /** A Kenyan National ID number is 7 or 8 digits. */
 function idNumberError(type: string, value: string): string | null {
   const v = value.trim();
@@ -107,6 +111,7 @@ export default function NewScreeningModal({
   const [familyName, setFamilyName] = useState('');
   const [gender, setGender] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [nationality, setNationality] = useState('');
   const [phone, setPhone] = useState('');
   const [county, setCounty] = useState('');
   const [subCounty, setSubCounty] = useState('');
@@ -200,6 +205,7 @@ export default function NewScreeningModal({
       if (invalid) out.push(invalid);
     }
     if (!givenNames.trim() && !familyName.trim()) out.push('Enter the person’s name.');
+    if (NATIONALITY_REQUIRED.includes(idType) && !nationality) out.push(`Select the person’s nationality (required for ${idType}).`);
     const phoneProblem = phoneError(phone);
     if (phoneProblem) out.push(phoneProblem);
     if (!travelled) out.push('Answer whether the person has travelled.');
@@ -237,6 +243,7 @@ export default function NewScreeningModal({
         familyName: familyName.trim() || undefined,
         gender: gender || undefined,
         birthDate: birthDate || undefined,
+        nationality: nationality || undefined,
         phone: phone.trim() || undefined,
         address:
           county.trim() || subCounty.trim()
@@ -360,6 +367,16 @@ export default function NewScreeningModal({
                   </p>
                 )}
                 {lookup.state === 'error' && <p className="mt-1 text-xs text-accent-700">{lookup.message}</p>}
+              </Field>
+              <Field label="Nationality" required={NATIONALITY_REQUIRED.includes(idType)}>
+                <Select
+                  value={nationality}
+                  onChange={setNationality}
+                  options={[
+                    { value: '', label: 'Select…' },
+                    ...countries.map((c) => ({ value: c.display, label: c.display })),
+                  ]}
+                />
               </Field>
               <Field label="Given names" required>
                 <TextInput value={givenNames} onChange={(e) => setGivenNames(e.target.value)} />
