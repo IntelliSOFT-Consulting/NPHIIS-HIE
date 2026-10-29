@@ -3,7 +3,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuthedFetch } from '@/lib/auth-context';
-import { SCREENING_OUTCOME_LABEL, SCREENING_OUTCOMES, type ScreeningOutcome } from '@/lib/screenings';
+import {
+  SCREENING_OUTCOME_LABEL,
+  SCREENING_OUTCOMES,
+  SCREENING_TYPE_LABEL,
+  type ScreeningOutcome,
+  type ScreeningType,
+} from '@/lib/screenings';
 import { Alert } from './ui/Alert';
 import { CheckboxGroup, DateInput, Field, RadioGroup, Select, TextInput } from './ui/Field';
 import Spinner from './ui/Spinner';
@@ -85,6 +91,7 @@ export default function NewScreeningModal({
   const [county, setCounty] = useState('');
   const [subCounty, setSubCounty] = useState('');
 
+  const [screeningType, setScreeningType] = useState<ScreeningType>('entry');
   const [screenedOn, setScreenedOn] = useState(todayKenya());
   const [poeName, setPoeName] = useState('');
   const [poeType, setPoeType] = useState('');
@@ -121,7 +128,8 @@ export default function NewScreeningModal({
     if (!idValue.trim()) out.push('Enter the ID number.');
     if (!givenNames.trim() && !familyName.trim()) out.push('Enter the person’s name.');
     if (!travelled) out.push('Answer whether the person has travelled.');
-    if (travelled === 'yes' && !trips.some((t) => t.country)) out.push('Add at least one country travelled from.');
+    if (travelled === 'yes' && !trips.some((t) => t.country))
+      out.push(screeningType === 'exit' ? 'Add the country the person is travelling to.' : 'Add at least one country travelled from.');
     for (const t of trips) {
       if (t.departureDate && t.arrivalDate && t.arrivalDate < t.departureDate)
         out.push('A trip’s arrival date is before its departure date.');
@@ -142,6 +150,7 @@ export default function NewScreeningModal({
     const filledTrips = travelled === 'yes' ? trips.filter((t) => t.country) : [];
     const payload = {
       screeningId,
+      screeningType,
       screenedAt: screenedOn || undefined,
       outcome: outcome || undefined,
       pointOfEntry: poeName.trim()
@@ -287,7 +296,18 @@ export default function NewScreeningModal({
           </FormSection>
 
           <FormSection title="Where and when">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Screening type" required>
+              <RadioGroup
+                name="screeningType"
+                value={screeningType}
+                onChange={(v) => setScreeningType(v as ScreeningType)}
+                options={[
+                  { value: 'entry', label: `${SCREENING_TYPE_LABEL.entry} (arriving in Kenya)` },
+                  { value: 'exit', label: `${SCREENING_TYPE_LABEL.exit} (leaving Kenya)` },
+                ]}
+              />
+            </Field>
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <Field label="Date screened">
                 <DateInput value={screenedOn} onChange={setScreenedOn} noFuture />
               </Field>
@@ -309,7 +329,7 @@ export default function NewScreeningModal({
           </FormSection>
 
           <FormSection title="Travel history">
-            <Field label="Has the person travelled in the last 21 days?" required>
+            <Field label={screeningType === 'exit' ? 'Is the person travelling?' : 'Has the person travelled in the last 21 days?'} required>
               <RadioGroup
                 name="travelled"
                 value={travelled}
@@ -325,7 +345,13 @@ export default function NewScreeningModal({
               <div className="mt-4 space-y-3">
                 {trips.map((t, i) => (
                   <div key={i} className="grid gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_auto] sm:items-start rounded-xl border border-gray-100 p-3">
-                    <Select value={t.country} onChange={(v) => updateTrip(i, { country: v })} options={countryOptions} />
+                    <Select
+                      value={t.country}
+                      onChange={(v) => updateTrip(i, { country: v })}
+                      options={countryOptions.map((o) =>
+                        o.value === '' ? { ...o, label: screeningType === 'exit' ? 'Travelling to (country)' : 'Travelled from (country)' } : o,
+                      )}
+                    />
                     <TextInput placeholder="City / place" value={t.city} onChange={(e) => updateTrip(i, { city: e.target.value })} />
                     <DateInput value={t.departureDate} onChange={(v) => updateTrip(i, { departureDate: v })} noFuture placeholder="Departed" />
                     <DateInput value={t.arrivalDate} onChange={(v) => updateTrip(i, { arrivalDate: v })} noFuture placeholder="Arrived" />

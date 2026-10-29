@@ -9,9 +9,11 @@ import {
   SCREENING_OUTCOME_LABEL,
   SCREENING_OUTCOMES,
   SCREENING_TYPE_LABEL,
+  SCREENING_TYPES,
   type FollowUpStage,
   type ScreenedPerson,
   type ScreeningOutcome,
+  type ScreeningType,
 } from '@/lib/screenings';
 import { SPECIMEN_STATUS_LABEL } from '@/lib/specimens';
 import { Alert } from './ui/Alert';
@@ -81,6 +83,7 @@ export default function ScreeningsView() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [outcome, setOutcome] = useState<ScreeningOutcome | ''>('');
+  const [type, setType] = useState<ScreeningType | ''>('');
   const [stage, setStage] = useState<FollowUpStage | ''>('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -121,10 +124,11 @@ export default function ScreeningsView() {
     return people.filter(
       (p) =>
         (!outcome || p.screenings[0]?.outcome === outcome) &&
+        (!type || p.screenings[0]?.screeningType === type) &&
         (!stage || p.stage === stage) &&
         matchesSearch(p, term),
     );
-  }, [people, outcome, stage, search]);
+  }, [people, outcome, type, stage, search]);
 
   const totalPages = Math.max(1, Math.ceil(visible.length / pageSize));
   // Clamp so a page past the end (e.g. after narrowing the search) still shows rows.
@@ -163,6 +167,19 @@ export default function ScreeningsView() {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
+          />
+        </div>
+        <div className="sm:w-40">
+          <Select
+            value={type}
+            onChange={(v) => {
+              setType(v as ScreeningType | '');
+              setCurrentPage(1);
+            }}
+            options={[
+              { value: '', label: 'Entry & exit' },
+              ...SCREENING_TYPES.map((t) => ({ value: t, label: `${SCREENING_TYPE_LABEL[t]} screening` })),
+            ]}
           />
         </div>
         <div className="sm:w-48">
@@ -209,7 +226,7 @@ export default function ScreeningsView() {
       )}
 
       {loading ? (
-        <TableSkeleton rows={6} cols={7} />
+        <TableSkeleton rows={6} cols={8} />
       ) : (
         <div className="card overflow-hidden">
           {visible.length === 0 ? (
@@ -228,6 +245,7 @@ export default function ScreeningsView() {
                 <thead className="bg-gray-50/80">
                   <tr className="text-left">
                     <th className="px-4 py-3 font-medium text-gray-600">Screened</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Type</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Screening No.</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Person</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Point of entry</th>
@@ -249,8 +267,35 @@ export default function ScreeningsView() {
                           <td className="px-4 py-3 whitespace-nowrap text-gray-800">
                             {formatDate(latest?.screenedAt ?? p.lastActivity)}
                           </td>
-                          <td className="px-4 py-3 font-mono text-xs text-gray-700">
-                            {p.screeningNumbers.join(', ') || '—'}
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {latest ? (
+                              <span
+                                className={`chip ${
+                                  latest.screeningType === 'exit' ? 'bg-sky-100 text-sky-800' : 'bg-gray-100 text-gray-700'
+                                }`}
+                              >
+                                {SCREENING_TYPE_LABEL[latest.screeningType]}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td
+                            className="px-4 py-3 whitespace-nowrap font-mono text-xs text-gray-700"
+                            title={p.screeningNumbers.join('\n')}
+                          >
+                            {p.screeningNumbers.length ? (
+                              <>
+                                {p.screeningNumbers[p.screeningNumbers.length - 1]}
+                                {p.screeningNumbers.length > 1 && (
+                                  <span className="ml-1.5 chip bg-gray-100 text-gray-600 font-sans">
+                                    +{p.screeningNumbers.length - 1}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              '—'
+                            )}
                           </td>
                           <td className="px-4 py-3 text-gray-700">
                             <div>{p.name ?? '—'}</div>
@@ -396,7 +441,7 @@ function PersonDetails({ person: p }: { person: ScreenedPerson }) {
   ];
   return (
     <tr className="bg-nphi-50/30">
-      <td colSpan={7} className="px-4 py-4 space-y-5">
+      <td colSpan={8} className="px-4 py-4 space-y-5">
         <dl className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-3">
           {rows
             .filter(([, value]) => value)
