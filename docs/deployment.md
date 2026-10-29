@@ -580,6 +580,12 @@ Use the Web App at `https://<KEYCLOAK_HOST>/hie-admin/users` to provision the fi
 
 ## 8. Updating a Running Deployment
 
+### Branches and automatic deploys
+
+`develop` deploys to dsrfhir and `main` deploys to nphiis-prod (`.github/workflows/deploy.yml`). Open feature PRs against `develop`; promote with a `develop` -> `main` PR. The workflow needs these secrets: `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`, `DSRFHIR_SSH_TARGET`, `DSRFHIR_SSH_PORT`, `PROD_SSH_TARGET`, `PROD_SSH_PORT`. Put required reviewers on the `production` environment.
+
+The stacks run on the **system** Docker daemon. The login user's default Docker context is a rootless daemon that does not hold the stack, so run docker with `sudo` (for example `sudo docker compose ...`) when deploying by hand.
+
 ### Single service update (e.g. hie-auth)
 
 ```bash
