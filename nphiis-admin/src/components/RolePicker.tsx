@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getAccessToken } from '@/lib/api';
-import { LEVEL_ROLE } from '@/lib/roles';
+import { LEVEL_ROLE, formatRole } from '@/lib/roles';
 
 export interface ProfileOption {
   slug: string;
@@ -64,7 +64,7 @@ export default function RolePicker({
       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 disabled:bg-gray-100"
     >
       {loadingLabel ? (
-        <option value={`role:${role}`}>{loadingLabel}</option>
+        <option value={`role:${role}`}>{loadingLabel === role ? formatRole(role) : loadingLabel}</option>
       ) : (
         <>
           {profiles.length > 0 && (
@@ -79,7 +79,7 @@ export default function RolePicker({
           <optgroup label="Roles">
             {roles.map((r) => (
               <option key={r} value={`role:${r}`}>
-                {r}
+                {formatRole(r)}
               </option>
             ))}
           </optgroup>
