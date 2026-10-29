@@ -119,6 +119,8 @@ const isObj = (v: unknown): v is Record<string, any> =>
     v != null && typeof v === "object" && !Array.isArray(v);
 const isStr = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
 /** Kenyan National ID numbers are 7 or 8 digits. */
+/** Identification types that do not say where the person is from, so nationality is required. */
+export const NATIONALITY_REQUIRED_TYPES: readonly string[] = ["Passport", "Alien ID"];
 export const NATIONAL_ID_RE = /^\d{7,8}$/;
 /** Other document numbers: letters, digits, / _ - only, 3 to 30 characters (no official format is enforced). */
 export const DOCUMENT_NUMBER_RE = /^[A-Za-z0-9][A-Za-z0-9/_-]{2,29}$/;
@@ -176,6 +178,14 @@ export function validateScreeningPayload(
             errors.push("patient.birthDate must be YYYY-MM-DD");
         else if (isStr(patient.birthDate) && (patient.birthDate > todayInKenya() || patient.birthDate < "1900-01-01"))
             errors.push("patient.birthDate cannot be in the future or before 1900");
+        if (patient.nationality != null && !isStr(patient.nationality))
+            errors.push("patient.nationality must be a non-empty string when given");
+        else if (
+            Array.isArray(patient.identifiers) &&
+            patient.identifiers.some((i: any) => NATIONALITY_REQUIRED_TYPES.includes(i?.type)) &&
+            !isStr(patient.nationality)
+        )
+            errors.push("patient.nationality is required when the identification type is Passport or Alien ID");
         if (patient.phone != null && !(isStr(patient.phone) && PHONE_RE.test(normalizePhone(patient.phone))))
             errors.push("patient.phone must be 0xxxxxxxxx (10 digits) or +<country code><number>");
         if (patient.gender != null && !["male", "female", "other", "unknown"].includes(patient.gender))

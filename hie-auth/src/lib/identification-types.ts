@@ -8,6 +8,7 @@ export const IDENTIFICATION_TYPES = [
     "National ID",
     "Birth Notification",
     "ClientRegistry ID",
+    "Passport",
 ] as const;
 
 export type IdentificationType = (typeof IDENTIFICATION_TYPES)[number];
@@ -25,6 +26,7 @@ const TYPE_TO_CODE: Record<IdentificationType, string> = {
     "National ID": "NationalID",
     "Birth Notification": "BirthNotification",
     "ClientRegistry ID": "ClientRegistryID",
+    Passport: "Passport",
 };
 
 export const CLIENT_REGISTRY_PATIENT_PROFILE =

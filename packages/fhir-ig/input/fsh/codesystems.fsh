@@ -12,6 +12,7 @@ Description: "Types of identification documents accepted for Client Registry and
 * #MandateNumber "Mandate Number"
 * #BirthCertificate "Birth Certificate"
 * #NationalID "National ID"
+* #Passport "Passport"
 * #BirthNotification "Birth Notification"
 * #ClientRegistryID "ClientRegistry ID"
 
