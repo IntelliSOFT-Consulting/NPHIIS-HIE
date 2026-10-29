@@ -98,7 +98,7 @@ export default function Navigation() {
       visible: can('RUMOURS_TRIAGE'),
     },
     {
-      name: 'Call Centre',
+      name: 'Alert Log',
       href: '/call-centre',
       icon: PhoneIcon,
       visible: can('CALL_CENTRE'),

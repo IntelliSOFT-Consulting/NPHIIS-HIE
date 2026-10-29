@@ -36,8 +36,8 @@ export const PAGE_META: Record<
     subtitle: 'Set High / Medium / Low priority on rumour reports',
   },
   '/call-centre': {
-    title: 'Call Centre',
-    subtitle: '719 call log: alerts and rumours from callers',
+    title: 'Alert Log',
+    subtitle: 'Log and review alerts and rumours reported by callers (719)',
   },
   '/settings': { title: 'Settings', subtitle: 'System configuration' },
   '/settings/subscription-logs': {
