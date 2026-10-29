@@ -1,0 +1,140 @@
+import fetch from "cross-fetch";
+import { getKeycloakAdminToken } from "./keycloak";
+import { ALL_PERMISSIONS, BUILT_IN_PROFILES, COMPAT_ROLE_FOR_LEVEL, LEVELS, Level, Permission, Profile } from "./permissions";
+
+const KC_BASE_URL = String(process.env.KC_BASE_URL);
+const KC_REALM = String(process.env.KC_REALM);
+
+/**
+ * Profiles created in the admin portal are stored in Keycloak as realm roles named
+ * PROFILE_<SLUG>; level, permissions and display name are role attributes. A user carries the
+ * slug in the `nphiis_profile` attribute. Their assigned role (what the gateway, Superset and
+ * the mobile app read) stays the existing role for the profile's level, see compatRole().
+ */
+export const PROFILE_ROLE_PREFIX = "PROFILE_";
+export const PROFILE_USER_ATTRIBUTE = "nphiis_profile";
+
+export interface StoredProfile extends Profile {
+    slug: string;
+}
+
+export function slugify(name: string): string {
+    return name
+        .normalize("NFKD")
+        .replace(/[^\w\s-]/g, "")
+        .trim()
+        .toUpperCase()
+        .replace(/[\s-]+/g, "_");
+}
+
+export interface ProfileInput {
+    name?: unknown;
+    level?: unknown;
+    permissions?: unknown;
+}
+
+export function validateProfileInput(
+    body: ProfileInput,
+): { ok: true; value: Profile } | { ok: false; errors: string[] } {
+    const errors: string[] = [];
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    if (!name) errors.push("name is required");
+    else if (!slugify(name)) errors.push("name must contain letters or digits");
+    else if (slugify(name) in BUILT_IN_PROFILES) errors.push(`"${name}" is an existing built-in role name`);
+    if (!(LEVELS as readonly string[]).includes(String(body.level))) errors.push(`level must be one of ${LEVELS.join(", ")}`);
+    const perms = body.permissions;
+    if (!Array.isArray(perms)) errors.push("permissions must be an array");
+    else {
+        const unknown = perms.filter((p) => !(ALL_PERMISSIONS as string[]).includes(String(p)));
+        if (unknown.length) errors.push(`unknown permissions: ${unknown.join(", ")}`);
+    }
+    if (errors.length) return { ok: false, errors };
+    return {
+        ok: true,
+        value: { name, level: body.level as Level, permissions: Array.from(new Set(perms as Permission[])) },
+    };
+}
+
+/** The existing role a profile of this level is presented as to clients that only know role names. */
+export function compatRole(level: Level): string {
+    return COMPAT_ROLE_FOR_LEVEL[level];
+}
+
+export function toKeycloakRole(slug: string, p: Profile) {
+    return {
+        name: PROFILE_ROLE_PREFIX + slug,
+        description: `NPHIIS profile: ${p.name}`,
+        attributes: {
+            nphiis_profile_name: [p.name],
+            nphiis_level: [p.level],
+            nphiis_permissions: [p.permissions.join(",")],
+        },
+    };
+}
+
+export function fromKeycloakRole(role: any): StoredProfile | null {
+    if (!String(role?.name ?? "").startsWith(PROFILE_ROLE_PREFIX)) return null;
+    const a = role.attributes ?? {};
+    const level = a.nphiis_level?.[0];
+    if (!(LEVELS as readonly string[]).includes(level)) return null;
+    const permissions = String(a.nphiis_permissions?.[0] ?? "")
+        .split(",")
+        .filter((p): p is Permission => (ALL_PERMISSIONS as string[]).includes(p));
+    return {
+        slug: role.name.slice(PROFILE_ROLE_PREFIX.length),
+        name: a.nphiis_profile_name?.[0] ?? role.name.slice(PROFILE_ROLE_PREFIX.length),
+        level,
+        permissions,
+    };
+}
+
+async function kc(path: string, init: any = {}) {
+    const token = (await getKeycloakAdminToken()).access_token;
+    return fetch(`${KC_BASE_URL}/admin/realms/${KC_REALM}${path}`, {
+        ...init,
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...(init.headers ?? {}) },
+    });
+}
+
+let cache: { at: number; profiles: StoredProfile[] } | null = null;
+const TTL_MS = 30_000;
+export const clearProfileCache = () => (cache = null);
+
+export async function listProfiles(): Promise<StoredProfile[]> {
+    if (cache && Date.now() - cache.at < TTL_MS) return cache.profiles;
+    const res = await kc(`/roles?search=${PROFILE_ROLE_PREFIX}&briefRepresentation=false&max=500`);
+    if (!res.ok) throw new Error(`Keycloak roles lookup failed: ${res.status}`);
+    const profiles = ((await res.json()) as any[])
+        .map(fromKeycloakRole)
+        .filter((p): p is StoredProfile => !!p)
+        .sort((a, b) => a.name.localeCompare(b.name));
+    cache = { at: Date.now(), profiles };
+    return profiles;
+}
+
+export async function getProfile(slug: string): Promise<StoredProfile | null> {
+    return (await listProfiles()).find((p) => p.slug === slug.toUpperCase()) ?? null;
+}
+
+export async function saveProfile(slug: string, p: Profile, create: boolean): Promise<void> {
+    const body = JSON.stringify(toKeycloakRole(slug, p));
+    const res = create
+        ? await kc("/roles", { method: "POST", body })
+        : await kc(`/roles/${encodeURIComponent(PROFILE_ROLE_PREFIX + slug)}`, { method: "PUT", body });
+    if (res.status === 409) throw new Error("A profile with this name already exists");
+    if (!res.ok) throw new Error(`Keycloak profile save failed: ${res.status}`);
+    clearProfileCache();
+}
+
+export async function deleteProfile(slug: string): Promise<void> {
+    const res = await kc(`/roles/${encodeURIComponent(PROFILE_ROLE_PREFIX + slug)}`, { method: "DELETE" });
+    if (!res.ok && res.status !== 404) throw new Error(`Keycloak profile delete failed: ${res.status}`);
+    clearProfileCache();
+}
+
+/** Keycloak users whose profile attribute is this slug. */
+export async function countProfileUsers(slug: string): Promise<number> {
+    const res = await kc(`/users?q=${PROFILE_USER_ATTRIBUTE}:${encodeURIComponent(slug)}&max=1000&briefRepresentation=true`);
+    if (!res.ok) throw new Error(`Keycloak user lookup failed: ${res.status}`);
+    return ((await res.json()) as any[]).length;
+}
