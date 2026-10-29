@@ -35,6 +35,10 @@ export const PAGE_META: Record<
     title: 'Rumours',
     subtitle: 'Set High / Medium / Low priority on rumour reports',
   },
+  '/roles': {
+    title: 'Roles & Permissions',
+    subtitle: 'Create profiles for job titles and choose what each can do',
+  },
   '/call-centre': {
     title: 'Alert Log',
     subtitle: 'Log and review alerts and rumours reported by callers (719)',

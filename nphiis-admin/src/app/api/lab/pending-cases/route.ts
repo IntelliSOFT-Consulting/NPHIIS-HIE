@@ -5,7 +5,7 @@ import {
   unauthorized,
   verifyToken,
 } from "@/lib/server-auth";
-import { canAccess, hasAnyRole } from "@/lib/roles";
+import { canAccess, canUseLabForm } from "@/lib/roles";
 import { listCasesWithoutLabResult } from "@/lib/fhir-patient";
 import { getLabForm, labResultReasons } from "@/lib/questionnaires";
 
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   const form = getLabForm(req.nextUrl.searchParams.get("formId") ?? "");
   if (!form) return NextResponse.json({ error: "Unknown form" }, { status: 404 });
-  if (!hasAnyRole(roles, form.allowedRoles)) {
+  if (!canUseLabForm(roles, form.allowedRoles)) {
     return forbidden("Role not permitted for this form");
   }
 

@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { User } from '@/types/user';
 import { userApi, rolesApi, getAccessToken, fhirApi, FhirCounty, FhirSubCounty, FhirWard, FhirFacility, isUnauthorizedError, handleUnauthorized } from '@/lib/api';
 import { LOCATION_FREE_ROLES } from '@/lib/roles';
+import RolePicker from './RolePicker';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 // import { useNotification } from './Notification';
 
@@ -34,6 +35,9 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
   const [applicationRoles, setApplicationRoles] = useState<string[]>([]);
   const [isLoadingRoles, setIsLoadingRoles] = useState(true);
   const [rolesError, setRolesError] = useState('');
+  const [profileSlug, setProfileSlug] = useState<string>(
+    ((user as unknown as { attributes?: { nphiis_profile?: string[] } }).attributes?.nphiis_profile?.[0]) ?? '',
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -318,6 +322,7 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
       
       const userDataToSubmit = {
         ...data,
+        profile: profileSlug || undefined,
         locationId: locationId
       };
 
@@ -446,22 +451,17 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700">
                   Role *
                 </label>
-                <select
-                  {...register('role')}
-                  id="role"
+                <RolePicker
+                  roles={applicationRoles}
+                  role={selectedRole}
+                  profileSlug={profileSlug}
                   disabled={isLoadingRoles || applicationRoles.length === 0}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 disabled:bg-gray-100"
-                >
-                  {isLoadingRoles ? (
-                    <option value={user.role}>{user.role}</option>
-                  ) : (
-                    applicationRoles.map((role) => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))
-                  )}
-                </select>
+                  loadingLabel={isLoadingRoles ? user.role : undefined}
+                  onChange={(role, slug) => {
+                    setValue('role', role, { shouldValidate: true });
+                    setProfileSlug(slug);
+                  }}
+                />
                 {rolesError && (
                   <p className="mt-1 text-sm text-red-600">{rolesError}</p>
                 )}

@@ -17,6 +17,7 @@ import {
   ShieldCheckIcon,
   UserGroupIcon,
   PhoneIcon,
+  KeyIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
 import { isCallCentreOnly } from '@/lib/roles';
@@ -71,6 +72,7 @@ export default function Navigation() {
   const navigation: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon, visible: !callCentreOnly },
     { name: 'Users', href: '/users', icon: UsersIcon, visible: can('USERS_MANAGE') },
+    { name: 'Roles', href: '/roles', icon: KeyIcon, visible: can('USERS_MANAGE') },
     { name: 'Locations', href: '/locations', icon: MapPinIcon, visible: !callCentreOnly },
     { name: 'Lab', href: '/lab', icon: BeakerIcon, visible: can('LAB_ACCESS') },
     {

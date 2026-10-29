@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Edit01, User01 } from '@untitled-ui/icons-react';
 import { useAuth, useAuthedFetch } from '@/lib/auth-context';
-import { hasAnyRole } from '@/lib/roles';
+import { canUseLabForm } from '@/lib/roles';
 import {
   LAB_FORMS,
   flattenItems,
@@ -118,10 +118,10 @@ function validateItem(
 }
 
 export default function SingleResultForm() {
-  const { roles, accessToken } = useAuth();
+  const { accessRoles: roles, accessToken } = useAuth();
   const authedFetch = useAuthedFetch();
   const availableForms = useMemo(
-    () => LAB_FORMS.filter((f) => hasAnyRole(roles, f.allowedRoles)),
+    () => LAB_FORMS.filter((f) => canUseLabForm(roles, f.allowedRoles)),
     [roles],
   );
 

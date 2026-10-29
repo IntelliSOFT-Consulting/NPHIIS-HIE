@@ -24,6 +24,7 @@ import {
   BellSlashIcon
 } from '@heroicons/react/24/outline';
 import EditUserForm from './EditUserForm';
+import { useProfiles } from './RolePicker';
 import PasswordResetModal from './PasswordResetModal';
 import DeleteUserModal from './DeleteUserModal';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/pagination';
@@ -35,6 +36,12 @@ interface UserListProps {
 }
 
 export default function UserList({ onCreateUser, refreshTrigger }: UserListProps) {
+  const profiles = useProfiles();
+  /** A user's profile name (from the Roles page) when they have one, else their role. */
+  const roleLabel = (u: User) => {
+    const slug = (u as unknown as { attributes?: { nphiis_profile?: string[] } }).attributes?.nphiis_profile?.[0];
+    return (slug && profiles.find((p) => p.slug === slug)?.name) || u.role || 'Unknown';
+  };
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -626,7 +633,7 @@ export default function UserList({ onCreateUser, refreshTrigger }: UserListProps
                       );
                     })()}
                     <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getRoleBadgeColor(selectedUser.role || 'Unknown')}`}>
-                      {selectedUser.role || 'Unknown'}
+                      {roleLabel(selectedUser)}
                     </span>
                   </div>
                   <div className="text-sm text-gray-500">

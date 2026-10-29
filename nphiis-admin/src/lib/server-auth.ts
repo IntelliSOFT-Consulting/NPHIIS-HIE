@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
 import type { LocationInfo } from "@/types/user";
+import { withPermissions } from "./roles";
 
 export interface VerifiedToken {
   raw: string;
@@ -105,6 +106,8 @@ const API_HOST = process.env.API_HOST ?? process.env.NEXT_PUBLIC_API_HOST ?? "";
 
 export interface UserProfile {
   roles: string[];
+  /** hie-auth's level and permissions for the user; absent for a role it does not know. */
+  access?: { level?: string | null; permissions?: string[] | null };
   practitionerId?: string;
   locationInfo?: LocationInfo;
 }
@@ -120,6 +123,8 @@ interface ProviderMeResponse {
   status?: string;
   user?: {
     role?: string;
+    level?: string | null;
+    permissions?: string[] | null;
     fhirPractitionerId?: string;
     locationInfo?: LocationInfo;
   };
@@ -154,6 +159,7 @@ async function fetchProfile(session: VerifiedToken): Promise<UserProfile> {
     const profile: UserProfile = {
       roles: data.user?.role ? [data.user.role] : [],
       practitionerId: data.user?.fhirPractitionerId,
+      access: { level: data.user?.level, permissions: data.user?.permissions },
       locationInfo: data.user?.locationInfo ?? session.locationInfo,
     };
     profileCache.set(session.raw, {
@@ -169,7 +175,7 @@ async function fetchProfile(session: VerifiedToken): Promise<UserProfile> {
 
 export async function resolveUserRoles(session: VerifiedToken): Promise<string[]> {
   const profile = await fetchProfile(session);
-  return Array.from(new Set([...session.roles, ...profile.roles]));
+  return withPermissions(Array.from(new Set([...session.roles, ...profile.roles])), profile.access);
 }
 
 /** Full user profile merged with token-derived roles/location. */
@@ -178,7 +184,7 @@ export async function resolveUserProfile(
 ): Promise<UserProfile> {
   const profile = await fetchProfile(session);
   return {
-    roles: Array.from(new Set([...session.roles, ...profile.roles])),
+    roles: withPermissions(Array.from(new Set([...session.roles, ...profile.roles])), profile.access),
     practitionerId: profile.practitionerId,
     locationInfo: profile.locationInfo ?? session.locationInfo,
   };
