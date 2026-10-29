@@ -136,6 +136,23 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
     fetchRoles();
   }, []);
 
+  // The dropdowns fill in one after another, and a select drops a value whose option has not
+  // loaded yet. Re-apply the saved location as each list arrives, but only while the choice
+  // above it is still the saved one, so a changed county never keeps an old sub-county.
+  const saved = user.locationInfo;
+  useEffect(() => {
+    if (counties.length && saved?.county) setValue('locationId', saved.county);
+  }, [counties, saved?.county, setValue]);
+  useEffect(() => {
+    if (subCounties.length && saved?.subCounty && selectedCountyId === saved.county) setValue('subCountyId', saved.subCounty);
+  }, [subCounties, saved?.subCounty, saved?.county, selectedCountyId, setValue]);
+  useEffect(() => {
+    if (wards.length && saved?.ward && selectedSubCountyId === saved.subCounty) setValue('wardId', saved.ward);
+  }, [wards, saved?.ward, saved?.subCounty, selectedSubCountyId, setValue]);
+  useEffect(() => {
+    if (facilities.length && saved?.facility && selectedWardId === saved.ward) setValue('facilityId', saved.facility);
+  }, [facilities, saved?.facility, saved?.ward, selectedWardId, setValue]);
+
   // Fetch counties from FHIR server on component mount
   useEffect(() => {
     const fetchCounties = async () => {
@@ -365,7 +382,10 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="off">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+              <h3 className="md:col-span-2 text-[11px] uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
+                Personal details
+              </h3>
               {/* First Name */}
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
@@ -375,7 +395,7 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                   {...register('firstName')}
                   type="text"
                   id="firstName"
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 text-gray-900"
                 />
                 {errors.firstName && (
                   <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
@@ -391,7 +411,7 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                   {...register('lastName')}
                   type="text"
                   id="lastName"
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 text-gray-900"
                 />
                 {errors.lastName && (
                   <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
@@ -407,8 +427,11 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                   {...register('idNumber')}
                   type="text"
                   id="idNumber"
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                  readOnly
+                  aria-readonly="true"
+                  className="mt-1 block w-full border border-gray-200 rounded-md px-3 py-2 bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none"
                 />
+                <p className="mt-1 text-xs text-gray-500">The ID number is the login and cannot be changed.</p>
                 {errors.idNumber && (
                   <p className="mt-1 text-sm text-red-600">{errors.idNumber.message}</p>
                 )}
@@ -423,7 +446,7 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                   {...register('email')}
                   type="email"
                   id="email"
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 text-gray-900"
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -439,15 +462,18 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                   {...register('phone')}
                   type="tel"
                   id="phone"
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 text-gray-900"
                 />
                 {errors.phone && (
                   <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
                 )}
               </div>
 
+              <h3 className="md:col-span-2 mt-2 text-[11px] uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
+                Access
+              </h3>
               {/* Role */}
-              <div>
+              <div className="md:col-span-2">
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700">
                   Role *
                 </label>
@@ -475,7 +501,7 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
             {/* Location Information */}
             {!isLocationDisabled && (
               <div>
-                <h3 className="text-base font-medium text-gray-900 mb-1">Location Information</h3>
+                <h3 className="text-[11px] uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1 mb-2">Location</h3>
                 <p className="text-sm text-gray-600 mb-3">
                   Select the user&apos;s location. {showWard && 'Select options in order from county to facility.'}
                 </p>
@@ -501,7 +527,7 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                           {...register('locationId')}
                           id="locationId"
                           disabled={isLoadingCounties}
-                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
                         >
                           <option value="">Select a county</option>
                           {counties.map((county) => (
@@ -535,7 +561,7 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                           {...register('subCountyId')}
                           id="subCountyId"
                           disabled={isLoadingSubCounties || !selectedCountyId}
-                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
                         >
                           <option value="">Select a sub-county</option>
                           {subCounties.map((subCounty) => (
@@ -570,7 +596,7 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                             {...register('wardId')}
                             id="wardId"
                             disabled={isLoadingWards || !selectedSubCountyId}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
                           >
                             <option value="">Select a ward</option>
                             {wards.map((ward) => (
@@ -609,7 +635,7 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
                             {...register('facilityId')}
                             id="facilityId"
                             disabled={isLoadingFacilities || !selectedWardId}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 sm:text-sm text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
                           >
                             <option value="">Select a facility</option>
                             {facilities.map((facility) => (
@@ -633,16 +659,16 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
             )}
 
             {/* Status */}
-            <div>
+            <div className="md:max-w-xs">
               <label htmlFor="enabled" className="block text-sm font-medium text-gray-700">
-                Status
+                Account status
               </label>
               <select
                 {...register('enabled', { 
                   setValueAs: (v) => v === 'true'
                 })}
                 id="enabled"
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-nphi-500 focus:border-nphi-500 text-gray-900"
               >
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
@@ -688,18 +714,18 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
             )}
 
             {/* Form Actions */}
-            <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+            <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 bg-white/95 backdrop-blur flex justify-end space-x-3 border-t border-gray-200">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-nphi-500"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-nphi-gradient hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-nphi-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Updating...' : 'Update User'}
               </button>
