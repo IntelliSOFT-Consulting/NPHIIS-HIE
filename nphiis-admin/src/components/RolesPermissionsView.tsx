@@ -60,12 +60,7 @@ export default function RolesPermissionsView() {
       {error && <Alert variant="error">{error}</Alert>}
       {notice && <Alert variant="success">{notice}</Alert>}
 
-      <div className="flex items-start justify-between gap-4">
-        <p className="text-sm text-gray-600 max-w-2xl">
-          A user has one <strong>level</strong> (how much of the country they see, with their assigned location) and a{' '}
-          <strong>profile</strong> (what they can do). Create a profile for each job title; the permissions you tick
-          decide the screens and actions the user gets.
-        </p>
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => {
