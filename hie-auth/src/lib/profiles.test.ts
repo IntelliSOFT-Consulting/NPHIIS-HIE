@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("./keycloak", () => ({ getKeycloakAdminToken: async () => ({ access_token: "t" }) }));
-import { compatRole, fromKeycloakRole, slugify, toKeycloakRole, validateProfileInput } from "./profiles";
+import { compatRole, fromKeycloakRole, parseMigrationTarget, runForEach, slugify, toKeycloakRole, validateProfileInput } from "./profiles";
 
 describe("slugify", () => {
     it("makes an upper-case key from a display name", () => {
@@ -47,5 +47,38 @@ describe("compatRole", () => {
     it("presents each level as an existing role", () => {
         expect(compatRole("COUNTY")).toBe("COUNTY_DISEASE_SURVEILLANCE_OFFICER");
         expect(compatRole("FACILITY")).toBe("FACILITY_SURVEILLANCE_FOCAL_PERSON");
+    });
+});
+
+describe("runForEach", () => {
+    it("applies to every item, reports progress and keeps going after a failure", async () => {
+        const seen: number[] = [];
+        const progress: Array<[number, number]> = [];
+        const result = await runForEach(
+            [1, 2, 3, 4, 5],
+            async (n) => {
+                if (n === 3) throw new Error("boom");
+                seen.push(n);
+            },
+            (done, failed) => progress.push([done, failed]),
+            2,
+        );
+        expect(seen.sort()).toEqual([1, 2, 4, 5]);
+        expect(result).toEqual({ done: 4, failed: [3] });
+        expect(progress[progress.length - 1]).toEqual([4, 1]);
+    });
+
+    it("handles an empty list", async () => {
+        expect(await runForEach([], async () => {})).toEqual({ done: 0, failed: [] });
+    });
+});
+
+describe("parseMigrationTarget", () => {
+    it("reads a profile or a built-in role", () => {
+        expect(parseMigrationTarget("profile:county_director")).toEqual({ kind: "profile", slug: "COUNTY_DIRECTOR" });
+        expect(parseMigrationTarget("role:administrator")).toEqual({ kind: "role", role: "ADMINISTRATOR" });
+    });
+    it("rejects anything else", () => {
+        for (const bad of [undefined, "", "COUNTY", "user:x", "profile:"]) expect(parseMigrationTarget(bad)).toBeNull();
     });
 });

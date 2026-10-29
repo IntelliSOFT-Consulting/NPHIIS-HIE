@@ -1,6 +1,6 @@
 import { randomInt } from "crypto";
 import { resolveAccess } from "../lib/permissions";
-import { PROFILE_USER_ATTRIBUTE, compatRole, getProfile } from "../lib/profiles";
+import { PROFILE_USER_ATTRIBUTE, compatRole, getProfile, setUserProfileRole } from "../lib/profiles";
 import { randomBytes } from "node:crypto";
 import express, { Request, Response, NextFunction } from "express";
 import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
@@ -202,6 +202,7 @@ router.post("/register", authenticateUser, async (req: Request, res: Response) =
             ...providerRoleKeycloakAttributes(practitionerId, role),
             [PROFILE_USER_ATTRIBUTE]: [profileSlug ?? ""],
         });
+        if (profileSlug) await setUserProfileRole(practitionerId, undefined, profileSlug);
 
         // Send confirmation email asynchronously (don't wait for it)
         setImmediate(() => {
@@ -988,10 +989,12 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
             }
 
             if (normalizedRole) {
+                const previousSlug = targetUserInfo?.attributes?.[PROFILE_USER_ATTRIBUTE]?.[0] || undefined;
                 await setKeycloakUserAttributes(updatedUserInfo.id, {
                     ...providerRoleKeycloakAttributes(practitionerId, effectiveRole),
                     ...(profileSlug !== undefined ? { [PROFILE_USER_ATTRIBUTE]: [profileSlug] } : {}),
                 });
+                if (profileSlug !== undefined) await setUserProfileRole(updatedUserInfo.id, previousSlug, profileSlug || undefined);
                 updatedUserInfo = await findKeycloakUser(username);
             }
         }

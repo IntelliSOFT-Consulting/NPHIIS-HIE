@@ -180,6 +180,69 @@ function ProfileModal({
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  // Users still hold the profile: the server asks for the role they move to.
+  const [moveUsers, setMoveUsers] = useState<number | null>(null);
+  const [target, setTarget] = useState('');
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+
+  /** Roles and profiles at this profile's level that its users can move to. */
+  const targets = [
+    ...catalogue.profiles
+      .filter((p) => p.level === profile?.level && p.slug !== profile?.slug)
+      .map((p) => ({ value: `profile:${p.slug}`, label: `${p.name} (profile)` })),
+    ...catalogue.builtIn
+      .filter((b) => b.level === profile?.level)
+      .map((b) => ({ value: `role:${b.role}`, label: `${b.name} (built-in role)` })),
+  ];
+
+  async function remove() {
+    if (!profile) return;
+    setSaving(true);
+    setErrors([]);
+    try {
+      const qs = target ? `?migrateTo=${encodeURIComponent(target)}` : '';
+      const res = await authedFetch(`/api/provider/profiles/${profile.slug}${qs}`, { method: 'DELETE' });
+      const body = await res.json().catch(() => ({}));
+      if (res.status === 409 && body.requiresTarget) {
+        setMoveUsers(body.users);
+        return;
+      }
+      if (!res.ok) {
+        setErrors(body.errors ?? [body.error ?? `Request failed (${res.status}).`]);
+        return;
+      }
+      if (res.status !== 202) {
+        onDone(`Deleted ${profile.name}.`);
+        return;
+      }
+      // The users move in the background; poll until it finishes.
+      const job = body.job as { id: string; total: number };
+      setProgress({ done: 0, total: job.total });
+      for (;;) {
+        await new Promise((r) => setTimeout(r, 1500));
+        const poll = await authedFetch(`/api/provider/profiles/jobs/${job.id}`);
+        const data = (await poll.json().catch(() => ({}))).job;
+        if (!poll.ok || !data) {
+          setErrors(['Lost track of the move. Check the Users list, then retry the delete.']);
+          return;
+        }
+        setProgress({ done: data.done, total: data.total });
+        if (data.state === 'done') {
+          const label = targets.find((t) => t.value === target)?.label ?? 'the new role';
+          onDone(`Deleted ${profile.name}; ${data.total} user(s) moved to ${label}.`);
+          return;
+        }
+        if (data.state === 'failed') {
+          setErrors([data.error ?? 'Some users could not be moved; the profile was kept.']);
+          return;
+        }
+      }
+    } catch (e) {
+      setErrors([(e as Error).message || 'Request failed.']);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !saving && onClose();
@@ -254,15 +317,48 @@ function ProfileModal({
         <div className="flex items-center gap-3 border-t border-nphi-100 px-5 py-3">
           {profile &&
             (confirmDelete ? (
-              <>
-                <span className="text-sm text-gray-700 mr-auto">Delete this profile? It must have no users.</span>
-                <button type="button" disabled={saving} onClick={() => call('DELETE', `Deleted ${profile.name}.`)} className="px-3 py-2 rounded-lg bg-accent-700 text-sm font-medium text-white disabled:opacity-50">
-                  Delete
+              <div className="mr-auto flex flex-wrap items-center gap-3 w-full">
+                {moveUsers != null ? (
+                  <div className="w-full space-y-2">
+                    <p className="text-sm text-gray-700">
+                      {moveUsers} user(s) have this profile. Choose the new role they move to; it must be at the same
+                      level ({LEVEL_LABEL[profile.level]}).
+                    </p>
+                    <Select
+                      value={target}
+                      onChange={setTarget}
+                      options={[{ value: '', label: 'Choose a new role…' }, ...targets]}
+                    />
+                    {progress && (
+                      <p className="text-sm text-nphi-800">
+                        Moving users… {progress.done} of {progress.total}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-sm text-gray-700 mr-auto">Delete this profile?</span>
+                )}
+                <button
+                  type="button"
+                  disabled={saving || (moveUsers != null && !target)}
+                  onClick={remove}
+                  className="px-3 py-2 rounded-lg bg-accent-700 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {moveUsers != null ? 'Move users and delete' : 'Delete'}
                 </button>
-                <button type="button" onClick={() => setConfirmDelete(false)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => {
+                    setConfirmDelete(false);
+                    setMoveUsers(null);
+                    setTarget('');
+                  }}
+                  className="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 disabled:opacity-50"
+                >
                   Keep
                 </button>
-              </>
+              </div>
             ) : (
               <button type="button" onClick={() => setConfirmDelete(true)} className="mr-auto text-sm text-accent-700 hover:underline">
                 Delete profile

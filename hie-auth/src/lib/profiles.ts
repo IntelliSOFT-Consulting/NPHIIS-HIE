@@ -126,13 +126,78 @@ export async function saveProfile(slug: string, p: Profile, create: boolean): Pr
     clearProfileCache();
 }
 
+/** Deleting the realm role also removes it from every user it was mapped to. */
 export async function deleteProfile(slug: string): Promise<void> {
     const res = await kc(`/roles/${encodeURIComponent(PROFILE_ROLE_PREFIX + slug)}`, { method: "DELETE" });
     if (!res.ok && res.status !== 404) throw new Error(`Keycloak profile delete failed: ${res.status}`);
     clearProfileCache();
 }
 
+/**
+ * Keeps a user's Keycloak role mapping in step with their profile: removes PROFILE_<old> and
+ * adds PROFILE_<new> (either may be empty), so Keycloak itself shows who holds each profile.
+ */
+export async function setUserProfileRole(userId: string, oldSlug: string | undefined, newSlug: string | undefined): Promise<void> {
+    const roleRep = async (slug: string) => {
+        const res = await kc(`/roles/${encodeURIComponent(PROFILE_ROLE_PREFIX + slug)}`);
+        if (!res.ok) throw new Error(`Keycloak role PROFILE_${slug} not found: ${res.status}`);
+        const r = await res.json();
+        return { id: r.id, name: r.name };
+    };
+    if (oldSlug && oldSlug !== newSlug) {
+        const res = await kc(`/users/${userId}/role-mappings/realm`, { method: "DELETE", body: JSON.stringify([await roleRep(oldSlug)]) });
+        if (!res.ok && res.status !== 404) throw new Error(`Keycloak role unmapping failed: ${res.status}`);
+    }
+    if (newSlug && oldSlug !== newSlug) {
+        const res = await kc(`/users/${userId}/role-mappings/realm`, { method: "POST", body: JSON.stringify([await roleRep(newSlug)]) });
+        if (!res.ok) throw new Error(`Keycloak role mapping failed: ${res.status}`);
+    }
+}
+
 /** Keycloak users whose profile attribute is this slug. */
+export async function listProfileUsers(slug: string): Promise<Array<{ id: string; username: string }>> {
+    const res = await kc(`/users?q=${PROFILE_USER_ATTRIBUTE}:${encodeURIComponent(slug)}&max=5000&briefRepresentation=true`);
+    if (!res.ok) throw new Error(`Keycloak user lookup failed: ${res.status}`);
+    return ((await res.json()) as any[]).map((u) => ({ id: u.id, username: u.username }));
+}
+
+/**
+ * Runs `apply` for each item, a few at a time, and reports progress. A failure is recorded and
+ * the rest still run, so one bad user does not strand the others.
+ */
+export async function runForEach<T>(
+    items: T[],
+    apply: (item: T) => Promise<void>,
+    onProgress: (done: number, failed: number) => void = () => {},
+    concurrency = 3,
+): Promise<{ done: number; failed: T[] }> {
+    const failed: T[] = [];
+    let done = 0;
+    let next = 0;
+    const worker = async () => {
+        while (next < items.length) {
+            const item = items[next++];
+            try {
+                await apply(item);
+                done++;
+            } catch {
+                failed.push(item);
+            }
+            onProgress(done, failed.length);
+        }
+    };
+    await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+    return { done, failed };
+}
+
+export type MigrationTarget = { kind: "profile"; slug: string } | { kind: "role"; role: string };
+
+/** Parses "profile:<SLUG>" or "role:<ROLE>". */
+export function parseMigrationTarget(value: unknown): MigrationTarget | null {
+    const m = /^(profile|role):(.+)$/.exec(String(value ?? "").trim());
+    if (!m) return null;
+    return m[1] === "profile" ? { kind: "profile", slug: m[2].toUpperCase() } : { kind: "role", role: m[2].toUpperCase() };
+}
 export async function countProfileUsers(slug: string): Promise<number> {
     const res = await kc(`/users?q=${PROFILE_USER_ATTRIBUTE}:${encodeURIComponent(slug)}&max=1000&briefRepresentation=true`);
     if (!res.ok) throw new Error(`Keycloak user lookup failed: ${res.status}`);
