@@ -1,5 +1,6 @@
 # develop -> dsrfhir, main -> nphiis-prod. Both servers run the stack on the system Docker
-# daemon, so the commands go through sudo (the login user's default context is a rootless daemon).
+# daemon, so docker runs through sudo (the login user's default context is a rootless daemon).
+# Both hosts have a key-only `devops` user whose sudo is limited to docker and git-as-repo-owner.
 name: Deploy
 
 on:
@@ -30,8 +31,10 @@ jobs:
           ssh -i ~/.ssh/id -p "${PORT:-22}" "$TARGET" bash -s <<'REMOTE'
           set -euo pipefail
           cd /opt/ChanjoKe-HIE
-          git fetch origin develop
-          git merge --ff-only origin/develop
+          G="sudo -n -u bamolo git"   # the checkout and its GitHub deploy key belong to bamolo
+          $G fetch origin develop
+          $G checkout develop 2>/dev/null || $G checkout -b develop origin/develop
+          $G merge --ff-only origin/develop
           sudo -n docker compose -f hie/docker-compose.yml up -d --build --no-deps hie-auth nphiis-admin
           REMOTE
 
@@ -53,8 +56,9 @@ jobs:
           ssh -i ~/.ssh/id -p "${PORT:-22}" "$TARGET" bash -s <<'REMOTE'
           set -euo pipefail
           cd /opt/NPHIS-HIE
-          git fetch origin main
-          git merge --ff-only origin/main
+          G="sudo -n -u nphi git"   # the checkout and its GitHub deploy key belong to nphi
+          $G fetch origin main
+          $G merge --ff-only origin/main
           sudo -n docker compose -f hie/docker-compose.yml -f proxy/docker-compose.yml -f keycloak/docker-compose.yml \
             up -d --build --no-deps hie-auth
           sudo -n docker compose -f nphiis-admin/docker-compose.yml up -d --build
