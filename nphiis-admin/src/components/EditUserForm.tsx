@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { User } from '@/types/user';
 import { userApi, rolesApi, getAccessToken, fhirApi, FhirCounty, FhirSubCounty, FhirWard, FhirFacility, isUnauthorizedError, handleUnauthorized } from '@/lib/api';
 import { LOCATION_FREE_ROLES } from '@/lib/roles';
-import RolePicker, { NationalRoleNote } from './RolePicker';
+import RolePicker from './RolePicker';
 import { Select } from './ui/Field';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 // import { useNotification } from './Notification';
@@ -498,8 +498,6 @@ export default function EditUserForm({ user, onUserUpdated, onClose }: EditUserF
               </div>
 
             </div>
-
-            {isLocationDisabled && <NationalRoleNote role={selectedRole} />}
 
             {/* Location Information */}
             {!isLocationDisabled && (

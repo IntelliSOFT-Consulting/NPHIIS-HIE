@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { CreateUserRequest } from '@/types/user';
 import { userApi, rolesApi, getAccessToken, fhirApi, FhirCounty, FhirSubCounty, FhirWard, FhirFacility, isUnauthorizedError, handleUnauthorized } from '@/lib/api';
 import { LOCATION_FREE_ROLES } from '@/lib/roles';
-import RolePicker, { NationalRoleNote } from './RolePicker';
+import RolePicker from './RolePicker';
 import { Select } from './ui/Field';
 import { 
   UserIcon, 
@@ -485,9 +485,7 @@ export default function CreateUserForm({ onUserCreated }: CreateUserFormProps) {
             </div>
           </div>
 
-        {isLocationDisabled && <NationalRoleNote role={selectedRole} />}
-
-            {/* Location Information */}
+        {/* Location Information */}
         {!isLocationDisabled && (
           <div>
             <h3 className="text-base font-medium text-gray-900 mb-1">Location Information</h3>
