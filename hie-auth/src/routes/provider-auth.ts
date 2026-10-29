@@ -1,5 +1,6 @@
 import { randomInt } from "crypto";
 import { resolveAccess } from "../lib/permissions";
+import { PROFILE_USER_ATTRIBUTE, compatRole, getProfile } from "../lib/profiles";
 import { randomBytes } from "node:crypto";
 import express, { Request, Response, NextFunction } from "express";
 import { FhirApi, validateRole, validateLocationForRole, updatePractitionerLocation, buildLocationInfo, buildUserResponse } from "../lib/utils";
@@ -84,6 +85,14 @@ router.post("/register", authenticateUser, async (req: Request, res: Response) =
             return res.status(400).json({ status: "error", error: "password, idNumber, firstName, lastName, email and role are required" });
         }
 
+        // A profile created in the portal is presented as the existing role of its level.
+        let profileSlug: string | undefined;
+        if (req.body.profile) {
+            const profile = await getProfile(String(req.body.profile));
+            if (!profile) return res.status(400).json({ status: "error", error: "Unknown profile" });
+            profileSlug = profile.slug;
+            role = compatRole(profile.level);
+        }
         role = String(role).toUpperCase();
         if (!isValidApplicationRole(role)) {
             return res.status(400).json({ status: "error", error: `invalid role provided. Allowed roles: ${getApplicationRoles().join(",")}` });
@@ -189,10 +198,10 @@ router.post("/register", authenticateUser, async (req: Request, res: Response) =
             name: location.name,
         });
 
-        await setKeycloakUserAttributes(
-            practitionerId,
-            providerRoleKeycloakAttributes(practitionerId, role),
-        );
+        await setKeycloakUserAttributes(practitionerId, {
+            ...providerRoleKeycloakAttributes(practitionerId, role),
+            [PROFILE_USER_ATTRIBUTE]: [profileSlug ?? ""],
+        });
 
         // Send confirmation email asynchronously (don't wait for it)
         setImmediate(() => {
@@ -438,6 +447,15 @@ router.post("/refresh_token", async (req: Request, res: Response) => {
     }
 });
 
+/** Level, profile and permissions: from the user's portal profile when they have one, else from their role. */
+async function accessFor(user: any, role: string | null) {
+    const slug = user?.attributes?.[PROFILE_USER_ATTRIBUTE]?.[0];
+    const profile = slug ? await getProfile(slug).catch(() => null) : null;
+    return profile
+        ? { level: profile.level, profile: profile.name, permissions: profile.permissions }
+        : resolveAccess(role);
+}
+
 router.get("/me", authenticateUser, async (req: Request, res: Response) => {
     try {
         const currentUser = (req as any).user;
@@ -487,7 +505,7 @@ router.get("/me", authenticateUser, async (req: Request, res: Response) => {
                 practitionerRole,
                 role: practitionerRole,
                 // Generic access model; clients that only know practitionerRole keep working.
-                ...resolveAccess(practitionerRole),
+                ...(await accessFor(userInfo, practitionerRole)),
                 status: practitioner.active,
                 id: userInfo.id,
                 idNumber: userInfo.username,
@@ -882,6 +900,18 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
         let location = facilityCode || subCounty || county;
         let normalizedRole = role ? String(role).toUpperCase() : null;
 
+        // A profile created in the portal is presented as the existing role of its level;
+        // `profile: ""` clears it, and picking a built-in role also clears it.
+        let profileSlug: string | undefined;
+        if (req.body.profile) {
+            const profile = await getProfile(String(req.body.profile));
+            if (!profile) return res.status(400).json({ status: "error", error: "Unknown profile" });
+            profileSlug = profile.slug;
+            normalizedRole = compatRole(profile.level);
+        } else if (req.body.profile === "" || (normalizedRole && req.body.profile === undefined)) {
+            profileSlug = "";
+        }
+
         // Validate role if provided
         if (normalizedRole && !validateRole(normalizedRole, getApplicationRoles())) {
             return res.status(400).json({ status: "error", error: `Invalid role ${normalizedRole} provided. Supported roles: ${getApplicationRoles().join(",")}` });
@@ -958,10 +988,10 @@ router.put("/users/:username", authenticateUser, async (req: Request, res: Respo
             }
 
             if (normalizedRole) {
-                await setKeycloakUserAttributes(
-                    updatedUserInfo.id,
-                    providerRoleKeycloakAttributes(practitionerId, effectiveRole),
-                );
+                await setKeycloakUserAttributes(updatedUserInfo.id, {
+                    ...providerRoleKeycloakAttributes(practitionerId, effectiveRole),
+                    ...(profileSlug !== undefined ? { [PROFILE_USER_ATTRIBUTE]: [profileSlug] } : {}),
+                });
                 updatedUserInfo = await findKeycloakUser(username);
             }
         }

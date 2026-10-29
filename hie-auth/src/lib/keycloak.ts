@@ -856,6 +856,7 @@ const REQUIRED_USER_ATTRIBUTES: { name: string; displayName: string }[] = [
   { name: "fhirPractitionerId",  displayName: "FHIR Practitioner ID" },
   { name: "practitionerRole",    displayName: "Practitioner Role" },
   { name: "nphiis_role",         displayName: "NPHIIS Role" },
+  { name: "nphiis_profile",      displayName: "NPHIIS Profile" },
   { name: "nphiis_location",     displayName: "NPHIIS Location" },
   { name: "notificationsEnabled", displayName: "Notifications Enabled" },
 ];
