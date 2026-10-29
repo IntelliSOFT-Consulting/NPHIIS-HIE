@@ -20,6 +20,8 @@ export interface User {
   phone?: string;
   locationId?: string;
   role?: UserRole;
+  /** Slug of the profile from the Roles page, when the user has one. */
+  profile?: string;
   enabled?: boolean;
   active?: boolean;
   createdTimestamp?: number;
@@ -38,6 +40,7 @@ export interface CreateUserRequest {
   password: string;
   email: string;
   role: UserRole;
+  profile?: string;
   firstName: string;
   lastName: string;
   phone: string;

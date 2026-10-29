@@ -7,7 +7,7 @@ import {
   type UserProfile,
   type VerifiedToken,
 } from '@/lib/server-auth';
-import { canAccess, hasAnyRole } from '@/lib/roles';
+import { canAccess, canUseLabForm } from '@/lib/roles';
 import { getAnswerForm, labResultReasons } from '@/lib/questionnaires';
 import {
   RowMappingError,
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
   // Specimen-based forms record results through /api/lab/specimen-updates.
   const form = getAnswerForm(body.formId);
   if (!form) return NextResponse.json({ error: 'Unknown form' }, { status: 404 });
-  if (!hasAnyRole(profile.roles, form.allowedRoles)) {
+  if (!canUseLabForm(profile.roles, form.allowedRoles)) {
     console.warn(
       '[lab/bulk-upload] form role denied; form =',
       form.id,

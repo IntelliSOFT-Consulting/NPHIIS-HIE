@@ -4,6 +4,14 @@
  */
 export type Role = string;
 
+/** The existing role a profile of each level is saved as (what locations and the mobile app read). */
+export const LEVEL_ROLE = {
+  NATIONAL: "NATIONAL_FOCAL_PERSON",
+  COUNTY: "COUNTY_DISEASE_SURVEILLANCE_OFFICER",
+  SUB_COUNTY: "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER",
+  FACILITY: "FACILITY_SURVEILLANCE_FOCAL_PERSON",
+} as const;
+
 /** Admin level prefix used when scoping Mpox CSV job titles to a location. */
 export const LOCATION_ROLE_PREFIX = {
   county: "COUNTY",
@@ -123,11 +131,66 @@ export function hasAnyRole(
   return userRoles.some((r) => allowedLower.includes(r.toLowerCase()));
 }
 
+/**
+ * hie-auth sends each user's permissions (GET /provider/me). They travel with the roles as
+ * "perm:<permission>" entries, preceded by a bare "perm:" marker, so the many role-based
+ * checks keep their signature: with the marker present a feature is decided by permission,
+ * without it (an older session, or a role hie-auth does not know) by role name. The role
+ * itself still decides how much of the country a user sees.
+ */
+export const PERMISSION_PREFIX = "perm:";
+
+/** The hie-auth permission that grants each feature. */
+export const FEATURE_PERMISSION: Record<Feature, string> = {
+  USERS_MANAGE: "users.manage",
+  LOCATIONS_MANAGE: "locations.manage",
+  REPORTS_VIEW_IDSR: "reports.idsr.view",
+  RUMOURS_TRIAGE: "rumours.triage",
+  VHF_REPORTS: "reports.vhf.view",
+  VHF_CONTACTS: "vhf.contacts.manage",
+  LAB_ACCESS: "lab.enter_results",
+  SPECIMENS_VIEW: "specimens.view",
+  SCREENINGS_VIEW: "screenings.view",
+  CALL_CENTRE: "callcentre.use",
+  LAB_NATIONAL_SCOPE: "lab.national_scope",
+  SUBSCRIPTION_LOGS_VIEW: "subscriptions.logs.view",
+};
+
+/** Adds the user's permissions to their roles; a no-op when hie-auth sent none (no level). */
+export function withPermissions(
+  roles: string[],
+  access?: { level?: string | null; permissions?: string[] | null },
+): string[] {
+  if (!access?.level || !Array.isArray(access.permissions)) return roles;
+  return [
+    ...roles,
+    PERMISSION_PREFIX,
+    ...access.permissions.map((p) => PERMISSION_PREFIX + p),
+  ];
+}
+
+const inPermissionMode = (userRoles: string[] | undefined) =>
+  !!userRoles?.includes(PERMISSION_PREFIX);
+
+export function hasPermission(userRoles: string[] | undefined, permission: string): boolean {
+  return !!userRoles?.includes(PERMISSION_PREFIX + permission);
+}
+
 export function canAccess(
   userRoles: string[] | undefined,
   feature: Feature,
 ): boolean {
+  if (inPermissionMode(userRoles)) return hasPermission(userRoles, FEATURE_PERMISSION[feature]);
   return hasAnyRole(userRoles, FEATURES[feature]);
+}
+
+/** Lab forms list the roles allowed to use them; a user with the lab permission may use any. */
+export function canUseLabForm(
+  userRoles: string[] | undefined,
+  allowedRoles: readonly string[],
+): boolean {
+  if (inPermissionMode(userRoles)) return hasPermission(userRoles, FEATURE_PERMISSION.LAB_ACCESS);
+  return hasAnyRole(userRoles, allowedRoles);
 }
 
 // Keycloak's realm_access.roles includes built-ins (default-roles-<realm>,
@@ -145,6 +208,7 @@ const KEYCLOAK_NOISE = new Set([
 
 export function isApplicationRole(role: string): boolean {
   if (!role) return false;
+  if (role.startsWith(PERMISSION_PREFIX)) return false;
   if (KEYCLOAK_NOISE.has(role)) return false;
   if (role.startsWith("default-roles-")) return false;
   return true;
