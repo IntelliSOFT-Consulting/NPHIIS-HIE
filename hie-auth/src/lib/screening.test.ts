@@ -235,6 +235,7 @@ describe("buildScreeningQuestionnaireResponse", () => {
             "vhf-travel",
             "point-of-entry",
             "screening-temperature",
+            "screening-number",
         ]);
         expect(answerOf(qr.item, "screening-temperature")).toEqual([{ valueDecimal: 38.6 }]);
     });
@@ -547,6 +548,7 @@ describe("migrateLegacyScreeningResponse", () => {
             "point-of-entry",
             "screening-temperature",
             "screening-travel-purpose",
+            "screening-number",
         ]);
         const demo = items(migrated, "vhf-demographics");
         expect(answerOf(demo, "486402457213")).toEqual([{ valueString: "Doe" }]);
