@@ -1,0 +1,61 @@
+# develop -> dsrfhir, main -> nphiis-prod. Both servers run the stack on the system Docker
+# daemon, so the commands go through sudo (the login user's default context is a rootless daemon).
+name: Deploy
+
+on:
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  dsrfhir:
+    if: github.ref_name == 'develop'
+    runs-on: ubuntu-latest
+    environment: dsrfhir
+    steps:
+      - name: Deploy hie-auth and nphiis-admin
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          TARGET: ${{ secrets.DSRFHIR_SSH_TARGET }}   # user@host
+          PORT: ${{ secrets.DSRFHIR_SSH_PORT }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id && chmod 600 ~/.ssh/id
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id -p "${PORT:-22}" "$TARGET" bash -s <<'REMOTE'
+          set -euo pipefail
+          cd /opt/ChanjoKe-HIE
+          git fetch origin develop
+          git merge --ff-only origin/develop
+          sudo -n docker compose -f hie/docker-compose.yml up -d --build --no-deps hie-auth nphiis-admin
+          REMOTE
+
+  nphiis-prod:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    environment: production   # add required reviewers on this environment to gate prod deploys
+    steps:
+      - name: Deploy hie-auth and nphiis-admin
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          TARGET: ${{ secrets.PROD_SSH_TARGET }}
+          PORT: ${{ secrets.PROD_SSH_PORT }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id && chmod 600 ~/.ssh/id
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id -p "${PORT:-22}" "$TARGET" bash -s <<'REMOTE'
+          set -euo pipefail
+          cd /opt/NPHIS-HIE
+          git fetch origin main
+          git merge --ff-only origin/main
+          sudo -n docker compose -f hie/docker-compose.yml -f proxy/docker-compose.yml -f keycloak/docker-compose.yml \
+            up -d --build --no-deps hie-auth
+          sudo -n docker compose -f nphiis-admin/docker-compose.yml up -d --build
+          REMOTE
