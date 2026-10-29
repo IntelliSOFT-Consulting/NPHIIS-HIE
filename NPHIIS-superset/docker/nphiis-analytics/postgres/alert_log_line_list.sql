@@ -159,6 +159,10 @@ SELECT
   nphiis.to_date_safe(o.investigation_date) - nphiis.to_date_safe(o.alert_date) AS "Days To Visit",
   o.comments                                           AS "Comments",
   o.site_county                                        AS "Logged County",
-  o.site_subcounty                                     AS "Logged Subcounty"
+  o.site_subcounty                                     AS "Logged Subcounty",
+  -- Area columns for row-level security (the person's county / sub-county of residence), upper-case
+  -- and single-spaced like the VHF datasets, so county and sub-county officers see their own alerts.
+  TRIM(REGEXP_REPLACE(UPPER(COALESCE(o.res_county, '')), '\s+', ' ', 'g'))    AS county_rls,
+  TRIM(REGEXP_REPLACE(UPPER(COALESCE(o.res_subcounty, '')), '\s+', ' ', 'g')) AS subcounty_rls
 FROM alerts a
 LEFT JOIN o ON o.o_patient_id = a.patient_id

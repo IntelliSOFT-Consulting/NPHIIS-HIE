@@ -7,9 +7,10 @@ database from postgres/alert_log_line_list.sql (one row per alert from the mobil
 form). The SQL reads the pipeline's sink tables directly, so there is nothing to refresh.
 Safe to re-run; it touches no other dataset. The database is created by vhf_postgres_setup.py.
 
-Build charts and a dashboard from it in Superset. Before sharing a dashboard with county or
-sub-county users, add the same row-level security the VHF datasets have (the "County" and
-"Sub County" columns are the area of residence).
+Build charts and a dashboard from it in Superset (alert_log_dashboard_setup.py). Row-level
+security: every Superset rule that covers "vhf_contacts (Postgres)" also covers this dataset, and
+embedded dashboards filter it on county_rls / subcounty_rls (the person's county and sub-county
+of residence); the "County" and "Sub County" columns are the same area.
 """
 import os
 import sys
@@ -20,6 +21,7 @@ from render import render  # noqa: E402
 
 DATABASE_NAME = "NPHIIS Analytics (Postgres)"
 DATASET_NAME = "Alert Log Line List"
+RLS_LIKE = "vhf_contacts (Postgres)"  # its row-level security rules cover this dataset too
 SQL_FILE = "alert_log_line_list.sql"
 DATE_COLUMNS = ("Date Alerted", "Epi Week", "Onset Date", "True Onset", "Specimen Date", "Investigated")
 METRICS = [
@@ -35,7 +37,7 @@ def main():
     from superset.app import create_app
 
     with create_app().app_context():
-        from superset.connectors.sqla.models import SqlaTable, SqlMetric
+        from superset.connectors.sqla.models import RowLevelSecurityFilter, SqlaTable, SqlMetric
         from superset.extensions import db
         from superset.models.core import Database
 
@@ -62,6 +64,12 @@ def main():
                 m = SqlMetric(metric_name=name)
                 ds.metrics.append(m)
             m.verbose_name, m.expression = verbose, expression
+        # The same row-level security as the VHF datasets (county_rls / subcounty_rls columns).
+        contacts = db.session.query(SqlaTable).filter_by(table_name=RLS_LIKE, database_id=pg.id).one_or_none()
+        if contacts is not None:
+            for rule in db.session.query(RowLevelSecurityFilter).all():
+                if contacts in rule.tables and ds not in rule.tables:
+                    rule.tables.append(ds)
         db.session.commit()
         print("dataset", ds.id, ds.table_name, "columns", len(ds.columns), "metrics", len(ds.metrics))
 

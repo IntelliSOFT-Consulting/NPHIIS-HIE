@@ -5,15 +5,17 @@
 Run alert_log_setup.py first (it creates the dataset). Creates or updates the charts named
 "Alert Log - ..." and the dashboard "Alert Log". Safe to re-run; it touches nothing else.
 
-The dashboard is not embedded in the admin portal and has no row-level security: add the
-county / sub-county rules (the "County" and "Sub County" columns are the area of residence)
-before giving it to anyone below national level.
+The line list is also placed at the bottom of the "VHF / Ebola Surveillance" dashboard. Row-level
+security comes from the dataset (alert_log_setup.py): county and sub-county officers see only
+alerts from their own area.
 """
 import json
 
 DATASET_NAME = "Alert Log Line List"
 DASHBOARD = "Alert Log"
 SLUG = "alert-log"
+VHF_DASHBOARD = "VHF / Ebola Surveillance"
+LINE_LIST_CHART = "Alert Log - line list"
 
 
 def metric(sql, label):
@@ -185,6 +187,36 @@ def main():
         dash.published = True
         db.session.commit()
         print("dashboard", dash.id, dash.dashboard_title, "charts", len(dash.slices))
+
+        add_to_vhf_dashboard(db, Dashboard, next(s for s in slices if s.slice_name == LINE_LIST_CHART))
+
+
+def add_to_vhf_dashboard(db, Dashboard, chart):
+    """Appends the line list as the last row of the VHF / Ebola Surveillance dashboard (once)."""
+    vhf = db.session.query(Dashboard).filter_by(dashboard_title=VHF_DASHBOARD).one_or_none()
+    if vhf is None:
+        print(f"SKIP: no dashboard {VHF_DASHBOARD!r}")
+        return
+    position = json.loads(vhf.position_json or "{}")
+    if any(v.get("meta", {}).get("chartId") == chart.id for v in position.values() if isinstance(v, dict)):
+        print("line list already on", VHF_DASHBOARD)
+        return
+    row_id, chart_id = "ROW-alertlog-vhf", "CHART-alertlog-vhf"
+    position[row_id] = {
+        "children": [chart_id], "id": row_id, "type": "ROW",
+        "meta": {"background": "BACKGROUND_TRANSPARENT"}, "parents": ["ROOT_ID", "GRID_ID"],
+    }
+    position[chart_id] = {
+        "children": [], "id": chart_id, "type": "CHART",
+        "meta": {"chartId": chart.id, "sliceName": chart.slice_name, "width": 12, "height": 90, "uuid": str(chart.uuid)},
+        "parents": ["ROOT_ID", "GRID_ID", row_id],
+    }
+    position["GRID_ID"]["children"] = [c for c in position["GRID_ID"]["children"] if c != row_id] + [row_id]
+    vhf.position_json = json.dumps(position)
+    if chart not in vhf.slices:
+        vhf.slices = list(vhf.slices) + [chart]
+    db.session.commit()
+    print("line list added to the bottom of", VHF_DASHBOARD, "charts", len(vhf.slices))
 
 
 if __name__ == "__main__":
