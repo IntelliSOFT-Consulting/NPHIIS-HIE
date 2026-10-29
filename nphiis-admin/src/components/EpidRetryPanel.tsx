@@ -14,6 +14,17 @@ import Spinner from '@/components/ui/Spinner';
 const MAX_BATCH = 50;
 const PAGE_SIZE = 25;
 
+const DISEASES = [
+  { value: '', label: 'All diseases' },
+  { value: 'VHF', label: 'VHF' },
+  { value: 'MEA', label: 'Measles' },
+  { value: 'AFP', label: 'AFP' },
+  { value: 'MOH505', label: 'MOH 505' },
+];
+
+type Filters = { condition: string; from: string; to: string; q: string };
+const EMPTY_FILTERS: Filters = { condition: '', from: '', to: '', q: '' };
+
 function parseEncounterIds(raw: string): string[] {
   const ids = raw.split(/[\s,]+/).map((id) => id.trim()).filter(Boolean);
   return Array.from(new Set(ids));
@@ -40,6 +51,9 @@ export default function EpidRetryPanel() {
   const [cursorIndex, setCursorIndex] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [refreshSeq, setRefreshSeq] = useState(0);
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  /** Search box text; copied into filters.q once typing pauses. */
+  const [searchInput, setSearchInput] = useState('');
 
   const [manualInput, setManualInput] = useState('');
   const [retryLoading, setRetryLoading] = useState(false);
@@ -69,6 +83,7 @@ export default function EpidRetryPanel() {
       const response = await epidRetryApi.listMissing(accessToken, {
         limit: PAGE_SIZE,
         cursor: currentCursor,
+        ...filters,
       });
       if (response.status === 'success') {
         setEncounters(response.encounters);
@@ -94,11 +109,34 @@ export default function EpidRetryPanel() {
     } finally {
       setListLoading(false);
     }
-  }, [currentCursor, refreshSeq]);
+  }, [currentCursor, refreshSeq, filters]);
 
   useEffect(() => {
     loadEncounters();
   }, [loadEncounters]);
+
+  /** Any filter change starts again from the first page. */
+  const updateFilters = (patch: Partial<Filters>) => {
+    setFilters((prev) => ({ ...prev, ...patch }));
+    setCursorStack([null]);
+    setCursorIndex(0);
+  };
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (searchInput.trim() !== filters.q) updateFilters({ q: searchInput.trim() });
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  const filtersActive =
+    filters.condition !== '' || filters.from !== '' || filters.to !== '' || filters.q !== '';
+
+  const clearFilters = () => {
+    setSearchInput('');
+    updateFilters(EMPTY_FILTERS);
+  };
 
   const pageEncounterIds = useMemo(
     () => encounters.map((row) => row.encounterId),
@@ -270,6 +308,61 @@ export default function EpidRetryPanel() {
           </p>
         )}
 
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto] lg:items-end">
+          <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+            Search
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Name, patient / encounter ID, contact ID…"
+              className="rounded-xl border border-nphi-100 px-3 py-2 text-sm font-normal text-gray-900 focus:ring-2 focus:ring-accent-400 focus:border-transparent"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+            Disease
+            <select
+              value={filters.condition}
+              onChange={(e) => updateFilters({ condition: e.target.value })}
+              className="rounded-xl border border-nphi-100 px-3 py-2 text-sm font-normal text-gray-900 bg-white focus:ring-2 focus:ring-accent-400 focus:border-transparent"
+            >
+              {DISEASES.map((d) => (
+                <option key={d.value} value={d.value}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+            Created from
+            <input
+              type="date"
+              value={filters.from}
+              max={filters.to || undefined}
+              onChange={(e) => updateFilters({ from: e.target.value })}
+              className="rounded-xl border border-nphi-100 px-3 py-2 text-sm font-normal text-gray-900 focus:ring-2 focus:ring-accent-400 focus:border-transparent"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+            Created to
+            <input
+              type="date"
+              value={filters.to}
+              min={filters.from || undefined}
+              onChange={(e) => updateFilters({ to: e.target.value })}
+              className="rounded-xl border border-nphi-100 px-3 py-2 text-sm font-normal text-gray-900 focus:ring-2 focus:ring-accent-400 focus:border-transparent"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={clearFilters}
+            disabled={!filtersActive && searchInput === ''}
+            className="px-4 py-2 rounded-xl text-sm font-medium border border-nphi-100 text-nphi-900 hover:bg-gray-50 disabled:opacity-40"
+          >
+            Clear
+          </button>
+        </div>
+
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600">
           <span>
             {selectedCount} selected
@@ -306,7 +399,9 @@ export default function EpidRetryPanel() {
         ) : encounters.length === 0 ? (
           <div className="text-center py-16 px-4">
             <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-gray-300" />
-            <p className="mt-3 text-sm font-medium text-nphi-900">No encounters missing EPID</p>
+            <p className="mt-3 text-sm font-medium text-nphi-900">
+              {filtersActive ? 'No encounters match these filters' : 'No encounters missing EPID'}
+            </p>
             <p className="mt-1 text-sm text-gray-500">
               {hasMore
                 ? 'Try the next page or refresh to scan further.'
@@ -328,7 +423,7 @@ export default function EpidRetryPanel() {
                     />
                   </th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Encounter ID</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Patient ID</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Patient</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Created</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Condition</th>
                 </tr>
@@ -353,7 +448,12 @@ export default function EpidRetryPanel() {
                         />
                       </td>
                       <td className="px-4 py-3 font-mono text-xs text-gray-800">{row.encounterId}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-gray-700">{row.patientId}</td>
+                      <td className="px-4 py-3">
+                        {row.patientName && (
+                          <div className="text-sm text-gray-900">{row.patientName}</div>
+                        )}
+                        <div className="font-mono text-xs text-gray-500">{row.patientId}</div>
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap text-gray-700">
                         {formatCreatedAt(row.createdAt)}
                       </td>

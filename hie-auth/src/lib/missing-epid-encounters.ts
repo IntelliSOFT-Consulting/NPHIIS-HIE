@@ -14,6 +14,17 @@ export interface MissingEpidEncounterRow {
   createdAt: string | null;
   conditionCode: string | null;
   conditionLabel: string | null;
+  patientName: string | null;
+}
+
+export interface MissingEpidFilters {
+  /** Condition code as shown in the list, e.g. "VHF", "MEA", "AFP". */
+  condition?: string | null;
+  /** Inclusive created-date bounds, YYYY-MM-DD. */
+  from?: string | null;
+  to?: string | null;
+  /** Matches encounter ID, patient ID, patient name or any patient identifier. */
+  q?: string | null;
 }
 
 interface ScanCursor {
@@ -87,9 +98,48 @@ function conditionFromEncounter(enc: any): { code: string | null; label: string 
   return { code, label };
 }
 
+function patientNameOf(patient: any): string | null {
+  const n = patient?.name?.[0];
+  if (!n) return null;
+  const name = [...(n.given ?? []), n.family].filter(Boolean).join(" ").trim();
+  return name || (typeof n.text === "string" && n.text.trim() ? n.text.trim() : null);
+}
+
+/** Created date as YYYY-MM-DD in Kenya time, for comparing against the date filters. */
+function kenyaDay(value: string | null): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value.slice(0, 10);
+  return new Date(d.getTime() + 3 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+function matchesEncounterFilters(row: { createdAt: string | null; conditionLabel: string | null }, f: MissingEpidFilters): boolean {
+  if (f.condition && (row.conditionLabel ?? "").toUpperCase() !== f.condition.toUpperCase()) return false;
+  if (f.from || f.to) {
+    const day = kenyaDay(row.createdAt);
+    if (!day) return false;
+    if (f.from && day < f.from) return false;
+    if (f.to && day > f.to) return false;
+  }
+  return true;
+}
+
+function matchesSearch(q: string, enc: any, patientId: string, patient: any, name: string | null): boolean {
+  const needle = q.toLowerCase();
+  const haystack = [
+    String(enc.id),
+    patientId,
+    name ?? "",
+    ...(patient?.identifier ?? []).map((i: any) => String(i?.value ?? "")),
+    ...(enc?.identifier ?? []).map((i: any) => String(i?.value ?? "")),
+  ];
+  return haystack.some((v) => v.toLowerCase().includes(needle));
+}
+
 export async function scanEncountersMissingEpid(options: {
   limit: number;
   cursor?: string | null;
+  filters?: MissingEpidFilters;
 }): Promise<{
   encounters: MissingEpidEncounterRow[];
   nextCursor: string | null;
@@ -99,6 +149,9 @@ export async function scanEncountersMissingEpid(options: {
   const decoded = decodeCursor(options.cursor);
   let path: string | null = decoded?.path ?? DEFAULT_ENCOUNTER_PATH;
   let index = decoded?.index ?? 0;
+
+  const filters = options.filters ?? {};
+  const q = filters.q?.trim() || "";
 
   const encounters: MissingEpidEncounterRow[] = [];
   let pagesScanned = 0;
@@ -120,6 +173,11 @@ export async function scanEncountersMissingEpid(options: {
       const patientId = patientIdFromEncounter(enc);
       if (!patientId) continue;
 
+      // Cheap checks first, so filtered-out rows skip the Patient fetch.
+      const { code, label } = conditionFromEncounter(enc);
+      const createdAt = createdAtFromEncounter(enc);
+      if (!matchesEncounterFilters({ createdAt, conditionLabel: label }, filters)) continue;
+
       const patientResp = await FhirApi({ url: `/Patient/${patientId}` });
       const patient = patientResp.data;
       if (patientResp.status !== "success" || patient?.resourceType !== "Patient") {
@@ -129,13 +187,16 @@ export async function scanEncountersMissingEpid(options: {
         continue;
       }
 
-      const { code, label } = conditionFromEncounter(enc);
+      const patientName = patientNameOf(patient);
+      if (q && !matchesSearch(q, enc, patientId, patient, patientName)) continue;
+
       encounters.push({
         encounterId: String(enc.id),
         patientId,
-        createdAt: createdAtFromEncounter(enc),
+        createdAt,
         conditionCode: code,
         conditionLabel: label,
+        patientName,
       });
     }
 

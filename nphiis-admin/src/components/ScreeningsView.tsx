@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowPathIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, PlusIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useAuthedFetch } from '@/lib/auth-context';
 import {
   FOLLOW_UP_LABEL,
@@ -15,6 +15,7 @@ import {
 } from '@/lib/screenings';
 import { SPECIMEN_STATUS_LABEL } from '@/lib/specimens';
 import { Alert } from './ui/Alert';
+import NewScreeningModal from './NewScreeningModal';
 import { Select, TextInput } from './ui/Field';
 import { TableSkeleton } from './ui/Skeleton';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/pagination';
@@ -84,6 +85,8 @@ export default function ScreeningsView() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  const [showNew, setShowNew] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -131,6 +134,7 @@ export default function ScreeningsView() {
   return (
     <div className="space-y-6">
       {error && <Alert variant="error">{error}</Alert>}
+      {notice && <Alert variant="success">{notice}</Alert>}
 
       {!loading && people.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -180,7 +184,29 @@ export default function ScreeningsView() {
           <ArrowPathIcon className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            setNotice(null);
+            setShowNew(true);
+          }}
+          className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg bg-nphi-gradient text-sm font-medium text-white shadow-sm hover:opacity-95"
+        >
+          <PlusIcon className="h-4 w-4" />
+          New Screening
+        </button>
       </div>
+
+      {showNew && (
+        <NewScreeningModal
+          onClose={() => setShowNew(false)}
+          onSaved={(message) => {
+            setShowNew(false);
+            setNotice(message);
+            refresh();
+          }}
+        />
+      )}
 
       {loading ? (
         <TableSkeleton rows={6} cols={7} />

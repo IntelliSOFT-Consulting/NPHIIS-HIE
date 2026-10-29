@@ -1,5 +1,6 @@
 import { FhirApi } from "./utils";
 import { patientActivityResourceTypes } from "./patient-activity";
+import { VHF_CONTACT_LINK_IDS } from "./vhf-link-ids";
 
 const deleteAllSubscriptions = async () => {
     try {
@@ -98,6 +99,23 @@ const createFollowUpFHIRSubscription = async () => {
     );
 }
 
+/**
+ * VHF "Type of case" answers. Mobile can convert a contact to a case by changing only this
+ * answer (no Encounter change), so the Encounter subscription never fires; this one promotes it.
+ */
+const createVhfCaseTypeFHIRSubscription = async () => {
+    const FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL = process.env['FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL'];
+    if (!FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL) {
+        console.log('Missing environment variables for VHF case type subscription');
+        return;
+    }
+    await createSubscription(
+        process.env['FHIR_VHF_CASE_TYPE_SUBSCRIPTION_ID'] || 'vhf-case-type-subscription',
+        FHIR_OBSERVATIONS_SUBSCRIPTION_CALLBACK_URL,
+        `Observation?code=${VHF_CONTACT_LINK_IDS.caseType}`
+    );
+}
+
 const createSpecimenFHIRSubscription = async () => {
     let FHIR_SPECIMEN_SUBSCRIPTION_ID = process.env['FHIR_SPECIMEN_SUBSCRIPTION_ID'];
     let FHIR_SPECIMENS_SUBSCRIPTION_CALLBACK_URL = process.env['FHIR_SPECIMENS_SUBSCRIPTION_CALLBACK_URL'];
@@ -138,5 +156,6 @@ export let createFHIRSubscription = async () => {
     await createEpidFHIRSubscription();
     await createFollowUpFHIRSubscription();
     await createSpecimenFHIRSubscription();
+    await createVhfCaseTypeFHIRSubscription();
     await createPatientActivitySubscriptions();
 }

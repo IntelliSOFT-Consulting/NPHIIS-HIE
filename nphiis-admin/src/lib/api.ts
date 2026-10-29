@@ -1482,7 +1482,14 @@ export const callbackLogsApi = {
 export const epidRetryApi = {
   listMissing: async (
     accessToken: string,
-    params: { limit?: number; cursor?: string | null } = {},
+    params: {
+      limit?: number;
+      cursor?: string | null;
+      condition?: string;
+      from?: string;
+      to?: string;
+      q?: string;
+    } = {},
   ): Promise<MissingEpidEncountersResponse> => {
     if (!accessToken) {
       throw new Error('Access token required');
@@ -1490,6 +1497,10 @@ export const epidRetryApi = {
     const qs = new URLSearchParams();
     if (params.limit) qs.set('limit', String(params.limit));
     if (params.cursor) qs.set('cursor', params.cursor);
+    if (params.condition) qs.set('condition', params.condition);
+    if (params.from) qs.set('from', params.from);
+    if (params.to) qs.set('to', params.to);
+    if (params.q?.trim()) qs.set('q', params.q.trim());
     const suffix = qs.toString();
     const url = `/api/subscriptions/encounters/missing-epid${suffix ? `?${suffix}` : ''}`;
     const response = await fetch(url, {

@@ -44,6 +44,7 @@ export interface MissingEpidEncounter {
   createdAt: string | null;
   conditionCode: string | null;
   conditionLabel: string | null;
+  patientName?: string | null;
 }
 
 export interface MissingEpidEncountersResponse {
