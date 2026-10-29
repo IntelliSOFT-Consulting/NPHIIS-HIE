@@ -504,6 +504,7 @@ function SearchableSelect({
       onChange={(v: string | null) => onChange(v ?? '')}
       onClose={() => setQuery('')}
       disabled={disabled}
+      immediate
     >
       <div className="relative">
         <ComboboxInput
@@ -513,6 +514,9 @@ function SearchableSelect({
           placeholder={placeholder}
           displayValue={(v: string) => options.find((o) => o.value === v)?.label ?? ''}
           onChange={(e) => setQuery(e.target.value)}
+          // The box holds the chosen label; select it so typing replaces it instead of adding to it.
+          onFocus={(e) => e.target.select()}
+          onClick={(e) => (e.target as HTMLInputElement).select()}
           className={`${inputBase} pr-10 ${invalid ? inputError : inputDefault} ${className}`}
         />
         <ComboboxButton className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
