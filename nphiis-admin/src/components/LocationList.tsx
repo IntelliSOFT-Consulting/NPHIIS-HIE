@@ -419,19 +419,19 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Location
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Type & Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Parent
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contact
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -439,14 +439,14 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
               <tbody className="bg-white divide-y divide-gray-200">
                 {locations.map((location) => (
                   <tr key={location.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <MapPinIcon className="h-5 w-5 text-blue-600" />
+                        <div className="flex-shrink-0 h-8 w-8">
+                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                            <MapPinIcon className="h-4 w-4 text-blue-600" />
                           </div>
                         </div>
-                        <div className="ml-4">
+                        <div className="ml-3 leading-tight">
                           <div className="text-sm font-medium text-gray-900">
                             {location.name}
                           </div>
@@ -460,25 +460,24 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="space-y-1">
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
                         {location.type && (
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeColor(location.typeCode)}`}>
+                          <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getTypeBadgeColor(location.typeCode)}`}>
                             {location.type}
                           </span>
                         )}
-                        <br />
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(location.status)}`}>
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusBadgeColor(location.status)}`}>
                           {location.status || 'active'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-2 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
                         {location.parentName || '-'}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2">
                       <div className="text-sm text-gray-900 space-y-1">
                         {location.phone && (
                           <div className="flex items-center">
@@ -495,7 +494,7 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
                         {!location.phone && !location.email && '-'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => setSelectedLocation(location)}
