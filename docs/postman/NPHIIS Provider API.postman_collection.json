@@ -4,7 +4,8 @@
     "name": "NPHIIS Provider API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "25663242",
-    "_collection_link": "https://go.postman.co/collection/25663242-1481e017-0bd4-4ad5-9f90-69b24341d967?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/25663242-1481e017-0bd4-4ad5-9f90-69b24341d967?source=collection_link",
+    "description": "NPHIIS provider / admin portal API (hie-auth `/provider/*`).\n\n**Auth:** Bearer JWT from **Login**. `/provider/me` returns the user plus `level`, `profile` and `permissions` (from a portal profile when assigned, else from the Keycloak role).\n\nPatient identity: `GET /provider/patients/validate` (FHIR) and `GET /provider/patients/registry` (Client Registry JSON). Lookup tries Client Registry first, then IPRS. Allowed `identification_type`: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID, Passport.\n\nRoles: `GET /provider/roles`. Profiles: `GET/POST/PUT/DELETE /provider/profiles` and `/provider/permission-profiles`. Facilities: `GET /provider/facilities/search`. Root location: `GET /provider/locations/root`. Update a user with `PUT /provider/users/:username` (supports `role`, `profile`, `facilityCode`, `county`, `subCounty`)."
   },
   "item": [
     {
@@ -78,40 +79,27 @@
                     "provider",
                     "me"
                   ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Current User Infomation Copy",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{token}}",
-                      "type": "string"
-                    }
-                  ]
                 },
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:8081/fhir/Encounter/b80be3cc-397b-4a34-b217-3845621ee99b",
-                  "protocol": "http",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "8081",
-                  "path": [
-                    "fhir",
-                    "Encounter",
-                    "b80be3cc-397b-4a34-b217-3845621ee99b"
-                  ]
-                }
+                "description": "`GET /provider/me`: current user, assigned location, and access `{ level, profile, permissions }`."
               },
-              "response": []
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                      "const b = pm.response.json();",
+                      "const user = b.user || b;",
+                      "pm.test(\"has access fields\", () => {",
+                      "    pm.expect(user).to.have.property(\"level\");",
+                      "    pm.expect(user).to.have.property(\"permissions\");",
+                      "});"
+                    ]
+                  }
+                }
+              ]
             },
             {
               "name": "Get All Users",
@@ -157,17 +145,34 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{API_HOST}}/provider/users",
+                  "raw": "{{API_HOST}}/provider/roles",
                   "host": [
                     "{{API_HOST}}"
                   ],
                   "path": [
                     "provider",
-                    "users"
+                    "roles"
                   ]
-                }
+                },
+                "description": "Canonical role list for registration and user forms (`GET /provider/roles`)."
               },
-              "response": []
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"returns roles\", () => {",
+                      "    const b = pm.response.json();",
+                      "    const list = b.roles || b.data || b;",
+                      "    pm.expect(list).to.be.an(\"array\").that.is.not.empty;",
+                      "});"
+                    ]
+                  }
+                }
+              ]
             },
             {
               "name": "Get User Info by ID Number / Username",
@@ -211,11 +216,11 @@
                     }
                   ]
                 },
-                "method": "POST",
+                "method": "PUT",
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"role\": \"ADMINISTRATOR\"\r\n}",
+                  "raw": "{\n  \"role\": \"COUNTY_DISEASE_SURVEILLANCE_OFFICER\",\n  \"county\": \"Nairobi\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -223,52 +228,17 @@
                   }
                 },
                 "url": {
-                  "raw": "{{API_HOST}}/provider/me",
+                  "raw": "{{API_HOST}}/provider/users/{{targetUsername}}",
                   "host": [
                     "{{API_HOST}}"
                   ],
                   "path": [
                     "provider",
-                    "me"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Update User Information Copy",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{token}}",
-                      "type": "string"
-                    }
+                    "users",
+                    "{{targetUsername}}"
                   ]
                 },
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"role\": \"SUB_COUNTY_SYSTEM_ADMINISTRATOR\",\r\n    \"subCounty\": \"KISAUNI\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{API_HOST}}/provider/me",
-                  "host": [
-                    "{{API_HOST}}"
-                  ],
-                  "path": [
-                    "provider",
-                    "me"
-                  ]
-                }
+                "description": "Update a user (`PUT /provider/users/:username`). Body may include `role` or portal `profile` (slug), plus `facilityCode` / `county` / `subCounty` as appropriate for the level. `profile: \"\"` clears a portal profile."
               },
               "response": []
             },
@@ -306,7 +276,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"idNumber\": \"1010111\",\n    \"password\": \"{{newUserPassword}}\",\n    \"email\": \"nurse@example.com\",\n    \"role\": \"NURSE\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"Nurse\",\n    \"facility\": \"11237\",\n    \"phone\": \"0700000000\"\n}",
+                  "raw": "{\n    \"idNumber\": \"1010111\",\n    \"password\": \"{{newUserPassword}}\",\n    \"email\": \"nurse@example.com\",\n    \"role\": \"SUB_COUNTY_DISEASE_SURVEILLANCE_OFFICER\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"Nurse\",\n    \"facility\": \"11237\",\n    \"phone\": \"0700000000\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -322,7 +292,8 @@
                     "provider",
                     "register"
                   ]
-                }
+                },
+                "description": "Register with a role from `GET /provider/roles` (or pass `profile` slug instead of `role`)."
               },
               "response": []
             },
@@ -452,54 +423,218 @@
               ]
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "name": "Profiles and access",
+      "description": "Portal profiles, permission profiles, facilities search and root location.",
+      "item": [
         {
-          "name": "Manage Locations",
-          "item": [
-            {
-              "name": "Get Locations",
-              "request": {
-                "method": "GET",
-                "header": []
-              },
-              "response": []
+          "name": "Get roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/roles",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "roles"
+              ]
             },
+            "description": "Built-in Keycloak roles used by the portal.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
             {
-              "name": "Post Location",
-              "request": {
-                "method": "POST",
-                "header": []
-              },
-              "response": []
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
             }
           ]
         },
         {
-          "name": "Manage Roles",
-          "item": [
-            {
-              "name": "Add Role",
-              "request": {
-                "method": "POST",
-                "header": []
-              },
-              "response": []
+          "name": "List profiles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/profiles",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "profiles"
+              ]
             },
+            "description": "Built-in and portal-defined profiles (level + permissions).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
             {
-              "name": "Get Roles",
-              "request": {
-                "method": "GET",
-                "header": []
-              },
-              "response": []
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List permission profiles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/permission-profiles",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "permission-profiles"
+              ]
             },
+            "description": "Reusable permission sets for building profiles.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
             {
-              "name": "Get Role",
-              "request": {
-                "method": "GET",
-                "header": []
-              },
-              "response": []
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search facilities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/facilities/search?q=hospital",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "facilities",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "hospital"
+                }
+              ]
+            },
+            "description": "Facility Registry search (`q` required).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Root location",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/locations/root",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "locations",
+                "root"
+              ]
+            },
+            "description": "National root location for location pickers.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
             }
           ]
         }
@@ -507,7 +642,7 @@
     },
     {
       "name": "Patient Validation",
-      "description": "Validate a patient by identification document.\n\nLookup order: **Client Registry** (DHA middleware, OAuth2 client credentials) first; on not-found, **IPRS** (SHA Health ID, Basic auth). IPRS only holds National ID (`citizen`) and Alien ID (`alien`); other types skip IPRS.\n\nResponses:\n- `200 {status, found: true, source: client-registry|iprs, patient}`: `patient` is a FHIR R4 Patient (`ClientRegistryPatient` or `IprsPatient` profile)\n- `400` FHIR `OperationOutcome` (`issue[0].code: \"not-found\"`): not in CR or IPRS\n- `400`: missing/invalid parameters\n- `401`: missing/invalid provider token (run **Admin Management > Manage Users > Login** first)\n- `502`: CR/IPRS upstream error (a CR error does not fall through to IPRS)\n- `503`: CR/IPRS not configured on the server",
+      "description": "Validate a patient by identification document.\n\nLookup order: **Client Registry** (DHA middleware, OAuth2 client credentials) first; on not-found, **IPRS** (SHA Health ID, Basic auth). IPRS only holds National ID (`citizen`) and Alien ID (`alien`); other types skip IPRS.\n\nResponses:\n- `200 {status, found: true, source: client-registry|iprs, patient}`: `patient` is a FHIR R4 Patient (`ClientRegistryPatient` or `IprsPatient` profile)\n- `400` FHIR `OperationOutcome` (`issue[0].code: \"not-found\"`): not in CR or IPRS\n- `400`: missing/invalid parameters\n- `401`: missing/invalid provider token (run **Admin Management > Manage Users > Login** first)\n- `502`: CR/IPRS upstream error (a CR error does not fall through to IPRS)\n- `503`: CR/IPRS not configured on the server\n\nAllowed `identification_type`: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID, Passport.",
       "item": [
         {
           "name": "Validate - National ID (Client Registry)",
@@ -761,7 +896,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{API_HOST}}/provider/patients/validate?identification_number=123&identification_type=Passport",
+              "raw": "{{API_HOST}}/provider/patients/validate?identification_number=123&identification_type=Driver%20License",
               "host": [
                 "{{API_HOST}}"
               ],
@@ -777,20 +912,71 @@
                 },
                 {
                   "key": "identification_type",
-                  "value": "Passport",
-                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                  "value": "Driver License",
+                  "description": "Must be one of the allowed types (Passport is valid)."
                 }
               ]
             },
-            "description": "Unsupported identification_type; expect 400 listing the allowed values."
+            "description": "Unsupported `identification_type` (e.g. Driver License). Expect 400 listing allowed values, including Passport."
           },
           "response": []
+        },
+        {
+          "name": "Validate - Passport",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/patients/validate?identification_number=A1234567&identification_type=Passport",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "patients",
+                "validate"
+              ],
+              "query": [
+                {
+                  "key": "identification_number",
+                  "value": "A1234567"
+                },
+                {
+                  "key": "identification_type",
+                  "value": "Passport"
+                }
+              ]
+            },
+            "description": "Passport is a valid identification_type. CR is tried; IPRS is skipped for Passport.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"not 400 invalid type\", () => pm.expect(pm.response.code).to.not.eql(400));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "Registry Lookup (CR format)",
-      "description": "Same lookup as **Patient Validation** (Client Registry first, IPRS on not-found), but `patient` is in the Client Registry's own JSON format instead of FHIR.\n\n- `200 {status, found: true, source: client-registry|iprs, patient}`: CR records exactly as the registry returns them; IPRS records converted to CR field names (`first_name`, `middle_name`, `last_name`, `gender`, `date_of_birth`, `citizenship`, `identification_type`, `identification_number`, `id_serial`); CR-only fields (`id`, `other_identifications`) empty.\n- Not found in either: the Client Registry's own response, `400 {error: \"Bad Request\", message: \"failed to get patient record: zero results found …\", trace_id}`.\n- `400` bad parameters, `401` missing/invalid token, `502` upstream error, `503` not configured: same as Patient Validation.",
+      "description": "Same lookup as **Patient Validation** (Client Registry first, IPRS on not-found), but `patient` is in the Client Registry's own JSON format instead of FHIR.\n\n- `200 {status, found: true, source: client-registry|iprs, patient}`: CR records exactly as the registry returns them; IPRS records converted to CR field names (`first_name`, `middle_name`, `last_name`, `gender`, `date_of_birth`, `citizenship`, `identification_type`, `identification_number`, `id_serial`); CR-only fields (`id`, `other_identifications`) empty.\n- Not found in either: the Client Registry's own response, `400 {error: \"Bad Request\", message: \"failed to get patient record: zero results found \u2026\", trace_id}`.\n- `400` bad parameters, `401` missing/invalid token, `502` upstream error, `503` not configured: same as Patient Validation.\n\nAllowed `identification_type`: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID, Passport.",
       "item": [
         {
           "name": "Registry - National ID (Client Registry)",
@@ -992,9 +1178,9 @@
             },
             "method": "GET",
             "header": [],
-            "description": "Unsupported identification_type; expect 400 listing the allowed values.",
+            "description": "Unsupported `identification_type` (e.g. Driver License). Expect 400 listing allowed values, including Passport.",
             "url": {
-              "raw": "{{API_HOST}}/provider/patients/registry?identification_number=123&identification_type=Passport",
+              "raw": "{{API_HOST}}/provider/patients/registry?identification_number=123&identification_type=Driver%20License",
               "host": [
                 "{{API_HOST}}"
               ],
@@ -1010,8 +1196,8 @@
                 },
                 {
                   "key": "identification_type",
-                  "value": "Passport",
-                  "description": "Temporary ID | Alien ID | Refugee ID | Mandate Number | Birth Certificate | National ID | Birth Notification | ClientRegistry ID"
+                  "value": "Driver License",
+                  "description": "Must be one of the allowed types (Passport is valid)."
                 }
               ]
             }
@@ -1205,14 +1391,6 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "New Request",
-          "request": {
-            "method": "GET",
-            "header": []
-          },
-          "response": []
         }
       ]
     }
@@ -1265,6 +1443,11 @@
     },
     {
       "key": "resetCode",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "targetUsername",
       "value": "",
       "type": "default"
     }

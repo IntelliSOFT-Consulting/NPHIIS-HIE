@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "5007e9a5-33ed-403c-a4e1-57142c6777d4",
     "name": "NPHIIS Screening API",
-    "description": "Screening intake for NPHIIS (hie-auth `POST /provider/screenings`).\n\nA screening system sends a screened person as plain JSON. The service matches an existing FHIR `Patient` by identifier type + number (or creates one), then stores point of entry, travel history and signs/symptoms as a `QuestionnaireResponse` linked to that patient.\n\n**Auth:** Bearer JWT, like every other NPHIIS API. The screening service has its own user account: run **Auth > Login** to obtain `{{token}}` (and `{{refresh_token}}`), and **Auth > Refresh Token** before it expires. All other requests inherit the collection's Bearer auth.\n\n**Idempotent** on `screeningId`: resubmitting the same id returns `duplicate: true` and creates nothing.\n\n| Status | Meaning |\n|---|---|\n| 201 / 200 | Created a patient / matched an existing one |\n| 400 | Invalid payload; `errors[]` lists every problem |\n| 401 | Missing, invalid or expired token |\n| 409 | Identifiers match more than one patient (`patientIds[]`) |\n| 502 | FHIR server failure; if `patientId` is returned, retry with the same `screeningId` |\n\nEnumerations: `outcome` = cleared | referred | suspected; `pointOfEntry.type` = airport | seaport | border | facility | community; `travelHistory.travelled` = yes | no | unknown; `travelHistory.trips[].means` = land | air | water; countries = ISO 3166 alpha-2 codes from **Lookups > List countries** (e.g. `UG`, `CD`, `KE`); symptom `code` = fever, cough, sore-throat, difficulty-breathing, headache, fatigue, muscle-pain, vomiting, diarrhoea, abdominal-pain, rash, bleeding, jaundice, confusion, other; identifier `type` = Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID. Dates are `YYYY-MM-DD`.\n\nIn query strings, encode `|` as `%7C` (e.g. `_tag=<system>%7C<code>`); the FHIR server rejects a raw `|` with 400.",
+    "description": "Screening intake for NPHIIS (hie-auth `POST /provider/screenings`).\n\nA screening system sends a screened person as plain JSON. The service matches an existing FHIR `Patient` by identifier type + number (or creates one), then stores point of entry, travel history and signs/symptoms as a `QuestionnaireResponse` linked to that patient. The screener's reporting site is taken from their assigned location (not a request field).\n\n**Auth:** Bearer JWT. The screening service has its own user account: run **Auth > Login** for `{{token}}` / `{{refresh_token}}`, and **Auth > Refresh Token** before expiry. All other requests inherit the collection Bearer auth.\n\n**Idempotent** on `screeningId`: resubmitting the same id returns `duplicate: true` and creates nothing.\n\n| Status | Meaning |\n|---|---|\n| 201 / 200 | Created a patient / matched an existing one |\n| 400 | Invalid payload; `errors[]` lists every problem |\n| 401 | Missing, invalid or expired token |\n| 409 | Identifiers match more than one patient (`patientIds[]`) |\n| 502 | FHIR server failure; if `patientId` is returned, retry with the same `screeningId` |\n\nEnumerations: `screeningType` = entry (default) | exit; `outcome` = cleared | referred | suspected; `pointOfEntry.type` = airport | seaport | border | facility | community; `travelHistory.travelled` = yes | no | unknown; `travelHistory.trips[].means` = land | air | water; countries = ISO 3166 alpha-2 from **Lookups > List countries**; symptom `code` = fever, cough, sore-throat, difficulty-breathing, headache, fatigue, muscle-pain, vomiting, diarrhoea, abdominal-pain, rash, bleeding, jaundice, confusion, other; identifier `type` = Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID, Passport. `patient.nationality` is **required** when the identification type is Passport or Alien ID. Optional `screeningNumber` is the human Screening No. Dates are `YYYY-MM-DD`.\n\nSuccess responses include `screeningType`. Filter FHIR QuestionnaireResponses by `_tag=\u2026/screening-type%7Centry` or `\u2026%7Cexit`, and by outcome `_tag=\u2026/screening-outcome%7Ccleared|referred|suspected`.\n\nIn query strings, encode `|` as `%7C`; the FHIR server rejects a raw `|` with 400.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -168,10 +168,10 @@
                 "screenings"
               ]
             },
-            "description": "Full payload: point of entry, demographics, travel history and symptoms. Generates a new `screeningId` and saves the returned `patientId` / `questionnaireResponseId`.\n\n`travelHistory` fills the vhf-case Travel History section: `travelled` (yes|no|unknown, or boolean `hasTravelled`), `trips[]` { `country` (ISO code), `city`, `departureDate`, `means` (land|air|water), `arrivalDate`, `purpose` }, `stopovers`, `destination` { `country` (ISO code, default KE), `place` (default point of entry) }. Dates cannot be in the future and arrival cannot be before departure. Get the country codes from **Lookups > List countries**.",
+            "description": "Full **entry** screening: point of entry, demographics, travel history and symptoms. Generates a new `screeningId` and saves `patientId` / `questionnaireResponseId`.\n\n`screeningType` defaults to `entry` when omitted; this example sets it explicitly. `travelHistory` fills the vhf-case Travel History section: `travelled` (yes|no|unknown, or boolean `hasTravelled`), `trips[]` { `country` (ISO), `city`, `departureDate`, `means` (land|air|water), `arrivalDate`, `purpose` }, `stopovers`, `destination` { `country` (ISO, default KE for entry), `place` }. Dates cannot be in the future and arrival cannot be before departure. Country codes: **Lookups > List countries**.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"means\": \"air\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ],\n    \"stopovers\": \"None\",\n    \"destination\": {\n      \"country\": \"KE\",\n      \"place\": \"Nairobi\"\n    }\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
+              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screeningType\": \"entry\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"means\": \"air\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ],\n    \"stopovers\": \"None\",\n    \"destination\": {\n      \"country\": \"KE\",\n      \"place\": \"Nairobi\"\n    }\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -203,6 +203,7 @@
                   "pm.test(\"201 Created or 200 matched\", () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
                   "const b = pm.response.json();",
                   "pm.test(\"not a duplicate\", () => pm.expect(b.duplicate).to.eql(false));",
+                  "pm.test(\"screeningType entry\", () => pm.expect(b.screeningType).to.eql(\"entry\"));",
                   "pm.collectionVariables.set(\"patientId\", b.patientId);",
                   "pm.collectionVariables.set(\"questionnaireResponseId\", b.questionnaireResponseId);"
                 ]
@@ -228,7 +229,7 @@
             "description": "Resends the previous request's `screeningId`; expect `200` with `duplicate: true` and the same ids.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"means\": \"air\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ],\n    \"stopovers\": \"None\",\n    \"destination\": {\n      \"country\": \"KE\",\n      \"place\": \"Nairobi\"\n    }\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
+              "raw": "{\n  \"screeningId\": \"{{screeningId}}\",\n  \"screeningType\": \"entry\",\n  \"screenedAt\": \"{{screenedAt}}\",\n  \"outcome\": \"referred\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\n      \"Jane\",\n      \"Wanjiru\"\n    ],\n    \"familyName\": \"Doe\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1990-05-14\",\n    \"phone\": \"0712345678\",\n    \"nationality\": \"KE\",\n    \"address\": {\n      \"county\": \"Nairobi\",\n      \"subCounty\": \"Embakasi East\",\n      \"ward\": \"Utawala\"\n    }\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-01\",\n        \"means\": \"air\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Business\"\n      }\n    ],\n    \"stopovers\": \"None\",\n    \"destination\": {\n      \"country\": \"KE\",\n      \"place\": \"Nairobi\"\n    }\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 38.4,\n    \"symptoms\": [\n      {\n        \"code\": \"fever\",\n        \"present\": true,\n        \"onsetDate\": \"2026-10-11\"\n      },\n      {\n        \"code\": \"headache\",\n        \"present\": true\n      },\n      {\n        \"code\": \"bleeding\",\n        \"present\": false\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -345,7 +346,7 @@
           ]
         },
         {
-          "name": "Invalid payload (400)",
+          "name": "Submit screening - exit",
           "request": {
             "method": "POST",
             "header": [],
@@ -359,10 +360,90 @@
                 "screenings"
               ]
             },
-            "description": "Every problem is reported in `errors[]`, including unknown countries, an unknown `means`, and an arrival before departure.",
+            "description": "Exit screening (`screeningType: exit`). Same fields as entry; `travelHistory.trips[]` is the destination journey and origin defaults to Kenya / the point of entry.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"screeningId\": \"\",\n  \"outcome\": \"unknown\",\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"Passport\",\n        \"value\": \"X1\"\n      }\n    ],\n    \"birthDate\": \"14/05/1990\"\n  },\n  \"signsAndSymptoms\": {\n    \"symptoms\": [\n      {\n        \"code\": \"sneezing\"\n      }\n    ]\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"Atlantis\",\n        \"departureDate\": \"2026-10-12\",\n        \"arrivalDate\": \"2026-10-01\",\n        \"means\": \"rail\"\n      }\n    ]\n  }\n}",
+              "raw": "{\n  \"screeningId\": \"{{$guid}}\",\n  \"screeningType\": \"exit\",\n  \"screenedAt\": \"{{$isoTimestamp}}\",\n  \"outcome\": \"cleared\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ],\n    \"givenNames\": [\"John\"],\n    \"familyName\": \"Otieno\",\n    \"gender\": \"male\",\n    \"birthDate\": \"1988-03-02\",\n    \"nationality\": \"KE\"\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"UG\",\n        \"city\": \"Kampala\",\n        \"departureDate\": \"2026-10-20\",\n        \"means\": \"air\",\n        \"arrivalDate\": \"2026-10-20\",\n        \"purpose\": \"Visit\"\n      }\n    ],\n    \"destination\": {\n      \"country\": \"UG\",\n      \"place\": \"Kampala\"\n    }\n  },\n  \"signsAndSymptoms\": {\n    \"temperatureCelsius\": 36.8\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 or 201\", () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.test(\"screeningType exit\", () => pm.expect(pm.response.json().screeningType).to.eql(\"exit\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit screening - Passport + nationality",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings"
+              ]
+            },
+            "description": "Passport identification with required `patient.nationality` (ISO or free text). Same rule for Alien ID. Document numbers must match `[A-Za-z0-9][A-Za-z0-9/_-]{2,29}`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"screeningId\": \"{{$guid}}\",\n  \"screeningType\": \"entry\",\n  \"outcome\": \"cleared\",\n  \"pointOfEntry\": {\n    \"name\": \"JKIA\",\n    \"type\": \"airport\"\n  },\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"Passport\",\n        \"value\": \"A1234567\"\n      }\n    ],\n    \"givenNames\": [\"Amina\"],\n    \"familyName\": \"Hassan\",\n    \"gender\": \"female\",\n    \"birthDate\": \"1992-07-21\",\n    \"nationality\": \"SO\"\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"SO\",\n        \"city\": \"Mogadishu\",\n        \"departureDate\": \"2026-10-05\",\n        \"means\": \"air\",\n        \"arrivalDate\": \"2026-10-12\",\n        \"purpose\": \"Visit\"\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 or 201\", () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.test(\"not duplicate\", () => pm.expect(pm.response.json().duplicate).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid - Passport without nationality (400)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings"
+              ]
+            },
+            "description": "Passport or Alien ID without `patient.nationality` \u2192 400 with that error in `errors[]`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"screeningId\": \"{{$guid}}\",\n  \"screeningType\": \"entry\",\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"Passport\",\n        \"value\": \"A1234567\"\n      }\n    ],\n    \"givenNames\": [\"Amina\"],\n    \"familyName\": \"Hassan\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -378,7 +459,95 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
-                  "pm.test(\"lists errors\", () => pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty);"
+                  "const errors = pm.response.json().errors || [];",
+                  "pm.test(\"requires nationality\", () => pm.expect(errors.join(\" \")).to.match(/nationality/i));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid - bad screeningType (400)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings"
+              ]
+            },
+            "description": "`screeningType` must be `entry` or `exit`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"screeningId\": \"{{$guid}}\",\n  \"screeningType\": \"transit\",\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"National ID\",\n        \"value\": \"{{patientIdNumber}}\"\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "const errors = pm.response.json().errors || [];",
+                  "pm.test(\"mentions screeningType\", () => pm.expect(errors.join(\" \")).to.match(/screeningType/i));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid payload (400)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/provider/screenings",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "provider",
+                "screenings"
+              ]
+            },
+            "description": "Every problem is reported in `errors[]`: empty screeningId, unknown outcome, bad screeningType, Passport without nationality / short document number, bad birthDate, unknown symptom, unknown country, unknown means, and arrival before departure.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"screeningId\": \"\",\n  \"screeningType\": \"transit\",\n  \"outcome\": \"unknown\",\n  \"patient\": {\n    \"identifiers\": [\n      {\n        \"type\": \"Passport\",\n        \"value\": \"X1\"\n      }\n    ],\n    \"birthDate\": \"14/05/1990\"\n  },\n  \"signsAndSymptoms\": {\n    \"symptoms\": [\n      {\n        \"code\": \"sneezing\"\n      }\n    ]\n  },\n  \"travelHistory\": {\n    \"travelled\": \"yes\",\n    \"trips\": [\n      {\n        \"country\": \"Atlantis\",\n        \"departureDate\": \"2026-10-12\",\n        \"arrivalDate\": \"2026-10-01\",\n        \"means\": \"rail\"\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "const errors = pm.response.json().errors || [];",
+                  "pm.test(\"lists errors\", () => pm.expect(errors).to.be.an(\"array\").that.is.not.empty);",
+                  "pm.test(\"includes screeningType and nationality problems\", () => {",
+                  "    const joined = errors.join(\" \");",
+                  "    pm.expect(joined).to.match(/screeningType/i);",
+                  "    pm.expect(joined).to.match(/nationality/i);",
+                  "});"
                 ]
               }
             }
@@ -564,6 +733,42 @@
               ]
             },
             "description": "Filter screenings by outcome tag: cleared | referred | suspected."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Screenings by type (FHIR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/fhir/QuestionnaireResponse?_tag=http://nphiis.health.go.ke/fhir/CodeSystem/screening-type%7Cexit",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "fhir",
+                "QuestionnaireResponse"
+              ],
+              "query": [
+                {
+                  "key": "_tag",
+                  "value": "http://nphiis.health.go.ke/fhir/CodeSystem/screening-type%7Cexit"
+                }
+              ]
+            },
+            "description": "Filter by screening-type tag: entry | exit (encode `|` as `%7C`)."
           },
           "response": [],
           "event": [

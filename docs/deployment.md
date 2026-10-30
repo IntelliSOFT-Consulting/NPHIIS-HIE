@@ -263,11 +263,11 @@ HAPI FHIR typically takes 60–120 seconds on first start as it initializes the 
 
 ### Step 3 — (Optional) Start the Web App
 
-`./start-hie.sh` already starts `nphiis-admin` (via `hie/docker-compose.yml`). Only run the command below if you have intentionally excluded `nphiis-admin` from Step 2 to avoid a host port 8080 conflict.
+`./start-hie.sh` already starts `nphiis-admin` (via `hie/docker-compose.yml`). The admin app is not published on a host port; Nginx terminates TLS and proxies `https://<FHIR_HOST>/` to it. Only run the command below if you have intentionally excluded `nphiis-admin` from Step 2.
 
     ./start-admin.sh
 
-Starts `nphiis-admin` (Next.js, port 8080).
+Starts `nphiis-admin` (Next.js on container port 3000; public URL is `https://<FHIR_HOST>/` via Nginx).
 
 ### Step 4 — Start the FHIR Analytics Engine
 
@@ -772,7 +772,7 @@ Monitor cron job execution in hie-auth logs:
 | --- | --- | --- |
 | Nginx (HTTP redirect) | 80 | — |
 | Nginx (HTTPS) | 443 | — |
-| nphiis-admin | 8080 | `nphiis-admin:3000` |
+| nphiis-admin | (none; HTTPS via Nginx `/`) | `nphiis-admin:3000` |
 | hie-auth | 8443 | `hie-auth:3000` |
 | hapi-fhir-jpa | 8787 | `hapi-fhir-jpa:8080` |
 | fhir-gateway | 8099 | `fhir-gateway:8080` |

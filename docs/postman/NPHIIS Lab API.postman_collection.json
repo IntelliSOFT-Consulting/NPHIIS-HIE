@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "ddd217b7-aaec-57ce-bbda-571f4a4ee8e2",
 		"name": "NPHIIS Lab API",
-		"description": "Everything lab: results the lab system (LIMS) sends to NPHIIS (hie-auth `POST /lab/results`), staff pulling results, and the NPHL submission operations.\n\n## LIMS: POST /lab/results\n\nOne endpoint takes everything the lab sends about a specimen submitted to NPHL, as an array or `{ \"data\": [...] }`. Each message has `messageType` and the specimen's `specimenIdentifier` (`message_type` / `specimen_id` also work):\n\n| messageType | Effect on the specimen |\n|---|---|\n| `result` (or none) | Preliminary or final result: Observations, DiagnosticReport, Task `preliminary-result` / `final-result`; submitter emailed |\n| `rejected` | Task `specimen-rejected`, Specimen `unsatisfactory`; submitter emailed |\n| `received` | Task `received-at-lab` |\n| `in-testing` | Task `in-testing` |\n| `note` | Note added to the Task |\n\nA specimen is matched on its tube label (the ID it was submitted to NPHL with), then on `orderIdentifier` if sent. Progress never steps back: `received` after `in-testing`, or either after a result or rejection, is ignored. Sending the same message twice changes nothing.\n\n**Auth:** `x-api-key: {{labApiKey}}`. When the server has `LAB_RESULTS_HMAC_SECRET`, set `{{hmacSecret}}` and the collection signs each request (`x-lab-timestamp`, `x-lab-signature`); a timestamp more than 5 minutes off is refused.\n\n| Status | Meaning |\n|---|---|\n| 200 | Processed. `results[]`: per update `matched`, `matchedOn`, `status`, `businessStatus`. `invalid[]`: unusable messages by `index` |\n| 400 | No usable message; `invalid[]` says why |\n| 401 | Wrong key, or missing/invalid/stale signature |\n| 503 | `LAB_RESULTS_API_KEY` not configured on the server |\n\nSet `{{specimenId}}` to the tube label of a specimen that has been submitted to NPHL.\n\n## Operations (`/subscriptions/specimens/*`)\nAuth: `X-Internal-Api-Key: {{internalApiKey}}` (`INTERNAL_SUBSCRIPTION_API_KEY`), or a Bearer token of an ADMINISTRATOR / SUPERUSER. Each call is logged in the admin callback log.",
+		"description": "Everything lab: results the lab system (LIMS) sends to NPHIIS (hie-auth `POST /lab/results`), staff pulling results, and the NPHL submission operations.\n\n## Portal: POST /lab/updates\n\nSame message body as `/lab/results`, but for admin-portal staff (Bearer JWT). Roles: ADMINISTRATOR, SUPERUSER, LAB_TECHNICIAN, NATIONAL_LAB. Creates missing specimen Tasks when needed (`createMissingTasks`). No lab API key or HMAC.\n\n## LIMS: POST /lab/results\n\nOne endpoint takes everything the lab sends about a specimen submitted to NPHL, as an array or `{ \"data\": [...] }`. Each message has `messageType` and the specimen's `specimenIdentifier` (`message_type` / `specimen_id` also work):\n\n| messageType | Effect on the specimen |\n|---|---|\n| `result` (or none) | Preliminary or final result: Observations, DiagnosticReport, Task `preliminary-result` / `final-result`; submitter emailed |\n| `rejected` | Task `specimen-rejected`, Specimen `unsatisfactory`; submitter emailed |\n| `received` | Task `received-at-lab` |\n| `in-testing` | Task `in-testing` |\n| `note` | Note added to the Task |\n\nA specimen is matched on its tube label (the ID it was submitted to NPHL with), then on `orderIdentifier` if sent. Progress never steps back: `received` after `in-testing`, or either after a result or rejection, is ignored. Sending the same message twice changes nothing.\n\n**Auth:** `x-api-key: {{labApiKey}}`. When the server has `LAB_RESULTS_HMAC_SECRET`, set `{{hmacSecret}}` and the collection signs each request (`x-lab-timestamp`, `x-lab-signature`); a timestamp more than 5 minutes off is refused.\n\n| Status | Meaning |\n|---|---|\n| 200 | Processed. `results[]`: per update `matched`, `matchedOn`, `status`, `businessStatus`. `invalid[]`: unusable messages by `index` |\n| 400 | No usable message; `invalid[]` says why |\n| 401 | Wrong key, or missing/invalid/stale signature |\n| 503 | `LAB_RESULTS_API_KEY` not configured on the server |\n\nSet `{{specimenId}}` to the tube label of a specimen that has been submitted to NPHL.\n\n## Operations (`/subscriptions/specimens/*`)\nAuth: `X-Internal-Api-Key: {{internalApiKey}}` (`INTERNAL_SUBSCRIPTION_API_KEY`), or a Bearer token of an ADMINISTRATOR / SUPERUSER. Each call is logged in the admin callback log.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -548,7 +548,7 @@
 		},
 		{
 			"name": "Staff",
-			"description": "Admin portal users with specimen tracking access (Bearer JWT from Login).",
+			"description": "Admin portal users with specimen tracking access (Bearer JWT from Login). Includes `POST /lab/updates` for entering results in the portal and `POST /lab/pull`.",
 			"item": [
 				{
 					"name": "Login",
@@ -593,6 +593,60 @@
 								"exec": [
 									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
 									"pm.collectionVariables.set(\"token\", pm.response.json().access_token);"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Enter results (portal)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{API_HOST}}/lab/updates",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"lab",
+								"updates"
+							]
+						},
+						"description": "Portal entry of lab progress/results (`POST /lab/updates`). Same message shapes as `POST /lab/results`. Auth: Bearer `{{token}}` from Staff Login (not the LIMS API key).",
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"messageType\": \"received\",\n    \"specimenIdentifier\": \"{{specimenId}}\"\n  }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
 								]
 							}
 						}

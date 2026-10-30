@@ -97,8 +97,10 @@ services:
             - hapi-fhir
         env_file:
             - ../nphiis-admin/.env
-        ports:
-            - "8080:3000"
+        # Reachable only on the Docker network; public access is HTTPS via proxy/nginx.conf
+        # (https://dsrfhir.intellisoftkenya.com/), not host port 8080.
+        expose:
+            - "3000"
         depends_on:
             - hapi-fhir-jpa
             - hie-auth
