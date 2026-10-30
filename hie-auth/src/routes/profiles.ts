@@ -4,7 +4,8 @@ import { authenticateUser } from "../lib/middleware";
 import { findKeycloakUser, setKeycloakUserAttributes } from "../lib/keycloak";
 import { isAdminPractitioner, providerRoleKeycloakAttributes, resolvePractitionerAssignment, syncPractitionerRoleAndExtensions } from "../lib/practitioner-role";
 import { FhirApi } from "../lib/utils";
-import { BUILT_IN_PROFILES, LEVELS, Level, PERMISSIONS } from "../lib/permissions";
+import { BUILT_IN_PERMISSION_PROFILES, BUILT_IN_PROFILES, LEVELS, Level, PERMISSIONS } from "../lib/permissions";
+import { listPermissionProfiles, resolveProfileRef } from "../lib/permission-profiles";
 import {
     PROFILE_USER_ATTRIBUTE,
     MigrationTarget,
@@ -24,7 +25,7 @@ import {
 const router = express.Router();
 router.use(express.json({ limit: "100kb" }));
 
-async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
     try {
         const user = await findKeycloakUser((req as any).user?.preferred_username);
         const practitioner = user?.id ? (await FhirApi({ url: `/Practitioner/${user.id}` })).data : null;
@@ -45,8 +46,14 @@ router.get("/", authenticateUser, async (_req: Request, res: Response) => {
             status: "success",
             levels: LEVELS,
             permissions: Object.entries(PERMISSIONS).map(([key, label]) => ({ key, label })),
-            builtIn: Object.entries(BUILT_IN_PROFILES).map(([role, p]) => ({ role, ...p })),
+            // Built-in roles: a permission profile at a level.
+            builtIn: Object.entries(BUILT_IN_PROFILES).map(([role, p]) => ({ role, ...p, profile: `builtin:${p.profile}` })),
+            // Roles created in the portal.
             profiles: await listProfiles(),
+            permissionProfiles: {
+                builtIn: Object.entries(BUILT_IN_PERMISSION_PROFILES).map(([key, p]) => ({ key, ...p })),
+                custom: await listPermissionProfiles(),
+            },
         });
     } catch (error) {
         console.error("GET /provider/profiles error:", error);
@@ -58,6 +65,9 @@ router.post("/", authenticateUser, requireAdmin, async (req: Request, res: Respo
     try {
         const parsed = validateProfileInput(req.body ?? {});
         if (!parsed.ok) return res.status(400).json({ status: "error", errors: parsed.errors });
+        if (!resolveProfileRef(parsed.value.profile, await listPermissionProfiles())) {
+            return res.status(400).json({ status: "error", error: "That profile does not exist" });
+        }
         const slug = slugify(parsed.value.name);
         if (await getProfile(slug)) return res.status(409).json({ status: "error", error: "A profile with this name already exists" });
         await saveProfile(slug, parsed.value, true);
@@ -75,6 +85,9 @@ router.put("/:slug", authenticateUser, requireAdmin, async (req: Request, res: R
         if (!existing) return res.status(404).json({ status: "error", error: "Profile not found" });
         const parsed = validateProfileInput({ ...req.body, name: existing.name });
         if (!parsed.ok) return res.status(400).json({ status: "error", errors: parsed.errors });
+        if (!resolveProfileRef(parsed.value.profile, await listPermissionProfiles())) {
+            return res.status(400).json({ status: "error", error: "That profile does not exist" });
+        }
         await saveProfile(existing.slug, parsed.value, false);
         return res.status(200).json({ status: "success", profile: { slug: existing.slug, ...parsed.value } });
     } catch (error) {

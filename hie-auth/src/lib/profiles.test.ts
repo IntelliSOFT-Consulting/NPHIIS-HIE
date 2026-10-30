@@ -11,35 +11,41 @@ describe("slugify", () => {
 });
 
 describe("validateProfileInput", () => {
-    const ok = { name: "County Director", level: "COUNTY", permissions: ["reports.idsr.view", "reports.idsr.view"] };
-    it("accepts a valid profile and de-duplicates permissions", () => {
-        const r = validateProfileInput(ok);
-        expect(r.ok && r.value.permissions).toEqual(["reports.idsr.view"]);
+    const ok = { name: "County Director", level: "COUNTY", profile: "builtin:VIEWER" };
+    it("accepts a role built on a built-in or a custom profile", () => {
+        expect(validateProfileInput(ok).ok).toBe(true);
+        expect(validateProfileInput({ ...ok, profile: "custom:EPI_LOGISTICIAN" }).ok).toBe(true);
     });
-    it("rejects bad level, unknown permissions, empty and built-in names", () => {
+    it("rejects a bad level, a bad profile reference, an empty name and a built-in role name", () => {
         expect(validateProfileInput({ ...ok, level: "WARD" }).ok).toBe(false);
-        expect(validateProfileInput({ ...ok, permissions: ["nope"] }).ok).toBe(false);
-        expect(validateProfileInput({ ...ok, permissions: "x" }).ok).toBe(false);
+        expect(validateProfileInput({ ...ok, profile: "VIEWER" }).ok).toBe(false);
+        expect(validateProfileInput({ ...ok, profile: undefined }).ok).toBe(false);
         expect(validateProfileInput({ ...ok, name: " " }).ok).toBe(false);
         expect(validateProfileInput({ ...ok, name: "administrator" }).ok).toBe(false);
     });
 });
 
 describe("keycloak role round trip", () => {
-    it("stores and reads back level, permissions and name", () => {
-        const role = toKeycloakRole("COUNTY_DIRECTOR", { name: "County Director", level: "COUNTY", permissions: ["reports.idsr.view", "screenings.view"] });
+    const role = toKeycloakRole("COUNTY_DIRECTOR", { name: "County Director", level: "COUNTY", profile: "builtin:VIEWER" });
+    it("stores name, level and the profile reference, and reads permissions from the profile", () => {
         expect(role.name).toBe("PROFILE_COUNTY_DIRECTOR");
         expect(fromKeycloakRole(role)).toEqual({
             slug: "COUNTY_DIRECTOR",
             name: "County Director",
             level: "COUNTY",
-            permissions: ["reports.idsr.view", "screenings.view"],
+            profile: "builtin:VIEWER",
+            permissions: ["reports.idsr.view", "specimens.view", "screenings.view"],
         });
     });
-    it("ignores other roles and drops unknown permissions", () => {
+    it("follows a custom profile, and has no permissions when the profile is gone", () => {
+        const onCustom = toKeycloakRole("CEPI", { name: "CEPI", level: "COUNTY", profile: "custom:EPI" });
+        const custom = [{ slug: "EPI", name: "Epi", permissions: ["rumours.triage" as const] }];
+        expect(fromKeycloakRole(onCustom, custom)?.permissions).toEqual(["rumours.triage"]);
+        expect(fromKeycloakRole(onCustom, [])?.permissions).toEqual([]);
+    });
+    it("ignores other roles", () => {
         expect(fromKeycloakRole({ name: "ADMINISTRATOR" })).toBeNull();
-        const r = fromKeycloakRole({ name: "PROFILE_X", attributes: { nphiis_level: ["FACILITY"], nphiis_permissions: ["lab.enter_results,bogus"] } });
-        expect(r?.permissions).toEqual(["lab.enter_results"]);
+        expect(fromKeycloakRole({ name: "PROFILE_X", attributes: { nphiis_level: ["WARD"] } })).toBeNull();
     });
 });
 
