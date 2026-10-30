@@ -29,7 +29,7 @@ METRICS = [
     ("meets_definition", "Meet case definition", "COUNT(*) FILTER (WHERE LOWER(\"Meets Definition\") = 'yes')"),
     ("samples_taken", "Samples taken", "COUNT(*) FILTER (WHERE LOWER(\"Sample Taken\") = 'yes')"),
     ("deceased", "Deceased", "COUNT(*) FILTER (WHERE LOWER(\"Vital Status\") = 'deceased')"),
-    ("avg_days_to_visit", "Average days to visit", 'AVG("Days To Visit")'),
+    ("avg_days_to_visit", "Average days to visit", 'AVG("Visit Lag")'),
 ]
 
 

@@ -156,7 +156,7 @@ SELECT
   o.investigator                                       AS "Investigator",
   nphiis.to_date_safe(o.investigation_date)            AS "Investigated",
   -- Days from the alert to the field investigation.
-  nphiis.to_date_safe(o.investigation_date) - nphiis.to_date_safe(o.alert_date) AS "Days To Visit",
+  nphiis.to_date_safe(o.investigation_date) - nphiis.to_date_safe(o.alert_date) AS "Visit Lag",
   o.comments                                           AS "Comments",
   o.site_county                                        AS "Logged County",
   o.site_subcounty                                     AS "Logged Subcounty",
