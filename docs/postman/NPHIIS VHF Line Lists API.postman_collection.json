@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "721f5f80-d14c-4473-b9f2-a860e2bbc6c2",
     "name": "NPHIIS VHF Line Lists API",
-    "description": "VHF line lists from hie-auth, read from the analytics Postgres: the same rows and columns as the Superset VHF datasets.\n\n| Endpoint | Rows | Date filter on |\n|---|---|---|\n| `GET /reports/vhf/line-list` | Cases and contacts, one per VHF record (Superset \"VHF Line List\") | Date Reported |\n| `GET /reports/vhf/contacts` | Contacts with their 21-day follow-up (Superset \"vhf_contacts\") | contact_date |\n\n**Auth: client ID and secret.** Set `{{clientId}}` and `{{clientSecret}}` to a Keycloak client listed in the server's `REPORTS_CLIENT_IDS` (Client authentication and Service accounts roles on). Before each request the collection gets a token from `POST /reports/vhf/token` when it has none or it is about to expire (tokens last 30 minutes), so you can just send requests. A client token sees every area and is refused everywhere except `/reports/vhf/*`.\n\nAlternative: `X-Api-Key: {{reportsApiKey}}` (the server's `REPORTS_API_KEY`), see **System access (API key)**.\n\n**Query parameters** (all optional)\n\n| Parameter | Values |\n|---|---|\n| `period` | `today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `this_year`, `last_year`, `last_<N>_days`, `yyyy`, `yyyy-mm`, `yyyy-mm-dd`, `yyyy-Www`. Kenya dates; weeks run Monday to Sunday. |\n| `from`, `to` | `yyyy-mm-dd`, inclusive. Not together with `period`. |\n| `recordType` | `Case` or `Contact` (line-list only) |\n| `status` | Contacts only: `active` (inside 21 days), `flagged` (reported symptoms), `lost` (3+ days missed), `completed` (21 days done), `converted` (became a case) |\n| `format` | `json` (default) or `csv` |\n| `limit`, `offset` | Paging: `limit` 1-50000 (default 5000), `offset` default 0 |\n\n**JSON response:** `{ status, period, from, to, dateField, total, limit, offset, count, columns, rows }`, where `total` is the full count and `rows` is this page. **CSV:** a file download with the full count in the `X-Total-Count` header.\n\n| Status | Meaning |\n|---|---|\n| 200 | Rows returned |\n| 400 | Bad parameter; `error` says which |\n| 401 | Missing, invalid or expired token, wrong client secret, or wrong API key |\n| 403 | Client not in `REPORTS_CLIENT_IDS` |\n| 503 | Line lists not configured on this server (`ANALYTICS_DB_URL` unset) |\n",
+    "description": "VHF line lists from hie-auth, read from the analytics Postgres: the same rows and columns as the Superset VHF datasets.\n\n| Endpoint | Rows | Date filter on |\n|---|---|---|\n| `GET /reports/vhf/line-list` | Cases and contacts, one per VHF record (Superset \"VHF Line List\") | Date Reported |\n| `GET /reports/vhf/contacts` | Contacts with their 21-day follow-up (Superset \"vhf_contacts\") | contact_date |\n\n**Auth: client ID and secret.** Set `{{clientId}}` and `{{clientSecret}}` to a Keycloak client listed in the server's `REPORTS_CLIENT_IDS` (Client authentication and Service accounts roles on). Before each request the collection gets a token from `POST /reports/vhf/token` (urlencoded body, or HTTP Basic `client_id:client_secret`) when it has none or it is about to expire (tokens last 30 minutes), so you can just send requests. A client token sees every area and is refused everywhere except `/reports/vhf/*`.\n\nAlternative: `X-Api-Key: {{reportsApiKey}}` (the server's `REPORTS_API_KEY`), see **System access (API key)**.\n\n**Query parameters** (all optional)\n\n| Parameter | Values |\n|---|---|\n| `period` | `today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `this_year`, `last_year`, `last_<N>_days`, `yyyy`, `yyyy-mm`, `yyyy-mm-dd`, `yyyy-Www`. Kenya dates; weeks run Monday to Sunday. |\n| `from`, `to` | `yyyy-mm-dd`, inclusive. Not together with `period`. |\n| `recordType` | `Case` or `Contact` (line-list only) |\n| `status` | Contacts only: `active` (inside 21 days), `flagged` (reported symptoms), `lost` (3+ days missed), `completed` (21 days done), `converted` (became a case) |\n| `format` | `json` (default) or `csv` |\n| `limit`, `offset` | Paging: `limit` 1-50000 (default 5000), `offset` default 0 |\n\n**JSON response:** `{ status, period, from, to, dateField, total, limit, offset, count, columns, rows }`, where `total` is the full count and `rows` is this page. **CSV:** a file download with the full count in the `X-Total-Count` header.\n\n| Status | Meaning |\n|---|---|\n| 200 | Rows returned |\n| 400 | Bad parameter; `error` says which |\n| 401 | Missing, invalid or expired token, wrong client secret, or wrong API key |\n| 403 | Client not in `REPORTS_CLIENT_IDS` |\n| 503 | Line lists not configured on this server (`ANALYTICS_DB_URL` unset) |\n",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -121,7 +121,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -167,7 +167,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -208,7 +208,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -259,7 +259,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -300,7 +300,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -351,7 +351,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -453,7 +453,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -494,7 +494,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -540,7 +540,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -586,7 +586,51 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Completed follow-up",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API_HOST}}/reports/vhf/contacts?status=completed&period=this_year",
+              "host": [
+                "{{API_HOST}}"
+              ],
+              "path": [
+                "reports",
+                "vhf",
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "completed"
+                },
+                {
+                  "key": "period",
+                  "value": "this_year"
+                }
+              ]
+            },
+            "description": "Contacts who finished the 21-day follow-up window (`status=completed`)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -632,7 +676,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }
@@ -744,7 +788,7 @@
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
                   "pm.test(\"has rows\", () => pm.expect(b.rows).to.be.an(\"array\"));",
-                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"…\"} to ${b.to ?? \"…\"}`);"
+                  "console.log(`${b.count} of ${b.total} rows, ${b.dateField} ${b.from ?? \"\u2026\"} to ${b.to ?? \"\u2026\"}`);"
                 ]
               }
             }

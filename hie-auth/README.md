@@ -19,7 +19,7 @@ Lookup order: **Client Registry** first; on not-found, **IPRS**. `CR_BASE_URL` i
 | `IPRS_API_TOKEN` | Optional Bearer token for IPRS, used only when no Basic auth is configured |
 | `IPRS_TIMEOUT_MS` | Optional IPRS timeout (default `10000`) |
 
-Allowed `identification_type` values: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID.
+Allowed `identification_type` values: Temporary ID, Alien ID, Refugee ID, Mandate Number, Birth Certificate, National ID, Birth Notification, ClientRegistry ID, Passport.
 
 **Registry format:** `GET /provider/patients/registry` takes the same query and runs the same lookup (CR, then IPRS), but returns the patient in the Client Registry's own JSON format instead of FHIR:
 
