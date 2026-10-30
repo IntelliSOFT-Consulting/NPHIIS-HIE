@@ -54,7 +54,7 @@ def counts_table(groupby, order_label):
 LIST_COLUMNS = [
     "Date Alerted", "Alert ID", "Source", "Reported By", "Patient Name", "Sex", "Age", "County",
     "Sub County", "Symptoms", "Travelled", "Meets Definition", "Sample Taken", "Vital Status",
-    "Investigated", "Days To Visit",
+    "Investigated", "Visit Lag",
 ]
 
 # (name, params, width)
