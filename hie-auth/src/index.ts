@@ -10,6 +10,7 @@ import ClientAuth from './routes/client-auth'
 import ProviderAuth from './routes/provider-auth'
 import Screenings from './routes/screenings'
 import Profiles from './routes/profiles'
+import PermissionProfiles from './routes/permission-profiles'
 import Contacts from './routes/contacts'
 import Reports from './routes/reports'
 import VhfLineLists from './routes/vhf-line-lists'
@@ -58,6 +59,7 @@ app.use((req, res, next) => {
 app.use('/client', ClientAuth)
 app.use('/provider/screenings', Screenings)
 app.use('/provider/profiles', Profiles)
+app.use('/provider/permission-profiles', PermissionProfiles)
 app.use('/provider/contacts', Contacts)
 app.use('/provider', ProviderAuth)
 app.use('/reports/vhf', VhfLineLists)

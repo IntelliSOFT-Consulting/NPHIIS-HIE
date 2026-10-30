@@ -26,13 +26,6 @@ export type Permission = keyof typeof PERMISSIONS;
 
 export const ALL_PERMISSIONS = Object.keys(PERMISSIONS) as Permission[];
 
-export interface Profile {
-    /** Display name. */
-    name: string;
-    level: Level;
-    permissions: Permission[];
-}
-
 const SURVEILLANCE_OFFICER: Permission[] = [
     "reports.idsr.view",
     "reports.vhf.view",
@@ -40,48 +33,56 @@ const SURVEILLANCE_OFFICER: Permission[] = [
     "vhf.contacts.manage",
 ];
 
-/** Existing Keycloak roles as profiles, keyed by role name. */
+/** A permission profile: what a job function can do, whatever level it works at. */
+export interface PermissionProfile {
+    name: string;
+    permissions: Permission[];
+}
+
+/** Built-in permission profiles, by key. */
+export const BUILT_IN_PERMISSION_PROFILES: Record<string, PermissionProfile> = {
+    ADMINISTRATOR: { name: "Administrator", permissions: ALL_PERMISSIONS },
+    FOCAL_PERSON: { name: "Focal Person", permissions: [...SURVEILLANCE_OFFICER, "specimens.view", "screenings.view"] },
+    VIEWER: { name: "Viewer", permissions: ["reports.idsr.view", "specimens.view", "screenings.view"] },
+    LAB: { name: "Lab", permissions: ["lab.enter_results", "specimens.view"] },
+    NATIONAL_LAB: { name: "National Lab", permissions: ["lab.enter_results", "lab.national_scope", "specimens.view"] },
+    SURVEILLANCE_OFFICER: { name: "Surveillance Officer", permissions: SURVEILLANCE_OFFICER },
+    FACILITY_FOCAL_PERSON: { name: "Facility Focal Person", permissions: ["reports.idsr.view", "reports.vhf.view"] },
+    CALL_CENTRE: { name: "Call Centre", permissions: ["callcentre.use"] },
+    FIELD_WORKER: { name: "Field Worker", permissions: [] },
+};
+
+/** A role is a permission profile at a level. */
+export interface Profile {
+    /** Display name. */
+    name: string;
+    level: Level;
+    permissions: Permission[];
+    /** Key of the built-in permission profile the role inherits (built-in roles only). */
+    profile?: string;
+}
+
+const builtInRole = (name: string, level: Level, profile: string): Profile => ({
+    name,
+    level,
+    profile,
+    permissions: BUILT_IN_PERMISSION_PROFILES[profile].permissions,
+});
+
+/** Existing Keycloak roles: a built-in permission profile at a level, keyed by role name. */
 export const BUILT_IN_PROFILES: Record<string, Profile> = {
-    ADMINISTRATOR: { name: "Administrator", level: "NATIONAL", permissions: ALL_PERMISSIONS },
-    SUPERUSER: { name: "Superuser", level: "NATIONAL", permissions: ALL_PERMISSIONS },
-    NATIONAL_FOCAL_PERSON: {
-        name: "National Focal Person",
-        level: "NATIONAL",
-        permissions: [...SURVEILLANCE_OFFICER, "specimens.view", "screenings.view"],
-    },
-    NATIONAL_VIEWER: {
-        name: "National Viewer",
-        level: "NATIONAL",
-        permissions: ["reports.idsr.view", "specimens.view", "screenings.view"],
-    },
-    NATIONAL_LAB: {
-        name: "National Lab",
-        level: "NATIONAL",
-        permissions: ["lab.enter_results", "lab.national_scope", "specimens.view"],
-    },
-    NATIONAL_CALL_CENTER_AGENTS: { name: "Call Centre Agent", level: "NATIONAL", permissions: ["callcentre.use"] },
-    COUNTY_DISEASE_SURVEILLANCE_OFFICER: {
-        name: "County Disease Surveillance Officer",
-        level: "COUNTY",
-        permissions: SURVEILLANCE_OFFICER,
-    },
-    SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER: {
-        name: "Sub-County Disease Surveillance Officer",
-        level: "SUB_COUNTY",
-        permissions: SURVEILLANCE_OFFICER,
-    },
-    FACILITY_SURVEILLANCE_FOCAL_PERSON: {
-        name: "Facility Surveillance Focal Person",
-        level: "FACILITY",
-        permissions: ["reports.idsr.view", "reports.vhf.view"],
-    },
-    LAB_TECHNICIAN: {
-        name: "Lab Technician",
-        level: "FACILITY",
-        permissions: ["lab.enter_results", "specimens.view"],
-    },
-    SUPERVISORS: { name: "Supervisor", level: "FACILITY", permissions: [] },
-    VACCINATOR: { name: "Vaccinator", level: "FACILITY", permissions: [] },
+    ADMINISTRATOR: builtInRole("Administrator", "NATIONAL", "ADMINISTRATOR"),
+    SUPERUSER: builtInRole("Superuser", "NATIONAL", "ADMINISTRATOR"),
+    NATIONAL_FOCAL_PERSON: builtInRole("National Focal Person", "NATIONAL", "FOCAL_PERSON"),
+    NATIONAL_VIEWER: builtInRole("National Viewer", "NATIONAL", "VIEWER"),
+    NATIONAL_LAB: builtInRole("National Lab", "NATIONAL", "NATIONAL_LAB"),
+    NATIONAL_CALL_CENTER_AGENTS: builtInRole("Call Centre Agent", "NATIONAL", "CALL_CENTRE"),
+    COUNTY_DISEASE_SURVEILLANCE_OFFICER: builtInRole("County Disease Surveillance Officer", "COUNTY", "SURVEILLANCE_OFFICER"),
+    SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER: builtInRole("Sub-County Disease Surveillance Officer", "SUB_COUNTY", "SURVEILLANCE_OFFICER"),
+    FACILITY_SURVEILLANCE_FOCAL_PERSON: builtInRole("Facility Surveillance Focal Person", "FACILITY", "FACILITY_FOCAL_PERSON"),
+    LAB_TECHNICIAN: builtInRole("Lab Technician", "FACILITY", "LAB"),
+    SUPERVISORS: builtInRole("Supervisor", "FACILITY", "FIELD_WORKER"),
+    VACCINATOR: builtInRole("Vaccinator", "FACILITY", "FIELD_WORKER"),
 };
 
 /**
