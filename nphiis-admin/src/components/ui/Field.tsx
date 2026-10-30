@@ -12,6 +12,11 @@ import {
   type InputHTMLAttributes,
 } from 'react';
 import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
   Listbox,
   ListboxButton,
   ListboxOption,
@@ -365,7 +370,12 @@ export interface SelectProps {
   invalid?: boolean;
   disabled?: boolean;
   className?: string;
+  /** Type to filter the options. Default: on for lists longer than SEARCH_FROM options. */
+  searchable?: boolean;
 }
+
+/** Lists with more options than this get a search box (roles, counties, facilities). */
+const SEARCH_FROM = 7;
 
 /**
  * Untitled-UI styled dropdown built on Headless UI's Listbox so the panel,
@@ -386,7 +396,23 @@ export function Select({
   invalid,
   disabled,
   className = '',
+  searchable,
 }: SelectProps) {
+  if (searchable ?? options.length > SEARCH_FROM) {
+    return (
+      <SearchableSelect
+        id={id}
+        name={name}
+        value={value}
+        onChange={onChange}
+        options={options}
+        placeholder={placeholder}
+        invalid={invalid}
+        disabled={disabled}
+        className={className}
+      />
+    );
+  }
   const selected = options.find((o) => o.value === value);
   return (
     <Listbox value={value} onChange={onChange} disabled={disabled}>
@@ -451,6 +477,85 @@ export function Select({
         </Transition>
       </div>
     </Listbox>
+  );
+}
+
+/** The Select with a text box: typing filters the options (matches any part of the label). */
+function SearchableSelect({
+  id,
+  name,
+  value,
+  onChange,
+  options,
+  placeholder = 'Select…',
+  invalid,
+  disabled,
+  className = '',
+}: SelectProps) {
+  const [query, setQuery] = useState('');
+  const q = query.trim().toLowerCase();
+  // An empty-valued option is the "Select…" placeholder row; it makes no sense while searching.
+  const shown = q
+    ? options.filter((o) => o.value !== '' && o.label.toLowerCase().includes(q))
+    : options;
+  return (
+    <Combobox
+      value={value}
+      onChange={(v: string | null) => onChange(v ?? '')}
+      onClose={() => setQuery('')}
+      disabled={disabled}
+      immediate
+    >
+      <div className="relative">
+        <ComboboxInput
+          id={id}
+          name={name}
+          autoComplete="off"
+          placeholder={placeholder}
+          displayValue={(v: string) => options.find((o) => o.value === v)?.label ?? ''}
+          onChange={(e) => setQuery(e.target.value)}
+          // The box holds the chosen label; select it so typing replaces it instead of adding to it.
+          onFocus={(e) => e.target.select()}
+          onClick={(e) => (e.target as HTMLInputElement).select()}
+          className={`${inputBase} pr-10 ${invalid ? inputError : inputDefault} ${className}`}
+        />
+        <ComboboxButton className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+          <ChevronDown className="h-4 w-4" aria-hidden="true" />
+        </ComboboxButton>
+        <Transition
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+          afterLeave={() => setQuery('')}
+        >
+          <ComboboxOptions
+            anchor={{ to: 'bottom start', gap: 4 }}
+            className="z-50 max-h-60 w-[var(--input-width)] overflow-auto rounded-lg bg-white py-1 shadow-lg ring-1 ring-gray-200 focus:outline-none text-sm empty:invisible"
+          >
+            {shown.length === 0 && <div className="px-4 py-2 text-gray-500">No matches</div>}
+            {shown.map((o) => (
+              <ComboboxOption key={o.value} value={o.value} disabled={o.disabled} as={Fragment}>
+                {({ focus, selected }) => (
+                  <li
+                    className={`relative cursor-default select-none py-2 pl-9 pr-4 ${
+                      o.disabled ? 'text-gray-400 cursor-not-allowed' : focus ? 'bg-nphi-50 text-nphi-900' : 'text-gray-900'
+                    }`}
+                  >
+                    <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>{o.label}</span>
+                    {selected && (
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-nphi-700">
+                        <Check className="h-4 w-4" />
+                      </span>
+                    )}
+                  </li>
+                )}
+              </ComboboxOption>
+            ))}
+          </ComboboxOptions>
+        </Transition>
+      </div>
+    </Combobox>
   );
 }
 

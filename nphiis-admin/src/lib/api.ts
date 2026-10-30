@@ -47,6 +47,10 @@ interface UserInfo {
   firstName: string;
   lastName: string;
   role: string;
+  /** Generic access model from hie-auth (absent for a role it does not know). */
+  level?: string | null;
+  profile?: string | null;
+  permissions?: string[] | null;
   id: string;
   idNumber: string;
   fullNames: string;
@@ -247,6 +251,7 @@ export const userApi = {
           password: userData.password,
           email: userData.email,
           role: userData.role,
+          profile: userData.profile || undefined,
           firstName: userData.firstName,
           lastName: userData.lastName,
           phone: userData.phone,
@@ -310,6 +315,10 @@ export const userApi = {
         apiPayload.phone = userData.phone;
       }
       
+      if (userData.profile) {
+        apiPayload.profile = userData.profile;
+      }
+
       if (userData.role) {
         apiPayload.role = userData.role;
       }

@@ -155,3 +155,35 @@ describe("toScreenedPerson", () => {
     expect(resulted.specimens[0]).toMatchObject({ label: "s1", status: "final-result", result: "Negative" });
   });
 });
+
+describe("assignScreeningNumbers", () => {
+  const s = (id: string, screenedAt: string, screeningNumber?: string) => ({
+    id,
+    screenedAt,
+    screeningNumber,
+    screeningType: "entry" as const,
+    symptoms: [],
+    trips: [],
+  });
+
+  it("keeps a number a screening recorded and matches the rest by order", async () => {
+    const mod = await import("./fhir-screenings");
+    const out = mod.assignScreeningNumbers(
+      [s("c", "2026-10-29T13:10:00", "EVD-20261029-0058"), s("b", "2026-10-29T12:57:00", "a-uuid"), s("a", "2026-10-29T11:54:00")],
+      ["EVD-20261028-0053", "EVD-20261029-0056", "EVD-20261029-0058"],
+    );
+    const by = Object.fromEntries(out.map((x) => [x.id, x]));
+    expect(by.c.screeningNumber).toBe("EVD-20261029-0058");
+    expect(by.c.numberInferred).toBeUndefined();
+    // The two without a recorded number take the two spare numbers, oldest with the lowest.
+    expect(by.a.screeningNumber).toBe("EVD-20261028-0053");
+    expect(by.b.screeningNumber).toBe("EVD-20261029-0056");
+    expect(by.a.numberInferred && by.b.numberInferred).toBe(true);
+  });
+
+  it("shows no number rather than guess when the counts do not match", async () => {
+    const mod = await import("./fhir-screenings");
+    const out = mod.assignScreeningNumbers([s("a", "2026-10-29T11:00:00"), s("b", "2026-10-29T12:00:00")], ["EVD-1"]);
+    expect(out.every((x) => x.screeningNumber === undefined)).toBe(true);
+  });
+});

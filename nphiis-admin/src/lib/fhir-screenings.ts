@@ -101,6 +101,8 @@ export function toScreening(qr: any): Screening {
   const temperature = answer(qr.item, "screening-temperature");
   return {
     id: qr.id,
+    // New responses record the number; some screening systems use it as the response identifier.
+    screeningNumber: answer(qr.item, "screening-number") ?? qr.identifier?.value,
     screenedAt: qr.authored,
     screeningType: exit ? "exit" : "entry",
     outcome: isScreeningOutcome(outcome) ? outcome : undefined,
@@ -160,12 +162,43 @@ export function toScreenedSpecimen(task: any): ScreenedSpecimen {
   };
 }
 
+/**
+ * Gives each screening its own Screening No. A screening keeps the number it recorded when that is
+ * one of the person's numbers. The rest (older records, and the VHF case form, which keep the number
+ * only on the person) are matched by order when there are as many left over as numbers, and marked
+ * as inferred; otherwise they show no number rather than a wrong one.
+ */
+export function assignScreeningNumbers(screenings: Screening[], numbers: string[]): Screening[] {
+  const known = new Set(numbers);
+  const withNumber = screenings.map((s) => (s.screeningNumber && known.has(s.screeningNumber) ? s : { ...s, screeningNumber: undefined }));
+  const used = new Set(withNumber.map((s) => s.screeningNumber).filter(Boolean));
+  const spare = numbers.filter((n) => !used.has(n)).sort();
+  const unnumbered = withNumber
+    .filter((s) => !s.screeningNumber)
+    .sort((a, b) => (a.screenedAt ?? "").localeCompare(b.screenedAt ?? ""));
+  if (spare.length && spare.length === unnumbered.length) {
+    unnumbered.forEach((s, i) => {
+      s.screeningNumber = spare[i];
+      s.numberInferred = true;
+    });
+  }
+  return withNumber;
+}
+
 export function toScreenedPerson(patient: any, qrs: any[], tasks: any[]): ScreenedPerson {
   const ids: any[] = patient.identifier ?? [];
   const epid = ids.find((i) => isEpid(i) && i.value?.trim())?.value?.trim();
-  const screenings = qrs
-    .map(toScreening)
-    .sort((a, b) => (b.screenedAt ?? "").localeCompare(a.screenedAt ?? ""));
+  const numbers = Array.from(
+    new Set(
+      ids
+        .filter((i) => (i.system === SCREENING_NUMBER_SYSTEM || i.system === SCREENED_SYSTEM) && i.value?.trim())
+        .map((i) => i.value.trim() as string),
+    ),
+  );
+  const screenings = assignScreeningNumbers(
+    qrs.map(toScreening).sort((a, b) => (b.screenedAt ?? "").localeCompare(a.screenedAt ?? "")),
+    numbers,
+  );
   const specimens = tasks
     .map(toScreenedSpecimen)
     .sort((a, b) => (b.submittedAt ?? "").localeCompare(a.submittedAt ?? ""));
@@ -180,13 +213,7 @@ export function toScreenedPerson(patient: any, qrs: any[], tasks: any[]): Screen
 
   return {
     patientId: patient.id,
-    screeningNumbers: Array.from(
-      new Set(
-        ids
-          .filter((i) => (i.system === SCREENING_NUMBER_SYSTEM || i.system === SCREENED_SYSTEM) && i.value?.trim())
-          .map((i) => i.value.trim() as string),
-      ),
-    ),
+    screeningNumbers: numbers,
     name:
       (name?.text ?? [...(name?.given ?? []), name?.family].filter(Boolean).join(" ")).trim() ||
       undefined,
@@ -196,7 +223,7 @@ export function toScreenedPerson(patient: any, qrs: any[], tasks: any[]): Screen
     nationality: patient.extension?.find((e: any) => e?.url === NATIONALITY_EXT)?.extension?.[0]
       ?.valueCodeableConcept?.text,
     ...countyAndSubCounty(patient),
-    identifiers: ids.map(identifierLabel).filter((l): l is string => !!l),
+    identifiers: Array.from(new Set(ids.map(identifierLabel).filter((l): l is string => !!l))),
     screenings,
     epid,
     specimens,

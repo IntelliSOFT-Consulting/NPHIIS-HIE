@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { ADMIN_ROLES, LAB_ROLES } from "@/lib/roles";
+
 import UserRoleBreakdown from "../UserRoleBreakdown";
 import CountyDashboardPanel from "./CountyDashboardPanel";
 import SubCountyDashboardPanel from "./SubCountyDashboardPanel";
@@ -17,9 +17,9 @@ import ReportsSection from "./ReportsSection";
 // dashboards. Geographic scopes run tightest-first so a user carrying several
 // claims lands on the most specific view.
 export default function DashboardHome() {
-  const { hasRole } = useAuth();
+  const { hasRole, can } = useAuth();
 
-  if (hasRole(ADMIN_ROLES)) {
+  if (can('USERS_MANAGE')) {
     return (
       <div className="space-y-4">
         <UserRoleBreakdown />
@@ -38,7 +38,7 @@ export default function DashboardHome() {
     return <NationalDashboardPanel />;
   }
 
-  if (hasRole(LAB_ROLES)) return <LabDashboardPanel />;
+  if (can('LAB_ACCESS')) return <LabDashboardPanel />;
 
   if (hasRole(["FACILITY_SURVEILLANCE_FOCAL_PERSON"])) {
     return <FacilityDashboardPanel />;

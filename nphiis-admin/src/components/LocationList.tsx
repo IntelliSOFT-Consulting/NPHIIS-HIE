@@ -308,18 +308,13 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Locations Management</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Manage FHIR locations in the system
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-500">
+      <div className="bg-white shadow rounded-lg px-4 py-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="mr-auto">
+            <h2 className="text-base font-semibold text-gray-900 leading-tight">Locations</h2>
+            <div className="text-xs text-gray-500">
               {locations.length > 0 ? (
                 <>
                   {totalLocations > 0 ? (
@@ -332,28 +327,19 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
                 'No locations'
               )}
             </div>
-            <button
-              onClick={onCreateLocation}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Create Location
-            </button>
           </div>
-        </div>
 
-        {/* Search and Filter */}
-        <div className="mt-4 flex gap-4">
-          <div className="flex-1 relative">
+          {/* Search and Filter */}
+          <div className="flex-1 min-w-[16rem] max-w-xl relative">
             <label htmlFor="location-search" className="sr-only">
               Search locations
             </label>
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
               id="location-search"
               placeholder="Search locations by name..."
-              className="pl-10 pr-10 py-2 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-9 pr-9 py-1.5 w-full text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-nphi-500 focus:border-transparent"
               value={nameSearch}
               onChange={(e) => handleNameSearchChange(e.target.value)}
             />
@@ -367,12 +353,12 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
             <label htmlFor="location-type-filter" className="sr-only">
               Filter by type
             </label>
-            <FunnelIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <FunnelIcon className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <select
               id="location-type-filter"
               value={filterType}
               onChange={(e) => handleTypeFilterChange(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+              className="pl-8 pr-7 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-nphi-500 focus:border-transparent appearance-none bg-white"
             >
               <option value="">All Types</option>
               {LOCATION_TYPES.map((type) => (
@@ -382,6 +368,13 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
               ))}
             </select>
           </div>
+          <button
+            onClick={onCreateLocation}
+            className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-nphi-gradient hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-nphi-500"
+          >
+            <PlusIcon className="h-4 w-4 mr-1.5" />
+            Create Location
+          </button>
         </div>
       </div>
 
@@ -419,19 +412,19 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Location
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Type & Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Parent
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contact
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -439,14 +432,14 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
               <tbody className="bg-white divide-y divide-gray-200">
                 {locations.map((location) => (
                   <tr key={location.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <MapPinIcon className="h-5 w-5 text-blue-600" />
+                        <div className="flex-shrink-0 h-8 w-8">
+                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                            <MapPinIcon className="h-4 w-4 text-blue-600" />
                           </div>
                         </div>
-                        <div className="ml-4">
+                        <div className="ml-3 leading-tight">
                           <div className="text-sm font-medium text-gray-900">
                             {location.name}
                           </div>
@@ -460,25 +453,24 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="space-y-1">
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
                         {location.type && (
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeColor(location.typeCode)}`}>
+                          <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getTypeBadgeColor(location.typeCode)}`}>
                             {location.type}
                           </span>
                         )}
-                        <br />
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(location.status)}`}>
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusBadgeColor(location.status)}`}>
                           {location.status || 'active'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-2 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
                         {location.parentName || '-'}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2">
                       <div className="text-sm text-gray-900 space-y-1">
                         {location.phone && (
                           <div className="flex items-center">
@@ -495,7 +487,7 @@ export default function LocationList({ onCreateLocation, refreshTrigger }: Locat
                         {!location.phone && !location.email && '-'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => setSelectedLocation(location)}

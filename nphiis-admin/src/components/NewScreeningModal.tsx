@@ -3,7 +3,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuthedFetch } from '@/lib/auth-context';
-import { SCREENING_OUTCOME_LABEL, SCREENING_OUTCOMES, type ScreeningOutcome } from '@/lib/screenings';
+import {
+  SCREENING_OUTCOME_LABEL,
+  SCREENING_OUTCOMES,
+  SCREENING_TYPE_LABEL,
+  type ScreeningOutcome,
+  type ScreeningType,
+} from '@/lib/screenings';
 import { Alert } from './ui/Alert';
 import { CheckboxGroup, DateInput, Field, RadioGroup, Select, TextInput } from './ui/Field';
 import Spinner from './ui/Spinner';
@@ -11,6 +17,7 @@ import Spinner from './ui/Spinner';
 // Values accepted by hie-auth POST /provider/screenings (hie-auth src/lib/screening.ts).
 const ID_TYPES = [
   'National ID',
+  'Passport',
   'Alien ID',
   'Refugee ID',
   'Birth Certificate',
@@ -19,6 +26,26 @@ const ID_TYPES = [
   'Mandate Number',
   'ClientRegistry ID',
 ];
+
+/** ID types that do not say where the person is from. */
+const NATIONALITY_REQUIRED = ['Passport', 'Alien ID'];
+/** A Kenyan National ID number is 7 or 8 digits. */
+function idNumberError(type: string, value: string): string | null {
+  const v = value.trim();
+  if (type === 'National ID') {
+    return /^\d{7,8}$/.test(v) ? null : 'A National ID number must be 7 or 8 digits (numbers only).';
+  }
+  return /^[A-Za-z0-9][A-Za-z0-9/_-]{2,29}$/.test(v)
+    ? null
+    : 'An ID number must be 3 to 30 letters, digits, / _ or - (no spaces).';
+}
+
+/** Local 0xxxxxxxxx (10 digits) or international +<country code><number>. */
+function phoneError(value: string): string | null {
+  const v = value.replace(/[\s-]/g, '');
+  return !v || /^(0\d{9}|\+\d{8,15})$/.test(v) ? null : 'Phone must be 0xxxxxxxxx (10 digits) or +<country code><number>.';
+}
+
 const POE_TYPES = [
   { value: 'airport', label: 'Airport' },
   { value: 'seaport', label: 'Seaport' },
@@ -77,14 +104,19 @@ export default function NewScreeningModal({
 
   const [idType, setIdType] = useState('National ID');
   const [idValue, setIdValue] = useState('');
+  const [lookup, setLookup] = useState<
+    { state: 'idle' } | { state: 'checking' } | { state: 'found'; source: string } | { state: 'notfound' } | { state: 'error'; message: string }
+  >({ state: 'idle' });
   const [givenNames, setGivenNames] = useState('');
   const [familyName, setFamilyName] = useState('');
   const [gender, setGender] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [nationality, setNationality] = useState('');
   const [phone, setPhone] = useState('');
   const [county, setCounty] = useState('');
   const [subCounty, setSubCounty] = useState('');
 
+  const [screeningType, setScreeningType] = useState<ScreeningType>('entry');
   const [screenedOn, setScreenedOn] = useState(todayKenya());
   const [poeName, setPoeName] = useState('');
   const [poeType, setPoeType] = useState('');
@@ -99,6 +131,12 @@ export default function NewScreeningModal({
   const [outcome, setOutcome] = useState<ScreeningOutcome | ''>('');
 
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !saving && onClose();
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose, saving]);
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
@@ -116,12 +154,63 @@ export default function NewScreeningModal({
   const updateTrip = (i: number, patch: Partial<Trip>) =>
     setTrips((prev) => prev.map((t, j) => (j === i ? { ...t, ...patch } : t)));
 
+  // Any change to the ID makes an earlier lookup result stale.
+  const changeId = (type: string, value: string) => {
+    setIdType(type);
+    setIdValue(value);
+    setLookup({ state: 'idle' });
+  };
+
+  /** Look the ID up in the Client Registry, then IPRS, and fill in the person's details. */
+  async function validateId() {
+    const number = idValue.trim();
+    if (!number) return;
+    const invalid = idNumberError(idType, number);
+    if (invalid) {
+      setLookup({ state: 'error', message: invalid });
+      return;
+    }
+    setLookup({ state: 'checking' });
+    try {
+      const qs = new URLSearchParams({ identification_type: idType, identification_number: number });
+      const res = await authedFetch(`/api/provider/patients/registry?${qs}`);
+      const body = await res.json().catch(() => ({}));
+      if (res.ok && body.found) {
+        const p = body.patient ?? {};
+        const given = [p.first_name, p.middle_name].filter(Boolean).join(' ');
+        const sex = String(p.gender ?? '').toLowerCase();
+        if (given) setGivenNames(given);
+        if (p.last_name) setFamilyName(p.last_name);
+        if (['male', 'female', 'other'].includes(sex)) setGender(sex);
+        else if (sex === 'm') setGender('male');
+        else if (sex === 'f') setGender('female');
+        const dob = String(p.date_of_birth ?? '').slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dob)) setBirthDate(dob);
+        setLookup({ state: 'found', source: body.source === 'iprs' ? 'IPRS' : 'Client Registry' });
+      } else if (res.status === 400) {
+        setLookup({ state: 'notfound' });
+      } else {
+        setLookup({ state: 'error', message: body.error ?? `Lookup failed (${res.status}).` });
+      }
+    } catch {
+      setLookup({ state: 'error', message: 'Could not reach the registry.' });
+    }
+  }
+
   function validate(): string[] {
     const out: string[] = [];
     if (!idValue.trim()) out.push('Enter the ID number.');
+    else {
+      const invalid = idNumberError(idType, idValue);
+      if (invalid) out.push(invalid);
+    }
     if (!givenNames.trim() && !familyName.trim()) out.push('Enter the person’s name.');
+    if (NATIONALITY_REQUIRED.includes(idType) && !nationality) out.push(`Select the person’s nationality (required for ${idType}).`);
+    const phoneProblem = phoneError(phone);
+    if (phoneProblem) out.push(phoneProblem);
     if (!travelled) out.push('Answer whether the person has travelled.');
-    if (travelled === 'yes' && !trips.some((t) => t.country)) out.push('Add at least one country travelled from.');
+    if (travelled === 'yes' && !trips.some((t) => t.country))
+      out.push(screeningType === 'exit' ? 'Add the country the person is travelling to.' : 'Add at least one country travelled from.');
     for (const t of trips) {
       if (t.departureDate && t.arrivalDate && t.arrivalDate < t.departureDate)
         out.push('A trip’s arrival date is before its departure date.');
@@ -142,6 +231,7 @@ export default function NewScreeningModal({
     const filledTrips = travelled === 'yes' ? trips.filter((t) => t.country) : [];
     const payload = {
       screeningId,
+      screeningType,
       screenedAt: screenedOn || undefined,
       outcome: outcome || undefined,
       pointOfEntry: poeName.trim()
@@ -153,6 +243,7 @@ export default function NewScreeningModal({
         familyName: familyName.trim() || undefined,
         gender: gender || undefined,
         birthDate: birthDate || undefined,
+        nationality: nationality || undefined,
         phone: phone.trim() || undefined,
         address:
           county.trim() || subCounty.trim()
@@ -248,10 +339,44 @@ export default function NewScreeningModal({
           <FormSection title="Person">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="ID type" required>
-                <Select value={idType} onChange={setIdType} options={ID_TYPES.map((t) => ({ value: t, label: t }))} />
+                <Select value={idType} onChange={(v) => changeId(v, idValue)} options={ID_TYPES.map((t) => ({ value: t, label: t }))} />
               </Field>
               <Field label="ID number" required hint="An existing person with this ID gets the screening added to their record.">
-                <TextInput value={idValue} onChange={(e) => setIdValue(e.target.value)} />
+                <div className="flex gap-2">
+                  <TextInput
+                    value={idValue}
+                    onChange={(e) => changeId(idType, e.target.value)}
+                    inputMode={idType === 'National ID' ? 'numeric' : undefined}
+                    placeholder={idType === 'National ID' ? '7 or 8 digits' : undefined}
+                  />
+                  <button
+                    type="button"
+                    onClick={validateId}
+                    disabled={!idValue.trim() || lookup.state === 'checking'}
+                    className="shrink-0 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {lookup.state === 'checking' ? 'Checking…' : 'Validate'}
+                  </button>
+                </div>
+                {lookup.state === 'found' && (
+                  <p className="mt-1 text-xs text-emerald-700">Verified in {lookup.source}; details filled in below.</p>
+                )}
+                {lookup.state === 'notfound' && (
+                  <p className="mt-1 text-xs text-amber-700">
+                    Not found in the Client Registry or IPRS. You can still continue and enter the details by hand.
+                  </p>
+                )}
+                {lookup.state === 'error' && <p className="mt-1 text-xs text-accent-700">{lookup.message}</p>}
+              </Field>
+              <Field label="Nationality" required={NATIONALITY_REQUIRED.includes(idType)}>
+                <Select
+                  value={nationality}
+                  onChange={setNationality}
+                  options={[
+                    { value: '', label: 'Select…' },
+                    ...countries.map((c) => ({ value: c.display, label: c.display })),
+                  ]}
+                />
               </Field>
               <Field label="Given names" required>
                 <TextInput value={givenNames} onChange={(e) => setGivenNames(e.target.value)} />
@@ -287,7 +412,18 @@ export default function NewScreeningModal({
           </FormSection>
 
           <FormSection title="Where and when">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Screening type" required>
+              <RadioGroup
+                name="screeningType"
+                value={screeningType}
+                onChange={(v) => setScreeningType(v as ScreeningType)}
+                options={[
+                  { value: 'entry', label: `${SCREENING_TYPE_LABEL.entry} (arriving in Kenya)` },
+                  { value: 'exit', label: `${SCREENING_TYPE_LABEL.exit} (leaving Kenya)` },
+                ]}
+              />
+            </Field>
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <Field label="Date screened">
                 <DateInput value={screenedOn} onChange={setScreenedOn} noFuture />
               </Field>
@@ -309,7 +445,7 @@ export default function NewScreeningModal({
           </FormSection>
 
           <FormSection title="Travel history">
-            <Field label="Has the person travelled in the last 21 days?" required>
+            <Field label={screeningType === 'exit' ? 'Is the person travelling?' : 'Has the person travelled in the last 21 days?'} required>
               <RadioGroup
                 name="travelled"
                 value={travelled}
@@ -325,7 +461,13 @@ export default function NewScreeningModal({
               <div className="mt-4 space-y-3">
                 {trips.map((t, i) => (
                   <div key={i} className="grid gap-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_auto] sm:items-start rounded-xl border border-gray-100 p-3">
-                    <Select value={t.country} onChange={(v) => updateTrip(i, { country: v })} options={countryOptions} />
+                    <Select
+                      value={t.country}
+                      onChange={(v) => updateTrip(i, { country: v })}
+                      options={countryOptions.map((o) =>
+                        o.value === '' ? { ...o, label: screeningType === 'exit' ? 'Travelling to (country)' : 'Travelled from (country)' } : o,
+                      )}
+                    />
                     <TextInput placeholder="City / place" value={t.city} onChange={(e) => updateTrip(i, { city: e.target.value })} />
                     <DateInput value={t.departureDate} onChange={(v) => updateTrip(i, { departureDate: v })} noFuture placeholder="Departed" />
                     <DateInput value={t.arrivalDate} onChange={(v) => updateTrip(i, { arrivalDate: v })} noFuture placeholder="Arrived" />

@@ -118,6 +118,15 @@ export type ScreeningPayload = {
 const isObj = (v: unknown): v is Record<string, any> =>
     v != null && typeof v === "object" && !Array.isArray(v);
 const isStr = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
+/** Kenyan National ID numbers are 7 or 8 digits. */
+/** Identification types that do not say where the person is from, so nationality is required. */
+export const NATIONALITY_REQUIRED_TYPES: readonly string[] = ["Passport", "Alien ID"];
+export const NATIONAL_ID_RE = /^\d{7,8}$/;
+/** Other document numbers: letters, digits, / _ - only, 3 to 30 characters (no official format is enforced). */
+export const DOCUMENT_NUMBER_RE = /^[A-Za-z0-9][A-Za-z0-9/_-]{2,29}$/;
+/** Local 0xxxxxxxxx (10 digits) or international +<country code><number> (8 to 15 digits); spaces and dashes ignored. */
+export const PHONE_RE = /^(0\d{9}|\+\d{8,15})$/;
+export const normalizePhone = (v: string) => v.replace(/[\s-]/g, "");
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const DATETIME_RE = /^\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:\d{2})?)?$/;
 
@@ -132,6 +141,8 @@ export function validateScreeningPayload(
         errors.push("screeningNumber must be a non-empty string when given");
     if (body.screenedAt != null && !(isStr(body.screenedAt) && DATETIME_RE.test(body.screenedAt)))
         errors.push("screenedAt must be an ISO 8601 date/datetime");
+    else if (isStr(body.screenedAt) && body.screenedAt.slice(0, 10) > todayInKenya())
+        errors.push("screenedAt cannot be in the future");
     if (body.screeningType != null && !(SCREENING_TYPES as readonly string[]).includes(body.screeningType))
         errors.push(`screeningType must be one of ${SCREENING_TYPES.join(", ")}`);
     if (body.outcome != null && !(SCREENING_OUTCOMES as readonly string[]).includes(body.outcome))
@@ -157,10 +168,26 @@ export function validateScreeningPayload(
                 if (!isObj(id) || !isStr(id.value)) errors.push(`patient.identifiers[${i}].value is required`);
                 else if (!isStr(id.type) || !isIdentificationType(id.type))
                     errors.push(`patient.identifiers[${i}].type must be a valid identification type`);
+                else if (id.type === "National ID" && !NATIONAL_ID_RE.test(id.value.trim()))
+                    errors.push(`patient.identifiers[${i}].value must be a 7 or 8 digit National ID number`);
+                else if (id.type !== "National ID" && !DOCUMENT_NUMBER_RE.test(id.value.trim()))
+                    errors.push(`patient.identifiers[${i}].value must be 3 to 30 letters, digits, / _ or -`);
             });
         }
         if (patient.birthDate != null && !(isStr(patient.birthDate) && DATE_RE.test(patient.birthDate)))
             errors.push("patient.birthDate must be YYYY-MM-DD");
+        else if (isStr(patient.birthDate) && (patient.birthDate > todayInKenya() || patient.birthDate < "1900-01-01"))
+            errors.push("patient.birthDate cannot be in the future or before 1900");
+        if (patient.nationality != null && !isStr(patient.nationality))
+            errors.push("patient.nationality must be a non-empty string when given");
+        else if (
+            Array.isArray(patient.identifiers) &&
+            patient.identifiers.some((i: any) => NATIONALITY_REQUIRED_TYPES.includes(i?.type)) &&
+            !isStr(patient.nationality)
+        )
+            errors.push("patient.nationality is required when the identification type is Passport or Alien ID");
+        if (patient.phone != null && !(isStr(patient.phone) && PHONE_RE.test(normalizePhone(patient.phone))))
+            errors.push("patient.phone must be 0xxxxxxxxx (10 digits) or +<country code><number>");
         if (patient.gender != null && !["male", "female", "other", "unknown"].includes(patient.gender))
             errors.push("patient.gender must be male, female, other or unknown");
         if (patient.givenNames != null && !(Array.isArray(patient.givenNames) && patient.givenNames.every(isStr)))
@@ -374,6 +401,8 @@ export { VHF_CASE_LINK_IDS };
 export const SCREENING_LINK_IDS = {
     pointOfEntry: "point-of-entry",
     temperature: "screening-temperature",
+    /** The Screening No. this response was taken under (it is also on the Patient). */
+    screeningNumber: "screening-number",
     travelPurpose: "screening-travel-purpose",
 } as const;
 
@@ -687,6 +716,7 @@ export function buildScreeningQuestionnaireResponse(payload: ScreeningPayload, p
             payload.signsAndSymptoms?.temperatureCelsius != null ? { valueDecimal: payload.signsAndSymptoms.temperatureCelsius } : undefined,
         ),
         ...answered(SCREENING_LINK_IDS.travelPurpose, purpose ? { valueString: purpose } : undefined),
+        ...answered(SCREENING_LINK_IDS.screeningNumber, { valueString: (payload.screeningNumber ?? payload.screeningId).trim() }),
     ];
 
     return {

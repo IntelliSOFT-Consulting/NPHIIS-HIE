@@ -14,6 +14,7 @@ import { buildSession, type DecodedSession } from "@/lib/jwt";
 import {
   canAccess,
   hasAnyRole,
+  withPermissions,
   isApplicationRole,
   type Feature,
   type Role,
@@ -43,6 +44,8 @@ interface AuthContextValue {
   session: DecodedSession | null;
   user: SessionUser | null;
   roles: string[];
+  /** roles plus the user's permissions, for the role/permission helpers in lib/roles. */
+  accessRoles: string[];
   locationInfo?: LocationInfo;
   accessToken: string | null;
   isAuthenticated: boolean;
@@ -157,11 +160,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return ordered.filter(isApplicationRole);
   }, [session, user]);
 
+  const accessRoles = useMemo(
+    () =>
+      withPermissions(roles, {
+        level: stored?.userInfo?.level as string | null | undefined,
+        permissions: stored?.userInfo?.permissions as string[] | null | undefined,
+      }),
+    [roles, stored],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       session,
       user,
       roles,
+      accessRoles,
       // Prefer JWT-embedded claim (once Keycloak mapper is wired); fall back to
       // whatever /provider/me returned and we stashed in localStorage.
       locationInfo:
@@ -175,11 +188,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const list = Array.isArray(allowed) ? allowed : [allowed as string];
         return hasAnyRole(roles, list);
       },
-      can: (feature) => canAccess(roles, feature),
+      can: (feature) => canAccess(accessRoles, feature),
       signIn,
       signOut,
     }),
-    [session, user, roles, stored, isLoading, signIn, signOut],
+    [session, user, roles, accessRoles, stored, isLoading, signIn, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
