@@ -10,7 +10,9 @@
 -- table charts as sub-queries.
 WITH alerts AS (
   SELECT p.id AS patient_id,
-         MAX(CASE WHEN i.system = 'alert-rumor-log' THEN NULLIF(i.value, '') END) AS alert_uuid
+         MAX(CASE WHEN i.system = 'alert-rumor-log' THEN NULLIF(i.value, '') END) AS alert_uuid,
+         -- The standard Alert Log ID (e.g. KEN-NAI-EME-2026-ALR-001), assigned by hie-auth.
+         MAX(CASE WHEN i.system = 'http://hie.org/identifiers/ALERT_LOG_ID' THEN NULLIF(i.value, '') END) AS alert_log_id
   FROM public.patient_flat_pg p
   JOIN public.patient_identifier_pg i ON i.id = p.id
   WHERE p.active IS DISTINCT FROM false
@@ -101,7 +103,7 @@ o AS (
 )
 SELECT
   a.patient_id                                         AS "Patient ID",
-  COALESCE(o.alert_id, a.alert_uuid)                   AS "Alert ID",
+  COALESCE(a.alert_log_id, o.alert_id)                 AS "Alert ID",
   nphiis.to_date_safe(o.alert_date)                    AS "Date Alerted",
   DATE_TRUNC('week', nphiis.to_date_safe(o.alert_date))::date AS "Epi Week",
   COALESCE(NULLIF(o.source_other, ''), o.source)       AS "Source",
