@@ -18,43 +18,43 @@ const locations = {
   "a3-sub-county": { id: "s1", name: "Embakasi East" },
 };
 
-const advice: CallLogPayload = {
-  answers: {
-    "alert-date": "2026-10-21T10:15",
-    "alert-agent-id": "Jane Agent",
-    "alert-reporter-name": "Peter Caller",
-    "alert-reporter-mobile": "0712345678",
-    "alert-calling-about": "self",
-    "alert-source-type": "hotline",
-    "alert-call-pathway": "general-advice",
-    // Only asked on the assessment pathway: must not be saved.
-    "873240407472": "Someone Else",
-    "alert-call-end": "10:20",
-  },
-  locations,
+const answered = {
+  "alert-date": "2026-10-21",
+  "alert-source-type": "hotline",
+  "alert-reporter-name": "Peter Reporter",
+  "alert-reporter-mobile": "0712345678",
+  "486402457213": "Otieno",
+  "873240407472": "Mary",
+  "929966324957": "female",
+  "alert-age-unit": "years",
+  "492731638700": "34",
+  "alert-home-country": "KE",
+  "alert-mobile": "0798765432",
+  "alert-vital-status": "alive",
+  "alert-fever": "yes",
+  "alert-vomiting": "yes",
+  "alert-travelled": "no",
+  "alert-sample-collected": "yes",
+  "alert-meets-case-definition": "yes",
+  "alert-specimen-type": "oral-swab",
 };
 
 const assessment: CallLogPayload = {
-  answers: {
-    "alert-date": "2026-10-21T10:15",
-    "alert-agent-id": "Jane Agent",
-    "alert-reporter-name": "Peter Caller",
-    "alert-reporter-mobile": "0712345678",
-    "alert-calling-about": "family",
-    "alert-source-type": "community",
-    "alert-call-pathway": "assessment",
-    "873240407472": "Mary",
-    "486402457213": "Otieno",
-    "929966324957": "female",
-    "alert-mobile": "0798765432",
-    "alert-symptoms": "fever;vomiting",
-    "alert-exposures": "funeral-or-body",
-    "alert-classification": "possible",
-    "alert-routed-action": "pheoc-rrt",
-    "alert-action-status": "pending",
-    "alert-call-end": "10:25",
-  },
+  answers: answered,
   locations: { ...locations, "a2-ward": { id: "w1", name: "Utawala" } },
+};
+
+/** An alert with no patient name, to see the placeholder. */
+const advice: CallLogPayload = {
+  answers: {
+    "alert-date": "2026-10-21",
+    "alert-source-type": "hotline",
+    "alert-reporter-name": "Peter Reporter",
+    "alert-reporter-mobile": "0712345678",
+    // Only asked when a sample was collected: must not be saved.
+    "alert-meets-case-definition": "yes",
+  },
+  locations,
 };
 
 const CASE = { patientId: "case-9", epid: "KEN-NAI-EME-2026-VHF-001", name: "Mary Otieno" };
@@ -77,11 +77,10 @@ describe("buildCreateBundle", () => {
       expect.objectContaining({ system: "alert-rumor-log", value: encounter.id }),
     );
     expect(patient.identifier[0]).toMatchObject({ system: "system-creation", value: "2026-10-21 10:30:00" });
-    // Surname and the person's mobile are hidden questions on this form, as on mobile.
-    expect(patient.name).toEqual([{ given: ["Mary"] }]);
+    expect(patient.name).toEqual([{ family: "Otieno", given: ["Mary"] }]);
     expect(patient.gender).toBe("female");
-    expect(patient.telecom).toBeUndefined();
-    expect(obsFor(bundle, "486402457213")).toBeUndefined();
+    expect(patient.telecom).toEqual([{ system: "phone", value: "0798765432", use: "mobile" }]);
+    expect(obsFor(bundle, "486402457213").valueString).toBe("Otieno");
     expect(patient.address).toEqual([
       { state: "Embakasi East", city: "Nairobi", line: ["Embakasi East", "Nairobi"] },
     ]);
@@ -97,39 +96,35 @@ describe("buildCreateBundle", () => {
   it("writes one Observation per answer, with the answer text", () => {
     const bundle = mod.buildCreateBundle(assessment, { now: NOW, newId: ids() });
     expect(obsFor(bundle, "a3-sub-county").valueString).toBe("Embakasi East");
-    expect(obsFor(bundle, "alert-symptoms").valueString).toBe("Fever, Vomiting");
-    expect(obsFor(bundle, "alert-date").valueString).toBe("2026-10-21T10:15:00+03:00");
-    expect(obsFor(bundle, "alert-call-end").valueString).toBe("10:25:00");
-    expect(obsFor(bundle, "alert-symptoms").code.coding[0].system).toBe("http://snomed.info/sct");
+    expect(obsFor(bundle, "alert-fever").valueString).toBe("Yes");
+    expect(obsFor(bundle, "alert-source-type").valueString).toBe("Hotline");
+    expect(obsFor(bundle, "alert-date").valueString).toBe("2026-10-21");
     // Call logs get no EPID, provisional or otherwise.
     expect(obsFor(bundle, "EPID")).toBeUndefined();
     expect(obsFor(bundle, "linked-case-epid")).toBeUndefined();
     expect(JSON.stringify(bundle)).not.toContain("hie.org/identifiers/EPID");
   });
 
-  it("keeps repeated choices as separate response answers", () => {
+  it("keeps choices as coded answers and locations as references in the response", () => {
     const bundle = mod.buildCreateBundle(assessment, { now: NOW, newId: ids() });
     const [response] = byType(bundle, "QuestionnaireResponse");
-    const event = response.item.find((i: any) => i.linkId === "alert-event");
-    const symptoms = event.item.find((i: any) => i.linkId === "alert-symptoms");
-    expect(symptoms.answer.map((a: any) => a.valueCoding.code)).toEqual(["fever", "vomiting"]);
-    const source = response.item.find((i: any) => i.linkId === "alert-source");
-    expect(source.item[0].answer[0].valueReference).toEqual({ reference: "Location/c1", display: "Nairobi" });
+    const clinical = response.item.find((i: any) => i.linkId === "alert-clinical");
+    const fever = clinical.item.find((i: any) => i.linkId === "alert-fever");
+    expect(fever.answer.map((a: any) => a.valueCoding.code)).toEqual(["yes"]);
+    const patientGroup = response.item.find((i: any) => i.linkId === "alert-patient");
+    const county = patientGroup.item.find((i: any) => i.linkId === "a4-county");
+    expect(county.answer[0].valueReference).toEqual({ reference: "Location/c1", display: "Nairobi" });
   });
 
-  it("drops answers to questions the pathway does not ask, and names a caller calling about themselves", () => {
+  it("drops answers to questions the form does not ask for these answers", () => {
     const bundle = mod.buildCreateBundle(advice, { now: NOW, newId: ids() });
-    expect(obsFor(bundle, "873240407472")).toBeUndefined();
-    const [patient] = byType(bundle, "Patient");
-    expect(patient.name).toEqual([{ given: ["Peter Caller"] }]);
-    expect(patient.telecom[0].value).toBe("0712345678");
+    // The assessment section is only asked when a sample was collected.
+    expect(obsFor(bundle, "alert-meets-case-definition")).toBeUndefined();
+    expect(obsFor(bundle, "alert-reporter-name").valueString).toBe("Peter Reporter");
   });
 
-  it("names the Patient 'Alert' when nobody is named", () => {
-    const bundle = mod.buildCreateBundle(
-      { ...advice, answers: { ...advice.answers, "alert-calling-about": "chp" } },
-      { now: NOW, newId: ids() },
-    );
+  it("names the Patient 'Alert' when nobody is named, and never uses the reporter's name or phone", () => {
+    const bundle = mod.buildCreateBundle(advice, { now: NOW, newId: ids() });
     const [patient] = byType(bundle, "Patient");
     expect(patient.name).toEqual([{ family: "Alert" }]);
     expect(patient.telecom).toBeUndefined();
@@ -141,22 +136,21 @@ describe("reading a saved log back", () => {
     const bundle = mod.buildCreateBundle(assessment, { now: NOW, newId: ids() });
     const [response] = byType(bundle, "QuestionnaireResponse");
     const back = mod.payloadFromResponse(response);
-    expect(back.answers["alert-symptoms"]).toBe("fever;vomiting");
-    expect(back.answers["alert-date"]).toBe("2026-10-21T10:15");
-    expect(back.answers["alert-call-end"]).toBe("10:25");
+    expect(back.answers["alert-fever"]).toBe("yes");
+    expect(back.answers["alert-date"]).toBe("2026-10-21");
     expect(back.locations["a2-ward"]).toEqual({ id: "w1", name: "Utawala" });
     expect(back.answers["873240407472"]).toBe("Mary");
   });
 
   it("falls back to the Observations, matching option labels that contain commas", () => {
     const observations = [
-      { code: { coding: [{ code: "alert-calling-about" }] }, valueString: "Chief, village elder, or local administrator" },
-      { code: { coding: [{ code: "alert-symptoms" }] }, valueString: "Fever, Severe headache" },
+      { code: { coding: [{ code: "alert-travel-mode" }] }, valueString: "Road, public transport" },
+      { code: { coding: [{ code: "alert-fever" }] }, valueString: "Yes" },
       { code: { coding: [{ code: "a4-county" }] }, valueString: "Nairobi" },
     ];
     const back = mod.payloadFromObservations(observations);
-    expect(back.answers["alert-calling-about"]).toBe("chief");
-    expect(back.answers["alert-symptoms"]).toBe("fever;severe-headache");
+    expect(back.answers["alert-travel-mode"]).toBe("road-public");
+    expect(back.answers["alert-fever"]).toBe("yes");
     expect(back.locations["a4-county"]).toEqual({ id: "", name: "Nairobi" });
   });
 
@@ -166,10 +160,12 @@ describe("reading a saved log back", () => {
     const summary = mod.toSummary(patient, byType(bundle, "Observation"));
     expect(summary).toMatchObject({
       epid: "KEN-NAI-EME-2026-VHF-001",
-      callerName: "Peter Caller",
+      callerName: "Peter Reporter",
+      patientName: "Mary Otieno",
       county: "Nairobi",
-      pathway: "Symptoms or exposure assessment",
-      actionStatus: "Pending",
+      source: "Hotline",
+      vitalStatus: "Alive",
+      meetsDefinition: "Yes",
     });
   });
 });
@@ -188,24 +184,24 @@ describe("buildUpdateBundle", () => {
       observations: byType(created, "Observation"),
     };
     const edited: CallLogPayload = {
-      answers: { ...assessment.answers, "alert-action-status": "completed", "alert-description": "Sent RRT" },
+      answers: { ...assessment.answers, "alert-vital-status": "deceased", "alert-description": "Sent RRT" },
       locations,
     };
-    delete edited.answers["alert-exposures"];
+    delete edited.answers["alert-fever"];
 
     const bundle = mod.buildUpdateBundle(log, edited, { now: NOW, newId: () => "new-obs" });
     const puts = bundle.entry.filter((e) => e.request.method === "PUT").map((e) => e.resource!);
     const deletes = bundle.entry.filter((e) => e.request.method === "DELETE").map((e) => e.request.url);
 
-    const status = puts.find((r) => r.resourceType === "Observation" && r.code.coding[0].code === "alert-action-status");
-    expect(status?.id).toBe(obsFor(created, "alert-action-status").id);
-    expect(status?.valueString).toBe("Completed");
+    const status = puts.find((r) => r.resourceType === "Observation" && r.code.coding[0].code === "alert-vital-status");
+    expect(status?.id).toBe(obsFor(created, "alert-vital-status").id);
+    expect(status?.valueString).toBe("Deceased");
     expect(puts.find((r) => r.id === "new-obs")?.valueString).toBe("Sent RRT");
     // Unchanged answers are left alone; the EPID is never touched.
-    expect(puts.some((r) => r.resourceType === "Observation" && r.code.coding[0].code === "alert-symptoms")).toBe(false);
+    expect(puts.some((r) => r.resourceType === "Observation" && r.code.coding[0].code === "alert-source-type")).toBe(false);
     expect(deletes).toEqual(
       expect.arrayContaining([
-        `Observation/${obsFor(created, "alert-exposures").id}`,
+        `Observation/${obsFor(created, "alert-fever").id}`,
         `Observation/${obsFor(created, "a2-ward").id}`,
       ]),
     );
