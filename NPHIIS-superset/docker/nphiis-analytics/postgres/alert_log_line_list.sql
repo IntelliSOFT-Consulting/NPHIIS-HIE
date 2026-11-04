@@ -3,6 +3,7 @@
 -- Mobile saves each alert as a Patient with identifier system 'alert-rumor-log' and one
 -- Observation per answer, coded by linkId. The latest value per code is pivoted per patient,
 -- as in vhf_line_list.sql. Choice answers are stored as display text ("Yes", "Male").
+-- Alert ID is only the standard Alert Log ID; the old free-text 'alert-identifier' answer held names.
 -- Alerts saved before the form was reorganised use older codes (alert-name, alert-location,
 -- alert-signs-symptoms); they are read as a fallback so those rows are not empty.
 -- The pipeline writes missing values as '', hence the NULLIFs.
@@ -10,7 +11,9 @@
 -- table charts as sub-queries.
 WITH alerts AS (
   SELECT p.id AS patient_id,
-         MAX(CASE WHEN i.system = 'alert-rumor-log' THEN NULLIF(i.value, '') END) AS alert_uuid
+         MAX(CASE WHEN i.system = 'alert-rumor-log' THEN NULLIF(i.value, '') END) AS alert_uuid,
+         -- The standard Alert Log ID (e.g. KEN-NAI-EME-2026-ALR-001), assigned by hie-auth.
+         MAX(CASE WHEN i.system = 'http://hie.org/identifiers/ALERT_LOG_ID' THEN NULLIF(i.value, '') END) AS alert_log_id
   FROM public.patient_flat_pg p
   JOIN public.patient_identifier_pg i ON i.id = p.id
   WHERE p.active IS DISTINCT FROM false
@@ -41,7 +44,6 @@ obs_latest AS (
 ),
 o AS (
   SELECT patient_id AS o_patient_id,
-    MAX(CASE WHEN code = 'alert-identifier'          THEN val END) AS alert_id,
     MAX(CASE WHEN code = 'alert-date'                THEN val END) AS alert_date,
     MAX(CASE WHEN code = 'alert-source-type'         THEN val END) AS source,
     MAX(CASE WHEN code = 'alert-source-type-other'   THEN val END) AS source_other,
@@ -101,7 +103,7 @@ o AS (
 )
 SELECT
   a.patient_id                                         AS "Patient ID",
-  COALESCE(o.alert_id, a.alert_uuid)                   AS "Alert ID",
+  a.alert_log_id                                       AS "Alert ID",
   nphiis.to_date_safe(o.alert_date)                    AS "Date Alerted",
   DATE_TRUNC('week', nphiis.to_date_safe(o.alert_date))::date AS "Epi Week",
   COALESCE(NULLIF(o.source_other, ''), o.source)       AS "Source",

@@ -58,6 +58,8 @@ def main():
             col.filterable = True
             col.groupby = True
             col.is_dttm = col.column_name in DATE_COLUMNS
+            if col.is_dttm:
+                col.python_date_format = "%Y-%m-%d"  # dates only, no 00:00:00 time part
         for name, verbose, expression in METRICS:
             m = next((m for m in ds.metrics if m.metric_name == name), None)
             if m is None:

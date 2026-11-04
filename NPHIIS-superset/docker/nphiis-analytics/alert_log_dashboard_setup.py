@@ -104,6 +104,7 @@ CHARTS = [
         {
             "viz_type": "table",
             "query_mode": "raw",
+            "table_timestamp_format": "%Y-%m-%d",
             "adhoc_filters": [],
             "all_columns": LIST_COLUMNS,
             "order_by_cols": [json.dumps(["Date Alerted", False])],
