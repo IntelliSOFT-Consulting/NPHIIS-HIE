@@ -1,4 +1,4 @@
-// Client-safe types and form logic for the Call Centre module (the 719 call
+// Client-safe types and form logic for the Call Centre module (the alert
 // log, "alert-rumor-log.json"). The FHIR access lives in `fhir-call-centre.ts`
 // (server-only).
 
@@ -13,8 +13,8 @@ import {
   splitMultiValue,
 } from "./questionnaires";
 
-// Copied verbatim from the mobile app (nphiis/src/main/assets/alert-rumor-log.json);
-// keep them in sync so both save and read the same answers.
+// Copied verbatim from the mobile app (nphiis/src/main/assets/alert-rumor-log.json on
+// android-fhir jk-surveillance); keep them in sync so both save and read the same answers.
 export const CALL_LOG_FORM = alertRumorLog as unknown as FhirQuestionnaire;
 
 /** Encounter.reasonCode and the slug used as the Patient's case identifier system (mobile CaseTypes.ALERT_LOG). */
@@ -26,33 +26,26 @@ const REPORTING_SITE_GROUP = "151479012557";
 
 export const CALL_LOG_FIELDS = {
   date: "alert-date",
-  agent: "alert-agent-id",
+  source: "alert-source-type",
   callerName: "alert-reporter-name",
   callerMobile: "alert-reporter-mobile",
-  callingAbout: "alert-calling-about",
   county: "a4-county",
   subCounty: "a3-sub-county",
   ward: "a2-ward",
   village: "alert-village",
-  location: "alert-location",
-  pathway: "alert-call-pathway",
   personName: "873240407472",
   personSurname: "486402457213",
   personSex: "929966324957",
   personMobile: "alert-mobile",
-  symptoms: "alert-symptoms",
-  exposures: "alert-exposures",
-  classification: "alert-classification",
-  routedAction: "alert-routed-action",
+  vitalStatus: "alert-vital-status",
+  meetsDefinition: "alert-meets-case-definition",
   /** Free text on the form; the web picker fills it from the DHA Facility Registry. */
   facility: "alert-facility",
-  actionStatus: "alert-action-status",
   description: "alert-description",
-  callEnd: "alert-call-end",
 } as const;
 
-/** Filled by the system, not typed: when the call came in and who took it. The agent types when it ended. */
-export const AUTO_FIELDS: ReadonlySet<string> = new Set([CALL_LOG_FIELDS.date, CALL_LOG_FIELDS.agent]);
+/** Filled by the system, not typed: the date the alert was logged. */
+export const AUTO_FIELDS: ReadonlySet<string> = new Set([CALL_LOG_FIELDS.date]);
 
 /** The agent ID saved on a log: "Jane Wanjiku (12345678)", from the logged-in account. */
 export function agentLabel(name?: string, username?: string): string | undefined {
@@ -106,25 +99,22 @@ export interface CallLogSummary {
   /** EPID of the linked case, if any. */
   epid?: string;
   callDate?: string;
-  agent?: string;
   callerName?: string;
   callerMobile?: string;
-  callingAbout?: string;
+  source?: string;
+  patientName?: string;
   county?: string;
   subCounty?: string;
-  pathway?: string;
-  symptoms?: string;
-  classification?: string;
-  routedAction?: string;
-  actionStatus?: string;
+  vitalStatus?: string;
+  meetsDefinition?: string;
 }
 
 export interface CallLog extends CallLogPayload {
   summary: CallLogSummary;
 }
 
-export const PATHWAY_OPTIONS = optionsOf(CALL_LOG_FIELDS.pathway);
-export const ACTION_STATUS_OPTIONS = optionsOf(CALL_LOG_FIELDS.actionStatus);
+export const SOURCE_OPTIONS = optionsOf(CALL_LOG_FIELDS.source);
+export const MEETS_DEFINITION_OPTIONS = optionsOf(CALL_LOG_FIELDS.meetsDefinition);
 
 function optionsOf(linkId: string): Array<{ code: string; display: string }> {
   const item = findItem(CALL_LOG_FORM.item ?? [], linkId);
@@ -221,6 +211,11 @@ export function parseKenyaDateTime(v: string): number {
   return Date.parse(`${v.length === 16 ? `${v}:00` : v}+03:00`);
 }
 
+/** Today's date as "yyyy-mm-dd" in Kenya. */
+export function todayInKenya(): string {
+  return new Date(Date.now() + EAT_OFFSET_MS).toISOString().slice(0, 10);
+}
+
 /** Now as the form's "yyyy-mm-ddThh:mm" in Kenya time. */
 export function nowInKenya(): string {
   return new Date(Date.now() + EAT_OFFSET_MS).toISOString().slice(0, 16);
@@ -247,6 +242,10 @@ export function validateCallLog(payload: CallLogPayload): Record<string, string>
       const ms = parseKenyaDateTime(v);
       if (Number.isNaN(ms)) errors[it.linkId] = "Enter a valid date and time";
       else if (ms > Date.now() + 5 * 60_000) errors[it.linkId] = "Cannot be in the future";
+    }
+    if (it.type === "date") {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v))) errors[it.linkId] = "Enter a valid date";
+      else if (v > todayInKenya()) errors[it.linkId] = "Cannot be in the future";
     }
     if (it.type === "time" && !TIME_RE.test(v)) errors[it.linkId] = "Enter a valid time";
     if (it.type === "choice") {

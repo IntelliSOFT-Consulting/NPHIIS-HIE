@@ -2,12 +2,11 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { PhoneIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useAuth, useAuthedFetch } from '@/lib/auth-context';
+import { useAuthedFetch } from '@/lib/auth-context';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/pagination';
 import {
-  ACTION_STATUS_OPTIONS,
-  agentLabel,
-  PATHWAY_OPTIONS,
+  MEETS_DEFINITION_OPTIONS,
+  SOURCE_OPTIONS,
   answerText,
   callLogSections,
   sectionTitle,
@@ -22,19 +21,19 @@ import { TableSkeleton } from '../ui/Skeleton';
 import Spinner from '../ui/Spinner';
 import CallLogForm from './CallLogForm';
 
-const PATHWAY_FILTER = [{ value: '', label: 'All pathways' }, ...PATHWAY_OPTIONS.map((o) => ({ value: o.code, label: o.display }))];
-const STATUS_FILTER = [{ value: '', label: 'All action statuses' }, ...ACTION_STATUS_OPTIONS.map((o) => ({ value: o.code, label: o.display }))];
+const SOURCE_FILTER = [{ value: '', label: 'All sources' }, ...SOURCE_OPTIONS.map((o) => ({ value: o.code, label: o.display }))];
+const MEETS_FILTER = [{ value: '', label: 'Meets definition: any' }, ...MEETS_DEFINITION_OPTIONS.map((o) => ({ value: o.code, label: o.display }))];
 
-const STATUS_BADGE: Record<string, string> = {
-  Pending: 'bg-amber-100 text-amber-800',
-  Completed: 'bg-emerald-100 text-emerald-800',
-  Escalated: 'bg-accent-50 text-accent-700',
+const MEETS_BADGE: Record<string, string> = {
+  Yes: 'bg-accent-50 text-accent-700',
+  No: 'bg-emerald-100 text-emerald-800',
 };
 
-function formatDateTime(iso?: string): string {
+/** Alert dates are dates only; older logs saved a date and time, which is cut to the date. */
+function formatDate(iso?: string): string {
   if (!iso) return '—';
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+  const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString([], { dateStyle: 'medium' });
 }
 
 type Panel =
@@ -77,11 +76,6 @@ function Modal({
 
 export default function CallCentreView() {
   const authedFetch = useAuthedFetch();
-  const { user } = useAuth();
-  const agentName = agentLabel(
-    user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || undefined,
-    user?.username,
-  );
 
   const [logs, setLogs] = useState<CallLogSummary[]>([]);
   const [total, setTotal] = useState(0);
@@ -91,8 +85,8 @@ export default function CallCentreView() {
   const [notice, setNotice] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [pathway, setPathway] = useState('');
-  const [status, setStatus] = useState('');
+  const [source, setSource] = useState('');
+  const [meets, setMeets] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [reload, setReload] = useState(0);
@@ -113,8 +107,8 @@ export default function CallCentreView() {
       try {
         const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
         if (debouncedSearch) query.set('q', debouncedSearch);
-        if (pathway) query.set('pathway', pathway);
-        if (status) query.set('status', status);
+        if (source) query.set('source', source);
+        if (meets) query.set('meets', meets);
         const res = await authedFetch(`/api/call-centre?${query}`);
         const body = await res.json();
         if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
@@ -135,7 +129,7 @@ export default function CallCentreView() {
     return () => {
       cancelled = true;
     };
-  }, [authedFetch, page, pageSize, debouncedSearch, pathway, status, reload]);
+  }, [authedFetch, page, pageSize, debouncedSearch, source, meets, reload]);
 
   /** Saves a log; returns the answers the server refused, if any. */
   const save = useCallback(
@@ -168,7 +162,7 @@ export default function CallCentreView() {
   );
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const filtered = !!(debouncedSearch || pathway || status);
+  const filtered = !!(debouncedSearch || source || meets);
 
   return (
     <div className="space-y-6">
@@ -178,29 +172,29 @@ export default function CallCentreView() {
       <div className="flex flex-col lg:flex-row gap-3">
         <div className="flex-1">
           <TextInput
-            placeholder="Search log ID, linked EPID, caller, phone, county, agent or notes"
+            placeholder="Search log ID, linked EPID, reporter, phone, patient, county or notes"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div className="lg:w-60">
           <Select
-            value={pathway}
+            value={source}
             onChange={(v) => {
-              setPathway(v);
+              setSource(v);
               setPage(1);
             }}
-            options={PATHWAY_FILTER}
+            options={SOURCE_FILTER}
           />
         </div>
         <div className="lg:w-52">
           <Select
-            value={status}
+            value={meets}
             onChange={(v) => {
-              setStatus(v);
+              setMeets(v);
               setPage(1);
             }}
-            options={STATUS_FILTER}
+            options={MEETS_FILTER}
           />
         </div>
         <button
@@ -234,13 +228,13 @@ export default function CallCentreView() {
                 <thead className="bg-gray-50/80">
                   <tr className="text-left">
                     <th className="px-4 py-3 font-medium text-gray-600">Log ID</th>
-                    <th className="px-4 py-3 font-medium text-gray-600">Call received</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Date alerted</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Linked case</th>
-                    <th className="px-4 py-3 font-medium text-gray-600">Caller</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Reporter</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Location</th>
-                    <th className="px-4 py-3 font-medium text-gray-600">Pathway</th>
-                    <th className="px-4 py-3 font-medium text-gray-600">Symptoms</th>
-                    <th className="px-4 py-3 font-medium text-gray-600">Action status</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Source</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Patient</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Meets definition</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-nphi-100">
@@ -254,18 +248,18 @@ export default function CallCentreView() {
                       className="cursor-pointer hover:bg-nphi-50/40 align-top"
                     >
                       <td className="px-4 py-3 font-mono text-xs text-gray-800 whitespace-nowrap">{l.logId ?? <span className="text-gray-400">Pending</span>}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-gray-800">{formatDateTime(l.callDate)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-gray-800">{formatDate(l.callDate)}</td>
                       <td className="px-4 py-3 font-mono text-xs text-gray-700">{l.epid ?? '—'}</td>
                       <td className="px-4 py-3 text-gray-700">
                         <div>{l.callerName ?? '—'}</div>
                         {l.callerMobile && <div className="text-xs text-gray-500">{l.callerMobile}</div>}
                       </td>
                       <td className="px-4 py-3 text-gray-700">{[l.county, l.subCounty].filter(Boolean).join(' / ') || '—'}</td>
-                      <td className="px-4 py-3 text-gray-700">{l.pathway ?? '—'}</td>
-                      <td className="px-4 py-3 text-gray-700 max-w-xs truncate">{l.symptoms ?? '—'}</td>
+                      <td className="px-4 py-3 text-gray-700">{l.source ?? '—'}</td>
+                      <td className="px-4 py-3 text-gray-700">{l.patientName ?? '—'}</td>
                       <td className="px-4 py-3">
-                        {l.actionStatus ? (
-                          <span className={`chip ${STATUS_BADGE[l.actionStatus] ?? 'bg-gray-100 text-gray-700'}`}>{l.actionStatus}</span>
+                        {l.meetsDefinition ? (
+                          <span className={`chip ${MEETS_BADGE[l.meetsDefinition] ?? 'bg-gray-100 text-gray-700'}`}>{l.meetsDefinition}</span>
                         ) : (
                           '—'
                         )}
@@ -326,7 +320,7 @@ export default function CallCentreView() {
 
       {panel?.kind === 'new' && (
         <Modal title="Log an alert" onClose={() => setPanel(null)}>
-          <CallLogForm agentName={agentName} onSubmit={(p) => save(p)} onCancel={() => setPanel(null)} />
+          <CallLogForm onSubmit={(p) => save(p)} onCancel={() => setPanel(null)} />
         </Modal>
       )}
       {panel?.kind === 'edit' && (
@@ -352,46 +346,26 @@ export default function CallCentreView() {
 
 /** Shorter labels for the read-only view; the form keeps the full questions. */
 const SHORT_LABELS: Record<string, string> = {
-  'alert-date': 'Call received',
-  'alert-agent-id': 'Agent',
-  'alert-reporter-name': 'Caller',
-  'alert-reporter-mobile': 'Caller phone',
-  'alert-calling-about': 'Calling about',
-  'alert-reporter-designation': 'Caller designation',
+  'alert-date': 'Date alerted',
+  'alert-reporter-name': 'Reporter',
+  'alert-reporter-mobile': 'Reporter phone',
   'alert-source-type': 'Source',
   'alert-source-type-other': 'Other source',
   'a4-county': 'County',
   'a3-sub-county': 'Sub-county',
   'a2-ward': 'Ward',
-  'alert-location': 'Location / sub-location',
   'alert-village': 'Village / estate',
-  'alert-call-pathway': 'Pathway',
   '873240407472': 'Name',
   '492731638700': 'Age',
   '929966324957': 'Sex',
   'alert-mobile': 'Phone',
   'alert-home-country': 'Home country',
-  'alert-symptoms': 'Symptoms',
-  'alert-suspected': 'Suspected of',
-  'alert-suspected-other': 'Other suspected',
-  'alert-signs': 'Signs and symptoms',
-  'alert-signs-other': 'Other signs',
-  'alert-cases': 'People affected',
-  'alert-deaths': 'Deaths',
-  'alert-exposures': 'Exposures',
-  'alert-classification': 'Classification',
-  'alert-classification-other': 'Other classification',
-  'alert-routed-action': 'Action',
-  'alert-routed-action-other': 'Other action',
-  'alert-facility': 'Receiving facility',
-  'alert-action-status': 'Action status',
-  'alert-description': 'Caller notes',
-  'alert-action': 'Action taken',
-  'alert-call-end': 'Call ended',
+  'alert-facility': 'Reporting facility',
+  'alert-description': 'Comments',
 };
 
 /** Shown in the summary strip, so not repeated below. */
-const IN_SUMMARY = new Set(['alert-date', 'alert-call-pathway', 'alert-action-status']);
+const IN_SUMMARY = new Set(['alert-date', 'alert-meets-case-definition', 'alert-vital-status']);
 const SURNAME = '486402457213';
 const FIRST_NAME = '873240407472';
 
@@ -409,7 +383,7 @@ function answeredIn(group: QuestionnaireItem, log: CallLog): Row[] {
     let value = answerText(log, it.linkId);
     // First name and surname read as one name.
     if (it.linkId === FIRST_NAME) value = [value, answerText(log, SURNAME)].filter(Boolean).join(' ') || undefined;
-    if (it.type === 'dateTime' && value) value = formatDateTime(value);
+    if ((it.type === 'dateTime' || it.type === 'date') && value) value = formatDate(value);
     if (!value) continue;
     out.push({
       linkId: it.linkId,
@@ -500,7 +474,7 @@ function CallLogDetails({
   );
 
   const summary = log?.summary;
-  const pathway = log ? answerText(log, 'alert-call-pathway') : undefined;
+  const vitalStatus = log ? answerText(log, 'alert-vital-status') : undefined;
 
   return (
     <Modal title={log?.summary.logId ? `Alert log ${log.summary.logId}` : 'Alert log'} onClose={onClose} footer={footer}>
@@ -510,8 +484,8 @@ function CallLogDetails({
         <div className="space-y-5">
           <dl className="grid grid-cols-2 lg:grid-cols-4 gap-4 rounded-2xl bg-nphi-50/60 px-4 py-3">
             <div>
-              <dt className="text-xs text-gray-500">Call received</dt>
-              <dd className="text-sm font-medium text-gray-900">{formatDateTime(summary.callDate)}</dd>
+              <dt className="text-xs text-gray-500">Date alerted</dt>
+              <dd className="text-sm font-medium text-gray-900">{formatDate(summary.callDate)}</dd>
             </div>
             <div>
               <dt className="text-xs text-gray-500">Linked case</dt>
@@ -524,15 +498,15 @@ function CallLogDetails({
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-gray-500">Pathway</dt>
-              <dd className="text-sm font-medium text-gray-900">{pathway ?? '—'}</dd>
+              <dt className="text-xs text-gray-500">Vital status</dt>
+              <dd className="text-sm font-medium text-gray-900">{vitalStatus ?? '—'}</dd>
             </div>
             <div>
-              <dt className="text-xs text-gray-500">Action status</dt>
+              <dt className="text-xs text-gray-500">Meets definition</dt>
               <dd className="text-sm">
-                {summary.actionStatus ? (
-                  <span className={`chip ${STATUS_BADGE[summary.actionStatus] ?? 'bg-gray-100 text-gray-700'}`}>
-                    {summary.actionStatus}
+                {summary.meetsDefinition ? (
+                  <span className={`chip ${MEETS_BADGE[summary.meetsDefinition] ?? 'bg-gray-100 text-gray-700'}`}>
+                    {summary.meetsDefinition}
                   </span>
                 ) : (
                   '—'
