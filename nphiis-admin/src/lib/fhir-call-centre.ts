@@ -182,8 +182,7 @@ function answerOf(payload: CallLogPayload, linkId: string): string | undefined {
  * when they call about themselves); family "Alert" when no name is known.
  */
 export function personFields(payload: CallLogPayload): Pick<Resource, "name" | "gender" | "telecom" | "address"> {
-  const self = answerOf(payload, F.callingAbout) === "self";
-  const first = answerOf(payload, F.personName) ?? (self ? answerOf(payload, F.callerName) : undefined);
+  const first = answerOf(payload, F.personName);
   const surname = answerOf(payload, F.personSurname);
   const name: Resource = {};
   if (surname) name.family = surname;
@@ -191,7 +190,7 @@ export function personFields(payload: CallLogPayload): Pick<Resource, "name" | "
   if (!surname && !first) name.family = "Alert";
 
   const sex = answerOf(payload, F.personSex);
-  const mobile = answerOf(payload, F.personMobile) ?? (self ? answerOf(payload, F.callerMobile) : undefined);
+  const mobile = answerOf(payload, F.personMobile);
   const county = payload.locations[F.county]?.name ?? "";
   const subCounty = payload.locations[F.subCounty]?.name ?? "";
   const address: Resource = {};
@@ -401,17 +400,15 @@ function latestByCode(observations: Resource[]): Map<string, Resource> {
 const SUMMARY_CODES = [
   LINKED_CASE_CODE,
   F.date,
-  F.agent,
+  F.source,
   F.callerName,
   F.callerMobile,
-  F.callingAbout,
+  F.personName,
+  F.personSurname,
   F.county,
   F.subCounty,
-  F.pathway,
-  F.symptoms,
-  F.classification,
-  F.routedAction,
-  F.actionStatus,
+  F.vitalStatus,
+  F.meetsDefinition,
 ];
 
 export function toSummary(patient: Resource, observations: Resource[]): CallLogSummary {
@@ -425,17 +422,14 @@ export function toSummary(patient: Resource, observations: Resource[]): CallLogS
     logId: patient.identifier?.find((i: Resource) => i.system === ALERT_LOG_ID_SYSTEM)?.value,
     epid: value(LINKED_CASE_CODE),
     callDate: value(F.date) ?? patient.meta?.lastUpdated,
-    agent: value(F.agent),
+    source: value(F.source),
     callerName: value(F.callerName),
     callerMobile: value(F.callerMobile),
-    callingAbout: value(F.callingAbout),
+    patientName: [value(F.personName), value(F.personSurname)].filter(Boolean).join(" ") || undefined,
     county: value(F.county) ?? patient.address?.[0]?.city,
     subCounty: value(F.subCounty) ?? patient.address?.[0]?.state,
-    pathway: value(F.pathway),
-    symptoms: value(F.symptoms),
-    classification: value(F.classification),
-    routedAction: value(F.routedAction),
-    actionStatus: value(F.actionStatus),
+    vitalStatus: value(F.vitalStatus),
+    meetsDefinition: value(F.meetsDefinition),
   };
 }
 
@@ -649,9 +643,9 @@ export interface CallLogQuery {
   page: number;
   pageSize: number;
   search?: string;
-  /** Option codes of the call pathway / action status questions. */
-  pathway?: string;
-  status?: string;
+  /** Option codes of the source of alert / meets case definition questions. */
+  source?: string;
+  meets?: string;
 }
 
 export interface CallLogPage {
@@ -672,8 +666,6 @@ const SEARCH_CODES = [
   F.county,
   F.subCounty,
   F.village,
-  F.location,
-  F.agent,
   F.description,
 ];
 
@@ -724,13 +716,13 @@ export async function listCallLogs(token: string, query: CallLogQuery): Promise<
   const { page, pageSize } = query;
   const empty: CallLogPage = { logs: [], total: 0, page, pageSize };
 
-  const [matching, byPathway, byStatus] = await Promise.all([
+  const [matching, bySource, byMeets] = await Promise.all([
     query.search ? idsMatching(query.search, token) : undefined,
-    query.pathway ? idsAnswering(F.pathway, query.pathway, token) : undefined,
-    query.status ? idsAnswering(F.actionStatus, query.status, token) : undefined,
+    query.source ? idsAnswering(F.source, query.source, token) : undefined,
+    query.meets ? idsAnswering(F.meetsDefinition, query.meets, token) : undefined,
   ]);
   let only: Set<string> | undefined;
-  for (const s of [matching, byPathway, byStatus]) if (s) only = intersect(only, s);
+  for (const s of [matching, bySource, byMeets]) if (s) only = intersect(only, s);
   if (only && only.size === 0) return empty;
 
   const params = new URLSearchParams({

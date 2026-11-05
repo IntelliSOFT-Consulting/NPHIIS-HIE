@@ -9,7 +9,7 @@ import {
   cleanPayload,
   isVisible,
   AUTO_FIELDS,
-  nowInKenya,
+  todayInKenya,
   sectionTitle,
   validateCallLog,
   type CallLogPayload,
@@ -94,17 +94,14 @@ function LocationSelect({
 
 const AUTO_HINTS: Record<string, string> = {
   [CALL_LOG_FIELDS.date]: 'Set when this form was opened',
-  [CALL_LOG_FIELDS.agent]: 'Your account',
 };
 
 /** A value the system fills in, shown read-only. */
 function AutoValue({ linkId, value }: { linkId: string; value?: string }) {
   let text = value;
   if (linkId === CALL_LOG_FIELDS.date && value) {
-    const d = new Date(`${value.length === 16 ? `${value}:00` : value}+03:00`);
-    if (!Number.isNaN(d.getTime())) {
-      text = d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Nairobi' });
-    }
+    const d = new Date(`${value.slice(0, 10)}T00:00:00+03:00`);
+    if (!Number.isNaN(d.getTime())) text = d.toLocaleDateString([], { dateStyle: 'medium', timeZone: 'Africa/Nairobi' });
   }
   return (
     <div
@@ -129,22 +126,19 @@ function groupItems(group: QuestionnaireItem, answers: AnswerMap): Questionnaire
 
 export default function CallLogForm({
   initial,
-  agentName,
   onSubmit,
   onCancel,
 }: {
   /** The saved log, when editing. */
   initial?: CallLogPayload;
-  agentName?: string;
   onSubmit: (payload: CallLogPayload) => Promise<Record<string, string> | void>;
   onCancel: () => void;
 }) {
   const [answers, setAnswers] = useState<AnswerMap>(
     () =>
       initial?.answers ?? {
-        // Filled by the system; the call-end time is set on save.
-        [CALL_LOG_FIELDS.date]: nowInKenya(),
-        ...(agentName ? { [CALL_LOG_FIELDS.agent]: agentName } : {}),
+        // Filled by the system.
+        [CALL_LOG_FIELDS.date]: todayInKenya(),
       },
   );
   const [locations, setLocations] = useState<Locations>(() => initial?.locations ?? {});
@@ -193,7 +187,6 @@ export default function CallLogForm({
     setSubmitted(true);
     setError(null);
     const final: AnswerMap = { ...answers };
-    if (!final[CALL_LOG_FIELDS.agent] && agentName) final[CALL_LOG_FIELDS.agent] = agentName;
     if (Object.keys(validateCallLog({ answers: final, locations })).length) {
       setError('Some answers need attention. They are marked below.');
       return;
