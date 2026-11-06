@@ -13228,7 +13228,7 @@
       ],
       "partOf": {
         "reference": "Location/BURA",
-        "display": "BURA"
+        "display": "TANA NORTH"
       }
     },
     "request": {
@@ -15594,7 +15594,7 @@
       ],
       "partOf": {
         "reference": "Location/GARSEN",
-        "display": "GARSEN"
+        "display": "TANA DELTA"
       }
     },
     "request": {
@@ -15698,7 +15698,7 @@
       ],
       "partOf": {
         "reference": "Location/BURA",
-        "display": "BURA"
+        "display": "TANA NORTH"
       }
     },
     "request": {
@@ -15828,7 +15828,7 @@
       ],
       "partOf": {
         "reference": "Location/BURA",
-        "display": "BURA"
+        "display": "TANA NORTH"
       }
     },
     "request": {
@@ -16270,7 +16270,7 @@
       ],
       "partOf": {
         "reference": "Location/GARSEN",
-        "display": "GARSEN"
+        "display": "TANA DELTA"
       }
     },
     "request": {
@@ -19936,7 +19936,7 @@
       ],
       "partOf": {
         "reference": "Location/GARSEN",
-        "display": "GARSEN"
+        "display": "TANA DELTA"
       }
     },
     "request": {
@@ -29244,7 +29244,7 @@
       ],
       "partOf": {
         "reference": "Location/BURA",
-        "display": "BURA"
+        "display": "TANA NORTH"
       }
     },
     "request": {
@@ -29608,7 +29608,7 @@
       ],
       "partOf": {
         "reference": "Location/BURA",
-        "display": "BURA"
+        "display": "TANA NORTH"
       }
     },
     "request": {
@@ -34652,7 +34652,7 @@
       ],
       "partOf": {
         "reference": "Location/GARSEN",
-        "display": "GARSEN"
+        "display": "TANA DELTA"
       }
     },
     "request": {
@@ -34704,7 +34704,7 @@
       ],
       "partOf": {
         "reference": "Location/GARSEN",
-        "display": "GARSEN"
+        "display": "TANA DELTA"
       }
     },
     "request": {
@@ -34730,7 +34730,7 @@
       ],
       "partOf": {
         "reference": "Location/GARSEN",
-        "display": "GARSEN"
+        "display": "TANA DELTA"
       }
     },
     "request": {
