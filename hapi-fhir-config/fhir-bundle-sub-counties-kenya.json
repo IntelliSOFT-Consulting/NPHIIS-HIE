@@ -6350,7 +6350,7 @@
     "resource": {
       "id": "BURA",
       "resourceType": "Location",
-      "name": "BURA",
+      "name": "TANA NORTH",
       "type": [
         {
           "coding": [
@@ -6922,7 +6922,7 @@
     "resource": {
       "id": "GARSEN",
       "resourceType": "Location",
-      "name": "GARSEN",
+      "name": "TANA DELTA",
       "type": [
         {
           "coding": [
