@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { forbidden, resolveUserProfile, unauthorized, verifyToken, type UserProfile } from "./server-auth";
 import { canAccess } from "./roles";
-import { type CallLogPayload, agentLabel, validateCallLog } from "./call-centre";
+import { CALL_LOG_FIELDS, CALL_LOG_FORM, type CallLogPayload, agentLabel, validateCallLog } from "./call-centre";
 import { CallLogNotFoundError, LinkedCaseError, verifyLinkedCase } from "./fhir-call-centre";
 
 export interface CallCentreSession {
@@ -26,7 +26,12 @@ export async function callCentreSession(req: NextRequest): Promise<CallCentreSes
  * A valid call log from the request body, or the 400 response explaining what is wrong.
  * A linked case is checked against HAPI (it must exist and carry that EPID).
  */
-export async function callLogFromBody(req: NextRequest, token: string): Promise<CallLogPayload | NextResponse> {
+export async function callLogFromBody(
+  req: NextRequest,
+  token: string,
+  /** newLog: checked against the triage form, which every new alert uses; receivedBy: the logged-in user. */
+  opts: { newLog?: boolean; receivedBy?: string } = {},
+): Promise<CallLogPayload | NextResponse> {
   let body: unknown;
   try {
     body = await req.json();
@@ -46,7 +51,9 @@ export async function callLogFromBody(req: NextRequest, token: string): Promise<
     const loc = v as { id?: unknown; name?: unknown };
     if (typeof loc?.id === "string" && typeof loc?.name === "string") payload.locations[k] = { id: loc.id, name: loc.name };
   }
-  const errors = validateCallLog(payload);
+  // Who received the alert is whoever is logged in, not what the form sent.
+  if (opts.newLog && opts.receivedBy) payload.answers[CALL_LOG_FIELDS.receivedBy] = opts.receivedBy;
+  const errors = opts.newLog ? validateCallLog(payload, CALL_LOG_FORM) : validateCallLog(payload);
   if (Object.keys(errors).length) {
     return NextResponse.json({ error: "Some answers need attention", errors }, { status: 400 });
   }

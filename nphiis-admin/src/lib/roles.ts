@@ -109,6 +109,16 @@ export const FEATURES = {
     "COUNTY_DISEASE_SURVEILLANCE_OFFICER",
     "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER",
   ],
+  // Outbreak Response > EVD Daily Snapshot: the sub-county daily return, its submissions
+  // and the missing-returns view. Same people as VHF contact tracing; each sees and sends
+  // only for their own area (national roles: everywhere).
+  EVD_SNAPSHOT: [
+    "ADMINISTRATOR",
+    "SUPERUSER",
+    "NATIONAL_FOCAL_PERSON",
+    "COUNTY_DISEASE_SURVEILLANCE_OFFICER",
+    "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER",
+  ],
   LAB_ACCESS: LAB_ROLES,
   // Specimens hie-auth submitted to NPHL, with their status and results.
   // Not location-scoped, so only lab and national roles see it.
@@ -155,6 +165,7 @@ export const FEATURE_PERMISSION: Record<Feature, string> = {
   RUMOURS_TRIAGE: "rumours.triage",
   VHF_REPORTS: "reports.vhf.view",
   VHF_CONTACTS: "vhf.contacts.manage",
+  EVD_SNAPSHOT: "evd.snapshot.submit",
   LAB_ACCESS: "lab.enter_results",
   SPECIMENS_VIEW: "specimens.view",
   SCREENINGS_VIEW: "screenings.view",

@@ -3,9 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # No host port: serve through the TLS reverse proxy only (see proxy/nginx.conf).
-    expose:
-      - "3000"
+    # Production has no reverse proxy: an external firewall forwards to this host port.
+    # (dsrfhir serves the admin through nginx via hie/docker-compose.yml instead.)
+    ports:
+      - "8080:3000"
     env_file:
       - .env
     environment:

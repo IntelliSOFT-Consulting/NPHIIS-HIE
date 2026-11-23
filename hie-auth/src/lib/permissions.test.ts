@@ -28,6 +28,21 @@ describe("resolveAccess", () => {
         expect(hasPermission("VACCINATOR", "reports.idsr.view")).toBe(false);
     });
 
+    it("grants the EVD Daily Snapshot to the surveillance roles that already run VHF contact tracing", () => {
+        for (const role of [
+            "ADMINISTRATOR",
+            "SUPERUSER",
+            "NATIONAL_FOCAL_PERSON",
+            "COUNTY_DISEASE_SURVEILLANCE_OFFICER",
+            "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER",
+        ]) {
+            expect(hasPermission(role, "evd.snapshot.submit")).toBe(true);
+        }
+        for (const role of ["NATIONAL_VIEWER", "NATIONAL_LAB", "NATIONAL_CALL_CENTER_AGENTS", "FACILITY_SURVEILLANCE_FOCAL_PERSON", "LAB_TECHNICIAN", "VACCINATOR"]) {
+            expect(hasPermission(role, "evd.snapshot.submit")).toBe(false);
+        }
+    });
+
     it("is case-insensitive and returns nothing for an unknown role", () => {
         expect(resolveAccess(" county_disease_surveillance_officer ").level).toBe("COUNTY");
         expect(resolveAccess("SOMETHING_NEW")).toEqual({ level: null, profile: null, permissions: [] });
