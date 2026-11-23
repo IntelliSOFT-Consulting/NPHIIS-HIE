@@ -43,11 +43,11 @@ def metric(sql, label):
 
 
 RETURNS = metric("COUNT(*)", "Returns")
-ON_TIME = metric("COUNT(*) FILTER (WHERE \"On Time\" = 'Yes')", "On time")
+ON_TIME = metric("COUNT(*) FILTER (WHERE \"Timely\" = 'Yes')", "On time")
 
 METRICS = [
     ("returns", "Returns", "COUNT(*)"),
-    ("returns_on_time", "Returns on time (by 09:00 EAT)", "COUNT(*) FILTER (WHERE \"On Time\" = 'Yes')"),
+    ("returns_on_time", "Returns on time (by 09:00 EAT)", "COUNT(*) FILTER (WHERE \"Timely\" = 'Yes')"),
     ("alerts_received", "Alerts received", 'SUM("Alerts Received")'),
     ("suspected_cases", "Suspected cases", 'SUM("Suspected Cases")'),
     ("lab_positive", "Lab positive", 'SUM("Lab Positive")'),
@@ -89,9 +89,9 @@ def by_day(metrics, groupby=None, kind="echarts_timeseries_line", stacked=False)
 LIST_COLUMNS = [
     "Reporting Date", "County", "Sub County", "Focal Person", "Phone", "Alerts Received",
     "Suspected Cases", "Alerts Verified", "Cases Investigated", "Cases Isolated", "Specimens Shipped",
-    "Lab Positive", "Lab Negative", "Lab Pending", "New Contacts", "Contacts Due", "Contacts Followed Up",
-    "Contacts Lost", "Contacts Symptomatic", "Contacts Completed 21d", "Travellers Screened",
-    "Travellers Referred", "On Time", "Submitted At", "Challenges",
+    "Lab Positive", "Lab Negative", "Lab Pending", "New Contacts", "Contacts Due", "Contacts Followed",
+    "Contacts Lost", "Contacts Symptomatic", "Contacts Completed", "Travellers Screened",
+    "Travellers Referred", "Timely", "Submitted At", "Challenges",
 ]
 
 # (name, params, width)
@@ -102,7 +102,7 @@ CHARTS = [
     ("EVD Snapshot - contacts symptomatic", big_number('SUM("Contacts Symptomatic")', "Symptomatic contacts", "Contacts who developed symptoms"), 3),
     (
         "EVD Snapshot - returns per day",
-        by_day([RETURNS], ["On Time"], "echarts_timeseries_bar", stacked=True),
+        by_day([RETURNS], ["Timely"], "echarts_timeseries_bar", stacked=True),
         6,
     ),
     (
@@ -112,7 +112,7 @@ CHARTS = [
     ),
     (
         "EVD Snapshot - follow-up per day",
-        by_day([total("Contacts Due", "Due"), total("Contacts Followed Up", "Followed up"), total("Contacts Lost", "Lost")]),
+        by_day([total("Contacts Due", "Due"), total("Contacts Followed", "Followed up"), total("Contacts Lost", "Lost")]),
         6,
     ),
     (
