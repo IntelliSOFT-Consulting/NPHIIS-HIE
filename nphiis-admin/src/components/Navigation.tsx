@@ -18,6 +18,7 @@ import {
   UserGroupIcon,
   PhoneIcon,
   KeyIcon,
+  ShieldExclamationIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
 import { isCallCentreOnly } from '@/lib/roles';
@@ -53,6 +54,14 @@ const SETTINGS_SUB_ITEMS: SettingsSubItem[] = [
   },
 ];
 
+const OUTBREAK_SUB_ITEMS: SettingsSubItem[] = [
+  {
+    name: 'EVD Daily Snapshot',
+    href: '/outbreak-response/evd-snapshot',
+    icon: ClipboardDocumentListIcon,
+  },
+];
+
 export default function Navigation() {
   const { can, roles } = useAuth();
   // Call-centre agents see the Call Centre module and nothing else.
@@ -62,6 +71,15 @@ export default function Navigation() {
   const showSettings = can('SUBSCRIPTION_LOGS_VIEW');
   const settingsActive = pathname.startsWith('/settings');
   const [settingsOpen, setSettingsOpen] = useState(settingsActive);
+  const showOutbreak = can('EVD_SNAPSHOT') && !callCentreOnly;
+  const outbreakActive = pathname.startsWith('/outbreak-response');
+  const [outbreakOpen, setOutbreakOpen] = useState(outbreakActive);
+
+  useEffect(() => {
+    if (outbreakActive) {
+      setOutbreakOpen(true);
+    }
+  }, [outbreakActive]);
 
   useEffect(() => {
     if (settingsActive) {
@@ -107,6 +125,67 @@ export default function Navigation() {
     },
   ];
 
+  const renderGroup = (
+    label: string,
+    GroupIcon: typeof UsersIcon,
+    items: SettingsSubItem[],
+    groupActive: boolean,
+    open: boolean,
+    toggle: () => void,
+  ) => (
+    <div className="pt-1" key={label}>
+      <button
+        type="button"
+        onClick={toggle}
+        className={`group flex items-center w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+          groupActive
+            ? 'bg-nphi-gradient text-white shadow-sm'
+            : 'text-nphi-900/70 hover:bg-nphi-50 hover:text-nphi-800'
+        }`}
+      >
+        <GroupIcon
+          className={`mr-3 h-5 w-5 flex-shrink-0 ${
+            groupActive ? 'text-white' : 'text-nphi-700/70 group-hover:text-nphi-700'
+          }`}
+        />
+        <span className="flex-1 text-left">{label}</span>
+        <ChevronDownIcon
+          className={`h-4 w-4 flex-shrink-0 transition-transform ${
+            open ? 'rotate-180' : ''
+          } ${groupActive ? 'text-white/90' : 'text-nphi-700/70'}`}
+        />
+      </button>
+
+      {open && (
+        <div className="mt-1 ml-3 pl-3 border-l border-nphi-100 space-y-1">
+          {items.map((item) => {
+            const Icon = item.icon;
+            const current = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            return (
+              <button
+                key={item.href}
+                type="button"
+                onClick={() => router.push(item.href)}
+                className={`group flex items-center w-full px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                  current
+                    ? 'bg-nphi-50 text-nphi-900 ring-1 ring-nphi-100'
+                    : 'text-nphi-900/70 hover:bg-nphi-50 hover:text-nphi-800'
+                }`}
+              >
+                <Icon
+                  className={`mr-2.5 h-4 w-4 flex-shrink-0 ${
+                    current ? 'text-nphi-800' : 'text-nphi-700/70 group-hover:text-nphi-700'
+                  }`}
+                />
+                {item.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <nav className="space-y-1.5">
       {navigation
@@ -135,60 +214,15 @@ export default function Navigation() {
           );
         })}
 
-      {showSettings && (
-        <div className="pt-1">
-          <button
-            type="button"
-            onClick={() => setSettingsOpen((open) => !open)}
-            className={`group flex items-center w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-              settingsActive
-                ? 'bg-nphi-gradient text-white shadow-sm'
-                : 'text-nphi-900/70 hover:bg-nphi-50 hover:text-nphi-800'
-            }`}
-          >
-            <Cog6ToothIcon
-              className={`mr-3 h-5 w-5 flex-shrink-0 ${
-                settingsActive ? 'text-white' : 'text-nphi-700/70 group-hover:text-nphi-700'
-              }`}
-            />
-            <span className="flex-1 text-left">Settings</span>
-            <ChevronDownIcon
-              className={`h-4 w-4 flex-shrink-0 transition-transform ${
-                settingsOpen ? 'rotate-180' : ''
-              } ${settingsActive ? 'text-white/90' : 'text-nphi-700/70'}`}
-            />
-          </button>
+      {showOutbreak &&
+        renderGroup('Outbreak Response', ShieldExclamationIcon, OUTBREAK_SUB_ITEMS, outbreakActive, outbreakOpen, () =>
+          setOutbreakOpen((open) => !open),
+        )}
 
-          {settingsOpen && (
-            <div className="mt-1 ml-3 pl-3 border-l border-nphi-100 space-y-1">
-              {SETTINGS_SUB_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const current =
-                  pathname === item.href || pathname.startsWith(`${item.href}/`);
-                return (
-                  <button
-                    key={item.href}
-                    type="button"
-                    onClick={() => router.push(item.href)}
-                    className={`group flex items-center w-full px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                      current
-                        ? 'bg-nphi-50 text-nphi-900 ring-1 ring-nphi-100'
-                        : 'text-nphi-900/70 hover:bg-nphi-50 hover:text-nphi-800'
-                    }`}
-                  >
-                    <Icon
-                      className={`mr-2.5 h-4 w-4 flex-shrink-0 ${
-                        current ? 'text-nphi-800' : 'text-nphi-700/70 group-hover:text-nphi-700'
-                      }`}
-                    />
-                    {item.name}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+      {showSettings &&
+        renderGroup('Settings', Cog6ToothIcon, SETTINGS_SUB_ITEMS, settingsActive, settingsOpen, () =>
+          setSettingsOpen((open) => !open),
+        )}
     </nav>
   );
 }
