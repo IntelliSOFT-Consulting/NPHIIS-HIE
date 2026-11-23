@@ -6,7 +6,7 @@
 -- (nphiis-admin src/lib/evd-snapshot.ts). The pipeline flattens it into
 -- questionnaire_response_flat_pg and questionnaire_response_answer_pg; the answers are pivoted
 -- here by linkId. Counts are whole numbers (the pipeline writes missing text as '', hence NULLIF).
--- authored is the FIRST submission time (kept when a return is edited); "On Time" means that
+-- authored is the FIRST submission time (kept when a return is edited); "Timely" means that
 -- time was at or before 09:00 EAT on the reporting date.
 -- Column names avoid plain three-word names and SQL keywords: Superset rejects those in
 -- table charts as sub-queries.
@@ -69,17 +69,17 @@ SELECT
   a.lab_pending                                            AS "Lab Pending",
   a.new_contacts                                           AS "New Contacts",
   a.contacts_due                                           AS "Contacts Due",
-  a.contacts_followed_up                                   AS "Contacts Followed Up",
+  a.contacts_followed_up                                   AS "Contacts Followed",
   a.contacts_lost                                          AS "Contacts Lost",
   a.contacts_symptomatic                                   AS "Contacts Symptomatic",
-  a.contacts_completed_21d                                 AS "Contacts Completed 21d",
+  a.contacts_completed_21d                                 AS "Contacts Completed",
   a.travellers_screened                                    AS "Travellers Screened",
   a.travellers_referred                                    AS "Travellers Referred",
   a.challenges                                             AS "Challenges",
   (qr.authored AT TIME ZONE 'Africa/Nairobi')              AS "Submitted At",
   (qr.last_updated AT TIME ZONE 'Africa/Nairobi')          AS "Last Edited",
   CASE WHEN qr.authored <= ((nphiis.to_date_safe(a.reporting_date)::timestamp + interval '9 hours') AT TIME ZONE 'Africa/Nairobi')
-       THEN 'Yes' ELSE 'No' END                            AS "On Time",
+       THEN 'Yes' ELSE 'No' END                            AS "Timely",
   -- Area columns for row-level security, upper-case and single-spaced like the VHF datasets, so
   -- county and sub-county officers see only their own returns.
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(NULLIF(cl.name, ''), a.county_id, '')), '\s+', ' ', 'g'))    AS county_rls,
