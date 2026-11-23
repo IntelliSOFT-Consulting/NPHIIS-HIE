@@ -4,13 +4,17 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { fhirApi } from '@/lib/api';
 import {
   CALL_LOG_FIELDS,
+  CALL_LOG_FORM,
   LOCATION_ITEMS,
   callLogSections,
   cleanPayload,
+  formOf,
+  isLegacyForm,
   isVisible,
   AUTO_FIELDS,
-  todayInKenya,
+  nowInKenya,
   sectionTitle,
+  todayInKenya,
   validateCallLog,
   type CallLogPayload,
   type LinkedCase,
@@ -93,15 +97,17 @@ function LocationSelect({
 }
 
 const AUTO_HINTS: Record<string, string> = {
-  [CALL_LOG_FIELDS.date]: 'Set when this form was opened',
+  [CALL_LOG_FIELDS.receivedBy]: 'Your account',
 };
 
 /** A value the system fills in, shown read-only. */
 function AutoValue({ linkId, value }: { linkId: string; value?: string }) {
   let text = value;
-  if (linkId === CALL_LOG_FIELDS.date && value) {
-    const d = new Date(`${value.slice(0, 10)}T00:00:00+03:00`);
-    if (!Number.isNaN(d.getTime())) text = d.toLocaleDateString([], { dateStyle: 'medium', timeZone: 'Africa/Nairobi' });
+  if (linkId === CALL_LOG_FIELDS.date && value?.includes('T')) {
+    const d = new Date(`${value.length === 16 ? `${value}:00` : value}+03:00`);
+    if (!Number.isNaN(d.getTime())) {
+      text = d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Nairobi' });
+    }
   }
   return (
     <div
@@ -126,21 +132,31 @@ function groupItems(group: QuestionnaireItem, answers: AnswerMap): Questionnaire
 
 export default function CallLogForm({
   initial,
+  agentName,
   onSubmit,
   onCancel,
 }: {
   /** The saved log, when editing. */
   initial?: CallLogPayload;
+  agentName?: string;
   onSubmit: (payload: CallLogPayload) => Promise<Record<string, string> | void>;
   onCancel: () => void;
 }) {
-  const [answers, setAnswers] = useState<AnswerMap>(
-    () =>
-      initial?.answers ?? {
-        // Filled by the system.
-        [CALL_LOG_FIELDS.date]: todayInKenya(),
-      },
-  );
+  const [answers, setAnswers] = useState<AnswerMap>(() => {
+    if (initial) return initial.answers;
+    const now = nowInKenya();
+    return {
+      // When it was received defaults to now; change it for an alert received earlier.
+      [CALL_LOG_FIELDS.date]: now.slice(0, 10),
+      [CALL_LOG_FIELDS.time]: now.slice(11, 16),
+      [CALL_LOG_FIELDS.officerDate]: todayInKenya(),
+      ...(agentName ? { [CALL_LOG_FIELDS.receivedBy]: agentName, [CALL_LOG_FIELDS.officerName]: agentName } : {}),
+    };
+  });
+  // A saved alert keeps the form it was logged with; new alerts use the triage form.
+  const [form] = useState(() => (initial ? formOf(initial) : CALL_LOG_FORM));
+  // Earlier alert logs have no "Received by" question.
+  const autoField = isLegacyForm(form) ? undefined : CALL_LOG_FIELDS.receivedBy;
   const [locations, setLocations] = useState<Locations>(() => initial?.locations ?? {});
   const [linkedCase, setLinkedCase] = useState<LinkedCase | null>(() => initial?.linkedCase ?? null);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -156,10 +172,10 @@ export default function CallLogForm({
     return out;
   }, [answers, locations]);
   const errors = useMemo(
-    () => ({ ...validateCallLog({ answers, locations }), ...serverErrors }),
-    [answers, locations, serverErrors],
+    () => ({ ...validateCallLog({ answers, locations }, form), ...serverErrors }),
+    [answers, locations, serverErrors, form],
   );
-  const sections = callLogSections().filter((s) => isItemEnabled(s, answersWithLocations) && !isHidden(s));
+  const sections = callLogSections(form).filter((s) => isItemEnabled(s, answersWithLocations) && !isHidden(s));
 
   const setAnswer = (linkId: string, v: string) => {
     setServerErrors({});
@@ -187,13 +203,14 @@ export default function CallLogForm({
     setSubmitted(true);
     setError(null);
     const final: AnswerMap = { ...answers };
-    if (Object.keys(validateCallLog({ answers: final, locations })).length) {
+    if (autoField && !final[autoField] && agentName) final[autoField] = agentName;
+    if (Object.keys(validateCallLog({ answers: final, locations }, form)).length) {
       setError('Some answers need attention. They are marked below.');
       return;
     }
     setSaving(true);
     try {
-      const problems = await onSubmit(cleanPayload({ answers: final, locations, linkedCase }));
+      const problems = await onSubmit(cleanPayload({ answers: final, locations, linkedCase }, form));
       if (problems) {
         setServerErrors(problems);
         setError('Some answers need attention. They are marked below.');
@@ -227,7 +244,7 @@ export default function CallLogForm({
                 const shownError =
                   (submitted || touched[it.linkId]) &&
                   !AUTO_FIELDS.has(it.linkId) &&
-                  isVisible(it.linkId, answersWithLocations)
+                  isVisible(it.linkId, answersWithLocations, form)
                     ? errors[it.linkId] ?? null
                     : null;
                 const wide = it.type === 'text' || (it.type === 'choice' && (it.repeats || (it.answerOption?.length ?? 0) > 3));
@@ -284,7 +301,7 @@ export default function CallLogForm({
       <fieldset className="space-y-2">
         <legend className="text-sm font-semibold text-nphi-900 pb-1">Linked case (optional)</legend>
         <p className="text-xs text-gray-500">
-          Call logs get no EPID of their own. If the call is about a registered case, link it here; its EPID is
+          Alert logs get no EPID of their own. If the alert is about a registered case, link it here; its EPID is
           shown on the log. You can also link one later by editing the log.
         </p>
         <CaseLinker value={linkedCase} onChange={setLinkedCase} />
@@ -297,7 +314,7 @@ export default function CallLogForm({
           Cancel
         </button>
         <button type="submit" className="btn-primary" disabled={saving}>
-          {saving ? <Spinner size="sm" className="text-white" label="Saving…" /> : initial ? 'Save changes' : 'Save call'}
+          {saving ? <Spinner size="sm" className="text-white" label="Saving…" /> : initial ? 'Save changes' : 'Save alert'}
         </button>
       </div>
     </form>

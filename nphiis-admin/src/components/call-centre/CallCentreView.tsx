@@ -2,13 +2,16 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { PhoneIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useAuthedFetch } from '@/lib/auth-context';
+import { useAuth, useAuthedFetch } from '@/lib/auth-context';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZES } from '@/lib/pagination';
 import {
-  MEETS_DEFINITION_OPTIONS,
+  RISK_LEVEL_OPTIONS,
   SOURCE_OPTIONS,
+  agentLabel,
   answerText,
   callLogSections,
+  formOf,
+  isLegacyForm,
   sectionTitle,
   type CallLog,
   type CallLogPayload,
@@ -21,19 +24,32 @@ import { TableSkeleton } from '../ui/Skeleton';
 import Spinner from '../ui/Spinner';
 import CallLogForm from './CallLogForm';
 
+const RISK_FILTER = [{ value: '', label: 'All risk levels' }, ...RISK_LEVEL_OPTIONS.map((o) => ({ value: o.code, label: o.display }))];
 const SOURCE_FILTER = [{ value: '', label: 'All sources' }, ...SOURCE_OPTIONS.map((o) => ({ value: o.code, label: o.display }))];
-const MEETS_FILTER = [{ value: '', label: 'Meets definition: any' }, ...MEETS_DEFINITION_OPTIONS.map((o) => ({ value: o.code, label: o.display }))];
 
-const MEETS_BADGE: Record<string, string> = {
-  Yes: 'bg-accent-50 text-accent-700',
-  No: 'bg-emerald-100 text-emerald-800',
+const RISK_BADGE: Record<string, string> = {
+  Low: 'bg-emerald-100 text-emerald-800',
+  Moderate: 'bg-amber-100 text-amber-800',
+  High: 'bg-orange-100 text-orange-800',
+  Critical: 'bg-red-100 text-red-800',
 };
 
-/** Alert dates are dates only; older logs saved a date and time, which is cut to the date. */
-function formatDate(iso?: string): string {
+function RiskChip({ level }: { level?: string }) {
+  if (!level) return <>—</>;
+  return <span className={`chip ${RISK_BADGE[level] ?? 'bg-gray-100 text-gray-700'}`}>{level}</span>;
+}
+
+/** A dateTime in Kenya time; a date alone ("2026-11-23") without a time. */
+function formatDateTime(iso?: string): string {
   if (!iso) return '—';
-  const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString([], { dateStyle: 'medium' });
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const d = new Date(`${iso}T12:00:00+03:00`);
+    return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString([], { dateStyle: 'medium', timeZone: 'Africa/Nairobi' });
+  }
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Nairobi' });
 }
 
 type Panel =
@@ -76,6 +92,11 @@ function Modal({
 
 export default function CallCentreView() {
   const authedFetch = useAuthedFetch();
+  const { user } = useAuth();
+  const agentName = agentLabel(
+    user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || undefined,
+    user?.username,
+  );
 
   const [logs, setLogs] = useState<CallLogSummary[]>([]);
   const [total, setTotal] = useState(0);
@@ -85,8 +106,8 @@ export default function CallCentreView() {
   const [notice, setNotice] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [risk, setRisk] = useState('');
   const [source, setSource] = useState('');
-  const [meets, setMeets] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [reload, setReload] = useState(0);
@@ -107,8 +128,8 @@ export default function CallCentreView() {
       try {
         const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
         if (debouncedSearch) query.set('q', debouncedSearch);
+        if (risk) query.set('risk', risk);
         if (source) query.set('source', source);
-        if (meets) query.set('meets', meets);
         const res = await authedFetch(`/api/call-centre?${query}`);
         const body = await res.json();
         if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
@@ -129,7 +150,7 @@ export default function CallCentreView() {
     return () => {
       cancelled = true;
     };
-  }, [authedFetch, page, pageSize, debouncedSearch, source, meets, reload]);
+  }, [authedFetch, page, pageSize, debouncedSearch, risk, source, reload]);
 
   /** Saves a log; returns the answers the server refused, if any. */
   const save = useCallback(
@@ -162,7 +183,7 @@ export default function CallCentreView() {
   );
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const filtered = !!(debouncedSearch || source || meets);
+  const filtered = !!(debouncedSearch || risk || source);
 
   return (
     <div className="space-y-6">
@@ -172,7 +193,7 @@ export default function CallCentreView() {
       <div className="flex flex-col lg:flex-row gap-3">
         <div className="flex-1">
           <TextInput
-            placeholder="Search log ID, linked EPID, reporter, phone, patient, county or notes"
+            placeholder="Search log ID, linked EPID, reporter, phone, county, facility, officer or description"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -187,14 +208,14 @@ export default function CallCentreView() {
             options={SOURCE_FILTER}
           />
         </div>
-        <div className="lg:w-52">
+        <div className="lg:w-48">
           <Select
-            value={meets}
+            value={risk}
             onChange={(v) => {
-              setMeets(v);
+              setRisk(v);
               setPage(1);
             }}
-            options={MEETS_FILTER}
+            options={RISK_FILTER}
           />
         </div>
         <button
@@ -211,7 +232,7 @@ export default function CallCentreView() {
       </div>
 
       {!loaded ? (
-        <TableSkeleton rows={6} cols={8} />
+        <TableSkeleton rows={6} cols={9} />
       ) : (
         <div className={`card overflow-hidden transition-opacity ${loading ? 'opacity-60' : ''}`}>
           {logs.length === 0 ? (
@@ -219,7 +240,7 @@ export default function CallCentreView() {
               <PhoneIcon className="mx-auto h-12 w-12 text-gray-300" />
               <p className="mt-3 text-sm font-medium text-nphi-900">No alert logs</p>
               <p className="mt-1 text-sm text-gray-500">
-                {filtered ? 'Adjust the search or filters.' : 'Calls you log here, or on the mobile app, will appear here.'}
+                {filtered ? 'Adjust the search or filters.' : 'Alerts you log here, or on the mobile app, will appear here.'}
               </p>
             </div>
           ) : (
@@ -228,13 +249,14 @@ export default function CallCentreView() {
                 <thead className="bg-gray-50/80">
                   <tr className="text-left">
                     <th className="px-4 py-3 font-medium text-gray-600">Log ID</th>
-                    <th className="px-4 py-3 font-medium text-gray-600">Date alerted</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Received</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Linked case</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Reporter</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Location</th>
                     <th className="px-4 py-3 font-medium text-gray-600">Source</th>
-                    <th className="px-4 py-3 font-medium text-gray-600">Patient</th>
-                    <th className="px-4 py-3 font-medium text-gray-600">Meets definition</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Symptoms</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Risk level</th>
+                    <th className="px-4 py-3 font-medium text-gray-600">Recommended action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-nphi-100">
@@ -248,22 +270,19 @@ export default function CallCentreView() {
                       className="cursor-pointer hover:bg-nphi-50/40 align-top"
                     >
                       <td className="px-4 py-3 font-mono text-xs text-gray-800 whitespace-nowrap">{l.logId ?? <span className="text-gray-400">Pending</span>}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-gray-800">{formatDate(l.callDate)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-gray-800">{formatDateTime(l.receivedAt)}</td>
                       <td className="px-4 py-3 font-mono text-xs text-gray-700">{l.epid ?? '—'}</td>
                       <td className="px-4 py-3 text-gray-700">
-                        <div>{l.callerName ?? '—'}</div>
-                        {l.callerMobile && <div className="text-xs text-gray-500">{l.callerMobile}</div>}
+                        <div>{l.reporterName ?? '—'}</div>
+                        {l.reporterMobile && <div className="text-xs text-gray-500">{l.reporterMobile}</div>}
                       </td>
                       <td className="px-4 py-3 text-gray-700">{[l.county, l.subCounty].filter(Boolean).join(' / ') || '—'}</td>
                       <td className="px-4 py-3 text-gray-700">{l.source ?? '—'}</td>
-                      <td className="px-4 py-3 text-gray-700">{l.patientName ?? '—'}</td>
+                      <td className="px-4 py-3 text-gray-700 max-w-xs truncate">{l.symptoms ?? '—'}</td>
                       <td className="px-4 py-3">
-                        {l.meetsDefinition ? (
-                          <span className={`chip ${MEETS_BADGE[l.meetsDefinition] ?? 'bg-gray-100 text-gray-700'}`}>{l.meetsDefinition}</span>
-                        ) : (
-                          '—'
-                        )}
+                        <RiskChip level={l.riskLevel} />
                       </td>
+                      <td className="px-4 py-3 text-gray-700 max-w-xs truncate">{l.action ?? '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -276,7 +295,7 @@ export default function CallCentreView() {
       {loaded && total > 0 && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm">
           <div className="text-gray-600">
-            Total <span className="font-semibold text-nphi-900">{total}</span> calls
+            Total <span className="font-semibold text-nphi-900">{total}</span> alerts
             <span className="mx-2">·</span>
             Page {page} of {totalPages}
           </div>
@@ -320,7 +339,7 @@ export default function CallCentreView() {
 
       {panel?.kind === 'new' && (
         <Modal title="Log an alert" onClose={() => setPanel(null)}>
-          <CallLogForm onSubmit={(p) => save(p)} onCancel={() => setPanel(null)} />
+          <CallLogForm agentName={agentName} onSubmit={(p) => save(p)} onCancel={() => setPanel(null)} />
         </Modal>
       )}
       {panel?.kind === 'edit' && (
@@ -346,6 +365,35 @@ export default function CallCentreView() {
 
 /** Shorter labels for the read-only view; the form keeps the full questions. */
 const SHORT_LABELS: Record<string, string> = {
+  // Alert triage.
+  'alert-identifier': 'Reference number',
+  'alert-received-by': 'Received by',
+  'alert-source-type': 'Source',
+  'alert-source-type-other': 'Other source',
+  'alert-mode': 'Mode of reporting',
+  'alert-reporter-name': 'Reporter',
+  'alert-reporter-mobile': 'Reporter phone',
+  'alert-facility': 'Facility / community',
+  'alert-description': 'What was reported',
+  'alert-first-noticed': 'First noticed',
+  'alert-suspected-cases': 'Suspected cases',
+  'alert-deaths': 'Deaths',
+  'alert-symptoms': 'Symptoms',
+  'alert-symptoms-other': 'Other symptoms',
+  'alert-confirmed': 'Confirmed by another source',
+  'alert-confirmed-source': 'Confirming source',
+  'alert-concerns': 'Public health concerns',
+  'alert-likelihood': 'Likelihood score',
+  'alert-impact': 'Impact score',
+  'alert-actions': 'Recommended action',
+  'alert-remarks': 'Officer remarks',
+  'alert-officer-name': 'Officer',
+  'alert-officer-signature': 'Signature',
+  'alert-officer-date': 'Date signed',
+};
+
+/** Labels for answers of earlier alert logs. */
+const LEGACY_SHORT_LABELS: Record<string, string> = {
   'alert-date': 'Date alerted',
   'alert-reporter-name': 'Reporter',
   'alert-reporter-mobile': 'Reporter phone',
@@ -365,29 +413,37 @@ const SHORT_LABELS: Record<string, string> = {
 };
 
 /** Shown in the summary strip, so not repeated below. */
-const IN_SUMMARY = new Set(['alert-date', 'alert-meets-case-definition', 'alert-vital-status']);
+const IN_SUMMARY = new Set([
+  'alert-date',
+  'alert-time',
+  'alert-received-by',
+  'alert-risk-level',
+  // Earlier alert logs.
+  'alert-vital-status',
+  'alert-meets-case-definition',
+]);
 const SURNAME = '486402457213';
 const FIRST_NAME = '873240407472';
 
 type Row = { linkId: string; label: string; value: string; wide: boolean };
 
 /** Answered questions of a section (nested groups flattened). */
-function answeredIn(group: QuestionnaireItem, log: CallLog): Row[] {
+function answeredIn(group: QuestionnaireItem, log: CallLog, legacy: boolean): Row[] {
   const out: Row[] = [];
   for (const it of group.item ?? []) {
     if (it.type === 'group') {
-      out.push(...answeredIn(it, log));
+      out.push(...answeredIn(it, log, legacy));
       continue;
     }
     if (it.type === 'display' || IN_SUMMARY.has(it.linkId) || it.linkId === SURNAME) continue;
     let value = answerText(log, it.linkId);
     // First name and surname read as one name.
     if (it.linkId === FIRST_NAME) value = [value, answerText(log, SURNAME)].filter(Boolean).join(' ') || undefined;
-    if ((it.type === 'dateTime' || it.type === 'date') && value) value = formatDate(value);
+    if ((it.type === 'dateTime' || it.type === 'date') && value) value = formatDateTime(value);
     if (!value) continue;
     out.push({
       linkId: it.linkId,
-      label: SHORT_LABELS[it.linkId] ?? labelFor(it),
+      label: (legacy ? LEGACY_SHORT_LABELS[it.linkId] : SHORT_LABELS[it.linkId]) ?? labelFor(it),
       value,
       wide: it.type === 'text' || value.length > 60,
     });
@@ -474,7 +530,8 @@ function CallLogDetails({
   );
 
   const summary = log?.summary;
-  const vitalStatus = log ? answerText(log, 'alert-vital-status') : undefined;
+  const form = log ? formOf(log) : undefined;
+  const legacy = !!log && !!form && isLegacyForm(form);
 
   return (
     <Modal title={log?.summary.logId ? `Alert log ${log.summary.logId}` : 'Alert log'} onClose={onClose} footer={footer}>
@@ -484,8 +541,8 @@ function CallLogDetails({
         <div className="space-y-5">
           <dl className="grid grid-cols-2 lg:grid-cols-4 gap-4 rounded-2xl bg-nphi-50/60 px-4 py-3">
             <div>
-              <dt className="text-xs text-gray-500">Date alerted</dt>
-              <dd className="text-sm font-medium text-gray-900">{formatDate(summary.callDate)}</dd>
+              <dt className="text-xs text-gray-500">{legacy ? 'Date alerted' : 'Received'}</dt>
+              <dd className="text-sm font-medium text-gray-900">{formatDateTime(summary.receivedAt)}</dd>
             </div>
             <div>
               <dt className="text-xs text-gray-500">Linked case</dt>
@@ -497,28 +554,37 @@ function CallLogDetails({
                 )}
               </dd>
             </div>
-            <div>
-              <dt className="text-xs text-gray-500">Vital status</dt>
-              <dd className="text-sm font-medium text-gray-900">{vitalStatus ?? '—'}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-gray-500">Meets definition</dt>
-              <dd className="text-sm">
-                {summary.meetsDefinition ? (
-                  <span className={`chip ${MEETS_BADGE[summary.meetsDefinition] ?? 'bg-gray-100 text-gray-700'}`}>
-                    {summary.meetsDefinition}
-                  </span>
-                ) : (
-                  '—'
-                )}
-              </dd>
-            </div>
+            {legacy ? (
+              <>
+                <div>
+                  <dt className="text-xs text-gray-500">Vital status</dt>
+                  <dd className="text-sm font-medium text-gray-900">{summary.vitalStatus ?? '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-gray-500">Meets case definition</dt>
+                  <dd className="text-sm font-medium text-gray-900">{summary.meetsDefinition ?? '—'}</dd>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <dt className="text-xs text-gray-500">Received by</dt>
+                  <dd className="text-sm font-medium text-gray-900">{summary.receivedBy ?? '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-gray-500">Risk level</dt>
+                  <dd className="text-sm">
+                    <RiskChip level={summary.riskLevel} />
+                  </dd>
+                </div>
+              </>
+            )}
           </dl>
 
-          {callLogSections()
+          {callLogSections(form)
             .filter((s) => !isHidden(s))
             .map((section) => {
-              const rows = answeredIn(section, log);
+              const rows = answeredIn(section, log, legacy);
               if (rows.length === 0) return null;
               return (
                 <section key={section.linkId} className="space-y-2">

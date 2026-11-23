@@ -10,14 +10,14 @@ export async function GET(req: NextRequest) {
 
   const params = req.nextUrl.searchParams;
   const search = (params.get("q") ?? "").trim();
+  const risk = params.get("risk") ?? "";
   const source = params.get("source") ?? "";
-  const meets = params.get("meets") ?? "";
   try {
     const result = await listCallLogs(auth.token, {
       ...parsePaging(params),
       ...(search ? { search } : {}),
+      ...(risk ? { risk } : {}),
       ...(source ? { source } : {}),
-      ...(meets ? { meets } : {}),
     });
     return NextResponse.json(result);
   } catch (err) {
@@ -25,11 +25,11 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/** Log a call. */
+/** Log an alert. */
 export async function POST(req: NextRequest) {
   const auth = await callCentreSession(req);
   if (auth instanceof NextResponse) return auth;
-  const payload = await callLogFromBody(req, auth.token);
+  const payload = await callLogFromBody(req, auth.token, { newLog: true, receivedBy: auth.agent });
   if (payload instanceof NextResponse) return payload;
   try {
     const patientId = await createCallLog(payload, { practitionerId: auth.profile.practitionerId }, auth.token);
