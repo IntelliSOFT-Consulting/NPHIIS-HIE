@@ -15,6 +15,7 @@ export const PERMISSIONS = {
     "reports.vhf.view": "View VHF / Ebola dashboards",
     "rumours.triage": "Set priority on rumour reports",
     "vhf.contacts.manage": "Manage VHF contact tracing",
+    "evd.snapshot.submit": "Submit and view the sub-county EVD Daily Snapshot (Outbreak Response)",
     "lab.enter_results": "Enter lab results",
     "lab.national_scope": "See lab work from every location",
     "specimens.view": "View specimens submitted to NPHL",
@@ -31,6 +32,7 @@ const SURVEILLANCE_OFFICER: Permission[] = [
     "reports.vhf.view",
     "rumours.triage",
     "vhf.contacts.manage",
+    "evd.snapshot.submit",
 ];
 
 /** A permission profile: what a job function can do, whatever level it works at. */

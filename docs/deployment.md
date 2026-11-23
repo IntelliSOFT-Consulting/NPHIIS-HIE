@@ -121,6 +121,7 @@ cp nphiis-admin/env.example nphiis-admin/.env
 | `SUPERSET_GUEST_PASSWORD` | Superset embed service-account password |
 | `NEXT_PUBLIC_SUPERSET_URL` | `https://<SUPERSET_HOST>` |
 | `NEXT_PUBLIC_SUPERSET_DASHBOARD_IDSR_CBS` | Embed UUID from Superset (default: `363e13a5-bfd4-4ca9-b76e-ba284d5b6404`) |
+| `NEXT_PUBLIC_SUPERSET_DASHBOARD_EVD_SNAPSHOT` | Embed UUID of the "EVD Daily Snapshot" dashboard (default `d3088997-6780-5c10-b116-1520fcbfaa63`, fixed by `evd_snapshot_setup.py`) |
 
 ### 3.2 `hie-auth/.env`
 
