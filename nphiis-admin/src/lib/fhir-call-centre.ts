@@ -1,4 +1,4 @@
-// 719 call logs (alert / rumour log) in HAPI. A log is saved the way the
+// Alert logs (alert triage; earlier, the mobile Alert Log form) in HAPI. A log is saved the way the
 // mobile app saves an "Alert Rumor Log" case (AddClientViewModel.kt, ALERT_LOG):
 // a Patient carrying an identifier with CALL_LOG_SYSTEM (value = the Encounter
 // id), the Encounter, the QuestionnaireResponse, and one Observation per answer
@@ -10,6 +10,8 @@
 
 import {
   CALL_LOG_FIELDS as F,
+  CALL_LOG_FORM,
+  LEGACY_FIELDS as L,
   CALL_LOG_REASON,
   CALL_LOG_SYSTEM,
   EAT_OFFSET_MS,
@@ -23,8 +25,10 @@ import {
   callLogSections,
   choiceDisplay,
   cleanPayload,
+  formForLinkIds,
+  formOf,
 } from "./call-centre";
-import type { QuestionnaireItem } from "./questionnaires";
+import type { FhirQuestionnaire, QuestionnaireItem } from "./questionnaires";
 import { MULTI_VALUE_SEPARATOR } from "./questionnaires";
 import { FHIR_BASE_URL, fhirHeaders, searchAll, searchPage } from "./fhir-search";
 
@@ -82,9 +86,9 @@ interface AnsweredItem {
 }
 
 /** Answers in form order, each with its FHIR answer values and Observation text. */
-export function answeredItems(payload: CallLogPayload): AnsweredItem[] {
+export function answeredItems(payload: CallLogPayload, form: FhirQuestionnaire = formOf(payload)): AnsweredItem[] {
   const out: AnsweredItem[] = [];
-  for (const item of Array.from(callLogItems().values())) {
+  for (const item of Array.from(callLogItems(form).values())) {
     const loc = payload.locations[item.linkId];
     if (loc) {
       out.push({
@@ -119,6 +123,9 @@ export function answeredItems(payload: CallLogPayload): AnsweredItem[] {
         out.push({ item, answers: [{ valueTime: t }], text: t });
         break;
       }
+      case "date":
+        out.push({ item, answers: [{ valueDate: v }], text: v });
+        break;
       default:
         out.push({ item, answers: [{ valueString: v }], text: v });
     }
@@ -127,7 +134,7 @@ export function answeredItems(payload: CallLogPayload): AnsweredItem[] {
 }
 
 /** QuestionnaireResponse items nested like the form; groups without answers are left out. */
-function responseItems(answered: AnsweredItem[]): Resource[] {
+function responseItems(answered: AnsweredItem[], form: FhirQuestionnaire): Resource[] {
   const byLinkId = new Map(answered.map((a) => [a.item.linkId, a]));
   const walk = (items: QuestionnaireItem[]): Resource[] => {
     const out: Resource[] = [];
@@ -142,7 +149,7 @@ function responseItems(answered: AnsweredItem[]): Resource[] {
     }
     return out;
   };
-  return walk(callLogSections());
+  return walk(callLogSections(form));
 }
 
 /* ── Resources ──────────────────────────────────────────────────────────── */
@@ -182,15 +189,16 @@ function answerOf(payload: CallLogPayload, linkId: string): string | undefined {
  * when they call about themselves); family "Alert" when no name is known.
  */
 export function personFields(payload: CallLogPayload): Pick<Resource, "name" | "gender" | "telecom" | "address"> {
-  const first = answerOf(payload, F.personName);
-  const surname = answerOf(payload, F.personSurname);
+  // Only earlier alert logs name a patient; a triage alert is about an event, so its Patient is "Alert".
+  const first = answerOf(payload, L.personName);
+  const surname = answerOf(payload, L.personSurname);
   const name: Resource = {};
   if (surname) name.family = surname;
   if (first) name.given = [first];
   if (!surname && !first) name.family = "Alert";
 
-  const sex = answerOf(payload, F.personSex);
-  const mobile = answerOf(payload, F.personMobile);
+  const sex = answerOf(payload, L.personSex);
+  const mobile = answerOf(payload, L.personMobile);
   const county = payload.locations[F.county]?.name ?? "";
   const subCounty = payload.locations[F.subCounty]?.name ?? "";
   const address: Resource = {};
@@ -273,9 +281,12 @@ export interface CreateContext {
   newId?: () => string;
 }
 
-/** The transaction that saves a new call log. Ids are client-assigned (PUT), as the mobile sync does. */
+/**
+ * The transaction that saves a new alert log, always on the triage form. Ids are
+ * client-assigned (PUT), as the mobile sync does.
+ */
 export function buildCreateBundle(input: CallLogPayload, ctx: CreateContext = {}): TransactionBundle {
-  const payload = cleanPayload(input);
+  const payload = cleanPayload(input, CALL_LOG_FORM);
   const now = ctx.now ?? new Date();
   const newId = ctx.newId ?? (() => crypto.randomUUID());
   const issued = now.toISOString();
@@ -284,7 +295,7 @@ export function buildCreateBundle(input: CallLogPayload, ctx: CreateContext = {}
   const encounterId = newId();
   const responseId = newId();
   const practitioner = ctx.practitionerId ? { reference: `Practitioner/${ctx.practitionerId}` } : undefined;
-  const answered = answeredItems(payload);
+  const answered = answeredItems(payload, CALL_LOG_FORM);
 
   const patient = withPerson(
     stamped("patient", {
@@ -326,7 +337,7 @@ export function buildCreateBundle(input: CallLogPayload, ctx: CreateContext = {}
     encounter: { reference: `Encounter/${encounterId}` },
     authored: issued,
     ...(practitioner ? { author: practitioner } : {}),
-    item: responseItems(answered),
+    item: responseItems(answered, CALL_LOG_FORM),
   });
 
   const refs = { patientId, encounterId, practitionerId: ctx.practitionerId, issued };
@@ -400,16 +411,30 @@ function latestByCode(observations: Resource[]): Map<string, Resource> {
 const SUMMARY_CODES = [
   LINKED_CASE_CODE,
   F.date,
-  F.source,
-  F.callerName,
-  F.callerMobile,
-  F.personName,
-  F.personSurname,
+  F.time,
+  F.receivedBy,
+  F.reporterName,
+  F.reporterMobile,
+  F.sourceType,
   F.county,
   F.subCounty,
-  F.vitalStatus,
-  F.meetsDefinition,
+  F.symptoms,
+  F.riskLevel,
+  F.actions,
+  L.personName,
+  L.personSurname,
+  L.vitalStatus,
+  L.meetsDefinition,
 ];
+
+/** "2026-11-23" and "10:15:00" (Kenya time) → "2026-11-23T10:15:00+03:00"; the date alone without a time. */
+function receivedAt(date?: string, time?: string): string | undefined {
+  if (!date) return undefined;
+  // Earlier call logs keep a full dateTime here.
+  if (date.includes("T")) return date;
+  const t = time?.match(/^(\d\d:\d\d)(:\d\d)?/);
+  return t ? `${date}T${t[1]}${t[2] ?? ":00"}+03:00` : date;
+}
 
 export function toSummary(patient: Resource, observations: Resource[]): CallLogSummary {
   const latest = latestByCode(observations);
@@ -421,15 +446,19 @@ export function toSummary(patient: Resource, observations: Resource[]): CallLogS
     patientId: patient.id,
     logId: patient.identifier?.find((i: Resource) => i.system === ALERT_LOG_ID_SYSTEM)?.value,
     epid: value(LINKED_CASE_CODE),
-    callDate: value(F.date) ?? patient.meta?.lastUpdated,
-    source: value(F.source),
-    callerName: value(F.callerName),
-    callerMobile: value(F.callerMobile),
-    patientName: [value(F.personName), value(F.personSurname)].filter(Boolean).join(" ") || undefined,
+    receivedAt: receivedAt(value(F.date), value(F.time)) ?? patient.meta?.lastUpdated,
+    receivedBy: value(F.receivedBy),
+    reporterName: value(F.reporterName),
+    reporterMobile: value(F.reporterMobile),
+    source: value(F.sourceType),
     county: value(F.county) ?? patient.address?.[0]?.city,
     subCounty: value(F.subCounty) ?? patient.address?.[0]?.state,
-    vitalStatus: value(F.vitalStatus),
-    meetsDefinition: value(F.meetsDefinition),
+    symptoms: value(F.symptoms),
+    riskLevel: value(F.riskLevel),
+    action: value(F.actions),
+    patientName: [value(L.personName), value(L.personSurname)].filter(Boolean).join(" ") || undefined,
+    vitalStatus: value(L.vitalStatus),
+    meetsDefinition: value(L.meetsDefinition),
   };
 }
 
@@ -453,7 +482,15 @@ function codesFromDisplay(item: QuestionnaireItem, text: string): string[] {
 
 /** The form's answers from a QuestionnaireResponse. */
 export function payloadFromResponse(response: Resource): CallLogPayload {
-  const items = callLogItems();
+  const linkIds: string[] = [];
+  const collect = (list: Resource[] = []) => {
+    for (const ri of list) {
+      if (ri.linkId) linkIds.push(ri.linkId);
+      collect(ri.item);
+    }
+  };
+  collect(response.item);
+  const items = callLogItems(formForLinkIds(linkIds));
   const payload: CallLogPayload = { answers: {}, locations: {} };
   const walk = (list: Resource[] = []) => {
     for (const ri of list) {
@@ -488,9 +525,10 @@ export function payloadFromResponse(response: Resource): CallLogPayload {
 
 /** The form's answers from the per-answer Observations, for logs whose response is missing. */
 export function payloadFromObservations(observations: Resource[]): CallLogPayload {
-  const items = callLogItems();
+  const latest = latestByCode(observations);
+  const items = callLogItems(formForLinkIds(latest.keys()));
   const payload: CallLogPayload = { answers: {}, locations: {} };
-  for (const [code, o] of Array.from(latestByCode(observations))) {
+  for (const [code, o] of Array.from(latest)) {
     const item = items.get(code);
     const text = obsValue(o);
     if (!item || !text) continue;
@@ -564,16 +602,18 @@ export function buildUpdateBundle(
   input: CallLogPayload,
   ctx: CreateContext = {},
 ): TransactionBundle {
-  const payload = cleanPayload(input);
+  // An alert keeps the form it was saved with: earlier call logs stay on the call-log form.
+  const form = formOf(input);
+  const payload = cleanPayload(input, form);
   const now = ctx.now ?? new Date();
   const newId = ctx.newId ?? (() => crypto.randomUUID());
   const issued = now.toISOString();
-  const answered = answeredItems(payload);
+  const answered = answeredItems(payload, form);
   const practitionerId = ctx.practitionerId;
   const entries: BundleEntry[] = [put(withPerson(log.patient, payload))];
 
   const response: Resource = log.response
-    ? { ...log.response, status: "completed", item: responseItems(answered) }
+    ? { ...log.response, status: "completed", item: responseItems(answered, form) }
     : stamped("questionnaire", {
         resourceType: "QuestionnaireResponse",
         id: newId(),
@@ -582,11 +622,11 @@ export function buildUpdateBundle(
         encounter: { reference: `Encounter/${log.encounterId}` },
         authored: issued,
         ...(practitionerId ? { author: { reference: `Practitioner/${practitionerId}` } } : {}),
-        item: responseItems(answered),
+        item: responseItems(answered, form),
       });
   entries.push(put(response));
 
-  const formCodes = new Set(callLogItems().keys());
+  const formCodes = new Set(callLogItems(form).keys());
   const existing = latestByCode(log.observations.filter((o) => formCodes.has(obsCode(o) ?? "")));
   const refs = { patientId: log.patient.id, encounterId: log.encounterId, practitionerId, issued };
   for (const a of answered) {
@@ -643,9 +683,9 @@ export interface CallLogQuery {
   page: number;
   pageSize: number;
   search?: string;
-  /** Option codes of the source of alert / meets case definition questions. */
+  /** Option codes of the risk level / source of alert questions. */
+  risk?: string;
   source?: string;
-  meets?: string;
 }
 
 export interface CallLogPage {
@@ -658,15 +698,20 @@ export interface CallLogPage {
 // Answers the search box looks in.
 const SEARCH_CODES = [
   LINKED_CASE_CODE,
-  F.callerName,
-  F.callerMobile,
-  F.personName,
-  F.personSurname,
-  F.personMobile,
+  F.identifier,
+  F.reporterName,
+  F.reporterMobile,
   F.county,
   F.subCounty,
-  F.village,
+  F.facility,
+  F.receivedBy,
+  F.officerName,
   F.description,
+  // Earlier alert logs.
+  L.personName,
+  L.personSurname,
+  L.personMobile,
+  L.village,
 ];
 
 async function idsMatching(term: string, token: string): Promise<Set<string>> {
@@ -716,13 +761,13 @@ export async function listCallLogs(token: string, query: CallLogQuery): Promise<
   const { page, pageSize } = query;
   const empty: CallLogPage = { logs: [], total: 0, page, pageSize };
 
-  const [matching, bySource, byMeets] = await Promise.all([
+  const [matching, byRisk, bySource] = await Promise.all([
     query.search ? idsMatching(query.search, token) : undefined,
-    query.source ? idsAnswering(F.source, query.source, token) : undefined,
-    query.meets ? idsAnswering(F.meetsDefinition, query.meets, token) : undefined,
+    query.risk ? idsAnswering(F.riskLevel, query.risk, token) : undefined,
+    query.source ? idsAnswering(F.sourceType, query.source, token) : undefined,
   ]);
   let only: Set<string> | undefined;
-  for (const s of [matching, bySource, byMeets]) if (s) only = intersect(only, s);
+  for (const s of [matching, byRisk, bySource]) if (s) only = intersect(only, s);
   if (only && only.size === 0) return empty;
 
   const params = new URLSearchParams({
