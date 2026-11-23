@@ -174,6 +174,14 @@ def main():
         ds.main_dttm_col = "Reporting Date"
         db.session.commit()
         ds.fetch_metadata()
+        if not ds.columns:
+            # Superset reads columns from the query result, and returns none when it has no rows.
+            print(
+                f"WARNING: dataset {DATASET_NAME!r} (id {ds.id}) has no columns, so no charts or dashboard were built. "
+                "The query returned no rows, which means no EVD Daily Snapshot has reached the analytics database yet. "
+                "Submit a snapshot in the portal, wait for the next pipeline run, then run this script again."
+            )
+            sys.exit(1)
         for col in ds.columns:
             col.filterable = True
             col.groupby = True
