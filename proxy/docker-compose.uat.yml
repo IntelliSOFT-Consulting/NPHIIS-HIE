@@ -1,0 +1,17 @@
+networks:
+    cloudbuild:
+        external: true
+
+# UAT front door: one hostname, path-based routing, TLS terminated upstream.
+# Use instead of proxy/docker-compose.yml (both define the `nginx` service).
+services:
+  nginx:
+      image: nginx:alpine
+      container_name: nginx
+      restart: unless-stopped
+      networks:
+        - cloudbuild
+      ports:
+        - "80:80"
+      volumes:
+        - ./../proxy/nginx.uat.conf:/etc/nginx/nginx.conf:ro
