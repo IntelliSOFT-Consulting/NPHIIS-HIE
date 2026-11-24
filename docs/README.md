@@ -7,4 +7,5 @@ This directory contains technical documentation for the National Public Health I
 | Document | Description |
 | --- | --- |
 | [Architecture](architecture.md) | System architecture overview — component layers, data flows, integrations, and current capabilities |
+| [Access Matrix](access-matrix.md) | Roles, permissions, levels and data scope — who can do what across the admin portal and hie-auth |
 | [Deployment Protocol](deployment.md) | End-to-end deployment guide — prerequisites, environment setup, deployment sequence, health checks, updates, rollback, and backup procedures |
