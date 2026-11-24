@@ -1,22 +1,11 @@
 version: "3"
 networks:
-    openhim:
     hapi-fhir:
-    mediators:
     cloudbuild: 
         external: true
 
 
 services:
-    mongo:
-        container_name: openhim-mongo
-        image: mongo:4.0
-        networks:
-            - openhim
-        volumes:
-            - chanjo-mongodb-data:/data/db
-        restart: unless-stopped
-
     hapi-fhir-postgres:
         container_name: hapi-fhir-postgres
         image: postgres:14-alpine
@@ -48,55 +37,6 @@ services:
             SPRING_CONFIG_LOCATION: /hapi/application.yaml
             SPRING_DATASOURCE_PASSWORD: ${HAPI_DB_PASSWORD}
 
-    openhim-core:
-        container_name: openhim-core
-        restart: unless-stopped
-        # Reaps the health check's child processes; without it they pile up as zombies until the
-        # container can no longer start processes.
-        init: true
-        image: jembi/openhim-core:latest
-        env_file:
-            - .env
-        ports:
-            - "8080:8080"
-            # - "5000:5000"
-            - "5001:5001"
-            # - "5050:5050"
-            # - "5051:5051"
-            # - "5052:5052"
-            # - "7788:7788"
-        depends_on:
-            - mongo
-        networks:
-            - openhim
-            - hapi-fhir
-            - mediators
-        healthcheck:
-            test: "curl -sSk https://openhim-core:8080/heartbeat || exit 1"
-            interval: 30s
-            timeout: 30s
-            retries: 3
-
-    openhim-console:
-        container_name: openhim-console
-        image: jembi/openhim-console:latest
-        depends_on:
-            - openhim-core
-        restart: unless-stopped
-        ports:
-            - "9000:80"
-        networks:
-            - openhim
-        healthcheck:
-            test: "curl -sS http://openhim-console || exit 1"
-            interval: 30s
-            timeout: 30s
-            retries: 3
-        volumes:
-            - ./default.json:/usr/share/nginx/html/config/default.json:ro
-            - /etc/ssl/crt:/etc/nginx/certs
-
-
     hie-auth:
         depends_on:
             - hapi-fhir-jpa
@@ -109,7 +49,6 @@ services:
         networks:
             - cloudbuild
             - hapi-fhir
-            - openhim
         env_file:
             - ../hie-auth/.env
         volumes:
@@ -148,8 +87,6 @@ services:
             - "8080:3000"
         depends_on:
             - hapi-fhir-jpa
-            - openhim-core
-            - openhim-console
             - hie-auth
             - hapi-fhir-config
     fhir-gateway:
@@ -180,7 +117,6 @@ services:
         
 
 volumes:
-    chanjo-mongodb-data:
     hapi-fhir-postgres:
     hapi:
     nphiis-postgres:
