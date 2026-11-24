@@ -1,6 +1,5 @@
 # version: "3"
 networks:
-    openhim:
     hapi-fhir:
     cloudbuild: 
         external: true
@@ -54,7 +53,6 @@ services:
         networks:
             - cloudbuild
             - hapi-fhir
-            - openhim
         env_file:
             - ../hie-auth/.env
         ports:
