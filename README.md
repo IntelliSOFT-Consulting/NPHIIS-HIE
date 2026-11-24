@@ -9,13 +9,12 @@ Code and config for the NPHIIS Health Information Exchange. Everything runs in D
 | `hie/` | HAPI FHIR JPA server and its Postgres |
 | `hapi-fhir-config/` | One-shot job that loads Kenya's counties, sub-counties, wards, facilities and community units |
 | `hie-auth/` | Auth and mediator API (Node/TypeScript, Prisma) |
-| `keycloak/` | Keycloak, realm themes and client sample |
+| `keycloak/` | Keycloak and realm themes |
 | `fhir-gateway/` | Token-checking proxy in front of HAPI |
 | `proxy/` | Nginx config for the public hostnames |
 | `nphiis-admin/` | Admin web app (Next.js) |
 | `fhir-data-pipes/` | Analytics pipeline (pipeline controller + Spark thrift server) |
 | `NPHIIS-superset/` | Apache Superset dashboards |
-| `reports/` | Reports service |
 | `packages/fhir-ig/` | FHIR implementation guide (FSH / SUSHI) |
 | `scripts/` | Helper scripts, e.g. `bulk_register.py` |
 | `docs/` | Architecture and deployment docs |
@@ -82,7 +81,7 @@ HAPI takes 1-2 minutes on a first run while it builds the schema. Watch it with:
 
 Wait for "is now running" before moving on. `hapi-fhir-config` runs once, loads the location data and exits. That's expected.
 
-The other scripts, `start-admin.sh`, `start-gateway.sh` and `start-reports.sh`, start a single service. You only need them if you left that service out of the main stack. For example, `start-admin.sh` is for when `nphiis-admin` was excluded to avoid a port 8080 clash.
+The other scripts, `start-admin.sh` and `start-gateway.sh`, start a single service. You only need them if you left that service out of the main stack. For example, `start-admin.sh` is for when `nphiis-admin` was excluded to avoid a port 8080 clash.
 
 Every script passes extra arguments straight to `docker compose`, so `./start-hie.sh ps`, `./start-hie.sh down` and `./start-hie.sh logs -f hie-auth` all work.
 
