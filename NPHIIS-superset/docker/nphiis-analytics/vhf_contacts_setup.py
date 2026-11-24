@@ -318,9 +318,14 @@ def main():
         # Embedding for the admin portal
         from superset.models.embedded_dashboard import EmbeddedDashboard
 
-        domains = set(d.strip() for d in os.environ.get("EMBED_DOMAINS", "").split(",") if d.strip())
+        # Prefer EMBED_DOMAINS; fall back to EMBEDDED_ALLOWED_ORIGINS (CORS/frame-ancestors).
+        # Bare hostnames without a scheme never pass flask_wtf same_origin — always use https://…
+        _embed_env = os.environ.get("EMBED_DOMAINS") or os.environ.get("EMBEDDED_ALLOWED_ORIGINS", "")
+        domains = set(d.strip() for d in _embed_env.split(",") if d.strip())
         for e in db.session.query(EmbeddedDashboard).all():
             domains.update(e.allowed_domains or [])
+        # Drop scheme-less entries (same_origin requires scheme+host+port).
+        domains = {d for d in domains if "://" in d}
         for title, embed_uuid in EMBEDS.items():
             d = db.session.query(Dashboard).filter_by(dashboard_title=title).one_or_none()
             if d is None:
