@@ -104,6 +104,65 @@ def _translate(obj):
     return obj
 
 
+def _as_list(value):
+    if value is None or value is False:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def query_context_from_params(slice_id, datasource_id, params):
+    """Build a stored query_context so embedded guests pass the payload tamper check.
+
+    Null query_context + charts that store `metric` (singular) make Superset treat the
+    guest request as a payload modification ("Guest user cannot modify chart payload").
+    """
+    metrics = _as_list(params.get("metrics"))
+    if not metrics and params.get("metric") is not None:
+        metrics = [params["metric"]]
+    columns = []
+    for key in (
+        "columns",
+        "groupby",
+        "entity",
+        "series",
+        "x",
+        "y",
+        "size",
+        "x_axis",
+        "granularity_sqla",
+        "secondary_metric",
+    ):
+        for value in _as_list(params.get(key)):
+            if value not in columns:
+                columns.append(value)
+    form_data = {**params, "slice_id": slice_id, "datasource": f"{datasource_id}__table"}
+    return {
+        "datasource": {"id": datasource_id, "type": "table"},
+        "force": False,
+        "queries": [
+            {
+                "filters": [],
+                "extras": {"having": "", "where": ""},
+                "applied_time_extras": {},
+                "columns": columns,
+                "metrics": metrics,
+                "annotation_layers": [],
+                "row_limit": params.get("row_limit") or 10000,
+                "series_limit": 0,
+                "order_desc": True,
+                "url_params": {},
+                "custom_params": {},
+                "custom_form_data": {},
+            }
+        ],
+        "form_data": form_data,
+        "result_format": "json",
+        "result_type": "full",
+    }
+
+
 def _sql_fragments(params):
     """(kind, sql) pairs of a chart's custom SQL: metrics and SQL filters."""
     found = []
@@ -319,21 +378,45 @@ def main(mode):
         if mode == "switch":
             backup = json.load(open(BACKUP)) if os.path.exists(BACKUP) else {}
             moved = 0
+            repaired = 0
             for s in charts:
                 if s.datasource_id not in twins:
-                    continue  # already on Postgres
+                    # Already on Postgres: still repair missing query_context for embeds.
+                    if not s.query_context:
+                        params = json.loads(s.params or "{}")
+                        s.query_context = json.dumps(
+                            query_context_from_params(s.id, s.datasource_id, params)
+                        )
+                        repaired += 1
+                    continue
                 backup[str(s.id)] = {"datasource_id": s.datasource_id, "params": s.params, "query_context": s.query_context}
                 ds = twins[s.datasource_id]
                 params = _translate(json.loads(s.params or "{}"))
                 params["datasource"] = f"{ds.id}__table"
-                s.datasource_id, s.params, s.query_context = ds.id, json.dumps(params), None
+                qc = None
+                if s.query_context:
+                    try:
+                        qc_obj = _translate(json.loads(s.query_context))
+                        qc_obj["datasource"] = {"id": ds.id, "type": "table"}
+                        if isinstance(qc_obj.get("form_data"), dict):
+                            qc_obj["form_data"]["datasource"] = f"{ds.id}__table"
+                            qc_obj["form_data"]["slice_id"] = s.id
+                        qc = json.dumps(qc_obj)
+                    except Exception:
+                        qc = None
+                if not qc:
+                    qc = json.dumps(query_context_from_params(s.id, ds.id, params))
+                s.datasource_id, s.params, s.query_context = ds.id, json.dumps(params), qc
                 moved += 1
             with open(BACKUP, "w") as f:
                 json.dump(backup, f)
             ids = {spark_id: ds.id for spark_id, ds in twins.items()}
             _retarget_filters(db, Dashboard, charts, ids)
             db.session.commit()
-            print(f"switched {moved} charts to Postgres (Spark settings saved in {BACKUP})")
+            print(
+                f"switched {moved} charts to Postgres "
+                f"(repaired query_context on {repaired}; Spark settings saved in {BACKUP})"
+            )
             return
 
         if mode == "revert":
