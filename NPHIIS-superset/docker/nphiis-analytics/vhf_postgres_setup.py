@@ -112,16 +112,56 @@ def _as_list(value):
     return [value]
 
 
+def _base_axis_column(x_axis, time_grain):
+    """Match @superset-ui/core normalizeTimeColumn for a physical x_axis column."""
+    col = {
+        "columnType": "BASE_AXIS",
+        "sqlExpression": x_axis,
+        "label": x_axis,
+        "expressionType": "SQL",
+    }
+    # Frontend omits timeGrain when undefined; only include when set.
+    if time_grain:
+        col["timeGrain"] = time_grain
+    return col
+
+
 def query_context_from_params(slice_id, datasource_id, params):
     """Build a stored query_context so embedded guests pass the payload tamper check.
 
-    Null query_context + charts that store `metric` (singular) make Superset treat the
-    guest request as a payload modification ("Guest user cannot modify chart payload").
+    The guest check (query_context_modified) requires request query columns/metrics/orderby
+    to be a subset of what's stored on the slice. The dashboard frontend rebuilds the
+    payload via each viz's buildQuery — notably:
+
+    - metric (singular) becomes metrics[]
+    - groupby / x_axis become query columns; x_axis is rewritten to a BASE_AXIS adhoc col
+    - timeseries normalizeOrderBy adds orderby=[[first_metric, not order_desc]]
+
+    Storing only the raw param strings therefore 403s with
+    "Guest user cannot modify chart payload".
     """
     metrics = _as_list(params.get("metrics"))
     if not metrics and params.get("metric") is not None:
         metrics = [params["metric"]]
+
+    # Timeseries / cartesian: x_axis first, then series (groupby). Other keys still
+    # collected so sankey/source-target and table all_columns stay covered.
     columns = []
+    x_axis = params.get("x_axis")
+    time_grain = None
+    extras = params.get("extras") if isinstance(params.get("extras"), dict) else {}
+    time_grain = params.get("time_grain_sqla") or extras.get("time_grain_sqla")
+
+    def _add(value):
+        if value not in columns:
+            columns.append(value)
+
+    if x_axis:
+        if isinstance(x_axis, str):
+            _add(_base_axis_column(x_axis, time_grain))
+            _add(x_axis)  # allow either representation through the subset check
+        else:
+            _add(x_axis)
     for key in (
         "columns",
         "all_columns",
@@ -131,7 +171,6 @@ def query_context_from_params(slice_id, datasource_id, params):
         "x",
         "y",
         "size",
-        "x_axis",
         "granularity_sqla",
         "secondary_metric",
         "source",
@@ -140,28 +179,47 @@ def query_context_from_params(slice_id, datasource_id, params):
         "target_category",
     ):
         for value in _as_list(params.get(key)):
-            if value not in columns:
-                columns.append(value)
+            _add(value)
+
+    # Mirror normalizeOrderBy: when metrics exist, frontend often sends orderby.
+    order_desc = params.get("order_desc")
+    if order_desc is None:
+        order_desc = True
+    orderby = _as_list(params.get("orderby"))
+    if not orderby and metrics:
+        orderby = [[metrics[0], not order_desc]]
+
+    groupby = _as_list(params.get("groupby"))
     form_data = {**params, "slice_id": slice_id, "datasource": f"{datasource_id}__table"}
+    if metrics and not form_data.get("metrics"):
+        form_data["metrics"] = metrics
+
+    query = {
+        "filters": [],
+        "extras": {"having": "", "where": "", **({"time_grain_sqla": time_grain} if time_grain else {})},
+        "applied_time_extras": {},
+        "columns": columns,
+        "metrics": metrics,
+        "annotation_layers": [],
+        "row_limit": params.get("row_limit") or 10000,
+        "series_limit": 0,
+        "order_desc": order_desc,
+        "url_params": {},
+        "custom_params": {},
+        "custom_form_data": {},
+    }
+    if orderby:
+        query["orderby"] = orderby
+    if groupby:
+        # Sankey-style charts keep source/target in groupby; guest check unions these.
+        query["groupby"] = groupby
+    if x_axis and groupby:
+        query["series_columns"] = groupby
+
     return {
         "datasource": {"id": datasource_id, "type": "table"},
         "force": False,
-        "queries": [
-            {
-                "filters": [],
-                "extras": {"having": "", "where": ""},
-                "applied_time_extras": {},
-                "columns": columns,
-                "metrics": metrics,
-                "annotation_layers": [],
-                "row_limit": params.get("row_limit") or 10000,
-                "series_limit": 0,
-                "order_desc": True,
-                "url_params": {},
-                "custom_params": {},
-                "custom_form_data": {},
-            }
-        ],
+        "queries": [query],
         "form_data": form_data,
         "result_format": "json",
         "result_type": "full",
