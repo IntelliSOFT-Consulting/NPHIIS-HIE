@@ -398,8 +398,10 @@ def transmission_network(db, Slice, Dashboard):
     s.params = json.dumps(params)
     # Embedded guests need a stored query_context (null → "cannot modify chart payload").
     try:
-        from vhf_postgres_setup import query_context_from_params
+        from vhf_postgres_setup import enrich_params_for_guest, query_context_from_params
 
+        params = enrich_params_for_guest(params)
+        s.params = json.dumps(params)
         s.query_context = json.dumps(
             query_context_from_params(s.id, s.datasource_id, params)
         )
