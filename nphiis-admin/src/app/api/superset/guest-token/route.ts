@@ -8,7 +8,12 @@ import {
 import { buildGuestRlsClauses, type RlsDataset } from '@/lib/superset-rls';
 import { canAccess } from '@/lib/roles';
 
-const SUPERSET_URL = process.env.SUPERSET_URL?.replace(/\/$/, '');
+/** Server-side Superset base URL (Docker network preferred). */
+const SUPERSET_URL = (
+  process.env.SUPERSET_INTERNAL_URL ||
+  process.env.SUPERSET_URL ||
+  ''
+).replace(/\/$/, '');
 const SUPERSET_USER = process.env.SUPERSET_GUEST_USER;
 const SUPERSET_PASSWORD = process.env.SUPERSET_GUEST_PASSWORD;
 
@@ -22,6 +27,18 @@ interface CsrfResponse {
 
 interface GuestTokenResponse {
   token: string;
+}
+
+function mergeCookies(...headerValues: Array<string | null>): string {
+  const parts: string[] = [];
+  for (const h of headerValues) {
+    if (!h) continue;
+    for (const piece of h.split(/,(?=[^;]+?=)/)) {
+      const pair = piece.split(';')[0]?.trim();
+      if (pair) parts.push(pair);
+    }
+  }
+  return parts.join('; ');
 }
 
 async function supersetLogin(): Promise<{ access: string; csrf: string; cookie: string }> {
@@ -41,13 +58,17 @@ async function supersetLogin(): Promise<{ access: string; csrf: string; cookie: 
   });
   if (!loginRes.ok) throw new Error(`Superset login failed: ${loginRes.status}`);
   const { access_token } = (await loginRes.json()) as LoginResponse;
+  const loginCookie = loginRes.headers.get('set-cookie');
 
   const csrfRes = await fetch(`${SUPERSET_URL}/api/v1/security/csrf_token/`, {
-    headers: { Authorization: `Bearer ${access_token}` },
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+      ...(loginCookie ? { Cookie: mergeCookies(loginCookie) } : {}),
+    },
   });
   if (!csrfRes.ok) throw new Error(`Superset CSRF failed: ${csrfRes.status}`);
   const { result: csrf } = (await csrfRes.json()) as CsrfResponse;
-  const cookie = csrfRes.headers.get('set-cookie') ?? '';
+  const cookie = mergeCookies(loginCookie, csrfRes.headers.get('set-cookie'));
 
   return { access: access_token, csrf, cookie };
 }
