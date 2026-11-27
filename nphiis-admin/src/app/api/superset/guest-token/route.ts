@@ -5,7 +5,7 @@ import {
   unauthorized,
   verifyToken,
 } from '@/lib/server-auth';
-import { buildDatasetRlsClauses, type RlsDataset } from '@/lib/superset-rls';
+import { buildGuestRlsClauses, type RlsDataset } from '@/lib/superset-rls';
 import { canAccess } from '@/lib/roles';
 
 const SUPERSET_URL = process.env.SUPERSET_URL?.replace(/\/$/, '');
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { access, csrf, cookie } = await supersetLogin();
-    const rls = buildDatasetRlsClauses(roles, session.locationInfo, await dashboardDatasets(dashboardId, access));
+    const rls = buildGuestRlsClauses(roles, session.locationInfo, await dashboardDatasets(dashboardId, access));
 
     const guestRes = await fetch(`${SUPERSET_URL}/api/v1/security/guest_token/`, {
       method: 'POST',

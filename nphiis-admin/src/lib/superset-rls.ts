@@ -119,3 +119,22 @@ export function buildDatasetRlsClauses(
     datasets.map((ds) => ({ dataset: ds.id, clause: clauseForDataset(clause, ds, locationInfo) })),
   );
 }
+
+/**
+ * No-op RLS marker so Superset Jinja `can_view_pii()` can recognise an ADMINISTRATOR guest
+ * embed (UserSchema strips custom user fields). Also participates in the chart cache key.
+ */
+export const NPHIIS_CAN_VIEW_PII_CLAUSE = "TRUE /* nphiis_can_view_pii */";
+
+/** Area RLS plus the PII marker when the portal user is ADMINISTRATOR. */
+export function buildGuestRlsClauses(
+  roles: string[],
+  locationInfo: LocationInfo | undefined,
+  datasets: RlsDataset[] | null,
+): RlsClause[] {
+  const clauses = buildDatasetRlsClauses(roles, locationInfo, datasets);
+  if (roles.includes("ADMINISTRATOR")) {
+    clauses.push({ clause: NPHIIS_CAN_VIEW_PII_CLAUSE });
+  }
+  return clauses;
+}

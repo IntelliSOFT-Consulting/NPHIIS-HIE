@@ -25,7 +25,8 @@ CHART = "VHF contacts - 21-day grid"
 DASHBOARD = "VHF Contact Follow-up Grid"
 SLUG = "vhf-followup-grid"
 DATE_COLUMNS = ("Contact Date", "Last Day")
-COLUMNS = ["Contact ID", "Source Case", "Status", "Contact Date", "Days Seen", "Days Due", "County", "Sub County"] + [
+# EPID is the public identifier; Contact ID is PII (ADMINISTRATOR-only).
+COLUMNS = ["EPID", "Source Case", "Status", "Contact Date", "Days Seen", "Days Due", "County", "Sub County"] + [
     f"Day {d}" for d in range(1, 22)
 ]
 

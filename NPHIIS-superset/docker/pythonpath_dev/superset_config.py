@@ -208,10 +208,19 @@ def get_user_location_info():
     return {}
 
 
+try:
+    from nphiis_pii import can_view_pii
+except ImportError:
+    def can_view_pii():  # noqa: E306
+        return False
+
+
 # Add location info function to Jinja context for use in SQL templates and RLS filters
 # Note: Functions in JINJA_CONTEXT_ADDONS are called directly in templates
 JINJA_CONTEXT_ADDONS = {
     'user_location_info': get_user_location_info,
+    # Patient identifiers (name, phone, DOB, village, FHIR id, Contact ID): ADMINISTRATOR only.
+    'can_view_pii': can_view_pii,
 }
 
 class CeleryConfig:

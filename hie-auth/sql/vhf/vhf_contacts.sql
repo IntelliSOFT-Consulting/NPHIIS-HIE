@@ -118,8 +118,10 @@ coded AS (
          a.res_sub_id IS NULL AND a.res_county_id IS NULL AS area_from_facility
   FROM area a
 )
-SELECT c.encounter_id,
-       c.contact_id,
+SELECT
+       {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+       c.encounter_id,
+       CASE WHEN {{ can_view_pii() | tojson }} THEN c.contact_id END AS contact_id,
        c.epid AS contact_epid,
        c.source_case,
        c.relationship,

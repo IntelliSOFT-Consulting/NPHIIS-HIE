@@ -56,7 +56,8 @@ async function userScope(username: string): Promise<UserScope | null> {
 async function authorize(req: Request, res: Response, next: NextFunction) {
   try {
     if (apiKeyMatches(req)) {
-      (req as any).scope = { roles: ["ADMINISTRATOR"] } satisfies UserScope;
+      // National geographic scope, but no patient identifiers (PII is ADMINISTRATOR-only).
+      (req as any).scope = { roles: ["NATIONAL_FOCAL_PERSON"] } satisfies UserScope;
       return next();
     }
     const token = validateBearerToken(req);
@@ -64,7 +65,7 @@ async function authorize(req: Request, res: Response, next: NextFunction) {
     const user = await validateUserAuthentication(token, { allowReportsClient: true });
     if (!user) return res.status(401).json({ status: "error", error: "Invalid Bearer token provided" });
     if (reportsClientOf(token, user)) {
-      (req as any).scope = { roles: ["ADMINISTRATOR"] } satisfies UserScope;
+      (req as any).scope = { roles: ["NATIONAL_FOCAL_PERSON"] } satisfies UserScope;
       return next();
     }
     // Any other client's service account (e.g. hie-auth's own admin client) has no reports access.

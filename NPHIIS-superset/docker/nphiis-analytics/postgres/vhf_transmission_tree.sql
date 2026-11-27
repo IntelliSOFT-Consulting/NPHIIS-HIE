@@ -62,7 +62,11 @@ nodes AS (
 ),
 chain_nodes AS (
   SELECT n.*,
+    {% if can_view_pii() %}
     CONCAT_WS(' · ', COALESCE(NULLIF(n."Patient Name", ''), 'Unnamed'), n."EPID") AS person_label
+    {% else %}
+    COALESCE(NULLIF(n."EPID", ''), 'Unnamed') AS person_label
+    {% endif %}
   FROM nodes n
   WHERE n.parent_pid IS NOT NULL
      OR n.node_type = 'Contact became case'
@@ -76,9 +80,15 @@ labelled AS (
          ELSE c.person_label END AS graph_label
   FROM chain_nodes c
 )
-SELECT c.patient_id AS node_id,
+SELECT
+       {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+       CASE WHEN {{ can_view_pii() | tojson }} THEN c.patient_id END AS node_id,
        c.node_type AS "Node Type",
+       {% if can_view_pii() %}
        COALESCE(NULLIF(c."Patient Name", ''), 'Unnamed') AS "Person",
+       {% else %}
+       COALESCE(NULLIF(c."EPID", ''), 'Unnamed') AS "Person",
+       {% endif %}
        c."EPID" AS "Person EPID",
        CASE WHEN c.node_type = 'Contact' THEN COALESCE(c."Monitoring Status", 'Contact')
             ELSE c."Classification" END AS "Latest Status",

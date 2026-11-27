@@ -102,15 +102,16 @@ o AS (
   GROUP BY patient_id
 )
 SELECT
-  a.patient_id                                         AS "Patient ID",
+  {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+  CASE WHEN {{ can_view_pii() | tojson }} THEN a.patient_id END AS "Patient ID",
   a.alert_log_id                                       AS "Alert ID",
   nphiis.to_date_safe(o.alert_date)                    AS "Date Alerted",
   DATE_TRUNC('week', nphiis.to_date_safe(o.alert_date))::date AS "Epi Week",
   COALESCE(NULLIF(o.source_other, ''), o.source)       AS "Source",
   COALESCE(o.reporting_facility, o.legacy_location)    AS "Reported By",
   o.reporter                                           AS "Reporter",
-  o.reporter_phone                                     AS "Reporter Phone",
-  COALESCE(NULLIF(BTRIM(CONCAT_WS(' ', o.given_names, o.family_name)), ''), o.legacy_name) AS "Patient Name",
+  CASE WHEN {{ can_view_pii() | tojson }} THEN o.reporter_phone END AS "Reporter Phone",
+  CASE WHEN {{ can_view_pii() | tojson }} THEN COALESCE(NULLIF(BTRIM(CONCAT_WS(' ', o.given_names, o.family_name)), ''), o.legacy_name) END AS "Patient Name",
   o.sex                                                AS "Sex",
   COALESCE(o.age_years::numeric, ROUND(o.age_months::numeric / 12, 1)) AS "Age",
   o.age_months::numeric                                AS "Age Months",
@@ -118,8 +119,8 @@ SELECT
   o.res_county                                         AS "County",
   o.res_subcounty                                      AS "Sub County",
   o.res_ward                                           AS "Ward",
-  o.village                                            AS "Village",
-  o.phone                                              AS "Phone",
+  CASE WHEN {{ can_view_pii() | tojson }} THEN o.village END AS "Village",
+  CASE WHEN {{ can_view_pii() | tojson }} THEN o.phone END AS "Phone",
   o.vital_status                                       AS "Vital Status",
   o.hcw                                                AS "HCW",
   o.hcw_facility                                       AS "HCW Facility",

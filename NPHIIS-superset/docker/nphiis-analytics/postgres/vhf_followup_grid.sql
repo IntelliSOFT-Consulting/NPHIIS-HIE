@@ -66,7 +66,9 @@ cells AS (
   ORDER BY contact_encounter_id, day, visit_date DESC NULLS LAST, visit_id COLLATE "C"
 )
 SELECT
-  c.contact_id                                   AS "Contact ID",
+  {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+  CASE WHEN {{ can_view_pii() | tojson }} THEN c.contact_id END AS "Contact ID",
+  c.contact_epid                                 AS "EPID",
   c.source_case                                  AS "Source Case",
   c.relationship                                 AS "Relationship",
   c.contact_date                                 AS "Contact Date",
