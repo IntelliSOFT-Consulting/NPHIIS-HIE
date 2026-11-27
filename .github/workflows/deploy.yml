@@ -39,8 +39,7 @@ jobs:
           $G clean -fd -- NPHIIS-superset/docker/nphiis-analytics NPHIIS-superset/docker/pythonpath_dev
           sudo -n docker compose -f hie/docker-compose.yml up -d --build --no-deps hie-auth nphiis-admin
           # Superset mounts ./docker; refresh PII-masked Postgres datasets and switch charts.
-          chmod +x NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
-          DOCKER="sudo -n docker" NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
+          DOCKER="sudo -n docker" bash NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
           REMOTE
 
   nphiis-prod:
