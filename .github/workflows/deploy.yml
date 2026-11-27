@@ -39,7 +39,8 @@ jobs:
           $G clean -fd -- NPHIIS-superset/docker/nphiis-analytics NPHIIS-superset/docker/pythonpath_dev
           sudo -n docker compose -f hie/docker-compose.yml up -d --build --no-deps hie-auth nphiis-admin
           # Superset mounts ./docker; refresh PII-masked Postgres datasets and switch charts.
-          DOCKER="sudo -n docker" bash NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
+          # Bounce once so pythonpath_dev Jinja (can_view_pii) is picked up after config changes.
+          NPHIIS_RESTART_SUPERSET=1 DOCKER="sudo -n docker" bash NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
           REMOTE
 
   nphiis-prod:
@@ -70,5 +71,6 @@ jobs:
             up -d --build --no-deps hie-auth
           sudo -n docker compose -f nphiis-admin/docker-compose.yml up -d --build
           # Superset mounts ./docker; refresh PII-masked Postgres datasets and switch charts.
-          DOCKER="sudo -n docker" bash NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
+          # Bounce once so pythonpath_dev Jinja (can_view_pii) is picked up after config changes.
+          NPHIIS_RESTART_SUPERSET=1 DOCKER="sudo -n docker" bash NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
           REMOTE
