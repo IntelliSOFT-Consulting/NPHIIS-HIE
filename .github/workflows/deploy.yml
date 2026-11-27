@@ -62,8 +62,13 @@ jobs:
           cd /opt/NPHIS-HIE
           G="sudo -n -u nphi git"   # the checkout and its GitHub deploy key belong to nphi
           $G fetch origin main
-          $G merge --ff-only origin/main
+          $G checkout main 2>/dev/null || $G checkout -b main origin/main
+          # Match origin (ignore emergency SCP/hotfixes under mounted paths).
+          $G reset --hard origin/main
+          $G clean -fd -- NPHIIS-superset/docker/nphiis-analytics NPHIIS-superset/docker/pythonpath_dev
           sudo -n docker compose -f hie/docker-compose.yml -f proxy/docker-compose.yml -f keycloak/docker-compose.yml \
             up -d --build --no-deps hie-auth
           sudo -n docker compose -f nphiis-admin/docker-compose.yml up -d --build
+          # Superset mounts ./docker; refresh PII-masked Postgres datasets and switch charts.
+          DOCKER="sudo -n docker" bash NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
           REMOTE
