@@ -124,6 +124,7 @@ def query_context_from_params(slice_id, datasource_id, params):
     columns = []
     for key in (
         "columns",
+        "all_columns",
         "groupby",
         "entity",
         "series",
@@ -133,6 +134,10 @@ def query_context_from_params(slice_id, datasource_id, params):
         "x_axis",
         "granularity_sqla",
         "secondary_metric",
+        "source",
+        "target",
+        "source_category",
+        "target_category",
     ):
         for value in _as_list(params.get(key)):
             if value not in columns:
@@ -381,13 +386,13 @@ def main(mode):
             repaired = 0
             for s in charts:
                 if s.datasource_id not in twins:
-                    # Already on Postgres: still repair missing query_context for embeds.
-                    if not s.query_context:
-                        params = json.loads(s.params or "{}")
-                        s.query_context = json.dumps(
-                            query_context_from_params(s.id, s.datasource_id, params)
-                        )
-                        repaired += 1
+                    # Already on Postgres: rebuild query_context so embeds pass guest checks
+                    # (table charts use all_columns; contacts setup may clear QC).
+                    params = json.loads(s.params or "{}")
+                    s.query_context = json.dumps(
+                        query_context_from_params(s.id, s.datasource_id, params)
+                    )
+                    repaired += 1
                     continue
                 backup[str(s.id)] = {"datasource_id": s.datasource_id, "params": s.params, "query_context": s.query_context}
                 ds = twins[s.datasource_id]

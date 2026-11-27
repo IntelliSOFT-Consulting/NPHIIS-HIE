@@ -48,6 +48,8 @@ echo "==> VHF Postgres datasets + switch charts off Spark"
 
 echo "==> VHF contact-tracing charts (RLS / contacts)"
 "${PY[@]}" "$DIR/vhf_contacts_setup.py" || true
+# contacts_setup rewrites tree/list chart params; rebuild guest query_context after it.
+"${PY[@]}" "$DIR/vhf_postgres_setup.py" --switch
 
 echo "==> Alert Log + follow-up grid + EVD snapshot"
 "${PY[@]}" "$DIR/alert_log_setup.py"

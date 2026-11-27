@@ -394,8 +394,17 @@ def transmission_network(db, Slice, Dashboard):
         return
     # Keep the chart's dataset: the Spark one or its Postgres twin (vhf_postgres_setup.py --switch).
     s.viz_type = NETWORK_PARAMS["viz_type"]
-    s.params = json.dumps({**NETWORK_PARAMS, "datasource": f"{s.datasource_id}__table"})
-    s.query_context = None
+    params = {**NETWORK_PARAMS, "datasource": f"{s.datasource_id}__table"}
+    s.params = json.dumps(params)
+    # Embedded guests need a stored query_context (null → "cannot modify chart payload").
+    try:
+        from vhf_postgres_setup import query_context_from_params
+
+        s.query_context = json.dumps(
+            query_context_from_params(s.id, s.datasource_id, params)
+        )
+    except Exception:
+        s.query_context = None
     dash = db.session.query(Dashboard).filter_by(dashboard_title=TREE_DASHBOARD).one_or_none()
     if dash is not None:
         meta = json.loads(dash.json_metadata or "{}")
