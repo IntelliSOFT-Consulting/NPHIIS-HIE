@@ -81,7 +81,7 @@ labelled AS (
   FROM chain_nodes c
 )
 SELECT
-       {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+       {% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}
        CASE WHEN {{ can_view_pii() | tojson }} THEN c.patient_id END AS node_id,
        c.node_type AS "Node Type",
        {% if can_view_pii() %}

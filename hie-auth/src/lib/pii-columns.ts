@@ -9,6 +9,10 @@
  */
 export function expandSupersetJinja(sql: string): string {
   let out = sql.replace(/\{\{\s*can_view_pii\(\)\s*\|\s*tojson\s*\}\}/g, "true");
+  out = out.replace(
+    /\{\%\s*if\s+cache_key_wrapper\s+is\s+defined\s*\%\}\{\%\s*set\s+_\s*=\s*cache_key_wrapper\([^%]+\%\}\{\%\s*endif\s*\%\}/g,
+    "",
+  );
   out = out.replace(/\{\%\s*set\s+_\s*=\s*cache_key_wrapper\([^%]+\%\}/g, "");
   // {% if can_view_pii() %} ... {% else %} ... {% endif %} → keep the if-branch
   out = out.replace(

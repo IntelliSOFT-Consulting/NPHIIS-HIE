@@ -66,7 +66,7 @@ cells AS (
   ORDER BY contact_encounter_id, day, visit_date DESC NULLS LAST, visit_id COLLATE "C"
 )
 SELECT
-  {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+  {% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}
   CASE WHEN {{ can_view_pii() | tojson }} THEN c.contact_id END AS "Contact ID",
   c.contact_epid                                 AS "EPID",
   c.source_case                                  AS "Source Case",
@@ -123,6 +123,6 @@ SELECT
   c.encounter_id, c.county_code, c.sub_county_code, c.facility_id, c.report_type, c.county_rls, c.subcounty_rls
 FROM contacts c
 LEFT JOIN cells v ON v.contact_encounter_id = c.encounter_id
-GROUP BY c.encounter_id, c.contact_id, c.source_case, c.relationship, c.contact_date, c.last_day, c.status,
+GROUP BY c.encounter_id, c.contact_id, c.contact_epid, c.source_case, c.relationship, c.contact_date, c.last_day, c.status,
          c.days_followed_up, c.days_expected, c.county_name, c.sub_county_name, c.county_code, c.sub_county_code,
          c.facility_id, c.report_type, c.county_rls, c.subcounty_rls

@@ -212,7 +212,7 @@ classified AS (
 -- PII columns (name, phone, DOB, village, FHIR id, Contact ID) only when can_view_pii()
 -- (ADMINISTRATOR). EPID stays. cache_key_wrapper separates admin vs non-admin chart caches.
 SELECT
-  {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+  {% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(county, '')), '\s+', ' ', 'g'))    AS county_rls,
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(subcounty, '')), '\s+', ' ', 'g')) AS subcounty_rls,
   CASE WHEN {{ can_view_pii() | tojson }} THEN patient_id END AS patient_id,

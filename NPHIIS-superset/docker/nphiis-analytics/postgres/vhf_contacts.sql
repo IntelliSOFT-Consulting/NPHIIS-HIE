@@ -119,7 +119,7 @@ coded AS (
   FROM area a
 )
 SELECT
-       {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+       {% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}
        c.encounter_id,
        CASE WHEN {{ can_view_pii() | tojson }} THEN c.contact_id END AS contact_id,
        c.epid AS contact_epid,

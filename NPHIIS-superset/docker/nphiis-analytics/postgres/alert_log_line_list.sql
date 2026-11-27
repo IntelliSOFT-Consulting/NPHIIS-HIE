@@ -102,7 +102,7 @@ o AS (
   GROUP BY patient_id
 )
 SELECT
-  {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+  {% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}
   CASE WHEN {{ can_view_pii() | tojson }} THEN a.patient_id END AS "Patient ID",
   a.alert_log_id                                       AS "Alert ID",
   nphiis.to_date_safe(o.alert_date)                    AS "Date Alerted",

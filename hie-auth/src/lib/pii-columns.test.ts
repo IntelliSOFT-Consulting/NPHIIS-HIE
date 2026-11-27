@@ -33,8 +33,10 @@ describe("expandSupersetJinja", () => {
     expect(expandSupersetJinja("{% if can_view_pii() %}name{% else %}NULL{% endif %} AS x")).toBe(
       "name AS x",
     );
-    expect(expandSupersetJinja("{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}\nSELECT 1")).toBe(
-      "\nSELECT 1",
-    );
+    expect(
+      expandSupersetJinja(
+        "{% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}\nSELECT 1",
+      ),
+    ).toBe("\nSELECT 1");
   });
 });

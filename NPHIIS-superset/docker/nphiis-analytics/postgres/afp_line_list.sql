@@ -386,7 +386,7 @@ derived AS (
 )
 
 SELECT
-  {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+  {% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(county, '')), '\s+', ' ', 'g'))     AS county_rls,
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(sub_county, '')), '\s+', ' ', 'g')) AS subcounty_rls,
 

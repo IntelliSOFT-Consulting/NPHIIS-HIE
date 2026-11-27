@@ -257,7 +257,7 @@ base AS (
 )
 
 SELECT
-  {% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}
+  {% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}
   county_rls,
   subcounty_rls,
   "Lab ID No",

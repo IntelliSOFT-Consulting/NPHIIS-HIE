@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: dsrfhir
     steps:
-      - name: Deploy hie-auth and nphiis-admin
+      - name: Deploy hie-auth, nphiis-admin, and Superset analytics
         env:
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
@@ -36,6 +36,9 @@ jobs:
           $G checkout develop 2>/dev/null || $G checkout -b develop origin/develop
           $G merge --ff-only origin/develop
           sudo -n docker compose -f hie/docker-compose.yml up -d --build --no-deps hie-auth nphiis-admin
+          # Superset mounts ./docker; refresh PII-masked Postgres datasets and switch charts.
+          chmod +x NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
+          DOCKER="sudo -n docker" NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
           REMOTE
 
   nphiis-prod:
