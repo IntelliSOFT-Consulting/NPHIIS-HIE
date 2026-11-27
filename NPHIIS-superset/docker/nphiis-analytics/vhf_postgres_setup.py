@@ -143,25 +143,34 @@ def query_context_from_params(slice_id, datasource_id, params):
     metrics = _as_list(params.get("metrics"))
     if not metrics and params.get("metric") is not None:
         metrics = [params["metric"]]
+    # Table percent metrics and dual-axis extras are requested as metrics too.
+    for key in ("percent_metrics", "metric_2", "secondary_metric"):
+        for value in _as_list(params.get(key)):
+            if value not in metrics:
+                metrics.append(value)
 
     # Timeseries / cartesian: x_axis first, then series (groupby). Other keys still
     # collected so sankey/source-target and table all_columns stay covered.
     columns = []
     x_axis = params.get("x_axis")
-    time_grain = None
     extras = params.get("extras") if isinstance(params.get("extras"), dict) else {}
     time_grain = params.get("time_grain_sqla") or extras.get("time_grain_sqla")
 
-    def _add(value):
+    def _add_col(value):
         if value not in columns:
             columns.append(value)
 
+    def _add_physical_or_axis(value):
+        """Store both raw and BASE_AXIS forms — guest check is a subset test."""
+        if isinstance(value, str):
+            _add_col(_base_axis_column(value, time_grain))
+            _add_col(value)
+        elif value is not None:
+            _add_col(value)
+
     if x_axis:
-        if isinstance(x_axis, str):
-            _add(_base_axis_column(x_axis, time_grain))
-            _add(x_axis)  # allow either representation through the subset check
-        else:
-            _add(x_axis)
+        _add_physical_or_axis(x_axis)
+    # Aggregate table charts may promote a temporal groupby col to BASE_AXIS.
     for key in (
         "columns",
         "all_columns",
@@ -172,22 +181,43 @@ def query_context_from_params(slice_id, datasource_id, params):
         "y",
         "size",
         "granularity_sqla",
-        "secondary_metric",
         "source",
         "target",
         "source_category",
         "target_category",
     ):
         for value in _as_list(params.get(key)):
-            _add(value)
+            if key in ("groupby", "columns", "granularity_sqla") and isinstance(value, str) and time_grain:
+                _add_physical_or_axis(value)
+            else:
+                _add_col(value)
 
-    # Mirror normalizeOrderBy: when metrics exist, frontend often sends orderby.
+    # Guest check is subset: store every orderby shape viz plugins emit.
     order_desc = params.get("order_desc")
     if order_desc is None:
         order_desc = True
-    orderby = _as_list(params.get("orderby"))
-    if not orderby and metrics:
-        orderby = [[metrics[0], not order_desc]]
+    orderby = []
+
+    def _add_order(item):
+        if item not in orderby:
+            orderby.append(item)
+
+    for item in _as_list(params.get("orderby")):
+        _add_order(item)
+    for raw in _as_list(params.get("order_by_cols")):
+        try:
+            parsed = json.loads(raw) if isinstance(raw, str) else raw
+        except Exception:
+            continue
+        _add_order(parsed)
+    for metric in metrics:
+        # timeseries normalizeOrderBy; table aggregate default (always DESC=false asc flag)
+        _add_order([metric, not order_desc])
+        _add_order([metric, False])
+        _add_order([metric, True])
+    for metric in _as_list(params.get("timeseries_limit_metric")):
+        _add_order([metric, not order_desc])
+        _add_order([metric, False])
 
     groupby = _as_list(params.get("groupby"))
     form_data = {**params, "slice_id": slice_id, "datasource": f"{datasource_id}__table"}
@@ -224,6 +254,55 @@ def query_context_from_params(slice_id, datasource_id, params):
         "result_format": "json",
         "result_type": "full",
     }
+
+
+def enrich_params_for_guest(params):
+    """Ensure params_dict covers keys the guest form_data half of the tamper check reads.
+
+    query_context_modified compares request form_data metrics/columns/groupby/orderby
+    against params_dict BEFORE merging stored query_context. Charts that only store
+    `metric` / `all_columns` / `order_by_cols` therefore 403 when the browser normalizes
+    those into metrics/columns/orderby on form_data.
+    """
+    out = dict(params)
+    metrics = _as_list(out.get("metrics"))
+    if not metrics and out.get("metric") is not None:
+        metrics = [out["metric"]]
+    for key in ("percent_metrics", "metric_2", "secondary_metric"):
+        for value in _as_list(out.get(key)):
+            if value not in metrics:
+                metrics.append(value)
+    if metrics:
+        out["metrics"] = metrics
+
+    columns = _as_list(out.get("columns"))
+    for key in ("all_columns", "groupby", "entity", "series", "x_axis", "source", "target"):
+        for value in _as_list(out.get(key)):
+            if value not in columns:
+                columns.append(value)
+    if columns:
+        out["columns"] = columns
+
+    orderby = _as_list(out.get("orderby"))
+    for raw in _as_list(out.get("order_by_cols")):
+        try:
+            parsed = json.loads(raw) if isinstance(raw, str) else raw
+        except Exception:
+            continue
+        if parsed not in orderby:
+            orderby.append(parsed)
+    if metrics:
+        order_desc = True if out.get("order_desc") is None else out.get("order_desc")
+        for item in (
+            [metrics[0], not order_desc],
+            [metrics[0], False],
+            [metrics[0], True],
+        ):
+            if item not in orderby:
+                orderby.append(item)
+    if orderby:
+        out["orderby"] = orderby
+    return out
 
 
 def _sql_fragments(params):
@@ -446,7 +525,8 @@ def main(mode):
                 if s.datasource_id not in twins:
                     # Already on Postgres: rebuild query_context so embeds pass guest checks
                     # (table charts use all_columns; contacts setup may clear QC).
-                    params = json.loads(s.params or "{}")
+                    params = enrich_params_for_guest(json.loads(s.params or "{}"))
+                    s.params = json.dumps(params)
                     s.query_context = json.dumps(
                         query_context_from_params(s.id, s.datasource_id, params)
                     )
@@ -454,21 +534,11 @@ def main(mode):
                     continue
                 backup[str(s.id)] = {"datasource_id": s.datasource_id, "params": s.params, "query_context": s.query_context}
                 ds = twins[s.datasource_id]
-                params = _translate(json.loads(s.params or "{}"))
+                params = enrich_params_for_guest(_translate(json.loads(s.params or "{}")))
                 params["datasource"] = f"{ds.id}__table"
-                qc = None
-                if s.query_context:
-                    try:
-                        qc_obj = _translate(json.loads(s.query_context))
-                        qc_obj["datasource"] = {"id": ds.id, "type": "table"}
-                        if isinstance(qc_obj.get("form_data"), dict):
-                            qc_obj["form_data"]["datasource"] = f"{ds.id}__table"
-                            qc_obj["form_data"]["slice_id"] = s.id
-                        qc = json.dumps(qc_obj)
-                    except Exception:
-                        qc = None
-                if not qc:
-                    qc = json.dumps(query_context_from_params(s.id, ds.id, params))
+                # Always rebuild QC from params so guest tamper checks match the
+                # frontend buildQuery shape (BASE_AXIS, order_by_cols, etc.).
+                qc = json.dumps(query_context_from_params(s.id, ds.id, params))
                 s.datasource_id, s.params, s.query_context = ds.id, json.dumps(params), qc
                 moved += 1
             with open(BACKUP, "w") as f:
