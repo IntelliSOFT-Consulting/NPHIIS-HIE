@@ -40,6 +40,9 @@ else
   echo "==> skip Superset restart (set NPHIIS_RESTART_SUPERSET=1 to bounce workers)"
 fi
 
+echo "==> guest/embed role datasource permissions"
+"${PY[@]}" "$DIR/ensure_guest_role_perms.py"
+
 echo "==> VHF Postgres datasets + switch charts off Spark"
 "${PY[@]}" "$DIR/vhf_postgres_setup.py" --switch
 
