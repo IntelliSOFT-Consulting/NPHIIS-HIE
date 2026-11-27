@@ -104,7 +104,8 @@ describe("GET /reports/vhf/line-list auth", () => {
         const res = await get(jwt({ azp: "partner-reports" }));
 
         expect(res.status).toBe(200);
-        expect(lists.fetchLineList.mock.calls[0][1]).toEqual({ roles: ["ADMINISTRATOR"] });
+        // National geographic scope without analytics PII (ADMINISTRATOR-only).
+        expect(lists.fetchLineList.mock.calls[0][1]).toEqual({ roles: ["NATIONAL_FOCAL_PERSON"] });
         expect(kc.findKeycloakUser).not.toHaveBeenCalled();
     });
 

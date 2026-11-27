@@ -238,10 +238,23 @@ class KeycloakOAuth2SecurityManager(SupersetSecurityManager):
         
         if user:
             from flask import session, g
+            from flask import current_app
             all_roles = session.get('_oauth_roles', [])
             auth_service_data = session.get('_auth_service_data')
-            
-            if all_roles:
+            # DB service accounts used by nphiis-admin for guest tokens (e.g. "admin")
+            # must keep Admin. OAuth sync would otherwise wipe them to VACCINATOR/Gamma.
+            protected = {
+                (current_app.config.get("SUPERSET_GUEST_USERNAME") or "").strip(),
+                "admin",
+            }
+            protected.discard("")
+            if user.username in protected:
+                logger.info(
+                    "Skipping OAuth role sync for protected service account %s (roles=%s)",
+                    user.username,
+                    [r.name for r in user.roles],
+                )
+            elif all_roles:
                 # Map roles to Superset roles
                 superset_roles = self._map_keycloak_roles_to_superset(all_roles)
                 

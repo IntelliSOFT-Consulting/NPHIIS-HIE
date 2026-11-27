@@ -123,6 +123,87 @@ def _sql_fragments(params):
     return found
 
 
+def _pg_type_to_superset(pg_oid):
+    TEXT_OIDS = {25, 1043, 19, 18, 1042, 2950}
+    FLOAT_OIDS = {700, 701, 1700}
+    INT_OIDS = {20, 21, 23, 26}
+    DATE_OIDS = {1082, 1114, 1184}
+    if pg_oid in TEXT_OIDS:
+        return "TEXT"
+    if pg_oid in FLOAT_OIDS:
+        return "FLOAT"
+    if pg_oid in INT_OIDS:
+        return "BIGINT"
+    if pg_oid in DATE_OIDS:
+        return "DATETIME"
+    return "TEXT"
+
+
+def _add_columns(ds, names_and_types):
+    """Add missing TableColumns; names_and_types is [(name, type_str), ...]."""
+    from superset.connectors.sqla.models import TableColumn
+    from superset.extensions import db
+
+    existing = {c.column_name for c in ds.columns}
+    added = 0
+    for cname, col_type in names_and_types:
+        if cname in existing:
+            continue
+        db.session.add(
+            TableColumn(
+                table_id=ds.id,
+                column_name=cname,
+                type=col_type,
+                is_dttm=(col_type == "DATETIME"),
+                filterable=True,
+                groupby=True,
+            )
+        )
+        added += 1
+    if added:
+        db.session.commit()
+    return added
+
+
+def _sync_columns_from_sql(pg_db, ds, sql_file, spark=None):
+    """Fill dataset columns when fetch_metadata() fails (Jinja SQL).
+
+    Prefer a rendered LIMIT 0 probe; fall back to copying names from the Spark twin
+    so charts never sit on a 0-column Postgres dataset.
+    """
+    try:
+        import psycopg2
+
+        # Render Jinja the same way Superset does at query time (can_view_pii → false
+        # outside a request is fine for schema discovery).
+        rendered = ds.get_template_processor().process_template(ds.sql).strip().rstrip(";")
+        probe_sql = f"SELECT * FROM ({rendered}) _probe LIMIT 0"
+        uri = pg_db.sqlalchemy_uri_decrypted
+        m2 = re.match(r"postgresql\+psycopg2://([^:]+):([^@]+)@([^:/]+):?(\d+)?/(.+)", uri)
+        if not m2:
+            raise ValueError(f"cannot parse URI {uri!r}")
+        user, pwd, host, port, dbname = m2.groups()
+        conn = psycopg2.connect(
+            host=host, port=int(port or 5432), dbname=dbname, user=user, password=pwd
+        )
+        cur = conn.cursor()
+        cur.execute(probe_sql)
+        col_info = [(d[0], _pg_type_to_superset(d[1])) for d in cur.description]
+        cur.close()
+        conn.close()
+        added = _add_columns(ds, col_info)
+        print(f"  schema probe: +{added} columns for {ds.table_name}")
+        return
+    except Exception as e:
+        print(f"  schema probe failed for {ds.table_name}: {e}")
+
+    if spark and spark.columns:
+        added = _add_columns(
+            ds, [(c.column_name, c.type or "TEXT") for c in spark.columns]
+        )
+        print(f"  copied {added} column names from Spark twin for {ds.table_name}")
+
+
 def main(mode):
     from superset.app import create_app
 
@@ -165,7 +246,12 @@ def main(mode):
                 ds.filter_select_enabled = spark.filter_select_enabled
                 ds.extra = spark.extra
             db.session.commit()
-            ds.fetch_metadata()
+            try:
+                ds.fetch_metadata()
+            except Exception as e:
+                print(f"  (fetch_metadata failed: {str(e).splitlines()[0]}; probing schema)")
+            if not ds.columns:
+                _sync_columns_from_sql(pg, ds, file, spark=spark)
             if spark:
                 by_name = {c.column_name: c for c in spark.columns}
                 for col in ds.columns:

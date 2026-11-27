@@ -204,7 +204,11 @@ spec AS (
 -- ── 6. Assemble base ─────────────────────────────────────────────────────────
 base AS (
   SELECT
+    {% if can_view_pii() %}
     p.id                                                           AS patient_id,
+    {% else %}
+    NULL::text                                                     AS patient_id,
+    {% endif %}
     'AFP'                                                          AS disease,
     'Kenya'                                                        AS country,
     COALESCE(o.epid_obs, ei.epid_number)                           AS epid_no,
@@ -216,20 +220,39 @@ base AS (
     o.rep_facility                                                 AS health_facility,
     o.rep_facility_type                                            AS facility_type,
 
+    {% if can_view_pii() %}
     TRIM(COALESCE(p.given, '') || ' ' || COALESCE(p.family, ''))   AS patient_name,
+    {% else %}
+    NULL::text                                                     AS patient_name,
+    {% endif %}
     CASE WHEN LOWER(NULLIF(p.gender,'')) = 'male'   THEN 'M'
          WHEN LOWER(NULLIF(p.gender,'')) = 'female' THEN 'F' ELSE NULL END AS sex,
     NULLIF(p.gender, '')                                           AS sex_full,
+    {% if can_view_pii() %}
     nphiis.to_date_safe(p.birth_date)                              AS date_of_birth,
+    {% else %}
+    NULL::date                                                     AS date_of_birth,
+    {% endif %}
     o.age_at_onset                                                 AS age_at_onset_text,
     nphiis.to_int_safe(o.age_years_raw)                            AS age_years,
     nphiis.to_int_safe(o.age_months_raw)                           AS age_months,
     nphiis.to_int_safe(o.age_days_raw)                             AS age_days,
+    {% if can_view_pii() %}
     o.parent_name,
     o.parent_phone,
+    {% else %}
+    NULL::text AS parent_name,
+    NULL::text AS parent_phone,
+    {% endif %}
 
-    o.res_county, o.res_subcounty, o.res_ward, o.res_village,
+    o.res_county, o.res_subcounty, o.res_ward,
+    {% if can_view_pii() %}
+    o.res_village,
     o.res_landmark, o.res_nearest_hf, o.res_town,
+    {% else %}
+    NULL::text AS res_village,
+    NULL::text AS res_landmark, NULL::text AS res_nearest_hf, NULL::text AS res_town,
+    {% endif %}
 
     nphiis.to_date_safe(o.investigation_date)                      AS date_of_investigation,
     nphiis.to_date_safe(o.notification_date)                       AS date_of_notification,
@@ -296,7 +319,11 @@ base AS (
     o.final_classification,
     o.vdpv_serotype,
     o.investigator_name, o.investigator_designation, o.investigator_unit,
+    {% if can_view_pii() %}
     o.investigator_address, o.investigator_phone,
+    {% else %}
+    NULL::text AS investigator_address, NULL::text AS investigator_phone,
+    {% endif %}
 
     nphiis.to_date_safe(o.itd_larm_received_date)                  AS itd_larm_received_date,
     nphiis.to_date_safe(o.itd_rarm_received_date)                  AS itd_rarm_received_date,
@@ -359,6 +386,7 @@ derived AS (
 )
 
 SELECT
+  {% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(county, '')), '\s+', ' ', 'g'))     AS county_rls,
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(sub_county, '')), '\s+', ' ', 'g')) AS subcounty_rls,
 

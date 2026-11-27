@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDatasetRlsClauses, buildRlsClauses } from "./superset-rls";
+import { buildDatasetRlsClauses, buildGuestRlsClauses, buildRlsClauses, NPHIIS_CAN_VIEW_PII_CLAUSE } from "./superset-rls";
 import type { LocationInfo } from "@/types/user";
 
 const loc = (over: Partial<LocationInfo> = {}): LocationInfo => ({
@@ -42,5 +42,15 @@ describe("buildDatasetRlsClauses", () => {
     expect(buildDatasetRlsClauses(["COUNTY_DISEASE_SURVEILLANCE_OFFICER"], loc({ countyName: "Murang'a" }), [NAMES])).toEqual([
       { dataset: 128, clause: "county_rls = 'MURANG''A'" },
     ]);
+  });
+});
+
+describe("buildGuestRlsClauses", () => {
+  it("adds the PII marker only for ADMINISTRATOR", () => {
+    expect(buildGuestRlsClauses(["NATIONAL_FOCAL_PERSON"], loc(), null)).toEqual([]);
+    expect(buildGuestRlsClauses(["ADMINISTRATOR"], loc(), null)).toEqual([
+      { clause: NPHIIS_CAN_VIEW_PII_CLAUSE },
+    ]);
+    expect(buildGuestRlsClauses(["SUPERUSER"], loc(), null)).toEqual([]);
   });
 });

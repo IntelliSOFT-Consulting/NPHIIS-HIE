@@ -51,8 +51,10 @@ def counts_table(groupby, order_label):
     }
 
 
+# Patient Name / Phone / Village are PII (ADMINISTRATOR-only in the dataset SQL); omit from the
+# default table so non-admin embeds do not show empty identifier columns.
 LIST_COLUMNS = [
-    "Date Alerted", "Alert ID", "Source", "Reported By", "Patient Name", "Sex", "Age", "County",
+    "Date Alerted", "Alert ID", "Source", "Reported By", "Sex", "Age", "County",
     "Sub County", "Symptoms", "Travelled", "Meets Definition", "Sample Taken", "Vital Status",
     "Investigated", "Visit Lag",
 ]

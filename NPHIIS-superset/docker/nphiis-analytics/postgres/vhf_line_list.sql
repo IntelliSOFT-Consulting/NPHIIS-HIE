@@ -209,12 +209,15 @@ classified AS (
     END AS outcome_final
   FROM base b
 )
+-- PII columns (name, phone, DOB, village, FHIR id, Contact ID) only when can_view_pii()
+-- (ADMINISTRATOR). EPID stays. cache_key_wrapper separates admin vs non-admin chart caches.
 SELECT
+  {% if cache_key_wrapper is defined %}{% set _ = cache_key_wrapper('pii:' ~ (can_view_pii()|string)) %}{% endif %}
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(county, '')), '\s+', ' ', 'g'))    AS county_rls,
   TRIM(REGEXP_REPLACE(UPPER(COALESCE(subcounty, '')), '\s+', ' ', 'g')) AS subcounty_rls,
-  patient_id,
+  CASE WHEN {{ can_view_pii() | tojson }} THEN patient_id END AS patient_id,
   epid                                    AS "EPID",
-  contact_id                              AS "Contact ID",
+  CASE WHEN {{ can_view_pii() | tojson }} THEN contact_id END AS "Contact ID",
   record_type                             AS "Record Type",
   classification                          AS "Classification",
   COALESCE(disease_other, disease)        AS "Disease",
@@ -229,18 +232,18 @@ SELECT
   subcounty                               AS "Sub County",
   ward                                    AS "Ward",
   facility                                AS "Facility",
-  patient_name                            AS "Patient Name",
+  CASE WHEN {{ can_view_pii() | tojson }} THEN patient_name END AS "Patient Name",
   CASE LOWER(gender) WHEN 'male' THEN 'M' WHEN 'female' THEN 'F' END AS "Sex",
   COALESCE(nphiis.to_int_safe(age_years),
            FLOOR(nphiis.months_between(COALESCE(nphiis.to_date_safe(onset_date), date_reported),
                                           nphiis.to_date_safe(birth_date)) / 12)::int) AS "Age",
-  TO_CHAR(nphiis.to_date_safe(birth_date), 'DD/MM/YYYY') AS "Birth Date",
-  phone                                   AS "Phone",
+  CASE WHEN {{ can_view_pii() | tojson }} THEN TO_CHAR(nphiis.to_date_safe(birth_date), 'DD/MM/YYYY') END AS "Birth Date",
+  CASE WHEN {{ can_view_pii() | tojson }} THEN phone END AS "Phone",
   COALESCE(occupation_specify, occupation) AS "Occupation",
   pregnant                                AS "Pregnant",
   res_county                              AS "Residence County",
   res_subcounty                           AS "Residence Subcounty",
-  village                                 AS "Village",
+  CASE WHEN {{ can_view_pii() | tojson }} THEN village END AS "Village",
   symptoms                                AS "Symptoms",
   TO_CHAR(nphiis.to_date_safe(onset_date), 'DD/MM/YYYY')     AS "Onset Date",
   care_type                               AS "Care Type",

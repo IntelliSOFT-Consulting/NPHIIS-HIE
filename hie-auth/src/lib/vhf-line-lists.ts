@@ -1,6 +1,15 @@
 import fs from "fs";
 import path from "path";
 import { Pool, types } from "pg";
+import {
+  canViewAnalyticsPii,
+  expandSupersetJinja,
+  maskPiiRows,
+  VHF_CONTACTS_PII_COLUMNS,
+  VHF_LINE_LIST_PII_COLUMNS,
+} from "./pii-columns";
+
+export { expandSupersetJinja };
 
 /**
  * The VHF line lists as the Superset dashboards show them, read from the analytics Postgres
@@ -27,7 +36,8 @@ const sqlCache = new Map<Dataset, string>();
 export function datasetSql(dataset: Dataset): string {
   let sql = sqlCache.get(dataset);
   if (!sql) {
-    sql = fs.readFileSync(path.join(SQL_DIR, SQL_FILES[dataset]), "utf8").trim().replace(/;\s*$/, "");
+    const raw = fs.readFileSync(path.join(SQL_DIR, SQL_FILES[dataset]), "utf8").trim().replace(/;\s*$/, "");
+    sql = expandSupersetJinja(raw);
     sqlCache.set(dataset, sql);
   }
   return sql;
@@ -144,8 +154,11 @@ export async function fetchLineList(dataset: Dataset, scope: UserScope, f: LineL
   const result = await getPool().query(sql, params);
   const total = result.rows.length ? Number(result.rows[0].__total) : 0;
   const rows = result.rows.map(({ __total, ...row }) => row);
+  const pii =
+    dataset === "line-list" ? VHF_LINE_LIST_PII_COLUMNS : VHF_CONTACTS_PII_COLUMNS;
+  maskPiiRows(rows, scope.roles, pii);
   const columns = result.fields.map((c) => c.name).filter((c) => c !== "__total");
-  return { total, rows, columns };
+  return { total, rows, columns, canViewPii: canViewAnalyticsPii(scope.roles) };
 }
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);

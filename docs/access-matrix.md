@@ -110,6 +110,19 @@ Where scope is applied:
 - **Lab**: `lab.national_scope` (National Lab, Administrator, Superuser) shows lab work from every location. Other lab users are limited to their own.
 - **Specimens, screened travellers and the call log** are not location-scoped. Access is controlled by permission alone, which is why they are limited to lab and national roles.
 
+### Analytics patient identifiers (PII)
+
+Line lists and chart CSV downloads in Superset (and `GET /reports/vhf/*`) hide patient identifiers for every role except **`ADMINISTRATOR`**.
+
+| Visible to all report viewers | ADMINISTRATOR only |
+| --- | --- |
+| EPID / Source EPID / contact EPID, sex, age, area, clinical and lab fields | Patient name, phone, birth date, village / street / landmark, FHIR patient id, Contact ID, parent/guardian name and phone |
+
+- **`SUPERUSER`** keeps full portal admin powers but does **not** get analytics PII.
+- Chart **CSV download** is allowed for non-admins; exported rows use the same masked columns.
+- **`X-Api-Key` / reports client** tokens get national row scope but **no** PII (same as a National Focal Person for geography).
+- Guest embeds: ADMINISTRATOR gets a no-op RLS marker so Jinja `can_view_pii()` unmasks; everyone else stays masked.
+
 ## 6. Service-level checks (APIs)
 
 | Endpoint / area | Who is allowed | Where |
