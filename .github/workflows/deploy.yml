@@ -34,7 +34,9 @@ jobs:
           G="sudo -n -u bamolo git"   # the checkout and its GitHub deploy key belong to bamolo
           $G fetch origin develop
           $G checkout develop 2>/dev/null || $G checkout -b develop origin/develop
-          $G merge --ff-only origin/develop
+          # Deploy host must match origin (ignore emergency SCP/hotfixes under mounted paths).
+          $G reset --hard origin/develop
+          $G clean -fd -- NPHIIS-superset/docker/nphiis-analytics NPHIIS-superset/docker/pythonpath_dev
           sudo -n docker compose -f hie/docker-compose.yml up -d --build --no-deps hie-auth nphiis-admin
           # Superset mounts ./docker; refresh PII-masked Postgres datasets and switch charts.
           chmod +x NPHIIS-superset/docker/nphiis-analytics/refresh_deployed_datasets.sh
