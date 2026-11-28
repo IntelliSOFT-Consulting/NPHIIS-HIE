@@ -8,9 +8,9 @@ Runs on every deploy; the data shown stays the same:
 - Line lists (tables with many columns) are at most LIST_HEIGHT tall so a page fits a screen,
   show dates without "00:00:00", page 25 rows with search, keep each column once, and drop
   columns that hold the same value on every row (CountryCode is always "KEN").
-- A line list built as an aggregate table without metrics (GROUP BY every column, i.e. distinct
-  rows) becomes a raw-records table of the same columns. With names masked for non-admins
-  (can_view_pii), distinct rows merged different patients: MOH 503 showed 211 of 318 records.
+- Line lists stay aggregate tables. In raw mode Superset runs each column name through its
+  adhoc-SQL sub-query check, and these Spark names fail it (403 "Custom SQL fields cannot
+  contain sub-queries"); a list this script once switched to raw is switched back.
 
 Filters and metrics are left as they are. Charts are found through their
 dashboards by title, so the script works on any environment whatever the ids.
@@ -63,11 +63,8 @@ def tidy(dash):
         if not _is_list(params):
             continue
         new = {**params, **LIST_PARAMS}
-        if new.get("query_mode") != "raw" and not new.get("metrics") and not new.get("percent_metrics"):
-            cols = _dedupe(new.get("groupby") or [])
-            # Raw mode reads all_columns and columns (and ignores groupby); reset both, as
-            # all_columns may still hold names from an older version of the chart.
-            new.update(query_mode="raw", all_columns=cols, columns=cols)
+        if new.get("query_mode") == "raw" and new.get("groupby") and new.get("all_columns") == new.get("groupby"):
+            new["query_mode"] = "aggregate"
         for key in ("groupby", "all_columns", "columns"):
             if isinstance(new.get(key), list):
                 new[key] = _dedupe(new[key])
