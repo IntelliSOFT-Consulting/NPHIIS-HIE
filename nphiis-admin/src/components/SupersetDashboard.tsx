@@ -51,7 +51,9 @@ export default function SupersetDashboard({
         hideTitle: true,
         hideTab: false,
         hideChartControls: false,
-        filters: { expanded: true },
+        // Collapsed by default: the panel took a quarter of the width (and for area users
+        // County / Sub County have one option). The toggle opens it.
+        filters: { expanded: false },
       },
     })
       .then(() => {

@@ -108,12 +108,13 @@ CHARTS = [
         {
             "viz_type": "table",
             "query_mode": "raw",
-            "table_timestamp_format": "%Y-%m-%d",
+            "table_timestamp_format": "%d/%m/%Y",
             "adhoc_filters": [],
             "all_columns": LIST_COLUMNS,
             "order_by_cols": [json.dumps(["Date Alerted", False])],
             "row_limit": 1000,
-            "table_timestamp_format": "smart_date",
+            # Keep the id on one line instead of one EPID segment per line.
+            "column_config": {"Alert ID": {"columnWidth": 190, "horizontalAlign": "left"}},
             "include_search": True,
             "page_length": 25,
         },

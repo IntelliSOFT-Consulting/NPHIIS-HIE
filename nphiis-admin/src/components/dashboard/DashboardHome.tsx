@@ -23,11 +23,7 @@ export default function DashboardHome() {
     return (
       <div className="space-y-4">
         <UserRoleBreakdown />
-        <ReportsSection
-          title=""
-          subtitle=""
-          height="calc(100vh - 16rem)"
-        />
+        <ReportsSection title="" subtitle="" />
       </div>
     );
   }

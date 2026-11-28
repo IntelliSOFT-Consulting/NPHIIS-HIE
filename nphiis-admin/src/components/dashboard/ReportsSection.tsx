@@ -36,7 +36,8 @@ interface ReportsSectionProps {
 export default function ReportsSection({
   title = 'Reports',
   subtitle = 'VHF, IDSR Case-Based Surveillance and AFP dashboards',
-  height = '70vh',
+  // Nearly a full screen: scroll the page to the reports and the dashboard tab fits.
+  height = 'calc(100vh - 5rem)',
 }: ReportsSectionProps) {
   const { can } = useAuth();
 

@@ -183,13 +183,20 @@ def enrich_params_for_guest(params):
     if metrics:
         out["metrics"] = metrics
 
-    columns = _as_list(out.get("columns"))
-    for key in ("all_columns", "groupby", "entity", "series", "x_axis", "source", "target"):
-        for value in _as_list(out.get(key)):
-            if value not in columns:
-                columns.append(value)
-    if columns:
-        out["columns"] = columns
+    if out.get("x_axis"):
+        # Charts with an x_axis (echarts timeseries) never use a `columns` param, but the
+        # frontend's pivot falls back to formData.columns: storing x_axis/groupby there
+        # split every series by the axis value ("Suspected, 2026-10-19 …"). The guest
+        # check is satisfied by groupby on params plus the stored query_context.
+        out.pop("columns", None)
+    else:
+        columns = _as_list(out.get("columns"))
+        for key in ("all_columns", "groupby", "entity", "series", "source", "target"):
+            for value in _as_list(out.get(key)):
+                if value not in columns:
+                    columns.append(value)
+        if columns:
+            out["columns"] = columns
 
     orderby = _as_list(out.get("orderby"))
     for raw in _as_list(out.get("order_by_cols")):
