@@ -16,6 +16,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "postgres"))
 from render import render  # noqa: E402
+from guest_qc import apply_guest_query_context  # noqa: E402
 
 DATABASE_NAME = "NPHIIS Analytics (Postgres)"
 SPARK_DATABASE = "Apache Hive"
@@ -294,9 +295,13 @@ def main(mode):
         if mode == "switch":
             backup = json.load(open(BACKUP)) if os.path.exists(BACKUP) else {}
             moved = 0
+            repaired = 0
             for s in charts:
                 if s.datasource_id not in twins:
-                    continue  # already on Postgres
+                    # Already on Postgres: rebuild query_context so embeds pass guest checks.
+                    apply_guest_query_context(s, json.loads(s.params or "{}"))
+                    repaired += 1
+                    continue
                 backup[str(s.id)] = {
                     "datasource_id": s.datasource_id,
                     "params": s.params,
@@ -306,15 +311,14 @@ def main(mode):
                 params = _translate(json.loads(s.params or "{}"))
                 params["datasource"] = f"{ds.id}__table"
                 s.datasource_id = ds.id
-                s.params = json.dumps(params)
-                s.query_context = None
+                apply_guest_query_context(s, params)
                 moved += 1
             with open(BACKUP, "w") as f:
                 json.dump(backup, f)
             ids = {spark_id: ds.id for spark_id, ds in twins.items()}
             _retarget_filters(db, Dashboard, charts, ids)
             db.session.commit()
-            print(f"switched {moved} charts to Postgres (Spark settings saved in {BACKUP})")
+            print(f"switched {moved} charts to Postgres (repaired query_context on {repaired}; Spark settings saved in {BACKUP})")
             return
 
         if mode == "revert":

@@ -21,6 +21,7 @@ import uuid
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "postgres"))
 from render import render  # noqa: E402
+from guest_qc import apply_guest_query_context  # noqa: E402
 
 DATABASE_NAME = "NPHIIS Analytics (Postgres)"
 DATASET_NAME = "EVD Daily Snapshot"
@@ -216,8 +217,11 @@ def main():
             s.datasource_type = "table"
             s.datasource_id = ds.id
             s.params = json.dumps(params)
-            s.query_context = None
             slices.append(s)
+        db.session.flush()  # new slices need ids before their query_context
+        for s in slices:
+            # Embedded guests need a stored query_context ("cannot modify chart payload").
+            apply_guest_query_context(s, json.loads(s.params))
         db.session.commit()
 
         position = {

@@ -11,6 +11,8 @@ alerts from their own area.
 """
 import json
 
+from guest_qc import apply_guest_query_context
+
 DATASET_NAME = "Alert Log Line List"
 DASHBOARD = "Alert Log"
 SLUG = "alert-log"
@@ -148,8 +150,11 @@ def main():
             s.datasource_type = "table"
             s.datasource_id = ds.id
             s.params = json.dumps(params)
-            s.query_context = None
             slices.append(s)
+        db.session.flush()  # new slices need ids before their query_context
+        for s in slices:
+            # Embedded guests need a stored query_context ("cannot modify chart payload").
+            apply_guest_query_context(s, json.loads(s.params))
         db.session.commit()
 
         position = {

@@ -16,6 +16,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "postgres"))
 from render import render  # noqa: E402
+from guest_qc import apply_guest_query_context  # noqa: E402
 
 DATABASE_NAME = "NPHIIS Analytics (Postgres)"
 DATASET_NAME = "VHF Contact Follow-up Grid"
@@ -89,7 +90,8 @@ def main():
         s.datasource_type = "table"
         s.datasource_id = ds.id
         s.params = json.dumps(params)
-        s.query_context = None
+        db.session.flush()  # a new slice needs an id before its query_context
+        apply_guest_query_context(s, params)
         db.session.commit()
 
         position = {
