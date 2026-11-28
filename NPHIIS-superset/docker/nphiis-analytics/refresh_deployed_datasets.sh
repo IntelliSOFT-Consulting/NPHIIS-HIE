@@ -63,6 +63,9 @@ echo "==> VHF dashboard tabs (layout once, chart settings every run)"
 echo "==> AFP / Measles Postgres datasets + switch charts"
 "${PY[@]}" "$DIR/afp_measles_postgres_setup.py" --switch
 
+echo "==> PII policy on UI-built datasets (MOH 503 names)"
+"${PY[@]}" "$DIR/mask_ui_dataset_pii.py" || true
+
 echo "==> IDSR / AFP dashboard tidy (tile sizes, line list display)"
 "${PY[@]}" "$DIR/dashboard_tidy.py" || true
 
