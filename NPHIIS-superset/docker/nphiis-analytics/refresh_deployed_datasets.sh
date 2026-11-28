@@ -57,7 +57,7 @@ echo "==> Alert Log + follow-up grid + EVD snapshot"
 "${PY[@]}" "$DIR/vhf_followup_grid_setup.py"
 "${PY[@]}" "$DIR/evd_snapshot_setup.py" || true
 
-echo "==> VHF dashboard tabs (once; --force to rebuild)"
+echo "==> VHF dashboard tabs (layout once, chart settings every run)"
 "${PY[@]}" "$DIR/vhf_dashboard_layout.py" || true
 
 echo "==> AFP / Measles Postgres datasets + switch charts"

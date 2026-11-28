@@ -14,8 +14,9 @@ the same charts into tabs that each fit about one screen:
 and tidies chart settings that made them hard to read (horizontal county bars, map legends
 out of the way, id columns that do not wrap one segment per line).
 
-It runs once: a dashboard that already has tabs is left alone so later edits in the Superset UI
-survive deploys. --force rebuilds the layout. Charts are matched by name, so it works on any
+The layout is built once: a dashboard that already has tabs keeps its layout so later edits in
+the Superset UI survive deploys (--force rebuilds it). The chart settings below are re-applied
+on every run. Charts are matched by name, so it works on any
 environment whatever the chart ids. A chart it does not know is kept, in an "Other" row of the
 Overview tab, rather than dropped.
 """
@@ -52,16 +53,19 @@ LINE_LISTS = [
 LINE_LIST_HEIGHT = 100
 
 # Chart settings that read better; merged into each chart's params.
-ID_COLUMN = {"columnWidth": 190, "horizontalAlign": "left"}
+ID_COLUMN = {"columnWidth": 230, "horizontalAlign": "left"}
 CHART_PARAMS = {
     # Vertical bars dropped county labels and hid which county the tallest bar was.
     # Horizontal bars list the first category at the bottom: ascending puts the biggest on top.
     "Cases by County": {"orientation": "horizontal", "x_axis_sort": "sum", "x_axis_sort_asc": True,
-                        "x_axis_title": "", "y_axis_title": "Records"},
+                        "x_axis_title": "", "y_axis_title": "Records", "legendType": "plain"},
+    # Paged legends ("1/3") and cut labels ("Susp…") in narrow tiles: wrap instead.
+    "Cases by Classification": {"legendType": "plain", "label_type": "value"},
+    "Contacts by Monitoring Status": {"legendType": "plain", "label_type": "value"},
     "Epi Curve by Week of Onset": {"x_axis_time_format": "%d %b %Y"},
-    "Map of Cases": {"legend_position": "bl"},
-    "Map of Confirmed Cases": {"legend_position": "bl"},
-    "Map of Contacts Under Follow Up": {"legend_position": "bl"},
+    "Map of Cases": {"legend_position": "tl"},
+    "Map of Confirmed Cases": {"legend_position": "tl"},
+    "Map of Contacts Under Follow Up": {"legend_position": "tl"},
     "VHF Case Line List": {"column_config": {"EPID": ID_COLUMN, "Source EPID": ID_COLUMN}},
     "VHF Contact Line List": {"column_config": {"Contact ID": ID_COLUMN, "Source EPID": ID_COLUMN}},
     "Contacts Who Became Cases List": {"column_config": {"Person EPID": ID_COLUMN}},
@@ -170,22 +174,22 @@ def main(force):
         if dash is None:
             print(f"SKIP: no dashboard {DASHBOARD!r}")
             return
+        by_name = {s.slice_name: s for s in dash.slices}
         old = json.loads(dash.position_json or "{}")
         if not force and any(isinstance(v, dict) and v.get("type") == "TABS" for v in old.values()):
-            print(f"{DASHBOARD!r} already has tabs: left as it is (use --force to rebuild)")
-            return
-
-        by_name = {s.slice_name: s for s in dash.slices}
-        position = build_position(dash.dashboard_title, by_name)
-
-        # Native filters keep applying to every chart, now spread over tabs.
-        meta = json.loads(dash.json_metadata or "{}")
+            print(f"{DASHBOARD!r} already has tabs: layout kept (use --force to rebuild)")
+            position = old
+        else:
+            position = build_position(dash.dashboard_title, by_name)
+            # Native filters keep applying to every chart, now spread over tabs.
+            meta = json.loads(dash.json_metadata or "{}")
+            tab_ids = [k for k, v in position.items() if isinstance(v, dict) and v.get("type") == "TAB"]
+            for f in meta.get("native_filter_configuration", []):
+                if "tabsInScope" in f or f.get("scope"):
+                    f["tabsInScope"] = tab_ids
+            dash.json_metadata = json.dumps(meta)
+            dash.position_json = json.dumps(position)
         tab_ids = [k for k, v in position.items() if isinstance(v, dict) and v.get("type") == "TAB"]
-        for f in meta.get("native_filter_configuration", []):
-            if "tabsInScope" in f or f.get("scope"):
-                f["tabsInScope"] = tab_ids
-        dash.json_metadata = json.dumps(meta)
-        dash.position_json = json.dumps(position)
 
         for name, extra in CHART_PARAMS.items():
             s = by_name.get(name)
