@@ -63,4 +63,7 @@ echo "==> VHF dashboard tabs (layout once, chart settings every run)"
 echo "==> AFP / Measles Postgres datasets + switch charts"
 "${PY[@]}" "$DIR/afp_measles_postgres_setup.py" --switch
 
+echo "==> IDSR / AFP dashboard tidy (tile sizes, line list display)"
+"${PY[@]}" "$DIR/dashboard_tidy.py" || true
+
 echo "==> analytics datasets refreshed"
