@@ -27,6 +27,7 @@ from superset.app import create_app
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+from guest_qc import apply_guest_query_context  # noqa: E402
 DATABASE_NAME = "Apache Hive"
 DATASET = "vhf_contacts"
 DASHBOARD = "VHF Contact Tracing"
@@ -267,8 +268,11 @@ def main():
             s.datasource_type = "table"
             s.datasource_id = ds.id
             s.params = json.dumps(params)
-            s.query_context = None
             slices.append(s)
+        db.session.flush()  # new slices need ids before their query_context
+        for s in slices:
+            # Embedded guests need a stored query_context ("cannot modify chart payload").
+            apply_guest_query_context(s, json.loads(s.params))
         db.session.commit()
 
         # Dashboard
@@ -395,18 +399,8 @@ def transmission_network(db, Slice, Dashboard):
     # Keep the chart's dataset: the Spark one or its Postgres twin (vhf_postgres_setup.py --switch).
     s.viz_type = NETWORK_PARAMS["viz_type"]
     params = {**NETWORK_PARAMS, "datasource": f"{s.datasource_id}__table"}
-    s.params = json.dumps(params)
     # Embedded guests need a stored query_context (null → "cannot modify chart payload").
-    try:
-        from vhf_postgres_setup import enrich_params_for_guest, query_context_from_params
-
-        params = enrich_params_for_guest(params)
-        s.params = json.dumps(params)
-        s.query_context = json.dumps(
-            query_context_from_params(s.id, s.datasource_id, params)
-        )
-    except Exception:
-        s.query_context = None
+    apply_guest_query_context(s, params)
     dash = db.session.query(Dashboard).filter_by(dashboard_title=TREE_DASHBOARD).one_or_none()
     if dash is not None:
         meta = json.loads(dash.json_metadata or "{}")

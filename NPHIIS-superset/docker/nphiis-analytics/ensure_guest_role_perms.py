@@ -2,7 +2,8 @@
 
 Embedded dashboards authenticate as GUEST_ROLE_NAME (often Public). Without
 all_datasource_access / all_database_access every chart shows "Data error" /
-filter "Network error" even when guest tokens succeed.
+filter "Network error" even when guest tokens succeed. Without can_csv the
+embedded chart menu hides Download and CSV/Excel exports return 403.
 """
 from __future__ import annotations
 
@@ -11,6 +12,9 @@ from superset.app import create_app
 NEEDED = (
     ("all_datasource_access", "all_datasource_access"),
     ("all_database_access", "all_database_access"),
+    # Chart menu "Download" (CSV / Excel) in the embedded dashboard, and the
+    # result_format=csv|xlsx branch of /api/v1/chart/data, both check can_csv.
+    ("can_csv", "Superset"),
 )
 
 
