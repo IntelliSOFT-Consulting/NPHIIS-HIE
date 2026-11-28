@@ -84,7 +84,7 @@ weekly AS (
     EXTRACT(YEAR FROM DATE_TRUNC('week', report_date))::int::text || '-W' ||
       LPAD(EXTRACT(WEEK FROM DATE_TRUNC('week', report_date))::int::text, 2, '0') AS epi_week_label,
     TO_CHAR(DATE_TRUNC('week', report_date), 'YYYY-MM-DD') || ' → ' ||
-      TO_CHAR(DATE_TRUNC('week', report_date) + 6, 'YYYY-MM-DD') AS week_range
+      TO_CHAR(DATE_TRUNC('week', report_date) + INTERVAL '6 days', 'YYYY-MM-DD') AS week_range
   FROM afp_base
   WHERE report_date IS NOT NULL
 )
