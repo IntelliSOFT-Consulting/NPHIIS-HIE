@@ -103,13 +103,13 @@ derived AS (
       WHEN c.onset_dt IS NOT NULL AND c.notification_dt IS NOT NULL
            AND (c.notification_dt - c.onset_dt) <= 7
        AND c.notification_dt IS NOT NULL AND c.investigation_dt IS NOT NULL
-           AND EXTRACT(EPOCH FROM (c.investigation_dt - c.notification_dt)) / 3600.0 <= 48
+           AND (c.investigation_dt - c.notification_dt) * 24 <= 48
       THEN 1 ELSE 0 END AS timely_field_activities,
     CASE
       WHEN c.onset_dt IS NOT NULL AND c.notification_dt IS NOT NULL
            AND (c.notification_dt - c.onset_dt) <= 7
        AND c.notification_dt IS NOT NULL AND c.investigation_dt IS NOT NULL
-           AND EXTRACT(EPOCH FROM (c.investigation_dt - c.notification_dt)) / 3600.0 <= 48
+           AND (c.investigation_dt - c.notification_dt) * 24 <= 48
        AND c.shipment_dt IS NOT NULL
       THEN 1 ELSE 0 END AS timely_field_and_shipment
   FROM cases c
