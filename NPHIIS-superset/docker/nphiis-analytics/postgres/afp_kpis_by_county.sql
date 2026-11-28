@@ -96,7 +96,8 @@ derived AS (
               AND (c.notification_dt - c.onset_dt) <= 7
          THEN 1 ELSE 0 END AS within7d_onset_to_notification,
     CASE WHEN c.notification_dt IS NOT NULL AND c.investigation_dt IS NOT NULL
-              AND EXTRACT(EPOCH FROM (c.investigation_dt - c.notification_dt)) / 3600.0 <= 48
+              -- date - date is whole days in Postgres (EXTRACT(EPOCH FROM integer) fails)
+              AND (c.investigation_dt - c.notification_dt) * 24 <= 48
          THEN 1 ELSE 0 END AS within48h_notification_to_investigation,
     CASE
       WHEN c.onset_dt IS NOT NULL AND c.notification_dt IS NOT NULL

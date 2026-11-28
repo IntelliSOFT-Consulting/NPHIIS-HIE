@@ -93,6 +93,8 @@ def to_postgres(sql):
     sql = _replace_calls(sql, "MONTH",    lambda a: f"EXTRACT(MONTH FROM {a[0]})")
     sql = _replace_calls(sql, "WEEKOFYEAR", lambda a: f"EXTRACT(WEEK FROM {a[0]})")
     sql = re.sub(r"\)\s*/\s*NULLIF\s*\(", ")::numeric / NULLIF(", sql)
+    # Spark DOUBLE is Postgres DOUBLE PRECISION ("type double does not exist").
+    sql = re.sub(r"\bAS\s+DOUBLE\b(?!\s+PRECISION)", "AS DOUBLE PRECISION", sql, flags=re.I)
     return sql
 
 
@@ -299,7 +301,8 @@ def main(mode):
             for s in charts:
                 if s.datasource_id not in twins:
                     # Already on Postgres: rebuild query_context so embeds pass guest checks.
-                    apply_guest_query_context(s, json.loads(s.params or "{}"))
+                    # Re-translate too (idempotent): charts switched before a rule was added.
+                    apply_guest_query_context(s, _translate(json.loads(s.params or "{}")))
                     repaired += 1
                     continue
                 backup[str(s.id)] = {
