@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   forbidden,
-  resolveUserRoles,
+  resolveUserProfile,
   unauthorized,
   verifyToken,
 } from '@/lib/server-auth';
@@ -107,7 +107,9 @@ async function dashboardDatasets(embedUuid: string, access: string): Promise<Rls
 export async function POST(req: NextRequest) {
   const session = await verifyToken(req);
   if (!session) return unauthorized();
-  const roles = await resolveUserRoles(session);
+  // The Keycloak token has no location claim: the user's county / sub-county come from the
+  // hie-auth profile. Without it area-limited users get the default-deny clause (all zeros).
+  const { roles, locationInfo } = await resolveUserProfile(session);
 
   if (!canAccess(roles, 'REPORTS_VIEW_IDSR')) {
     return forbidden('Reports access not permitted');
@@ -120,7 +122,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { access, csrf, cookie } = await supersetLogin();
-    const rls = buildGuestRlsClauses(roles, session.locationInfo, await dashboardDatasets(dashboardId, access));
+    const rls = buildGuestRlsClauses(roles, locationInfo, await dashboardDatasets(dashboardId, access));
 
     const guestRes = await fetch(`${SUPERSET_URL}/api/v1/security/guest_token/`, {
       method: 'POST',
